@@ -97,3 +97,32 @@ CREATE TABLE IF NOT EXISTS usuarios (
         FOREIGN KEY (rol_id)
         REFERENCES roles(id)
 );
+
+
+-- =============================================================================
+-- TABLA: clientes
+-- =============================================================================
+-- Almacena los clientes de cada empresa registrada en EVENTRA.
+-- Implementa aislamiento de datos SaaS mediante empresa_id:
+--   cada consulta debe filtrar por empresa_id para garantizar que
+--   una empresa nunca pueda ver los clientes de otra.
+--
+-- Relación:
+--   empresa_id → empresas(id): Si se elimina la empresa, sus clientes
+--   se eliminan en cascada (ON DELETE CASCADE).
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS clientes (
+    id             UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id     INTEGER      NOT NULL,
+    nombres        VARCHAR(100) NOT NULL,
+    apellidos      VARCHAR(100) NOT NULL,
+    email          VARCHAR(150) UNIQUE,
+    telefono       VARCHAR(20),
+    estado_activo  BOOLEAN      DEFAULT true,
+    fecha_creacion TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_clientes_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresas(id)
+        ON DELETE CASCADE
+);

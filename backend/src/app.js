@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
+import clienteRoutes from './routes/clienteRoutes.js';
 
 dotenv.config();
 
@@ -16,6 +17,9 @@ app.get('/api/health', (req, res) => {
 
 // --- Rutas de autenticación ---
 app.use('/api/auth', authRoutes);
+
+// --- Rutas de clientes (protegidas con JWT) ---
+app.use('/api/clientes', clienteRoutes);
 
 const PORT = process.env.PORT || 3000;
 
