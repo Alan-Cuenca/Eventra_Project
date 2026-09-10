@@ -6,6 +6,7 @@ import clienteRoutes from './routes/clienteRoutes.js';
 import servicioRoutes from './routes/servicioRoutes.js';
 import paqueteRoutes from './routes/paqueteRoutes.js';
 import cotizacionRoutes from './routes/cotizacionRoutes.js';
+import reservaRoutes from './routes/reservaRoutes.js';
 
 dotenv.config();
 
@@ -32,6 +33,9 @@ app.use('/api/paquetes', paqueteRoutes);
 
 // --- Rutas de cotizaciones (JWT + RBAC: POST para Admin, Gerente y Trabajador) ---
 app.use('/api/cotizaciones', cotizacionRoutes);
+
+// --- Rutas de reservas (JWT + RBAC: POST para Admin, Gerente y Trabajador) ---
+app.use('/api/reservas', reservaRoutes);
 
 const PORT = process.env.PORT || 3000;
 

@@ -260,3 +260,46 @@ CREATE TABLE IF NOT EXISTS cotizaciones (
         REFERENCES paquetes(id)
         ON DELETE SET NULL
 );
+
+
+-- =============================================================================
+-- TABLA: reservas
+-- =============================================================================
+-- Registra la reserva física de un salón o lugar para un evento.
+-- Implementa doble capa de protección contra sobreventa:
+--   1. Control en aplicación: SELECT COUNT(*) antes de insertar.
+--   2. Control en BD: restricción UNIQUE a nivel de base de datos
+--      como última línea de defensa ante condiciones de carrera.
+--
+-- Relaciones:
+--   empresa_id   → empresas(id)    : Cascada en eliminación.
+--   cotizacion_id → cotizaciones(id): Cascada en eliminación.
+--
+-- Control de acceso (RBAC):
+--   Administradores (1), Gerentes (2) y Trabajadores (3) pueden crear.
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS reservas (
+    id              UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id      INTEGER      NOT NULL,
+    cotizacion_id   UUID         NOT NULL,
+    salon_o_lugar   VARCHAR(150) NOT NULL,
+    fecha_evento    DATE         NOT NULL,
+    hora_inicio     TIME         NOT NULL,
+    hora_fin        TIME         NOT NULL,
+    estado          VARCHAR(20)  DEFAULT 'Confirmada',
+    fecha_creacion  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+
+    -- Doble protección: BD rechaza duplicados aunque la app falle
+    CONSTRAINT uq_reserva_salon_fecha
+        UNIQUE (empresa_id, salon_o_lugar, fecha_evento),
+
+    CONSTRAINT fk_reservas_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresas(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_reservas_cotizacion
+        FOREIGN KEY (cotizacion_id)
+        REFERENCES cotizaciones(id)
+        ON DELETE CASCADE
+);
