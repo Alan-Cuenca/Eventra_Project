@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
 import clienteRoutes from './routes/clienteRoutes.js';
+import servicioRoutes from './routes/servicioRoutes.js';
 
 dotenv.config();
 
@@ -20,6 +21,9 @@ app.use('/api/auth', authRoutes);
 
 // --- Rutas de clientes (protegidas con JWT) ---
 app.use('/api/clientes', clienteRoutes);
+
+// --- Rutas de servicios (JWT + RBAC: POST solo Admin y Gerente) ---
+app.use('/api/servicios', servicioRoutes);
 
 const PORT = process.env.PORT || 3000;
 

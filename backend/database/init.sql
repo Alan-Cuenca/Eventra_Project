@@ -126,3 +126,33 @@ CREATE TABLE IF NOT EXISTS clientes (
         REFERENCES empresas(id)
         ON DELETE CASCADE
 );
+
+
+-- =============================================================================
+-- TABLA: servicios
+-- =============================================================================
+-- Almacena el catálogo de servicios que cada empresa ofrece en EVENTRA.
+-- Implementa aislamiento de datos SaaS mediante empresa_id:
+--   cada empresa gestiona y visualiza únicamente su propio catálogo.
+--
+-- Control de acceso (RBAC):
+--   Solo Administradores (rol_id=1) y Gerentes (rol_id=2) pueden
+--   crear o modificar servicios a nivel de API.
+--
+-- Relación:
+--   empresa_id → empresas(id): Cascada en eliminación.
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS servicios (
+    id             UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id     INTEGER        NOT NULL,
+    nombre         VARCHAR(100)   NOT NULL,
+    descripcion    TEXT,
+    precio_base    DECIMAL(10, 2) NOT NULL,
+    estado_activo  BOOLEAN        DEFAULT true,
+    fecha_creacion TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_servicios_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresas(id)
+        ON DELETE CASCADE
+);
