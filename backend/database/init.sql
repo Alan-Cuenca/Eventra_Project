@@ -156,3 +156,62 @@ CREATE TABLE IF NOT EXISTS servicios (
         REFERENCES empresas(id)
         ON DELETE CASCADE
 );
+
+
+-- =============================================================================
+-- TABLA: paquetes
+-- =============================================================================
+-- Agrupa uno o más servicios en un paquete comercial con precio total.
+-- Cada paquete pertenece a una empresa (aislamiento SaaS).
+--
+-- Control de acceso (RBAC):
+--   Solo Administradores (rol_id=1) y Gerentes (rol_id=2) pueden
+--   crear paquetes a nivel de API.
+--
+-- Relación N:M con servicios:
+--   Un paquete puede contener muchos servicios y un servicio puede
+--   pertenecer a muchos paquetes → tabla intermedia paquete_servicios.
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS paquetes (
+    id             UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id     INTEGER        NOT NULL,
+    nombre         VARCHAR(100)   NOT NULL,
+    descripcion    TEXT,
+    precio_total   DECIMAL(10, 2) NOT NULL,
+    estado_activo  BOOLEAN        DEFAULT true,
+    fecha_creacion TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_paquetes_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresas(id)
+        ON DELETE CASCADE
+);
+
+
+-- =============================================================================
+-- TABLA INTERMEDIA: paquete_servicios
+-- =============================================================================
+-- Implementa la relación Many-to-Many entre paquetes y servicios.
+-- Llave primaria compuesta (paquete_id, servicio_id) garantiza que
+-- un mismo servicio no se duplique dentro del mismo paquete.
+--
+-- Cascadas:
+--   - Si se elimina un paquete  → se eliminan sus relaciones.
+--   - Si se elimina un servicio → se eliminan sus relaciones.
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS paquete_servicios (
+    paquete_id  UUID NOT NULL,
+    servicio_id UUID NOT NULL,
+
+    PRIMARY KEY (paquete_id, servicio_id),
+
+    CONSTRAINT fk_ps_paquete
+        FOREIGN KEY (paquete_id)
+        REFERENCES paquetes(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_ps_servicio
+        FOREIGN KEY (servicio_id)
+        REFERENCES servicios(id)
+        ON DELETE CASCADE
+);
