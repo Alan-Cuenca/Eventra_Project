@@ -341,3 +341,51 @@ CREATE TABLE IF NOT EXISTS eventos (
         REFERENCES reservas(id)
         ON DELETE CASCADE
 );
+
+
+-- =============================================================================
+-- TABLA: actividades
+-- =============================================================================
+-- Registra las tareas individuales asociadas a un evento.
+-- Permite la asignación a un usuario responsable (Trabajador).
+--
+-- Ciclo de vida (estado):
+--   'Pendiente' → 'En Progreso' → 'Completada' | 'Cancelada'
+--
+-- Relaciones:
+--   empresa_id    → empresas(id) : Cascada en eliminación.
+--   evento_id     → eventos(id)  : Cascada en eliminación.
+--   responsable_id → usuarios(id): SET NULL si se elimina el usuario;
+--                                  la actividad sobrevive sin responsable.
+--
+-- Control de acceso (RBAC):
+--   Crear/Asignar: Administradores (1) y Gerentes (2).
+--   Ver y actualizar estado: todos los usuarios autenticados
+--   (los Trabajadores ven solo sus propias actividades por lógica de app).
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS actividades (
+    id                UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id        INTEGER     NOT NULL,
+    evento_id         UUID        NOT NULL,
+    responsable_id    UUID,
+    titulo            VARCHAR(150) NOT NULL,
+    descripcion       TEXT,
+    fecha_vencimiento DATE,
+    estado            VARCHAR(50) DEFAULT 'Pendiente',
+    fecha_creacion    TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_actividades_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresas(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_actividades_evento
+        FOREIGN KEY (evento_id)
+        REFERENCES eventos(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_actividades_responsable
+        FOREIGN KEY (responsable_id)
+        REFERENCES usuarios(id)
+        ON DELETE SET NULL
+);
