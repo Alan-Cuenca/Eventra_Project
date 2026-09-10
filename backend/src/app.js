@@ -5,6 +5,7 @@ import authRoutes from './routes/authRoutes.js';
 import clienteRoutes from './routes/clienteRoutes.js';
 import servicioRoutes from './routes/servicioRoutes.js';
 import paqueteRoutes from './routes/paqueteRoutes.js';
+import cotizacionRoutes from './routes/cotizacionRoutes.js';
 
 dotenv.config();
 
@@ -28,6 +29,9 @@ app.use('/api/servicios', servicioRoutes);
 
 // --- Rutas de paquetes (JWT + RBAC: POST solo Admin y Gerente) ---
 app.use('/api/paquetes', paqueteRoutes);
+
+// --- Rutas de cotizaciones (JWT + RBAC: POST para Admin, Gerente y Trabajador) ---
+app.use('/api/cotizaciones', cotizacionRoutes);
 
 const PORT = process.env.PORT || 3000;
 

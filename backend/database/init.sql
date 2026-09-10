@@ -215,3 +215,48 @@ CREATE TABLE IF NOT EXISTS paquete_servicios (
         REFERENCES servicios(id)
         ON DELETE CASCADE
 );
+
+
+-- =============================================================================
+-- TABLA: cotizaciones
+-- =============================================================================
+-- Registra las cotizaciones generadas para los clientes de cada empresa.
+-- Implementa aislamiento SaaS mediante empresa_id.
+--
+-- Relaciones:
+--   empresa_id  → empresas(id)  : Cascada en eliminación.
+--   cliente_id  → clientes(id)  : Cascada en eliminación.
+--   paquete_id  → paquetes(id)  : Opcional (NULL si se cotiza sin paquete).
+--
+-- Estado (máquina de estados):
+--   'Pendiente' → 'Aprobada' → 'Rechazada' | 'Completada'
+--
+-- Control de acceso (RBAC):
+--   Administradores (1), Gerentes (2) y Trabajadores (3) pueden crear.
+--   Cualquier usuario autenticado puede listar.
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS cotizaciones (
+    id                    UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id            INTEGER        NOT NULL,
+    cliente_id            UUID           NOT NULL,
+    paquete_id            UUID,
+    fecha_estimada_evento DATE           NOT NULL,
+    total_calculado       DECIMAL(10, 2) NOT NULL,
+    estado                VARCHAR(20)    DEFAULT 'Pendiente',
+    fecha_creacion        TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_cotizaciones_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresas(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_cotizaciones_cliente
+        FOREIGN KEY (cliente_id)
+        REFERENCES clientes(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_cotizaciones_paquete
+        FOREIGN KEY (paquete_id)
+        REFERENCES paquetes(id)
+        ON DELETE SET NULL
+);
