@@ -303,3 +303,41 @@ CREATE TABLE IF NOT EXISTS reservas (
         REFERENCES cotizaciones(id)
         ON DELETE CASCADE
 );
+
+
+-- =============================================================================
+-- TABLA: eventos
+-- =============================================================================
+-- Tabla central del sistema EVENTRA. Representa el evento planificado
+-- y en ejecución, vinculado a su reserva física de espacio.
+--
+-- Ciclo de vida (estado_progreso):
+--   'En Planificación' → 'En Progreso' → 'Finalizado' | 'Cancelado'
+--
+-- Relaciones:
+--   empresa_id → empresas(id) : Cascada en eliminación.
+--   reserva_id → reservas(id) : Cascada en eliminación.
+--
+-- Control de acceso (RBAC):
+--   Crear/Editar: Administradores (1) y Gerentes (2).
+--   Ver/Actualizar estado: Admin (1), Gerente (2) y Trabajador (3).
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS eventos (
+    id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id       INTEGER     NOT NULL,
+    reserva_id       UUID        NOT NULL,
+    titulo           VARCHAR(150) NOT NULL,
+    descripcion      TEXT,
+    estado_progreso  VARCHAR(50) DEFAULT 'En Planificación',
+    fecha_creacion   TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_eventos_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresas(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_eventos_reserva
+        FOREIGN KEY (reserva_id)
+        REFERENCES reservas(id)
+        ON DELETE CASCADE
+);
