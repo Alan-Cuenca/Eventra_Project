@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 /**
  * Registra un nuevo usuario en el sistema EVENTRA.
@@ -65,6 +66,94 @@ export const registerUser = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Error interno del servidor al registrar el usuario.',
+    });
+  }
+};
+
+/**
+ * Inicia sesión de un usuario existente en el sistema EVENTRA.
+ *
+ * Flujo:
+ *  1. Extrae email y password del body.
+ *  2. Busca el usuario por email. Si no existe → 404.
+ *  3. Compara el password con el hash almacenado (bcrypt). Si no coincide → 401.
+ *  4. Genera un JWT firmado con JWT_SECRET (payload: id, rol_id, empresa_id).
+ *  5. Retorna 200 con el token y los datos básicos del usuario (sin hash).
+ *
+ * @param {import('express').Request}  req
+ * @param {import('express').Response} res
+ */
+export const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // --- Validación de campos obligatorios ---
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Los campos email y password son obligatorios.',
+      });
+    }
+
+    // --- Buscar usuario por email ---
+    const result = await pool.query(
+      `SELECT id, empresa_id, rol_id, nombre_completo, email, password_hash, estado_activo
+       FROM usuarios
+       WHERE email = $1`,
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado.',
+      });
+    }
+
+    const user = result.rows[0];
+
+    // --- Verificar contraseña con bcrypt ---
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Credenciales inválidas.',
+      });
+    }
+
+    // --- Verificar que la cuenta esté activa ---
+    if (!user.estado_activo) {
+      return res.status(403).json({
+        success: false,
+        message: 'La cuenta de usuario está desactivada. Contacte al administrador.',
+      });
+    }
+
+    // --- Generar token JWT ---
+    const payload = {
+      id: user.id,
+      rol_id: user.rol_id,
+      empresa_id: user.empresa_id,
+    };
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+    // --- Respuesta exitosa (sin exponer password_hash) ---
+    const { password_hash, ...userData } = user;
+
+    return res.status(200).json({
+      success: true,
+      message: 'Inicio de sesión exitoso.',
+      token,
+      data: userData,
+    });
+
+  } catch (error) {
+    console.error('[authController] Error en loginUser:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor al iniciar sesión.',
     });
   }
 };
