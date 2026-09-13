@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './config/swagger.js';
 import authRoutes from './routes/authRoutes.js';
 import clienteRoutes from './routes/clienteRoutes.js';
 import servicioRoutes from './routes/servicioRoutes.js';
@@ -21,6 +23,16 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// --- Documentación interactiva de la API (Swagger UI) ---
+// Accesible en: http://localhost:3000/api-docs
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: 'EVENTRA API Docs',
+  swaggerOptions: {
+    persistAuthorization: true,   // Mantiene el Bearer Token entre recargas
+    displayRequestDuration: true, // Muestra el tiempo de cada petición
+  },
+}));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'EVENTRA Backend API is running' });
