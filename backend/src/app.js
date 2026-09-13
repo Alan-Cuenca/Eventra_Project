@@ -53,6 +53,12 @@ app.use('/api/pagos', pagoRoutes);
 // --- Rutas de proveedores (JWT + RBAC: POST/PUT Admin y Gerente; GET Admin/Gerente/Trabajador) ---
 app.use('/api/proveedores', proveedorRoutes);
 
+// Exporta la instancia Express para que los tests (supertest) puedan
+// importarla directamente sin levantar el servidor en un puerto real.
+export default app;
+
+// Solo levanta el servidor cuando el archivo se ejecuta directamente,
+// nunca cuando es importado por los tests.
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
