@@ -11,6 +11,8 @@ import eventoRoutes from './routes/eventoRoutes.js';
 import actividadRoutes from './routes/actividadRoutes.js';
 import pagoRoutes from './routes/pagoRoutes.js';
 import proveedorRoutes from './routes/proveedorRoutes.js';
+import solicitudRoutes from './routes/solicitudRoutes.js';
+import dashboardRoutes from './routes/dashboardRoutes.js';
 
 dotenv.config();
 
@@ -52,6 +54,12 @@ app.use('/api/pagos', pagoRoutes);
 
 // --- Rutas de proveedores (JWT + RBAC: POST/PUT Admin y Gerente; GET Admin/Gerente/Trabajador) ---
 app.use('/api/proveedores', proveedorRoutes);
+
+// --- Rutas de solicitudes de modificación (JWT; PATCH estado solo Admin y Gerente) ---
+app.use('/api/solicitudes', solicitudRoutes);
+
+// --- Rutas del dashboard (JWT + RBAC: solo Admin y Gerente) ---
+app.use('/api/dashboard', dashboardRoutes);
 
 // Exporta la instancia Express para que los tests (supertest) puedan
 // importarla directamente sin levantar el servidor en un puerto real.

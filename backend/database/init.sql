@@ -18,13 +18,21 @@
 -- =============================================================================
 -- Almacena las organizaciones o empresas que utilizan la plataforma EVENTRA.
 -- Es la entidad raíz del sistema: todos los usuarios deben pertenecer a una empresa.
+--
+-- plan_suscripcion: controla las funcionalidades disponibles según el plan
+-- contratado. Valores: 'Basico', 'Profesional', 'Enterprise'.
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS empresas (
-    id               SERIAL PRIMARY KEY,
-    nombre_comercial VARCHAR(100) NOT NULL,
-    ruc              VARCHAR(20)  UNIQUE,
-    fecha_registro   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+    id                 SERIAL       PRIMARY KEY,
+    nombre_comercial   VARCHAR(100) NOT NULL,
+    ruc                VARCHAR(20)  UNIQUE,
+    plan_suscripcion   VARCHAR(50)  DEFAULT 'Basico',
+    fecha_registro     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Agrega la columna a instancias ya existentes (idempotente)
+ALTER TABLE empresas
+    ADD COLUMN IF NOT EXISTS plan_suscripcion VARCHAR(50) DEFAULT 'Basico';
 
 
 -- =============================================================================
@@ -466,4 +474,50 @@ CREATE TABLE IF NOT EXISTS proveedores (
         FOREIGN KEY (empresa_id)
         REFERENCES empresas(id)
         ON DELETE CASCADE
+);
+
+
+-- =============================================================================
+-- TABLA: solicitudes_modificacion
+-- =============================================================================
+-- Registra las peticiones de cambio que los Clientes o Trabajadores realizan
+-- sobre un evento planificado. Permite al equipo Admin/Gerente aprobarlas
+-- o rechazarlas manteniendo trazabilidad de los cambios solicitados.
+--
+-- Ciclo de vida (estado):
+--   'Pendiente' → 'Aprobada' | 'Rechazada'
+--
+-- Relaciones:
+--   empresa_id → empresas(id) : Cascada en eliminación.
+--   evento_id  → eventos(id)  : Cascada en eliminación.
+--   cliente_id → clientes(id) : SET NULL si se elimina el cliente;
+--                               la solicitud sobrevive sin cliente asociado.
+--
+-- Control de acceso (RBAC):
+--   Crear:            cualquier usuario autenticado.
+--   Aprobar/Rechazar: solo Admin (1) y Gerente (2).
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS solicitudes_modificacion (
+    id                  UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id          INTEGER     NOT NULL,
+    evento_id           UUID        NOT NULL,
+    cliente_id          UUID,
+    descripcion_cambio  TEXT        NOT NULL,
+    estado              VARCHAR(50) DEFAULT 'Pendiente',
+    fecha_solicitud     TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_solicitudes_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresas(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_solicitudes_evento
+        FOREIGN KEY (evento_id)
+        REFERENCES eventos(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_solicitudes_cliente
+        FOREIGN KEY (cliente_id)
+        REFERENCES clientes(id)
+        ON DELETE SET NULL
 );
