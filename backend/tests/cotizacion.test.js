@@ -1,34 +1,29 @@
 /**
- * cotizacion.test.js  (v2 — Suite completa de integración)
- * ==========================================================
+ * cotizacion.test.js  (v3 — variables de entorno de test explícitas)
+ * ====================================================================
  * Pruebas de Cálculos y Control Financiero — Módulo Cotizaciones EVENTRA
  *
- * Estrategia de aislamiento:
- *   - jest.unstable_mockModule intercepta pool.query para aislar la lógica
- *     del controlador sin conexiones reales a PostgreSQL.
- *   - JWTs reales firmados con JWT_SECRET para autenticar las peticiones.
- *
- * Cobertura (Matriz de Riesgos — R-FINANCE):
- *   ✓ POST /api/cotizaciones — sin token                  → 401
- *   ✓ POST /api/cotizaciones — token inválido             → 401
- *   ✓ POST /api/cotizaciones — campos faltantes           → 400
- *   ✓ POST /api/cotizaciones — total_calculado negativo   → 400
- *   ✓ POST /api/cotizaciones — payload válido             → 201 + datos
- *   ✓ GET  /api/cotizaciones — sin token                  → 401
- *   ✓ GET  /api/cotizaciones — token válido               → 200 + lista
- *   ✓ Endpoints registrados (no retornan 404)
+ * Fix aplicado: process.env.JWT_SECRET se define ANTES de importar la app
+ * para que el middleware verifyToken acepte los tokens firmados en los tests.
  */
 
 import request from 'supertest';
 import jwt     from 'jsonwebtoken';
 import { jest } from '@jest/globals';
 
+// ─── Variables de entorno para el entorno de test ────────────────────────────
+process.env.JWT_SECRET = 'test_secret_eventra_jest';
+process.env.NODE_ENV   = 'test';
+process.env.PORT       = '0';
+
+const TEST_SECRET = 'test_secret_eventra_jest';
+
 // ─── Mock de la BD ───────────────────────────────────────────────────────────
 jest.unstable_mockModule('../src/config/db.js', () => ({
   default: { query: jest.fn() },
 }));
 
-// ─── Mock de OpenAI (evita error si no hay API_KEY en CI) ───────────────────
+// ─── Mock de OpenAI ──────────────────────────────────────────────────────────
 jest.unstable_mockModule('openai', () => ({
   default: class {
     chat = { completions: { create: jest.fn() } };
@@ -38,8 +33,7 @@ jest.unstable_mockModule('openai', () => ({
 const { default: app }  = await import('../src/app.js');
 const { default: pool } = await import('../src/config/db.js');
 
-// ─── Token JWT válido de prueba ───────────────────────────────────────────────
-const TEST_SECRET = process.env.JWT_SECRET || 'test_secret_eventra';
+// ─── Token JWT válido de prueba (Admin, empresa_id=1) ────────────────────────
 const TOKEN_ADMIN = jwt.sign(
   { id: 'uuid-admin-test', empresa_id: 1, rol_id: 1 },
   TEST_SECRET,
@@ -62,7 +56,6 @@ describe('Cotizaciones — Barrera de autenticación JWT', () => {
     const res = await request(app)
       .post('/api/cotizaciones')
       .send(COTIZACION_VALIDA);
-
     expect(res.statusCode).toBe(401);
     expect(res.body.success).toBe(false);
   });
@@ -72,7 +65,6 @@ describe('Cotizaciones — Barrera de autenticación JWT', () => {
       .post('/api/cotizaciones')
       .set('Authorization', 'Bearer token_falso_xyz')
       .send(COTIZACION_VALIDA);
-
     expect(res.statusCode).toBe(401);
     expect(res.body.success).toBe(false);
   });
@@ -96,11 +88,7 @@ describe('POST /api/cotizaciones — Validación de payload', () => {
     const res = await request(app)
       .post('/api/cotizaciones')
       .set('Authorization', `Bearer ${TOKEN_ADMIN}`)
-      .send({
-        fecha_estimada_evento: '2027-06-20',
-        total_calculado:       1500,
-        // sin cliente_id
-      });
+      .send({ fecha_estimada_evento: '2027-06-20', total_calculado: 1500 });
 
     expect(res.statusCode).toBe(400);
     expect(res.body.success).toBe(false);
@@ -111,11 +99,7 @@ describe('POST /api/cotizaciones — Validación de payload', () => {
     const res = await request(app)
       .post('/api/cotizaciones')
       .set('Authorization', `Bearer ${TOKEN_ADMIN}`)
-      .send({
-        cliente_id:      'uuid-cliente-001',
-        total_calculado: 1500,
-        // sin fecha_estimada_evento
-      });
+      .send({ cliente_id: 'uuid-cliente-001', total_calculado: 1500 });
 
     expect(res.statusCode).toBe(400);
     expect(res.body.success).toBe(false);
@@ -126,9 +110,9 @@ describe('POST /api/cotizaciones — Validación de payload', () => {
       .post('/api/cotizaciones')
       .set('Authorization', `Bearer ${TOKEN_ADMIN}`)
       .send({
-        cliente_id:            'uuid-cliente-001',
+        cliente_id: 'uuid-cliente-001',
         fecha_estimada_evento: '2027-06-20',
-        total_calculado:       -500, // monto negativo inválido
+        total_calculado: -500,
       });
 
     expect(res.statusCode).toBe(400);
@@ -141,9 +125,9 @@ describe('POST /api/cotizaciones — Validación de payload', () => {
       .post('/api/cotizaciones')
       .set('Authorization', `Bearer ${TOKEN_ADMIN}`)
       .send({
-        cliente_id:            'uuid-cliente-001',
+        cliente_id: 'uuid-cliente-001',
         fecha_estimada_evento: '2027-06-20',
-        total_calculado:       'no-es-numero',
+        total_calculado: 'no-es-numero',
       });
 
     expect(res.statusCode).toBe(400);
@@ -161,14 +145,13 @@ describe('POST /api/cotizaciones — Creación exitosa', () => {
 
   it('201 — crea la cotización correctamente con payload válido', async () => {
     const fakeCotizacion = {
-      id:                    'uuid-cotizacion-001',
-      empresa_id:            1,
-      cliente_id:            COTIZACION_VALIDA.cliente_id,
-      paquete_id:            null,
+      id: 'uuid-cotizacion-001', empresa_id: 1,
+      cliente_id: COTIZACION_VALIDA.cliente_id,
+      paquete_id: null,
       fecha_estimada_evento: COTIZACION_VALIDA.fecha_estimada_evento,
-      total_calculado:       COTIZACION_VALIDA.total_calculado,
-      estado:                'Pendiente',
-      fecha_creacion:        new Date().toISOString(),
+      total_calculado: COTIZACION_VALIDA.total_calculado,
+      estado: 'Pendiente',
+      fecha_creacion: new Date().toISOString(),
     };
 
     pool.query.mockResolvedValueOnce({ rows: [fakeCotizacion], rowCount: 1 });
@@ -186,27 +169,26 @@ describe('POST /api/cotizaciones — Creación exitosa', () => {
   });
 
   it('201 — crea cotización sin paquete_id (cotización sin paquete base)', async () => {
-    const fakeCotizacion = {
-      id:                    'uuid-cotizacion-002',
-      empresa_id:            1,
-      cliente_id:            'uuid-cliente-001',
-      paquete_id:            null, // sin paquete base
-      fecha_estimada_evento: '2027-09-10',
-      total_calculado:       800.00,
-      estado:                'Pendiente',
-      fecha_creacion:        new Date().toISOString(),
-    };
-
-    pool.query.mockResolvedValueOnce({ rows: [fakeCotizacion], rowCount: 1 });
+    pool.query.mockResolvedValueOnce({
+      rows: [{
+        id: 'uuid-cotizacion-002', empresa_id: 1,
+        cliente_id: 'uuid-cliente-001',
+        paquete_id: null,
+        fecha_estimada_evento: '2027-09-10',
+        total_calculado: 800.00,
+        estado: 'Pendiente',
+        fecha_creacion: new Date().toISOString(),
+      }],
+      rowCount: 1,
+    });
 
     const res = await request(app)
       .post('/api/cotizaciones')
       .set('Authorization', `Bearer ${TOKEN_ADMIN}`)
       .send({
-        cliente_id:            'uuid-cliente-001',
+        cliente_id: 'uuid-cliente-001',
         fecha_estimada_evento: '2027-09-10',
-        total_calculado:       800.00,
-        // paquete_id omitido intencionalmente
+        total_calculado: 800.00,
       });
 
     expect(res.statusCode).toBe(201);
@@ -223,19 +205,14 @@ describe('GET /api/cotizaciones — Listado con token válido', () => {
 
   beforeEach(() => jest.clearAllMocks());
 
-  it('200 — retorna la lista de cotizaciones de la empresa del usuario', async () => {
-    const fakeLista = [
-      {
-        id: 'uuid-cot-1', empresa_id: 1, total_calculado: 1500,
-        estado: 'Pendiente', cliente_nombres: 'Ana',
-      },
-      {
-        id: 'uuid-cot-2', empresa_id: 1, total_calculado: 3200,
-        estado: 'Aprobada', cliente_nombres: 'Carlos',
-      },
-    ];
-
-    pool.query.mockResolvedValueOnce({ rows: fakeLista, rowCount: 2 });
+  it('200 — retorna la lista de cotizaciones de la empresa', async () => {
+    pool.query.mockResolvedValueOnce({
+      rows: [
+        { id: 'uuid-cot-1', empresa_id: 1, total_calculado: 1500, estado: 'Pendiente', cliente_nombres: 'Ana' },
+        { id: 'uuid-cot-2', empresa_id: 1, total_calculado: 3200, estado: 'Aprobada', cliente_nombres: 'Carlos' },
+      ],
+      rowCount: 2,
+    });
 
     const res = await request(app)
       .get('/api/cotizaciones')

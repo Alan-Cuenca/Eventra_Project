@@ -1,23 +1,11 @@
 /**
- * auth.test.js  (v2 — Suite completa de integración)
- * ====================================================
+ * auth.test.js  (v3 — variables de entorno de test explícitas)
+ * =============================================================
  * Pruebas de Autenticación, Registro y Seguridad RBAC — EVENTRA
  *
- * Estrategia:
- *   - jest.unstable_mockModule intercepta pool.query antes de cargar la app.
- *   - Se generan JWTs reales firmados con process.env.JWT_SECRET para tests
- *     que necesitan un token válido (ej. GET /me).
- *
- * Cobertura (Matriz de Riesgos — R-AUTH):
- *   ✓ POST /api/auth/register — campos faltantes          → 400
- *   ✓ POST /api/auth/register — email duplicado           → 400
- *   ✓ POST /api/auth/register — registro exitoso          → 201 + datos usuario
- *   ✓ POST /api/auth/login    — campos faltantes          → 400
- *   ✓ POST /api/auth/login    — usuario no encontrado     → 404
- *   ✓ POST /api/auth/login    — password incorrecto       → 401
- *   ✓ POST /api/auth/login    — credenciales correctas    → 200 + token JWT
- *   ✓ GET  /api/auth/me       — sin token                 → 401
- *   ✓ GET  /api/auth/me       — token malformado          → 401
+ * Fix aplicado: process.env.JWT_SECRET se define ANTES de importar la app
+ * para que el middleware de autenticación y el controlador de login usen
+ * el mismo secreto que los tokens firmados en los tests.
  */
 
 import request  from 'supertest';
@@ -25,12 +13,20 @@ import bcrypt   from 'bcrypt';
 import jwt      from 'jsonwebtoken';
 import { jest } from '@jest/globals';
 
+// ─── Variables de entorno para el entorno de test ────────────────────────────
+// DEBE ir antes de los mocks y del import de la app para que dotenv no lo pise.
+process.env.JWT_SECRET = 'test_secret_eventra_jest';
+process.env.NODE_ENV   = 'test';
+process.env.PORT       = '0'; // puerto 0 = efímero, evita conflictos
+
+const TEST_SECRET = 'test_secret_eventra_jest'; // mismo valor que arriba
+
 // ─── Mock de la BD ───────────────────────────────────────────────────────────
 jest.unstable_mockModule('../src/config/db.js', () => ({
   default: { query: jest.fn() },
 }));
 
-// ─── Mock del SDK de OpenAI (evita errores si no hay API_KEY) ────────────────
+// ─── Mock del SDK de OpenAI ──────────────────────────────────────────────────
 jest.unstable_mockModule('openai', () => ({
   default: class {
     chat = { completions: { create: jest.fn() } };
@@ -40,9 +36,6 @@ jest.unstable_mockModule('openai', () => ({
 const { default: app }  = await import('../src/app.js');
 const { default: pool } = await import('../src/config/db.js');
 
-// JWT_SECRET de pruebas (no real)
-const TEST_SECRET = process.env.JWT_SECRET || 'test_secret_eventra';
-
 // ─────────────────────────────────────────────────────────────────────────────
 // SUITE 1: Registro de usuarios
 // ─────────────────────────────────────────────────────────────────────────────
@@ -50,7 +43,6 @@ describe('POST /api/auth/register', () => {
 
   beforeEach(() => jest.clearAllMocks());
 
-  // ── Validación de campos obligatorios ────────────────────────────────────
   it('400 — rechaza registro si faltan campos obligatorios', async () => {
     const res = await request(app)
       .post('/api/auth/register')
@@ -61,22 +53,17 @@ describe('POST /api/auth/register', () => {
     expect(res.body.message).toMatch(/obligatorio/i);
   });
 
-  // ── Email ya registrado (verificación previa en el controlador) ──────────
   it('400 — rechaza registro si el email ya está registrado', async () => {
-    // Primera query: SELECT para verificar email existente → retorna fila
-    pool.query.mockResolvedValueOnce({
-      rows: [{ id: 'uuid-existente' }],
-      rowCount: 1,
-    });
+    // SELECT devuelve fila → email ya existe
+    pool.query.mockResolvedValueOnce({ rows: [{ id: 'uuid-existente' }], rowCount: 1 });
 
     const res = await request(app)
       .post('/api/auth/register')
       .send({
-        empresa_id:      1,
-        rol_id:          3,
-        nombre_completo: 'Usuario Duplicado',
-        email:           'duplicado@eventra.com',
-        password:        'password123',
+        empresa_id: 1, rol_id: 3,
+        nombre_completo: 'Duplicado',
+        email: 'duplicado@eventra.com',
+        password: 'password123',
       });
 
     expect(res.statusCode).toBe(400);
@@ -84,38 +71,34 @@ describe('POST /api/auth/register', () => {
     expect(res.body.message).toMatch(/email/i);
   });
 
-  // ── Registro exitoso ─────────────────────────────────────────────────────
   it('201 — registra un nuevo usuario correctamente', async () => {
     // Mock 1: SELECT email → no existe
     pool.query.mockResolvedValueOnce({ rows: [], rowCount: 0 });
-
-    // Mock 2: INSERT → retorna usuario creado
-    const fakeUser = {
-      id:              'uuid-nuevo',
-      empresa_id:      1,
-      rol_id:          3,
-      nombre_completo: 'Nuevo Usuario',
-      email:           'nuevo@eventra.com',
-      estado_activo:   true,
-      fecha_creacion:  new Date().toISOString(),
-    };
-    pool.query.mockResolvedValueOnce({ rows: [fakeUser], rowCount: 1 });
+    // Mock 2: INSERT → usuario creado
+    pool.query.mockResolvedValueOnce({
+      rows: [{
+        id: 'uuid-nuevo', empresa_id: 1, rol_id: 3,
+        nombre_completo: 'Nuevo Usuario',
+        email: 'nuevo@eventra.com',
+        estado_activo: true,
+        fecha_creacion: new Date().toISOString(),
+      }],
+      rowCount: 1,
+    });
 
     const res = await request(app)
       .post('/api/auth/register')
       .send({
-        empresa_id:      1,
-        rol_id:          3,
+        empresa_id: 1, rol_id: 3,
         nombre_completo: 'Nuevo Usuario',
-        email:           'nuevo@eventra.com',
-        password:        'segura123',
+        email: 'nuevo@eventra.com',
+        password: 'segura123',
       });
 
     expect(res.statusCode).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.data).toHaveProperty('id');
     expect(res.body.data).toHaveProperty('email', 'nuevo@eventra.com');
-    // El hash de contraseña NUNCA debe aparecer en la respuesta
     expect(res.body.data).not.toHaveProperty('password_hash');
   });
 
@@ -128,7 +111,6 @@ describe('POST /api/auth/login', () => {
 
   beforeEach(() => jest.clearAllMocks());
 
-  // ── Campos obligatorios ──────────────────────────────────────────────────
   it('400 — rechaza login si falta email o password', async () => {
     const res = await request(app)
       .post('/api/auth/login')
@@ -138,7 +120,6 @@ describe('POST /api/auth/login', () => {
     expect(res.body.success).toBe(false);
   });
 
-  // ── Usuario no encontrado ────────────────────────────────────────────────
   it('404 — retorna 404 si el usuario no existe en la BD', async () => {
     pool.query.mockResolvedValueOnce({ rows: [], rowCount: 0 });
 
@@ -150,47 +131,40 @@ describe('POST /api/auth/login', () => {
     expect(res.body.success).toBe(false);
   });
 
-  // ── Password incorrecto ──────────────────────────────────────────────────
   it('401 — retorna 401 si el password es incorrecto', async () => {
-    // Genera un hash real de una contraseña distinta a la que se enviará
     const hashReal = await bcrypt.hash('password_correcto', 10);
 
     pool.query.mockResolvedValueOnce({
       rows: [{
-        id:             'uuid-user',
-        empresa_id:     1,
-        rol_id:         2,
-        nombre_completo:'Gerente Test',
-        email:          'gerente@eventra.com',
-        password_hash:  hashReal,
-        estado_activo:  true,
+        id: 'uuid-user', empresa_id: 1, rol_id: 2,
+        nombre_completo: 'Gerente Test',
+        email: 'gerente@eventra.com',
+        password_hash: hashReal,
+        estado_activo: true,
       }],
       rowCount: 1,
     });
 
     const res = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'gerente@eventra.com', password: 'password_INCORRECTO' });
+      .send({ email: 'gerente@eventra.com', password: 'INCORRECTO' });
 
     expect(res.statusCode).toBe(401);
     expect(res.body.success).toBe(false);
     expect(res.body.message).toMatch(/credenciales/i);
   });
 
-  // ── Login exitoso → token JWT ────────────────────────────────────────────
   it('200 — retorna 200 y un token JWT válido con credenciales correctas', async () => {
     const passwordCorrecto = 'eventra2026';
     const hashReal = await bcrypt.hash(passwordCorrecto, 10);
 
     pool.query.mockResolvedValueOnce({
       rows: [{
-        id:             'uuid-admin',
-        empresa_id:     1,
-        rol_id:         1,
-        nombre_completo:'Admin Test',
-        email:          'admin@eventra.com',
-        password_hash:  hashReal,
-        estado_activo:  true,
+        id: 'uuid-admin', empresa_id: 1, rol_id: 1,
+        nombre_completo: 'Admin Test',
+        email: 'admin@eventra.com',
+        password_hash: hashReal,
+        estado_activo: true,
       }],
       rowCount: 1,
     });
@@ -204,19 +178,16 @@ describe('POST /api/auth/login', () => {
     expect(res.body).toHaveProperty('token');
     expect(typeof res.body.token).toBe('string');
 
-    // Verifica que el token sea un JWT real decodificable
-    const decoded = jwt.decode(res.body.token);
+    const decoded = jwt.verify(res.body.token, TEST_SECRET);
     expect(decoded).toHaveProperty('empresa_id', 1);
     expect(decoded).toHaveProperty('rol_id', 1);
-
-    // El hash de password NUNCA debe aparecer en la respuesta
     expect(res.body.data).not.toHaveProperty('password_hash');
   });
 
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SUITE 3: Protección JWT — GET /api/auth/me (RBAC baseline)
+// SUITE 3: Protección JWT — GET /api/auth/me
 // ─────────────────────────────────────────────────────────────────────────────
 describe('GET /api/auth/me — Barrera JWT', () => {
 
@@ -233,7 +204,7 @@ describe('GET /api/auth/me — Barrera JWT', () => {
   });
 
   it('200 — permite acceso con un JWT válido y retorna el payload', async () => {
-    // Crea un JWT real firmado con el mismo secreto que usa la app
+    // Firma el token con el MISMO secreto que process.env.JWT_SECRET
     const tokenValido = jwt.sign(
       { id: 'uuid-test', empresa_id: 1, rol_id: 1 },
       TEST_SECRET,
