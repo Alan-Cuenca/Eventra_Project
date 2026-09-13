@@ -389,3 +389,47 @@ CREATE TABLE IF NOT EXISTS actividades (
         REFERENCES usuarios(id)
         ON DELETE SET NULL
 );
+
+
+-- =============================================================================
+-- TABLA: pagos
+-- =============================================================================
+-- Registra los pagos y anticipos recibidos por cada evento de la empresa.
+-- Implementa aislamiento SaaS mediante empresa_id.
+-- Permite llevar el control financiero completo de un evento:
+--   anticipos, abonos y liquidaciones finales.
+--
+-- Ciclo de vida (estado):
+--   'Pendiente' → 'Completado' | 'Anulado'
+--
+-- Conceptos típicos: 'Anticipo', 'Abono', 'Liquidación'
+--
+-- Relaciones:
+--   empresa_id → empresas(id) : Cascada en eliminación.
+--   evento_id  → eventos(id)  : Cascada en eliminación.
+--
+-- Control de acceso (RBAC):
+--   Registrar: Administradores (1) y Gerentes (2).
+--   Consultar:  Admin (1), Gerente (2) y Trabajador (3).
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS pagos (
+    id              UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id      INTEGER        NOT NULL,
+    evento_id       UUID           NOT NULL,
+    monto           DECIMAL(10, 2) NOT NULL,
+    concepto        VARCHAR(100)   NOT NULL,
+    metodo_pago     VARCHAR(50),
+    fecha_pago      DATE           DEFAULT CURRENT_DATE,
+    estado          VARCHAR(50)    DEFAULT 'Completado',
+    fecha_registro  TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_pagos_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresas(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_pagos_evento
+        FOREIGN KEY (evento_id)
+        REFERENCES eventos(id)
+        ON DELETE CASCADE
+);

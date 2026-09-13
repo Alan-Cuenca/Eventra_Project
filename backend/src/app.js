@@ -9,6 +9,7 @@ import cotizacionRoutes from './routes/cotizacionRoutes.js';
 import reservaRoutes from './routes/reservaRoutes.js';
 import eventoRoutes from './routes/eventoRoutes.js';
 import actividadRoutes from './routes/actividadRoutes.js';
+import pagoRoutes from './routes/pagoRoutes.js';
 
 dotenv.config();
 
@@ -44,6 +45,9 @@ app.use('/api/eventos', eventoRoutes);
 
 // --- Rutas de actividades (JWT + RBAC: POST solo Admin y Gerente) ---
 app.use('/api/actividades', actividadRoutes);
+
+// --- Rutas de pagos (JWT + RBAC: POST solo Admin y Gerente; GET Admin/Gerente/Trabajador) ---
+app.use('/api/pagos', pagoRoutes);
 
 const PORT = process.env.PORT || 3000;
 
