@@ -433,3 +433,37 @@ CREATE TABLE IF NOT EXISTS pagos (
         REFERENCES eventos(id)
         ON DELETE CASCADE
 );
+
+
+-- =============================================================================
+-- TABLA: proveedores
+-- =============================================================================
+-- Almacena los proveedores o terceros que brindan servicios para los eventos
+-- de cada empresa registrada en EVENTRA.
+-- Implementa aislamiento SaaS mediante empresa_id.
+--
+-- Especialidades típicas: 'Música', 'Decoración', 'Catering', 'Fotografía',
+--   'Iluminación', 'Transporte', etc.
+--
+-- Relación:
+--   empresa_id → empresas(id) : Cascada en eliminación.
+--
+-- Control de acceso (RBAC):
+--   Crear/Editar: Administradores (1) y Gerentes (2).
+--   Consultar:    Admin (1), Gerente (2) y Trabajador (3).
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS proveedores (
+    id                         UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id                 INTEGER      NOT NULL,
+    nombre_empresa_o_contacto  VARCHAR(150) NOT NULL,
+    especialidad               VARCHAR(100) NOT NULL,
+    telefono                   VARCHAR(20),
+    email                      VARCHAR(150),
+    estado_activo              BOOLEAN      DEFAULT true,
+    fecha_registro             TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_proveedores_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresas(id)
+        ON DELETE CASCADE
+);
