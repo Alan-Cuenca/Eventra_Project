@@ -16,6 +16,7 @@ import proveedorRoutes from './routes/proveedorRoutes.js';
 import solicitudRoutes from './routes/solicitudRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import chatbotRoutes from './routes/chatbotRoutes.js';
+import usuarioRoutes from './routes/usuarioRoutes.js';
 
 dotenv.config();
 
@@ -76,6 +77,9 @@ app.use('/api/dashboard', dashboardRoutes);
 
 // --- Rutas del chatbot EVARA (JWT; catálogo dinámico por empresa, gpt-4o-mini) ---
 app.use('/api/chatbot', chatbotRoutes);
+
+// --- Rutas de usuarios internos (JWT + RBAC: solo Admin) ---
+app.use('/api/usuarios', usuarioRoutes);
 
 // Exporta la instancia Express para que los tests (supertest) puedan
 // importarla directamente sin levantar el servidor en un puerto real.
