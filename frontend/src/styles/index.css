@@ -1,0 +1,369 @@
+/* ==========================================================================
+   EVENTRA - Design System & Global Styles
+   Identidad Oficial: "Sofisticación Sutil" (Marfil, Taupe Champagne & Azul Pizarra)
+   Slogan: "Gestión Inteligente de Eventos"
+   ========================================================================== */
+
+:root {
+  /* Paleta Oficial "Sofisticación Sutil" */
+  /* 1. Azul Pizarra / Slate Blue (Color Institucional Primario) */
+  --primary: #456677;
+  --primary-hover: #355263;
+  --primary-dark: #233a46;
+  --primary-light: #e8eff3;
+  --primary-glow: rgba(69, 102, 119, 0.28);
+  
+  /* 2. Taupe / Champagne Arena Suave (Color Secundario / Acento de Lujo) */
+  --accent: #C4B59F;
+  --accent-hover: #B2A189;
+  --accent-dark: #8F7D65;
+  --accent-light: #F7F4EE;
+  --accent-glow: rgba(196, 181, 159, 0.35);
+
+  /* 3. Marfil / Crema Cálido (Textos y Contrastes Suaves) */
+  --ivory-pure: #FAF8F5;
+  --ivory-warm: #F2EFE9;
+  --ivory-muted: #DCD6CB;
+
+  /* Semánticos Suaves */
+  --success: #2e8b57;
+  --success-light: rgba(46, 139, 87, 0.18);
+  --warning: #c28834;
+  --warning-light: rgba(194, 136, 52, 0.18);
+  --danger: #b94a48;
+  --danger-light: rgba(185, 74, 72, 0.18);
+  --info: #456677;
+  --info-light: rgba(69, 102, 119, 0.18);
+
+  /* Superficies Dark Luxury (Azul Petróleo Profundo con degradado a carbón elegante) */
+  --bg-main: #0c1419;
+  --bg-surface: #121c23;
+  --bg-card: rgba(18, 28, 35, 0.85);
+  --bg-card-hover: rgba(26, 40, 50, 0.95);
+  --bg-input: #17242e;
+  
+  /* Bordes con matiz de champagne sutil */
+  --border-subtle: rgba(196, 181, 159, 0.16);
+  --border-focus: #C4B59F;
+  
+  /* Tipografía */
+  --text-primary: #FAF8F5;
+  --text-secondary: #CFC6B8;
+  --text-muted: #8395A0;
+  --text-inverse: #0c1419;
+  
+  /* Sombras y Efectos */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 25px var(--accent-glow);
+  --glass-backdrop: blur(16px);
+
+  /* Bordes Redondeados */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
+
+  /* Transiciones */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+}
+
+/* Reset y Base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(69, 102, 119, 0.18) 0px, transparent 55%),
+    radial-gradient(at 100% 100%, rgba(196, 181, 159, 0.10) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.015em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Layout General */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.page-body {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Glassmorphism Card Sofisticado */
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.glass-card:hover {
+  border-color: rgba(196, 181, 159, 0.32);
+}
+
+.glass-card.interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--accent);
+}
+
+/* Botones con Acentos de Sofisticación Sutil */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: var(--ivory-pure);
+  box-shadow: 0 4px 14px var(--primary-glow);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #507588, var(--primary));
+  box-shadow: 0 6px 18px rgba(69, 102, 119, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-secondary:hover {
+  background: #223542;
+  border-color: var(--accent);
+}
+
+.btn-accent {
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  color: #121c23;
+  font-weight: 700;
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
+
+.btn-accent:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(196, 181, 159, 0.5);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-outline:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(196, 181, 159, 0.08);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background: #a33b3a;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Formularios e Inputs */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: all var(--transition-fast);
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  background: #1f303c;
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Badges y Estados */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-primary { background: rgba(69, 102, 119, 0.25); color: #86abbf; border: 1px solid rgba(69, 102, 119, 0.45); }
+.badge-accent { background: rgba(196, 181, 159, 0.2); color: #d8cebe; border: 1px solid rgba(196, 181, 159, 0.4); }
+.badge-success { background: rgba(46, 139, 87, 0.2); color: #5bc286; border: 1px solid rgba(46, 139, 87, 0.4); }
+.badge-warning { background: rgba(194, 136, 52, 0.2); color: #e5b067; border: 1px solid rgba(194, 136, 52, 0.4); }
+.badge-danger { background: rgba(185, 74, 72, 0.2); color: #e27d7c; border: 1px solid rgba(185, 74, 72, 0.4); }
+.badge-info { background: rgba(69, 102, 119, 0.25); color: #9bc0d4; border: 1px solid rgba(69, 102, 119, 0.4); }
+
+/* Tablas Modernas */
+.table-container {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.custom-table th {
+  background: rgba(18, 28, 35, 0.95);
+  padding: 0.9rem 1.2rem;
+  font-weight: 600;
+  color: var(--accent);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.775rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.custom-table td {
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.custom-table tr:hover td {
+  background: rgba(196, 181, 159, 0.04);
+}
+
+/* Header de Página */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.page-header h1 {
+  font-size: 1.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.page-header p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+/* Grid Utilities */
+.grid-cols-4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.grid-cols-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .page-body {
+    padding: 1rem;
+  }
+  .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Keyframe animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
