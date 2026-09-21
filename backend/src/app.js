@@ -35,6 +35,13 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   },
 }));
 
+app.get('/', (req, res) => {
+  res.status(200).json({ 
+      estado: 'OK', 
+      mensaje: 'API de EVENTRA SaaS en línea y funcionando correctamente.' 
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'EVENTRA Backend API is running' });
 });
@@ -80,6 +87,14 @@ app.use('/api/chatbot', chatbotRoutes);
 
 // --- Rutas de usuarios internos (JWT + RBAC: solo Admin) ---
 app.use('/api/usuarios', usuarioRoutes);
+
+// Manejador global para rutas no encontradas (404)
+app.use((req, res) => {
+  res.status(404).json({
+      estado: 'Error',
+      mensaje: 'Ruta no encontrada. Por favor, verifica la URL.'
+  });
+});
 
 // Exporta la instancia Express para que los tests (supertest) puedan
 // importarla directamente sin levantar el servidor en un puerto real.
