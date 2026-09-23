@@ -6,11 +6,14 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    // Proxy para desarrollo local — redirige /api al backend en Render
+    // (Axios en api.js ya apunta directo a Render; este proxy es para
+    //  herramientas o peticiones que usen rutas relativas en dev)
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'https://eventra-project-l3hl.onrender.com',
         changeOrigin: true,
-        secure: false,
+        secure: true,
       },
     },
   },
