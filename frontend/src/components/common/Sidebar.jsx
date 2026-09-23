@@ -38,9 +38,15 @@ export const Sidebar = () => {
     },
     {
       to: '/servicios',
-      label: 'Servicios & Paquetes',
+      label: 'Servicios',
       icon: <Layers size={19} />,
-      visible: true,
+      visible: isAdmin || isGerente,
+    },
+    {
+      to: '/paquetes',
+      label: 'Paquetes',
+      icon: <Layers size={19} />,
+      visible: isAdmin || isGerente,
     },
     {
       to: '/clientes',

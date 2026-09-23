@@ -14,7 +14,12 @@ import { PortalClientePage } from '../pages/clients/PortalClientePage';
 import { DashboardPage }  from '../pages/dashboard/DashboardPage';
 import { EventsPage }     from '../pages/events/EventsPage';
 import { QuotesPage }     from '../pages/quotes/QuotesPage';
-import { ServicesPage }   from '../pages/services/ServicesPage';
+// ── Módulo Catálogo (Servicios y Paquetes) ───────────────────────────────────
+import { ServiciosList } from '../pages/catalogo/ServiciosList';
+import { ServicioForm }  from '../pages/catalogo/ServicioForm';
+import { PaquetesList }  from '../pages/catalogo/PaquetesList';
+import { PaqueteForm }   from '../pages/catalogo/PaqueteForm';
+
 
 // ── Módulo CRM — Clientes ─────────────────────────────────────────────────────
 import { ClientsPage }   from '../pages/clients/ClientsPage';
@@ -40,17 +45,25 @@ export const AppRoutes = () => {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/eventos"   element={<EventsPage />} />
           <Route path="/cotizador" element={<QuotesPage />} />
-          <Route path="/servicios" element={<ServicesPage />} />
 
-          {/* ── Módulo CRM — Solo Admin y Gerente ─────────────────────────── */}
+          {/* ── Módulos de Gestión — Solo Admin y Gerente ─────────────────── */}
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE]} />}>
-            {/* Lista principal */}
+            {/* Clientes */}
             <Route path="/clientes"              element={<ClientsPage />} />
-            {/* Formulario: crear nuevo cliente */}
             <Route path="/clientes/nuevo"        element={<ClienteForm />} />
-            {/* Formulario: editar cliente existente */}
             <Route path="/clientes/editar/:id"   element={<ClienteForm />} />
+            
+            {/* Catálogo: Servicios */}
+            <Route path="/servicios"             element={<ServiciosList />} />
+            <Route path="/servicios/nuevo"       element={<ServicioForm />} />
+            <Route path="/servicios/editar/:id"  element={<ServicioForm />} />
+
+            {/* Catálogo: Paquetes */}
+            <Route path="/paquetes"              element={<PaquetesList />} />
+            <Route path="/paquetes/nuevo"        element={<PaqueteForm />} />
+            <Route path="/paquetes/editar/:id"   element={<PaqueteForm />} />
           </Route>
+
         </Route>
       </Route>
 

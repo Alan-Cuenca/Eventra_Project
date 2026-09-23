@@ -77,7 +77,18 @@ export const eventraService = {
   },
 
   async createServicio(servicioData) {
-    return await api.post('/servicios', servicioData);
+    const response = await api.post('/servicios', servicioData);
+    return response.data;
+  },
+
+  async updateServicio(id, servicioData) {
+    const response = await api.put(`/servicios/${id}`, servicioData);
+    return response.data;
+  },
+
+  async deleteServicio(id) {
+    await api.delete(`/servicios/${id}`);
+    return true;
   },
 
   async getPaquetes() {
@@ -94,7 +105,18 @@ export const eventraService = {
   },
 
   async createPaquete(paqueteData) {
-    return await api.post('/paquetes', paqueteData);
+    const response = await api.post('/paquetes', paqueteData);
+    return response.data;
+  },
+
+  async updatePaquete(id, paqueteData) {
+    const response = await api.put(`/paquetes/${id}`, paqueteData);
+    return response.data;
+  },
+
+  async deletePaquete(id) {
+    await api.delete(`/paquetes/${id}`);
+    return true;
   },
 
   // ==========================================
