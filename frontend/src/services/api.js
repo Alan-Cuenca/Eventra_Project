@@ -29,10 +29,25 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ── Interceptor de Response: normaliza los errores de la API ─────────────────
+// ── Interceptor de Response: errores de red y 401 → forzar logout ──────────
 apiClient.interceptors.response.use(
   (response) => response.data,          // devuelve directamente el body
   (error) => {
+    // ── Manejo crítico: token expirado o inválido (401 Unauthorized) ─────────
+    if (error.response?.status === 401) {
+      console.warn('[api] Token expirado o inválido — cerrando sesión...');
+      // Limpiar todas las claves de sesión del localStorage
+      localStorage.removeItem('token');
+      localStorage.removeItem('eventra_user');
+      localStorage.removeItem('rol_id');
+      localStorage.removeItem('rol_nombre');
+      // Redirigir fuera del contexto de React Router para resetear el estado
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────
+
     const message =
       error.response?.data?.message ||
       error.message ||
