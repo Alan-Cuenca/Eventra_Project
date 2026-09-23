@@ -152,22 +152,13 @@ export const eventraService = {
   // COTIZACIONES & RESERVAS (/api/cotizaciones)
   // ==========================================
   async getCotizaciones() {
-    try {
-      const response = await api.get('/cotizaciones');
-      return response.data || [];
-    } catch (err) {
-      console.warn('[eventraService] getCotizaciones fallback:', err.message);
-      return [];
-    }
+    const response = await api.get('/cotizaciones');
+    return response.data || [];
   },
 
   async createCotizacion(cotizacionData) {
-    try {
-      return await api.post('/cotizaciones', cotizacionData);
-    } catch (err) {
-      console.warn('[eventraService] createCotizacion fallback:', err.message);
-      return { success: true, data: { id: `cot-${Date.now()}`, ...cotizacionData } };
-    }
+    const response = await api.post('/cotizaciones', cotizacionData);
+    return response.data;
   },
 
   // ==========================================

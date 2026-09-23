@@ -31,8 +31,8 @@ export const Sidebar = () => {
       visible: true,
     },
     {
-      to: '/cotizador',
-      label: 'Cotizador Dinámico',
+      to: '/cotizaciones',
+      label: 'Cotizaciones',
       icon: <Calculator size={19} />,
       visible: isAdmin || isGerente || isCliente,
     },

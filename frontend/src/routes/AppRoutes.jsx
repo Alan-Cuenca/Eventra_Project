@@ -13,7 +13,11 @@ import { PortalClientePage } from '../pages/clients/PortalClientePage';
 // ── Panel de Gestión Interna (rol_id = 1, 2, 3) ──────────────────────────────
 import { DashboardPage }  from '../pages/dashboard/DashboardPage';
 import { EventsPage }     from '../pages/events/EventsPage';
-import { QuotesPage }     from '../pages/quotes/QuotesPage';
+
+// ── Módulo Cotizaciones ─────────────────────────────────────────────────────
+import { CotizacionesList } from '../pages/cotizaciones/CotizacionesList';
+import { CotizacionForm }   from '../pages/cotizaciones/CotizacionForm';
+
 // ── Módulo Catálogo (Servicios y Paquetes) ───────────────────────────────────
 import { ServiciosList } from '../pages/catalogo/ServiciosList';
 import { ServicioForm }  from '../pages/catalogo/ServicioForm';
@@ -44,7 +48,11 @@ export const AppRoutes = () => {
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/eventos"   element={<EventsPage />} />
-          <Route path="/cotizador" element={<QuotesPage />} />
+          {/* ── Módulo Cotizaciones ─────────────────────────────────────────── */}
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR, ROLES.CLIENTE]} />}>
+            <Route path="/cotizaciones"       element={<CotizacionesList />} />
+            <Route path="/cotizaciones/nueva" element={<CotizacionForm />} />
+          </Route>
 
           {/* ── Módulos de Gestión — Solo Admin y Gerente ─────────────────── */}
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE]} />}>
