@@ -64,7 +64,12 @@ export const Login = () => {
       // Sincronizar AuthContext (lee token y user de localStorage)
       await login(formData.email, formData.password);
 
-      navigate('/dashboard', { replace: true });
+      // ── Redirección basada en rol ─────────────────────────────────────────
+      // rol_id 4 = Cliente → Portal exclusivo de cliente
+      // rol_id 1,2,3 = Admin/Gerente/Trabajador → Panel de gestión
+      const destino = rolId === 4 ? '/portal-cliente' : '/dashboard';
+      navigate(destino, { replace: true });
+
     } catch (err) {
       const msg =
         err.status === 401

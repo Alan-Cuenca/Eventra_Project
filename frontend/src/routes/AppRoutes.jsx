@@ -3,11 +3,14 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 
-// Páginas de Auth — spec: Login.jsx y Registro.jsx
+// ── Autenticación ────────────────────────────────────────────────────────────
 import { Login } from '../pages/auth/Login';
 import { Registro } from '../pages/auth/Registro';
 
-// Páginas internas (se mantienen para retrocompatibilidad)
+// ── Portal del Cliente (rol_id = 4) ─────────────────────────────────────────
+import { PortalClientePage } from '../pages/clients/PortalClientePage';
+
+// ── Panel de Gestión Interna (rol_id = 1,2,3) ────────────────────────────────
 import { DashboardPage } from '../pages/dashboard/DashboardPage';
 import { EventsPage } from '../pages/events/EventsPage';
 import { QuotesPage } from '../pages/quotes/QuotesPage';
@@ -18,11 +21,18 @@ import { ROLES } from '../services/mockData';
 export const AppRoutes = () => {
   return (
     <Routes>
-      {/* ── Rutas Públicas ─────────────────────────────────────────── */}
+      {/* ── Rutas Públicas ──────────────────────────────────────────────── */}
       <Route path="/login"    element={<Login />} />
       <Route path="/registro" element={<Registro />} />
 
-      {/* ── Rutas Protegidas dentro de DashboardLayout ─────────────── */}
+      {/* ── Portal Cliente (protegido — exclusivo rol 4) ─────────────────── */}
+      {/* Cualquier usuario autenticado puede acceder; el Login ya garantiza  */}
+      {/* que solo los Clientes son enviados aquí.                            */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/portal-cliente" element={<PortalClientePage />} />
+      </Route>
+
+      {/* ── Panel Interno (Dashboard) — roles 1, 2, 3 ───────────────────── */}
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
@@ -37,8 +47,8 @@ export const AppRoutes = () => {
         </Route>
       </Route>
 
-      {/* ── Redirección por defecto ─────────────────────────────────── */}
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      {/* ── Redirección por defecto ──────────────────────────────────────── */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 };
