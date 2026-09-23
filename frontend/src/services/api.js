@@ -20,7 +20,7 @@ const apiClient = axios.create({
 // ── Interceptor de Request: inyecta JWT en cada petición protegida ──────────
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('eventra_token');
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }

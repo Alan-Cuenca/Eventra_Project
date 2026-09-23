@@ -7,8 +7,17 @@
 import { api } from './api';
 import { DEMO_USERS } from './mockData';
 
-const TOKEN_KEY = 'eventra_token';
-const USER_KEY  = 'eventra_user';
+const TOKEN_KEY    = 'token';
+const USER_KEY     = 'eventra_user';
+const ROL_ID_KEY   = 'rol_id';
+const ROL_NOMBRE_KEY = 'rol_nombre';
+
+const ROLES_NOMBRES = {
+  1: 'Administrador',
+  2: 'Gerente',
+  3: 'Trabajador',
+  4: 'Cliente',
+};
 
 export const authService = {
   /**
@@ -44,8 +53,10 @@ export const authService = {
       if (demoUser) {
         const mockToken = `mock-jwt-demo-role${demoUser.rol_id}-${Date.now()}`;
         const { password: _, ...userData } = demoUser;
-        localStorage.setItem(TOKEN_KEY, mockToken);
-        localStorage.setItem(USER_KEY, JSON.stringify(userData));
+        localStorage.setItem(TOKEN_KEY,     mockToken);
+        localStorage.setItem(USER_KEY,      JSON.stringify(userData));
+        localStorage.setItem(ROL_ID_KEY,    String(demoUser.rol_id));
+        localStorage.setItem(ROL_NOMBRE_KEY, ROLES_NOMBRES[demoUser.rol_id] ?? 'Desconocido');
         return { user: userData, token: mockToken, isRealBackend: false };
       }
 
@@ -86,6 +97,8 @@ export const authService = {
   logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(ROL_ID_KEY);
+    localStorage.removeItem(ROL_NOMBRE_KEY);
   },
 
   getStoredSession() {
@@ -93,7 +106,12 @@ export const authService = {
     const userStr = localStorage.getItem(USER_KEY);
     if (!token || !userStr) return null;
     try {
-      return { token, user: JSON.parse(userStr) };
+      const rolId = localStorage.getItem(ROL_ID_KEY);
+      return {
+        token,
+        user: JSON.parse(userStr),
+        rolId: rolId ? parseInt(rolId, 10) : null,
+      };
     } catch {
       return null;
     }

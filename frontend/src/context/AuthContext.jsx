@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
     const mockToken = `mock-token-demo-${rolId}-${Date.now()}`;
     const { password: _, ...userData } = targetUser;
     
-    localStorage.setItem('eventra_token', mockToken);
+    localStorage.setItem('token', mockToken);
     localStorage.setItem('eventra_user', JSON.stringify(userData));
     
     setUser(userData);
