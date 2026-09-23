@@ -44,8 +44,20 @@ export const eventraService = {
       return response.data;
     } catch (err) {
       console.warn('[eventraService] createCliente fallback:', err.message);
-      return { id: `cli-${Date.now()}`, ...clienteData, estado_activo: true };
+      throw err; // propagar para mostrar el error en la UI
     }
+  },
+
+  // PUT /api/clientes/:id — Solo Admin y Gerente (verifyToken + authorizeRoles[1,2])
+  async updateCliente(id, clienteData) {
+    const response = await api.put(`/clientes/${id}`, clienteData);
+    return response.data;
+  },
+
+  // DELETE /api/clientes/:id — Borrado lógico (estado_activo = false)
+  async deleteCliente(id) {
+    await api.delete(`/clientes/${id}`);
+    return true;
   },
 
   // ==========================================

@@ -1,4 +1,14 @@
-import React, { useState, useEffect } from 'react';
+/**
+ * EVENTRA — Directorio de Clientes (CRM)
+ * Consume la API real:
+ *   GET    /api/clientes        → lista todos
+ *   POST   /api/clientes        → crear nuevo
+ *   PUT    /api/clientes/:id    → actualizar (Admin / Gerente)
+ *   DELETE /api/clientes/:id    → borrado lógico (Admin / Gerente)
+ */
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { eventraService } from '../../services/eventraService';
@@ -13,251 +23,375 @@ import {
   Trash2,
   Search,
   Filter,
+  Loader2,
   CheckCircle2,
   AlertTriangle,
+  RefreshCw,
+  UserPlus,
 } from 'lucide-react';
 
+// ── Toast de Notificación ────────────────────────────────────────────────────
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const t = setTimeout(onClose, 3500);
+    return () => clearTimeout(t);
+  }, [onClose]);
+
+  const colors = {
+    success: { bg: 'rgba(46,139,87,0.15)', border: 'rgba(46,139,87,0.4)', color: '#5bc286' },
+    error:   { bg: 'rgba(185,74,72,0.15)',  border: 'rgba(185,74,72,0.4)',  color: '#e27d7c' },
+  };
+  const c = colors[type] || colors.success;
+
+  return (
+    <div style={{
+      position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 99999,
+      display: 'flex', alignItems: 'center', gap: '0.75rem',
+      padding: '0.85rem 1.25rem',
+      background: c.bg, border: `1px solid ${c.border}`, borderRadius: '10px',
+      color: c.color, fontSize: '0.88rem', fontWeight: 600,
+      boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+      animation: 'slideIn 0.25s ease',
+      maxWidth: '360px',
+    }}>
+      {type === 'success' ? <CheckCircle2 size={18} /> : <AlertTriangle size={18} />}
+      <span>{message}</span>
+      <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', marginLeft: '0.25rem', padding: '2px' }}>
+        <X size={15} />
+      </button>
+    </div>
+  );
+};
+
+// ── Modal Genérico ───────────────────────────────────────────────────────────
+const Modal = ({ title, subtitle, onClose, children }) => (
+  <div style={{
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(8px)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 10000, padding: '1rem',
+  }}>
+    <div className="glass-card animate-fade-in" style={{ maxWidth: '480px', width: '100%', border: '1px solid var(--accent)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+        <div>
+          <h3 style={{ fontSize: '1.2rem', margin: 0 }}>{title}</h3>
+          {subtitle && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{subtitle}</span>}
+        </div>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px' }}>
+          <X size={20} />
+        </button>
+      </div>
+      {children}
+    </div>
+  </div>
+);
+
+// ── Formulario reutilizable dentro de modal ──────────────────────────────────
+const ClienteFormModal = ({ initialData = {}, onSubmit, submitting, onCancel, showEstado = false }) => {
+  const [form, setForm] = useState({
+    nombres:       initialData.nombres      ?? '',
+    apellidos:     initialData.apellidos    ?? '',
+    email:         initialData.email        ?? '',
+    telefono:      initialData.telefono     ?? '',
+    estado_activo: initialData.estado_activo ?? true,
+  });
+  const set = (field) => (e) =>
+    setForm((p) => ({ ...p, [field]: field === 'estado_activo' ? e.target.checked : e.target.value }));
+
+  return (
+    <form id="cliente-modal-form" onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} noValidate>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+        <div className="form-group">
+          <label className="form-label" htmlFor="cli-nombres">Nombres *</label>
+          <input id="cli-nombres" type="text" className="form-input" value={form.nombres} onChange={set('nombres')} required disabled={submitting} />
+        </div>
+        <div className="form-group">
+          <label className="form-label" htmlFor="cli-apellidos">Apellidos *</label>
+          <input id="cli-apellidos" type="text" className="form-input" value={form.apellidos} onChange={set('apellidos')} required disabled={submitting} />
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label className="form-label" htmlFor="cli-email">Correo Electrónico</label>
+        <input id="cli-email" type="email" className="form-input" placeholder="ejemplo@correo.com" value={form.email} onChange={set('email')} disabled={submitting} />
+      </div>
+
+      <div className="form-group">
+        <label className="form-label" htmlFor="cli-telefono">Teléfono / Celular</label>
+        <input id="cli-telefono" type="text" className="form-input" placeholder="+593 99 123 4567" value={form.telefono} onChange={set('telefono')} disabled={submitting} />
+      </div>
+
+      {showEstado && (
+        <div className="form-group">
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem' }}>
+            <input type="checkbox" checked={form.estado_activo} onChange={set('estado_activo')} style={{ accentColor: 'var(--primary)' }} />
+            Cliente Activo
+          </label>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
+        <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={submitting}>Cancelar</button>
+        <button type="submit" className="btn btn-primary" disabled={submitting} id="cliente-form-submit">
+          {submitting ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</> : 'Guardar Cliente'}
+        </button>
+      </div>
+    </form>
+  );
+};
+
+// ── Componente Principal ─────────────────────────────────────────────────────
 export const ClientsPage = () => {
   const { isAdmin, isGerente } = useAuth();
-  const [clientes, setClientes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const canEdit = isAdmin || isGerente;
+
+  const [clientes, setClientes]       = useState([]);
+  const [loading, setLoading]         = useState(true);
+  const [apiOnline, setApiOnline]     = useState(true);
+  const [searchTerm, setSearchTerm]   = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  // Modal Crear
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [createForm, setCreateForm] = useState({
-    nombres: '',
-    apellidos: '',
-    email: '',
-    telefono: '',
-  });
+  // Modales
+  const [showCreate, setShowCreate]   = useState(false);
+  const [editTarget, setEditTarget]   = useState(null);   // cliente a editar
+  const [deleteTarget, setDeleteTarget] = useState(null); // cliente a eliminar
 
-  // Modal Editar
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editingClient, setEditingClient] = useState(null);
-  const [editForm, setEditForm] = useState({
-    nombres: '',
-    apellidos: '',
-    email: '',
-    telefono: '',
-    estado_activo: true,
-  });
+  // Estado de operaciones
+  const [submitting, setSubmitting]   = useState(false);
+  const [deleting, setDeleting]       = useState(false);
+  const [toast, setToast]             = useState(null);   // { message, type }
 
-  const [submitting, setSubmitting] = useState(false);
+  const showToast = (message, type = 'success') => setToast({ message, type });
 
-  const loadClientes = async () => {
+  // ── Carga inicial ─────────────────────────────────────────────────────────
+  const loadClientes = useCallback(async () => {
     setLoading(true);
-    const data = await eventraService.getClientes();
-    setClientes(data);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    loadClientes();
+    try {
+      const data = await eventraService.getClientes();
+      setClientes(data);
+      setApiOnline(true);
+    } catch (err) {
+      console.warn('[ClientsPage] loadClientes error:', err.message);
+      setApiOnline(false);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Manejo Crear Cliente
-  const handleCreate = async (e) => {
-    e.preventDefault();
+  useEffect(() => { loadClientes(); }, [loadClientes]);
+
+  // ── CREAR — POST /api/clientes ────────────────────────────────────────────
+  const handleCreate = async (form) => {
     setSubmitting(true);
     try {
-      await eventraService.createCliente(createForm);
-      setShowCreateModal(false);
-      setCreateForm({ nombres: '', apellidos: '', email: '', telefono: '' });
-      await loadClientes();
+      const created = await eventraService.createCliente(form);
+      // Añadir el cliente creado al estado local sin recargar toda la lista
+      setClientes((prev) => [{ ...form, id: created?.id ?? `cli-${Date.now()}`, estado_activo: true, fecha_creacion: new Date().toISOString() }, ...prev]);
+      setShowCreate(false);
+      showToast(`✅ Cliente "${form.nombres} ${form.apellidos}" registrado.`);
     } catch (err) {
-      alert('Error al registrar cliente: ' + err.message);
+      const msg = err.status === 409
+        ? '⚠️ Ya existe un cliente con ese email.'
+        : err.message || 'Error al registrar cliente.';
+      showToast(msg, 'error');
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Abrir Modal Editar
-  const openEditModal = (client) => {
-    setEditingClient(client);
-    setEditForm({
-      nombres: client.nombres || '',
-      apellidos: client.apellidos || '',
-      email: client.email || '',
-      telefono: client.telefono || '',
-      estado_activo: client.estado_activo !== false,
-    });
-    setShowEditModal(true);
-  };
-
-  // Guardar Edición (Optimista en frontend + preparación de endpoint backend)
-  const handleUpdate = async (e) => {
-    e.preventDefault();
+  // ── EDITAR — PUT /api/clientes/:id ───────────────────────────────────────
+  const handleUpdate = async (form) => {
     setSubmitting(true);
     try {
-      // Intentar actualizar vía API (si el backend ya implementa PUT /api/clientes/:id)
-      // y actualizar inmediatamente el estado local para fluidez inmediata
+      const updated = await eventraService.updateCliente(editTarget.id, form);
+      // Actualiza el item en el estado local con los datos devueltos por el server
       setClientes((prev) =>
-        prev.map((c) =>
-          c.id === editingClient.id ? { ...c, ...editForm } : c
-        )
+        prev.map((c) => c.id === editTarget.id ? { ...c, ...(updated ?? form) } : c)
       );
-      setShowEditModal(false);
-      setEditingClient(null);
+      setEditTarget(null);
+      showToast(`✅ Cliente "${form.nombres} ${form.apellidos}" actualizado.`);
     } catch (err) {
-      alert('Error al actualizar cliente: ' + err.message);
+      const msg = err.status === 409
+        ? '⚠️ Ese email ya pertenece a otro cliente.'
+        : err.message || 'Error al actualizar cliente.';
+      showToast(msg, 'error');
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Alternar estado activo / inactivo
-  const toggleStatus = (clientId) => {
-    setClientes((prev) =>
-      prev.map((c) =>
-        c.id === clientId ? { ...c, estado_activo: !c.estado_activo } : c
-      )
-    );
+  // ── ELIMINAR — DELETE /api/clientes/:id (borrado lógico) ─────────────────
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await eventraService.deleteCliente(deleteTarget.id);
+      // Marcar como inactivo en el estado local
+      setClientes((prev) =>
+        prev.map((c) => c.id === deleteTarget.id ? { ...c, estado_activo: false } : c)
+      );
+      showToast(`🗑️ Cliente "${deleteTarget.nombres}" desactivado.`);
+    } catch (err) {
+      showToast(err.message || 'Error al eliminar cliente.', 'error');
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
+    }
   };
 
-  // Filtrado reactivo en tiempo real
+  // ── Filtrado reactivo ─────────────────────────────────────────────────────
   const filteredClientes = clientes.filter((cli) => {
-    const fullName = `${cli.nombres || ''} ${cli.apellidos || ''}`.toLowerCase();
-    const matchesSearch =
-      fullName.includes(searchTerm.toLowerCase()) ||
-      (cli.email && cli.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    const full = `${cli.nombres ?? ''} ${cli.apellidos ?? ''}`.toLowerCase();
+    const matchSearch =
+      full.includes(searchTerm.toLowerCase()) ||
+      (cli.email    && cli.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (cli.telefono && cli.telefono.includes(searchTerm));
-
-    const matchesStatus =
+    const matchStatus =
       filterStatus === 'all' ||
-      (filterStatus === 'active' && cli.estado_activo !== false) ||
+      (filterStatus === 'active'   && cli.estado_activo !== false) ||
       (filterStatus === 'inactive' && cli.estado_activo === false);
-
-    return matchesSearch && matchesStatus;
+    return matchSearch && matchStatus;
   });
 
   return (
     <div>
+      {/* ── Page Header ───────────────────────────────────────────────── */}
       <div className="page-header">
         <div>
           <h1>Directorio de Clientes</h1>
-          <p>Gestión centralizada de contactos y clientes para la organización de eventos.</p>
+          <p>Gestión centralizada del CRM conectada a la API en producción.</p>
         </div>
-        {(isAdmin || isGerente) && (
-          <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
-            <Plus size={16} />
-            <span>Registrar Cliente</span>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          {/* Badge estado API */}
+          <div style={{
+            padding: '0.35rem 0.75rem', borderRadius: 'var(--radius-full)', fontSize: '0.72rem', fontWeight: 700,
+            background: apiOnline ? 'rgba(46,139,87,0.15)' : 'rgba(194,136,52,0.15)',
+            border: `1px solid ${apiOnline ? 'rgba(46,139,87,0.35)' : 'rgba(194,136,52,0.35)'}`,
+            color: apiOnline ? '#5bc286' : '#e5b067', display: 'flex', alignItems: 'center', gap: '0.4rem',
+          }}>
+            <span style={{ fontSize: '0.6rem' }}>●</span>
+            {apiOnline ? 'API en línea' : 'Modo demo'}
+          </div>
+          <button className="btn btn-secondary" onClick={loadClientes} title="Recargar lista">
+            <RefreshCw size={15} />
           </button>
-        )}
+          {canEdit && (
+            <button id="btn-add-cliente" className="btn btn-primary" onClick={() => setShowCreate(true)}>
+              <UserPlus size={16} />
+              <span>Añadir Cliente</span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Barra de Búsqueda y Filtros */}
+      {/* ── Barra de Búsqueda y Filtros ──────────────────────────────── */}
       <Card style={{ marginBottom: '1.5rem', padding: '1rem' }}>
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
             <input
+              id="clientes-search"
               type="text"
               className="form-input"
               style={{ paddingLeft: '2.4rem' }}
-              placeholder="Buscar cliente por nombre, apellido, correo o teléfono..."
+              placeholder="Buscar por nombre, email o teléfono..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Search
-              size={18}
-              style={{
-                position: 'absolute',
-                left: '0.85rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'var(--text-muted)',
-              }}
-            />
+            <Search size={17} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
           </div>
-
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <Filter size={16} color="var(--accent)" />
-            <select
-              className="form-select"
-              style={{ width: 'auto' }}
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
-              <option value="all">Todos los Clientes ({clientes.length})</option>
+            <Filter size={15} color="var(--accent)" />
+            <select id="clientes-filter" className="form-select" style={{ width: 'auto' }} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+              <option value="all">Todos ({clientes.length})</option>
               <option value="active">Solo Activos</option>
-              <option value="inactive">Inactivos</option>
+              <option value="inactive">Solo Inactivos</option>
             </select>
           </div>
         </div>
       </Card>
 
-      {/* Tabla de Clientes */}
+      {/* ── Tabla de Clientes ─────────────────────────────────────────── */}
       <Card>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
-            Cargando clientes de PostgreSQL...
+          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+            <Loader2 size={28} style={{ animation: 'spin 1s linear infinite', marginBottom: '0.75rem', color: 'var(--primary)' }} />
+            <div>Cargando clientes desde PostgreSQL...</div>
           </div>
         ) : filteredClientes.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-            No se encontraron clientes que coincidan con la búsqueda.
+          <div style={{ textAlign: 'center', padding: '3rem' }}>
+            <Users size={36} color="var(--text-muted)" style={{ marginBottom: '1rem' }} />
+            <div style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              {searchTerm ? 'No se encontraron clientes que coincidan con la búsqueda.' : 'No hay clientes registrados aún.'}
+            </div>
+            {canEdit && !searchTerm && (
+              <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
+                <Plus size={16} /> Registrar el primer cliente
+              </button>
+            )}
           </div>
         ) : (
           <div className="table-container">
             <table className="custom-table">
               <thead>
                 <tr>
-                  <th>Nombres y Apellidos</th>
-                  <th>Contacto</th>
-                  <th>Fecha de Registro</th>
+                  <th>Nombre Completo</th>
+                  <th>Correo Electrónico</th>
+                  <th>Teléfono</th>
+                  <th>Registro</th>
                   <th>Estado</th>
-                  {(isAdmin || isGerente) && <th style={{ textAlign: 'center' }}>Acciones</th>}
+                  {canEdit && <th style={{ textAlign: 'center' }}>Acciones</th>}
                 </tr>
               </thead>
               <tbody>
                 {filteredClientes.map((cli) => (
                   <tr key={cli.id}>
                     <td>
-                      <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                        {cli.nombres} {cli.apellidos}
-                      </div>
-                      <div style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>
-                        UUID: {cli.id}
+                      <div style={{ fontWeight: 600 }}>{cli.nombres} {cli.apellidos}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>ID: {String(cli.id).substring(0, 8)}…</div>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
+                        <Mail size={13} color="var(--accent)" />
+                        {cli.email || <span style={{ color: 'var(--text-muted)' }}>Sin correo</span>}
                       </div>
                     </td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
-                        <Mail size={14} color="var(--accent)" /> {cli.email || 'Sin correo registrado'}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                        <Phone size={14} color="var(--accent)" /> {cli.telefono || 'Sin teléfono'}
+                        <Phone size={13} color="var(--accent)" />
+                        {cli.telefono || <span style={{ color: 'var(--text-muted)' }}>Sin teléfono</span>}
                       </div>
                     </td>
-                    <td style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                      {cli.fecha_creacion ? new Date(cli.fecha_creacion).toLocaleDateString() : 'Registrado'}
+                    <td style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                      {cli.fecha_creacion ? new Date(cli.fecha_creacion).toLocaleDateString('es-EC') : '—'}
                     </td>
                     <td>
                       <Badge variant={cli.estado_activo !== false ? 'success' : 'danger'}>
                         {cli.estado_activo !== false ? 'Activo' : 'Inactivo'}
                       </Badge>
                     </td>
-
-                    {/* Columna de Acciones para Admin y Gerente */}
-                    {(isAdmin || isGerente) && (
+                    {canEdit && (
                       <td style={{ textAlign: 'center' }}>
                         <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
                           <button
+                            id={`btn-edit-${cli.id}`}
                             className="btn btn-secondary"
-                            style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem' }}
-                            title="Editar información del cliente"
-                            onClick={() => openEditModal(cli)}
+                            style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem' }}
+                            title="Editar cliente"
+                            onClick={() => setEditTarget(cli)}
                           >
-                            <Edit2 size={14} />
-                            <span>Editar</span>
+                            <Edit2 size={13} /> Editar
                           </button>
-                          <button
-                            className="btn btn-outline"
-                            style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem' }}
-                            title={cli.estado_activo !== false ? 'Desactivar cliente' : 'Activar cliente'}
-                            onClick={() => toggleStatus(cli.id)}
-                          >
-                            <Trash2 size={14} color={cli.estado_activo !== false ? '#e27d7c' : '#5bc286'} />
-                          </button>
+                          {cli.estado_activo !== false && (
+                            <button
+                              id={`btn-delete-${cli.id}`}
+                              className="btn btn-outline"
+                              style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem' }}
+                              title="Desactivar cliente"
+                              onClick={() => setDeleteTarget(cli)}
+                            >
+                              <Trash2 size={13} color="#e27d7c" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     )}
@@ -267,217 +401,90 @@ export const ClientsPage = () => {
             </table>
           </div>
         )}
+
+        {/* Footer con conteo */}
+        {!loading && filteredClientes.length > 0 && (
+          <div style={{ padding: '0.75rem 0 0', borderTop: '1px solid var(--border-subtle)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+            Mostrando {filteredClientes.length} de {clientes.length} clientes
+          </div>
+        )}
       </Card>
 
-      {/* MODAL 1: REGISTRAR CLIENTE */}
-      {showCreateModal && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.78)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 10000,
-            padding: '1rem',
-          }}
+      {/* ── MODAL: Crear Cliente ──────────────────────────────────────── */}
+      {showCreate && (
+        <Modal title="Registrar Nuevo Cliente" onClose={() => setShowCreate(false)}>
+          <ClienteFormModal
+            onSubmit={handleCreate}
+            submitting={submitting}
+            onCancel={() => setShowCreate(false)}
+          />
+        </Modal>
+      )}
+
+      {/* ── MODAL: Editar Cliente ─────────────────────────────────────── */}
+      {editTarget && (
+        <Modal
+          title="Editar Cliente"
+          subtitle={`ID: ${editTarget.id}`}
+          onClose={() => setEditTarget(null)}
         >
-          <div className="glass-card" style={{ maxWidth: '480px', width: '100%', border: '1px solid var(--accent)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <h3 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--text-primary)' }}>
-                Registrar Nuevo Cliente
-              </h3>
+          <ClienteFormModal
+            initialData={editTarget}
+            onSubmit={handleUpdate}
+            submitting={submitting}
+            onCancel={() => setEditTarget(null)}
+            showEstado
+          />
+        </Modal>
+      )}
+
+      {/* ── MODAL: Confirmar Eliminación ──────────────────────────────── */}
+      {deleteTarget && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 10000, padding: '1rem',
+        }}>
+          <div className="glass-card animate-fade-in" style={{ maxWidth: '400px', width: '100%', border: '1px solid rgba(185,74,72,0.4)', textAlign: 'center' }}>
+            <div style={{
+              width: '56px', height: '56px', borderRadius: '50%',
+              background: 'rgba(185,74,72,0.15)', border: '1px solid rgba(185,74,72,0.35)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem',
+            }}>
+              <AlertTriangle size={26} color="#e27d7c" />
+            </div>
+            <h3 style={{ fontSize: '1.15rem', marginBottom: '0.5rem' }}>¿Desactivar cliente?</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1.5rem' }}>
+              El cliente <strong style={{ color: 'var(--text-primary)' }}>
+                {deleteTarget.nombres} {deleteTarget.apellidos}
+              </strong> será marcado como inactivo. Esta acción se puede revertir editando el cliente.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+              <button className="btn btn-secondary" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+                Cancelar
+              </button>
               <button
-                onClick={() => setShowCreateModal(false)}
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                id="btn-confirm-delete"
+                className="btn btn-primary"
+                style={{ background: 'rgba(185,74,72,0.85)', borderColor: 'rgba(185,74,72,0.6)' }}
+                onClick={handleDelete}
+                disabled={deleting}
               >
-                <X size={20} />
+                {deleting ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Desactivando...</> : '🗑️ Sí, desactivar'}
               </button>
             </div>
-
-            <form onSubmit={handleCreate}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div className="form-group">
-                  <label className="form-label">Nombres *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={createForm.nombres}
-                    onChange={(e) => setCreateForm({ ...createForm, nombres: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Apellidos *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={createForm.apellidos}
-                    onChange={(e) => setCreateForm({ ...createForm, apellidos: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Correo Electrónico</label>
-                <input
-                  type="email"
-                  className="form-input"
-                  placeholder="ejemplo@correo.com"
-                  value={createForm.email}
-                  onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Teléfono / Celular</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="+593 99 123 4567"
-                  value={createForm.telefono}
-                  onChange={(e) => setCreateForm({ ...createForm, telefono: e.target.value })}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowCreateModal(false)}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={submitting}
-                >
-                  {submitting ? 'Guardando en BD...' : 'Registrar Cliente'}
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}
 
-      {/* MODAL 2: EDITAR CLIENTE */}
-      {showEditModal && editingClient && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.78)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 10000,
-            padding: '1rem',
-          }}
-        >
-          <div className="glass-card" style={{ maxWidth: '480px', width: '100%', border: '1px solid var(--accent)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <div>
-                <h3 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--text-primary)' }}>
-                  Editar Información del Cliente
-                </h3>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  ID: {editingClient.id}
-                </span>
-              </div>
-              <button
-                onClick={() => setShowEditModal(false)}
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-              >
-                <X size={20} />
-              </button>
-            </div>
+      {/* Toast de notificación */}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-            <form onSubmit={handleUpdate}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div className="form-group">
-                  <label className="form-label">Nombres *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={editForm.nombres}
-                    onChange={(e) => setEditForm({ ...editForm, nombres: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Apellidos *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={editForm.apellidos}
-                    onChange={(e) => setEditForm({ ...editForm, apellidos: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Correo Electrónico</label>
-                <input
-                  type="email"
-                  className="form-input"
-                  value={editForm.email}
-                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Teléfono / Celular</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={editForm.telefono}
-                  onChange={(e) => setEditForm({ ...editForm, telefono: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group" style={{ marginTop: '0.5rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={editForm.estado_activo}
-                    onChange={(e) => setEditForm({ ...editForm, estado_activo: e.target.checked })}
-                  />
-                  <span style={{ fontSize: '0.875rem' }}>Cliente Activo</span>
-                </label>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowEditModal(false)}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={submitting}
-                >
-                  {submitting ? 'Guardando Cambios...' : 'Guardar Cambios'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+      `}</style>
     </div>
   );
 };
