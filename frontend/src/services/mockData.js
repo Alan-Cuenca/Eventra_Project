@@ -231,3 +231,25 @@ export const MOCK_METRICAS_SAAS = {
   ingresos_mes: 16400.00,
   eventos_mes: 8,
 };
+
+export const MOCK_RESERVAS = [
+  {
+    id: 'RES-001',
+    evento_titulo: 'Boda Alejandra & Carlos',
+    cliente_nombre: 'Carlos Mendoza',
+    fecha: '2026-10-24',
+    horario: '18:00 - 02:00',
+    salon: 'Salón Imperial Platinum',
+    estado: 'Confirmada',
+  },
+  {
+    id: 'RES-002',
+    evento_titulo: 'Mis XV Años - Valentina',
+    cliente_nombre: 'Pablo Vayas',
+    fecha: '2026-11-14',
+    horario: '19:00 - 01:00',
+    salon: 'Salón Imperial',
+    estado: 'Confirmada',
+  },
+];
+

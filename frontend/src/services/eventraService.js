@@ -5,6 +5,7 @@ import {
   MOCK_EVENTOS,
   MOCK_SOLICITUDES_CAMBIO,
   MOCK_METRICAS_SAAS,
+  MOCK_RESERVAS,
 } from './mockData';
 
 export const eventraService = {
@@ -149,7 +150,7 @@ export const eventraService = {
   },
 
   // ==========================================
-  // COTIZACIONES & RESERVAS (/api/cotizaciones)
+  // COTIZACIONES & RESERVAS (/api/cotizaciones, /api/reservas)
   // ==========================================
   async getCotizaciones() {
     const response = await api.get('/cotizaciones');
@@ -159,6 +160,36 @@ export const eventraService = {
   async createCotizacion(cotizacionData) {
     const response = await api.post('/cotizaciones', cotizacionData);
     return response.data;
+  },
+
+  async getReservas() {
+    try {
+      const response = await api.get('/reservas');
+      if (response && response.data && response.data.length > 0) {
+        return response.data;
+      }
+      return MOCK_RESERVAS;
+    } catch (err) {
+      console.warn('[eventraService] getReservas fallback:', err.message);
+      return MOCK_RESERVAS;
+    }
+  },
+
+  async createReserva(reservaData) {
+    // Aquí el backend podría devolver un 409 si ya está reservado.
+    // El interceptor en api.js o esta promesa fallará, por lo que lo propagamos.
+    const response = await api.post('/reservas', reservaData);
+    return response.data;
+  },
+
+  async updateReserva(id, reservaData) {
+    const response = await api.put(`/reservas/${id}`, reservaData);
+    return response.data;
+  },
+
+  async deleteReserva(id) {
+    await api.delete(`/reservas/${id}`);
+    return true;
   },
 
   // ==========================================

@@ -10,6 +10,7 @@ import {
   Building2,
   CheckSquare,
   FileCheck2,
+  CalendarCheck,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
@@ -35,6 +36,12 @@ export const Sidebar = () => {
       label: 'Cotizaciones',
       icon: <Calculator size={19} />,
       visible: isAdmin || isGerente || isCliente,
+    },
+    {
+      to: '/reservas',
+      label: 'Reservas',
+      icon: <CalendarCheck size={19} />,
+      visible: isAdmin || isGerente || isTrabajador || isCliente,
     },
     {
       to: '/servicios',

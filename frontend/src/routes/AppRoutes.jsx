@@ -18,6 +18,10 @@ import { EventsPage }     from '../pages/events/EventsPage';
 import { CotizacionesList } from '../pages/cotizaciones/CotizacionesList';
 import { CotizacionForm }   from '../pages/cotizaciones/CotizacionForm';
 
+// ── Módulo Reservas ─────────────────────────────────────────────────────────
+import { ReservasList } from '../pages/reservas/ReservasList';
+import { ReservaForm }  from '../pages/reservas/ReservaForm';
+
 // ── Módulo Catálogo (Servicios y Paquetes) ───────────────────────────────────
 import { ServiciosList } from '../pages/catalogo/ServiciosList';
 import { ServicioForm }  from '../pages/catalogo/ServicioForm';
@@ -52,6 +56,12 @@ export const AppRoutes = () => {
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR, ROLES.CLIENTE]} />}>
             <Route path="/cotizaciones"       element={<CotizacionesList />} />
             <Route path="/cotizaciones/nueva" element={<CotizacionForm />} />
+          </Route>
+
+          {/* ── Módulo Reservas ─────────────────────────────────────────────── */}
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR, ROLES.CLIENTE]} />}>
+            <Route path="/reservas"       element={<ReservasList />} />
+            <Route path="/reservas/nueva" element={<ReservaForm />} />
           </Route>
 
           {/* ── Módulos de Gestión — Solo Admin y Gerente ─────────────────── */}
