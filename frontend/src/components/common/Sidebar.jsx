@@ -7,183 +7,136 @@ import {
   Layers,
   Calculator,
   LayoutDashboard,
-  Building2,
   CheckSquare,
-  FileCheck2,
   CalendarCheck,
+  Package,
+  Sparkles,
+  Building2,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
 export const Sidebar = () => {
   const { roleId, isAdmin, isGerente, isTrabajador, isCliente } = useAuth();
 
-  // Enlaces según los requerimientos del Project Charter y Planificación Scrum
-  const navItems = [
+  const navGroups = [
     {
-      to: '/dashboard',
-      label: 'Panel Principal',
-      icon: <LayoutDashboard size={19} />,
-      visible: true,
+      label: 'Principal',
+      items: [
+        {
+          to: '/dashboard',
+          label: isCliente ? 'Mi Portal' : 'Panel Principal',
+          icon: <LayoutDashboard size={18} />,
+          visible: true,
+        },
+      ],
     },
     {
-      to: '/eventos',
-      label: isTrabajador ? 'Mis Actividades' : isCliente ? 'Mi Evento' : 'Eventos & Reservas',
-      icon: isTrabajador ? <CheckSquare size={19} /> : <CalendarDays size={19} />,
-      visible: true,
+      label: 'Gestión de Eventos',
+      items: [
+        {
+          to: '/eventos',
+          label: isTrabajador ? 'Mis Actividades' : isCliente ? 'Mi Evento' : 'Eventos & Reservas',
+          icon: isTrabajador ? <CheckSquare size={18} /> : <CalendarDays size={18} />,
+          visible: true,
+        },
+        {
+          to: '/reservas',
+          label: 'Reservas',
+          icon: <CalendarCheck size={18} />,
+          visible: isAdmin || isGerente || isTrabajador || isCliente,
+        },
+        {
+          to: '/cotizaciones',
+          label: 'Cotizaciones',
+          icon: <Calculator size={18} />,
+          visible: isAdmin || isGerente || isCliente,
+        },
+        {
+          to: '/cotizador',
+          label: 'Cotizador Dinámico',
+          icon: <Sparkles size={18} />,
+          visible: isAdmin || isGerente || isCliente,
+        },
+      ],
     },
     {
-      to: '/cotizaciones',
-      label: 'Cotizaciones',
-      icon: <Calculator size={19} />,
-      visible: isAdmin || isGerente || isCliente,
-    },
-    {
-      to: '/reservas',
-      label: 'Reservas',
-      icon: <CalendarCheck size={19} />,
-      visible: isAdmin || isGerente || isTrabajador || isCliente,
-    },
-    {
-      to: '/servicios',
-      label: 'Servicios',
-      icon: <Layers size={19} />,
-      visible: isAdmin || isGerente,
-    },
-    {
-      to: '/paquetes',
-      label: 'Paquetes',
-      icon: <Layers size={19} />,
-      visible: isAdmin || isGerente,
-    },
-    {
-      to: '/clientes',
-      label: 'Directorio de Clientes',
-      icon: <Users size={19} />,
-      visible: isAdmin || isGerente,
+      label: 'Catálogo & CRM',
+      items: [
+        {
+          to: '/servicios',
+          label: 'Servicios',
+          icon: <Layers size={18} />,
+          visible: isAdmin || isGerente,
+        },
+        {
+          to: '/paquetes',
+          label: 'Paquetes',
+          icon: <Package size={18} />,
+          visible: isAdmin || isGerente,
+        },
+        {
+          to: '/clientes',
+          label: 'Directorio de Clientes',
+          icon: <Users size={18} />,
+          visible: isAdmin || isGerente,
+        },
+      ],
     },
   ];
 
   return (
-    <aside
-      style={{
-        width: '270px',
-        backgroundColor: 'var(--bg-surface)',
-        borderRight: '1px solid var(--border-subtle)',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '1.25rem 1rem',
-        flexShrink: 0,
-      }}
-    >
-      {/* Brand / Logo Oficial EVENTRA */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.85rem',
-          padding: '0.5rem 0.5rem 1.5rem 0.5rem',
-          borderBottom: '1px solid var(--border-subtle)',
-        }}
-      >
-        <img
-          src={logoImg}
-          alt="EVENTRA Logo"
-          style={{
-            width: '46px',
-            height: '46px',
-            objectFit: 'contain',
-            borderRadius: '50%',
-            boxShadow: '0 4px 12px var(--shadow-sm)',
-            background: '#FAF8F5',
-            padding: '2px',
-          }}
-        />
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <h2
-            style={{
-              fontSize: '1.25rem',
-              fontWeight: 800,
-              letterSpacing: '0.04em',
-              color: 'var(--text-primary)',
-              lineHeight: 1.1,
-            }}
-          >
-            EVENTRA
-          </h2>
-          <span
-            style={{
-              fontSize: '0.62rem',
-              color: 'var(--accent)',
-              fontWeight: 700,
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              marginTop: '0.2rem',
-            }}
-          >
-            Gestión Inteligente de Eventos
-          </span>
+    <aside className="sidebar">
+      {/* Brand */}
+      <div className="sidebar-brand">
+        <img src={logoImg} alt="EVENTRA Logo" className="sidebar-logo" />
+        <div>
+          <div className="sidebar-brand-name">EVENTRA</div>
+          <div className="sidebar-brand-tagline">Gestión Inteligente de Eventos</div>
         </div>
       </div>
 
-      {/* Navigation Links */}
-      <nav style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', flex: 1 }}>
-        <span
-          style={{
-            fontSize: '0.68rem',
-            textTransform: 'uppercase',
-            color: 'var(--text-muted)',
-            fontWeight: 700,
-            letterSpacing: '0.08em',
-            paddingLeft: '0.75rem',
-            marginBottom: '0.35rem',
-          }}
-        >
-          Navegación
-        </span>
-
-        {navItems
-          .filter((item) => item.visible)
-          .map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              style={({ isActive }) => ({
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.75rem 1rem',
-                borderRadius: '8px',
-                fontSize: '0.88rem',
-                fontWeight: isActive ? 600 : 500,
-                color: isActive ? 'var(--ivory-pure)' : 'var(--text-secondary)',
-                backgroundColor: isActive ? 'rgba(69, 102, 119, 0.35)' : 'transparent',
-                borderLeft: isActive ? '3px solid var(--accent)' : '3px solid transparent',
-                transition: 'all 0.15s ease',
-              })}
-            >
-              <span style={{ display: 'flex', color: 'inherit' }}>{item.icon}</span>
-              <span>{item.label}</span>
-            </NavLink>
-          ))}
+      {/* Navigation */}
+      <nav className="sidebar-nav">
+        {navGroups.map((group) => {
+          const visibleItems = group.items.filter((item) => item.visible);
+          if (!visibleItems.length) return null;
+          return (
+            <div key={group.label}>
+              <div className="sidebar-section-label">{group.label}</div>
+              {visibleItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    `sidebar-link ${isActive ? 'active' : ''}`
+                  }
+                >
+                  <span className="link-icon">{item.icon}</span>
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
+            </div>
+          );
+        })}
       </nav>
 
-      {/* Footer Info con Trazabilidad Scrum */}
-      <div
-        style={{
-          padding: '0.85rem',
-          borderRadius: '10px',
-          background: 'rgba(23, 36, 46, 0.6)',
-          border: '1px solid var(--border-subtle)',
-          fontSize: '0.75rem',
-          color: 'var(--text-muted)',
-        }}
-      >
-        <div style={{ fontWeight: 600, color: 'var(--accent)', marginBottom: '0.2rem' }}>
+      {/* Footer */}
+      <div className="sidebar-footer">
+        <div
+          style={{
+            fontSize: '0.7rem',
+            fontWeight: 700,
+            color: 'var(--primary)',
+            marginBottom: '0.15rem',
+          }}
+        >
           EVENTRA SaaS MVP
         </div>
-        <div style={{ fontSize: '0.7rem' }}>Fase 3: Construcción Ágil</div>
-        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-          UTA - Software 7mo "A"
+        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+          Fase 3 · Construcción Ágil
+        </div>
+        <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+          UTA — Software 7mo "A"
         </div>
       </div>
     </aside>

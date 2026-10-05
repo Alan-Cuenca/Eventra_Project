@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { MOCK_EVENTOS } from '../../services/mockData';
-import { Calendar, Search, Filter, Plus, Clock, User, Phone, DollarSign } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Calendar, Search, Filter, Plus, User, Phone, Eye, ArrowUpRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 export const EventsPage = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
@@ -71,7 +71,7 @@ export const EventsPage = () => {
       {/* Grid de Eventos */}
       <div className="grid-cols-2">
         {filteredEvents.map((evt) => (
-          <Card key={evt.id} interactive>
+          <div key={evt.id} className="card interactive" onClick={() => navigate(`/eventos/${evt.id}`)} style={{ cursor: 'pointer' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
               <div>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{evt.id} • {evt.tipo}</span>
@@ -105,40 +105,39 @@ export const EventsPage = () => {
               </div>
             </div>
 
-            {/* Barra de progreso de actividades */}
+            {/* Barra de progreso */}
             <div style={{ marginBottom: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '0.3rem' }}>
-                <span>Progreso Organizativo</span>
-                <span>{evt.progreso_porcentaje}%</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginBottom: '0.35rem', fontWeight: 600 }}>
+                <span style={{ color: 'var(--text-muted)' }}>Progreso organizativo</span>
+                <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{evt.progreso_porcentaje}%</span>
               </div>
-              <div style={{ width: '100%', height: '6px', background: 'var(--bg-input)', borderRadius: '3px', overflow: 'hidden' }}>
-                <div style={{ width: `${evt.progreso_porcentaje}%`, height: '100%', background: 'var(--primary)' }} />
+              <div className="progress-bar-container">
+                <div className="progress-bar-fill" style={{ width: `${evt.progreso_porcentaje}%` }} />
               </div>
             </div>
 
-            {/* Resumen Financiero */}
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                paddingTop: '0.75rem',
-                borderTop: '1px solid var(--border-subtle)',
-                fontSize: '0.85rem',
-              }}
-            >
-              <div>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Monto Total:</span>
-                <div style={{ fontWeight: 700, fontSize: '1rem' }}>${evt.monto_total.toFixed(2)}</div>
+            {/* Resumen Financiero + acción */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.875rem', borderTop: '1px solid var(--border-subtle)' }}>
+              <div style={{ fontSize: '0.8rem' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Total</span>
+                <div style={{ fontWeight: 800, color: 'var(--primary-dark)', fontFamily: 'Outfit, sans-serif' }}>${evt.monto_total.toFixed(2)}</div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Saldo Pendiente:</span>
-                <div style={{ fontWeight: 700, fontSize: '1rem', color: evt.saldo_pendiente > 0 ? 'var(--accent)' : 'var(--success)' }}>
+              <div style={{ textAlign: 'right', fontSize: '0.8rem' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Saldo</span>
+                <div style={{ fontWeight: 800, color: evt.saldo_pendiente > 0 ? 'var(--warning)' : 'var(--success)', fontFamily: 'Outfit, sans-serif' }}>
                   ${evt.saldo_pendiente.toFixed(2)}
                 </div>
               </div>
+              <Link
+                to={`/eventos/${evt.id}`}
+                className="btn btn-primary btn-sm"
+                onClick={e => e.stopPropagation()}
+                id={`ver-evento-${evt.id}`}
+              >
+                <Eye size={14} /> Ver detalle
+              </Link>
             </div>
-          </Card>
+          </div>
         ))}
       </div>
     </div>

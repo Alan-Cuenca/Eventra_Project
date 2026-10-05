@@ -3,33 +3,34 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 
-// ── Autenticación ────────────────────────────────────────────────────────────
+// ── Autenticación ──────────────────────────────────────────────────────────
 import { Login }    from '../pages/auth/Login';
 import { Registro } from '../pages/auth/Registro';
 
 // ── Portal del Cliente (rol_id = 4) ─────────────────────────────────────────
 import { PortalClientePage } from '../pages/clients/PortalClientePage';
 
-// ── Panel de Gestión Interna (rol_id = 1, 2, 3) ──────────────────────────────
+// ── Panel de Gestión Interna ─────────────────────────────────────────────────
 import { DashboardPage }  from '../pages/dashboard/DashboardPage';
 import { EventsPage }     from '../pages/events/EventsPage';
+import { EventDetailPage } from '../pages/events/EventDetailPage';
 
-// ── Módulo Cotizaciones ─────────────────────────────────────────────────────
+// ── Módulo Cotizaciones ───────────────────────────────────────────────────────
 import { CotizacionesList } from '../pages/cotizaciones/CotizacionesList';
 import { CotizacionForm }   from '../pages/cotizaciones/CotizacionForm';
+import { CotizadorPage }    from '../pages/cotizaciones/CotizadorPage';
 
-// ── Módulo Reservas ─────────────────────────────────────────────────────────
+// ── Módulo Reservas ───────────────────────────────────────────────────────────
 import { ReservasList } from '../pages/reservas/ReservasList';
 import { ReservaForm }  from '../pages/reservas/ReservaForm';
 
-// ── Módulo Catálogo (Servicios y Paquetes) ───────────────────────────────────
+// ── Catálogo ──────────────────────────────────────────────────────────────────
 import { ServiciosList } from '../pages/catalogo/ServiciosList';
 import { ServicioForm }  from '../pages/catalogo/ServicioForm';
 import { PaquetesList }  from '../pages/catalogo/PaquetesList';
 import { PaqueteForm }   from '../pages/catalogo/PaqueteForm';
 
-
-// ── Módulo CRM — Clientes ─────────────────────────────────────────────────────
+// ── CRM Clientes ──────────────────────────────────────────────────────────────
 import { ClientsPage }   from '../pages/clients/ClientsPage';
 import { ClienteForm }   from '../pages/clients/ClienteForm';
 
@@ -38,54 +39,55 @@ import { ROLES } from '../services/mockData';
 export const AppRoutes = () => {
   return (
     <Routes>
-      {/* ── Rutas Públicas ──────────────────────────────────────────────── */}
+      {/* ── Rutas Públicas ────────────────────────────────────────────────── */}
       <Route path="/login"    element={<Login />} />
       <Route path="/registro" element={<Registro />} />
 
-      {/* ── Portal Cliente exclusivo (rol 4) ─────────────────────────────── */}
+      {/* ── Portal Cliente exclusivo (rol 4) ──────────────────────────────── */}
       <Route element={<ProtectedRoute />}>
         <Route path="/portal-cliente" element={<PortalClientePage />} />
       </Route>
 
-      {/* ── Panel Interno — roles 1, 2, 3 ───────────────────────────────── */}
+      {/* ── Panel Interno — roles 1, 2, 3 ─────────────────────────────────── */}
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/eventos"   element={<EventsPage />} />
-          {/* ── Módulo Cotizaciones ─────────────────────────────────────────── */}
+
+          {/* Eventos */}
+          <Route path="/eventos"          element={<EventsPage />} />
+          <Route path="/eventos/:id"      element={<EventDetailPage />} />
+
+          {/* Cotizaciones */}
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR, ROLES.CLIENTE]} />}>
             <Route path="/cotizaciones"       element={<CotizacionesList />} />
             <Route path="/cotizaciones/nueva" element={<CotizacionForm />} />
+            <Route path="/cotizador"          element={<CotizadorPage />} />
           </Route>
 
-          {/* ── Módulo Reservas ─────────────────────────────────────────────── */}
+          {/* Reservas */}
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR, ROLES.CLIENTE]} />}>
             <Route path="/reservas"       element={<ReservasList />} />
             <Route path="/reservas/nueva" element={<ReservaForm />} />
           </Route>
 
-          {/* ── Módulos de Gestión — Solo Admin y Gerente ─────────────────── */}
+          {/* Admin + Gerente únicamente */}
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE]} />}>
-            {/* Clientes */}
             <Route path="/clientes"              element={<ClientsPage />} />
             <Route path="/clientes/nuevo"        element={<ClienteForm />} />
             <Route path="/clientes/editar/:id"   element={<ClienteForm />} />
-            
-            {/* Catálogo: Servicios */}
+
             <Route path="/servicios"             element={<ServiciosList />} />
             <Route path="/servicios/nuevo"       element={<ServicioForm />} />
             <Route path="/servicios/editar/:id"  element={<ServicioForm />} />
 
-            {/* Catálogo: Paquetes */}
             <Route path="/paquetes"              element={<PaquetesList />} />
             <Route path="/paquetes/nuevo"        element={<PaqueteForm />} />
             <Route path="/paquetes/editar/:id"   element={<PaqueteForm />} />
           </Route>
-
         </Route>
       </Route>
 
-      {/* ── Fallback ─────────────────────────────────────────────────────── */}
+      {/* ── Fallback ──────────────────────────────────────────────────────── */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
