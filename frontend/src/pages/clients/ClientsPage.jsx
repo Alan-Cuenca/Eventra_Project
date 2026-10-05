@@ -188,10 +188,10 @@ export const ClientsPage = () => {
       // Añadir el cliente creado al estado local sin recargar toda la lista
       setClientes((prev) => [{ ...form, id: created?.id ?? `cli-${Date.now()}`, estado_activo: true, fecha_creacion: new Date().toISOString() }, ...prev]);
       setShowCreate(false);
-      showToast(`✅ Cliente "${form.nombres} ${form.apellidos}" registrado.`);
+      showToast(`Cliente "${form.nombres} ${form.apellidos}" registrado.`);
     } catch (err) {
       const msg = err.status === 409
-        ? '⚠️ Ya existe un cliente con ese email.'
+        ? 'Ya existe un cliente con ese email.'
         : err.message || 'Error al registrar cliente.';
       showToast(msg, 'error');
     } finally {
@@ -209,10 +209,10 @@ export const ClientsPage = () => {
         prev.map((c) => c.id === editTarget.id ? { ...c, ...(updated ?? form) } : c)
       );
       setEditTarget(null);
-      showToast(`✅ Cliente "${form.nombres} ${form.apellidos}" actualizado.`);
+      showToast(`Cliente "${form.nombres} ${form.apellidos}" actualizado.`);
     } catch (err) {
       const msg = err.status === 409
-        ? '⚠️ Ese email ya pertenece a otro cliente.'
+        ? 'Ese email ya pertenece a otro cliente.'
         : err.message || 'Error al actualizar cliente.';
       showToast(msg, 'error');
     } finally {
@@ -230,7 +230,7 @@ export const ClientsPage = () => {
       setClientes((prev) =>
         prev.map((c) => c.id === deleteTarget.id ? { ...c, estado_activo: false } : c)
       );
-      showToast(`🗑️ Cliente "${deleteTarget.nombres}" desactivado.`);
+      showToast(`Cliente "${deleteTarget.nombres}" desactivado.`);
     } catch (err) {
       showToast(err.message || 'Error al eliminar cliente.', 'error');
     } finally {
@@ -471,7 +471,7 @@ export const ClientsPage = () => {
                 onClick={handleDelete}
                 disabled={deleting}
               >
-                {deleting ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Desactivando...</> : '🗑️ Sí, desactivar'}
+                {deleting ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Desactivando...</> : 'Sí, desactivar'}
               </button>
             </div>
           </div>

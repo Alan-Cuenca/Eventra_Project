@@ -6,56 +6,11 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { DEMO_USERS, ROLES } from '../../services/mockData';
 import {
   Lock, Mail, ArrowRight, Eye, EyeOff, Loader2,
-  CalendarDays, Star, Shield, Briefcase, Users, Sparkles,
+  CalendarDays, Shield, Sparkles, AlertCircle,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
-
-// Configuración visual de cada rol demo
-const DEMO_ROLES = [
-  {
-    rol_id: ROLES.ADMIN,
-    nombre: 'Martín Falcon',
-    cargo: 'Administrador SaaS',
-    initials: 'MF',
-    color: '#C95C5C',
-    bg: '#fff0f0',
-    icon: <Shield size={13} />,
-    dest: '/dashboard',
-  },
-  {
-    rol_id: ROLES.GERENTE,
-    nombre: 'Alan Puruncajas',
-    cargo: 'Gerente de Operaciones',
-    initials: 'AP',
-    color: '#4D7182',
-    bg: '#eef4f7',
-    icon: <Briefcase size={13} />,
-    dest: '/dashboard',
-  },
-  {
-    rol_id: ROLES.TRABAJADOR,
-    nombre: 'Jorge Sailema',
-    cargo: 'Coordinador de Eventos',
-    initials: 'JS',
-    color: '#C49A3A',
-    bg: '#fdf6e3',
-    icon: <Users size={13} />,
-    dest: '/dashboard',
-  },
-  {
-    rol_id: ROLES.CLIENTE,
-    nombre: 'Pablo Vayas',
-    cargo: 'Cliente — Quinceañera',
-    initials: 'PV',
-    color: '#4D9A72',
-    bg: '#edf7f2',
-    icon: <Star size={13} />,
-    dest: '/portal-cliente',
-  },
-];
 
 const FEATURES = [
   {
@@ -80,10 +35,9 @@ export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [demoLoading, setDemoLoading] = useState(null); // rol_id loading
 
   const navigate = useNavigate();
-  const { login, switchDemoRole } = useAuth();
+  const { login } = useAuth();
 
   const handleChange = (e) =>
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -107,20 +61,6 @@ export const Login = () => {
       );
     } finally {
       setLoading(false);
-    }
-  };
-
-  // ── Acceso rápido Demo Roles ────────────────────────────────────────────────
-  const handleDemoLogin = async (role) => {
-    setDemoLoading(role.rol_id);
-    try {
-      await switchDemoRole(role.rol_id);
-      setTimeout(() => {
-        navigate(role.dest, { replace: true });
-        setDemoLoading(null);
-      }, 350);
-    } catch {
-      setDemoLoading(null);
     }
   };
 
@@ -348,7 +288,7 @@ export const Login = () => {
                 alignItems: 'flex-start',
               }}
             >
-              <span style={{ flexShrink: 0 }}>⚠️</span>
+              <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
               <span>{error}</span>
             </div>
           )}
@@ -460,70 +400,6 @@ export const Login = () => {
               )}
             </button>
           </form>
-
-          {/* Divisor */}
-          <div className="divider-text" style={{ margin: '1.5rem 0' }}>
-            Acceso rápido (Demo Roles)
-          </div>
-
-          {/* ── Sección crítica: 4 botones de roles demo ─────────────────── */}
-          <div
-            id="demo-roles-section"
-            style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
-          >
-            {DEMO_ROLES.map((role) => (
-              <button
-                key={role.rol_id}
-                id={`demo-btn-${role.rol_id}`}
-                className="demo-role-btn"
-                onClick={() => handleDemoLogin(role)}
-                disabled={demoLoading !== null}
-                aria-label={`Ingresar como ${role.nombre}`}
-              >
-                {/* Avatar coloreado */}
-                <div
-                  className="demo-role-avatar"
-                  style={{ background: role.bg, color: role.color, border: `1px solid ${role.color}30` }}
-                >
-                  {demoLoading === role.rol_id ? (
-                    <Loader2 size={12} className="animate-spin" />
-                  ) : (
-                    role.initials
-                  )}
-                </div>
-
-                {/* Info */}
-                <div style={{ flex: 1, textAlign: 'left' }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--primary-dark)' }}>
-                    {role.nombre}
-                  </div>
-                  <div style={{ fontSize: '0.71rem', color: 'var(--text-muted)', marginTop: '0.05rem' }}>
-                    {role.cargo}
-                  </div>
-                </div>
-
-                {/* Badge de rol */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                    padding: '0.2rem 0.55rem',
-                    borderRadius: 'var(--radius-full)',
-                    background: role.bg,
-                    color: role.color,
-                    fontSize: '0.65rem',
-                    fontWeight: 700,
-                    border: `1px solid ${role.color}30`,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {role.icon}
-                  {role.cargo.split('—')[0].trim().split(' ')[0]}
-                </div>
-              </button>
-            ))}
-          </div>
 
           {/* Footer */}
           <div

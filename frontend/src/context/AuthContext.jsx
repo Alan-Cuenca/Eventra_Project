@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authService } from '../services/authService';
-import { ROLES, ROLES_CONFIG, DEMO_USERS } from '../services/mockData';
+import { ROLES, ROLES_CONFIG } from '../services/mockData';
 
 const AuthContext = createContext(null);
 
@@ -36,19 +36,6 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
   };
 
-  // Función utilitaria para conmutar rápidamente de rol en modo demo
-  const switchDemoRole = (rolId) => {
-    const targetUser = DEMO_USERS.find((u) => u.rol_id === rolId) || DEMO_USERS[0];
-    const mockToken = `mock-token-demo-${rolId}-${Date.now()}`;
-    const { password: _, ...userData } = targetUser;
-    
-    localStorage.setItem('token', mockToken);
-    localStorage.setItem('eventra_user', JSON.stringify(userData));
-    
-    setUser(userData);
-    setToken(mockToken);
-  };
-
   const currentRoleConfig = user?.rol_id ? ROLES_CONFIG[user.rol_id] : null;
 
   const value = {
@@ -64,7 +51,6 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    switchDemoRole,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

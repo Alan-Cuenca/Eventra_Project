@@ -100,7 +100,7 @@ export const ClienteForm = () => {
       setTimeout(() => navigate('/clientes', { replace: true }), 1500);
     } catch (err) {
       let msg = 'Error inesperado. Intenta de nuevo.';
-      if (err.status === 409) msg = '⚠️ Ya existe un cliente registrado con ese email.';
+      if (err.status === 409) msg = 'Ya existe un cliente registrado con ese email.';
       else if (err.status === 400) msg = err.message || 'Completa los campos obligatorios.';
       else if (err.status === 404) msg = 'Cliente no encontrado o no pertenece a tu empresa.';
       else if (!err.status) msg = 'Sin conexión al servidor. Verifica tu red.';

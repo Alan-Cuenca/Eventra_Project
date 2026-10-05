@@ -514,8 +514,8 @@ export const DashboardPage = () => {
                       <Badge variant={estadoBadge(evt.estado)}>{evt.estado}</Badge>
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                      <span>📅 {evt.fecha}</span>
-                      <span>👥 {evt.invitados} invitados</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><CalendarDays size={14} /> {evt.fecha}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Users size={14} /> {evt.invitados} invitados</span>
                     </div>
                     <div style={{ marginTop: '0.75rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
@@ -609,9 +609,13 @@ export const DashboardPage = () => {
                   <h2 style={{ fontSize: '1.5rem', marginBottom: '0.3rem' }}>
                     {evt.titulo}
                   </h2>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                    📅 {evt.fecha} &nbsp;·&nbsp; 🏛️ Salón Imperial Platinum &nbsp;·&nbsp; 👥 {evt.invitados} invitados
-                  </p>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><CalendarDays size={15} /> {evt.fecha}</span>
+                    <span style={{ color: 'var(--border-subtle)' }}>|</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Building2 size={15} /> Salón Imperial Platinum</span>
+                    <span style={{ color: 'var(--border-subtle)' }}>|</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Users size={15} /> {evt.invitados} invitados</span>
+                  </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -631,9 +635,9 @@ export const DashboardPage = () => {
               {/* KPIs financieros */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
                 {[
-                  { label: 'COSTO TOTAL', value: fmt(evt.monto_total), color: 'var(--primary-dark)', bg: 'var(--cream)', icon: '💰' },
-                  { label: 'ANTICIPO PAGADO', value: `${fmt(evt.anticipo_pagado)} (50%)`, color: 'var(--success)', bg: 'var(--success-light)', icon: '✅' },
-                  { label: 'SALDO PENDIENTE', value: fmt(evt.saldo_pendiente), color: 'var(--warning)', bg: 'var(--warning-light)', icon: '⏳' },
+                  { label: 'COSTO TOTAL', value: fmt(evt.monto_total), color: 'var(--primary-dark)', bg: 'var(--cream)', icon: <DollarSign size={16} /> },
+                  { label: 'ANTICIPO PAGADO', value: `${fmt(evt.anticipo_pagado)} (50%)`, color: 'var(--success)', bg: 'var(--success-light)', icon: <CheckCircle2 size={16} /> },
+                  { label: 'SALDO PENDIENTE', value: fmt(evt.saldo_pendiente), color: 'var(--warning)', bg: 'var(--warning-light)', icon: <Clock size={16} /> },
                 ].map((item) => (
                   <div
                     key={item.label}

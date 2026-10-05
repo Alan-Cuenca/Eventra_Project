@@ -15,7 +15,6 @@ export const DashboardLayout = () => {
           <Outlet />
         </main>
       </div>
-      <RoleSwitcher />
       <ChatbotWidget />
     </div>
   );

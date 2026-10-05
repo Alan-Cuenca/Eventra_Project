@@ -9,7 +9,7 @@ import { MOCK_EVENTOS } from '../../services/mockData';
 import {
   CalendarDays, Users, DollarSign, Check, X, Upload, Download,
   Clock, AlertCircle, CheckCircle2, FileText, History, ChevronLeft,
-  Plus, Trash2, Eye,
+  Plus, Trash2, Eye, User,
 } from 'lucide-react';
 
 // ── Tabs config ────────────────────────────────────────────────────────────
@@ -137,9 +137,10 @@ export const EventDetailPage = ({ eventoId: propId }) => {
             <Badge variant={evento.estado === 'Confirmado' ? 'success' : evento.estado === 'En preparación' ? 'primary' : 'warning'}>
               {evento.estado}
             </Badge>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>#{evento.id}</span>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>·</span>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>📅 {evento.fecha}</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <CalendarDays size={14} /> {evento.fecha}
+            </span>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap' }}>
@@ -421,8 +422,8 @@ export const EventDetailPage = ({ eventoId: propId }) => {
                       {h.accion}
                     </div>
                     <div style={{ fontSize: '0.77rem', color: 'var(--text-muted)', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                      <span>👤 {h.usuario}</span>
-                      <span>🕐 {h.fecha}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><User size={13} /> {h.usuario}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Clock size={13} /> {h.fecha}</span>
                     </div>
                   </div>
                 </div>

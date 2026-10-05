@@ -11,10 +11,10 @@ import { Lock, Mail, User, Building2, ArrowRight, CheckCircle2, Loader2, Eye, Ey
 import logoImg from '../../assets/logo.png';
 
 const ROLES_OPCIONES = [
-  { value: 4, label: '🎉 Cliente', desc: 'Consulta y contrata servicios de eventos' },
-  { value: 3, label: '🛠️ Trabajador', desc: 'Personal operativo de la empresa' },
-  { value: 2, label: '💼 Gerente', desc: 'Gestiona eventos y personal' },
-  { value: 1, label: '👑 Administrador', desc: 'Acceso total al sistema' },
+  { value: 4, label: 'Cliente', desc: 'Consulta y contrata servicios de eventos' },
+  { value: 3, label: 'Trabajador', desc: 'Personal operativo de la empresa' },
+  { value: 2, label: 'Gerente', desc: 'Gestiona eventos y personal' },
+  { value: 1, label: 'Administrador', desc: 'Acceso total al sistema' },
 ];
 
 export const Registro = () => {
@@ -62,7 +62,7 @@ export const Registro = () => {
       let msg = 'Error inesperado. Intenta de nuevo.';
 
       if (err.status === 409) {
-        msg = '⚠️ Este correo ya está registrado. Intenta con otro o inicia sesión.';
+        msg = 'Este correo ya está registrado. Intenta con otro o inicia sesión.';
       } else if (err.status === 400) {
         msg = err.message || 'Completa todos los campos correctamente.';
       } else if (!err.status) {
