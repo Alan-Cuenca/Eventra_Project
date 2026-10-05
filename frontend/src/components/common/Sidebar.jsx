@@ -80,6 +80,12 @@ export const Sidebar = () => {
           icon: <Users size={18} />,
           visible: isAdmin || isGerente,
         },
+        {
+          to: '/proveedores',
+          label: 'Proveedores',
+          icon: <Building2 size={18} />,
+          visible: isAdmin || isGerente,
+        },
       ],
     },
   ];

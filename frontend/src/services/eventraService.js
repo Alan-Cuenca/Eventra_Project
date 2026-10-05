@@ -62,6 +62,39 @@ export const eventraService = {
   },
 
   // ==========================================
+  // PROVEEDORES (/api/proveedores)
+  // ==========================================
+  async getProveedores() {
+    try {
+      const response = await api.get('/proveedores');
+      return response.data;
+    } catch (err) {
+      console.warn('[eventraService] getProveedores fallback:', err.message);
+      return [];
+    }
+  },
+
+  async getProveedor(id) {
+    const response = await api.get(`/proveedores/${id}`);
+    return response.data;
+  },
+
+  async createProveedor(proveedorData) {
+    const response = await api.post('/proveedores', proveedorData);
+    return response.data;
+  },
+
+  async updateProveedor(id, proveedorData) {
+    const response = await api.put(`/proveedores/${id}`, proveedorData);
+    return response.data;
+  },
+
+  async deleteProveedor(id) {
+    await api.delete(`/proveedores/${id}`);
+    return true;
+  },
+
+  // ==========================================
   // SERVICIOS & PAQUETES (/api/servicios, /api/paquetes)
   // ==========================================
   async getServicios() {

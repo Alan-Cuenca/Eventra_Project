@@ -34,6 +34,10 @@ import { PaqueteForm }   from '../pages/catalogo/PaqueteForm';
 import { ClientsPage }   from '../pages/clients/ClientsPage';
 import { ClienteForm }   from '../pages/clients/ClienteForm';
 
+// ── Proveedores ───────────────────────────────────────────────────────────────
+import { ProveedoresList } from '../pages/proveedores/ProveedoresList';
+import { ProveedorForm }   from '../pages/proveedores/ProveedorForm';
+
 import { ROLES } from '../services/mockData';
 
 export const AppRoutes = () => {
@@ -83,6 +87,10 @@ export const AppRoutes = () => {
             <Route path="/paquetes"              element={<PaquetesList />} />
             <Route path="/paquetes/nuevo"        element={<PaqueteForm />} />
             <Route path="/paquetes/editar/:id"   element={<PaqueteForm />} />
+
+            <Route path="/proveedores"           element={<ProveedoresList />} />
+            <Route path="/proveedores/nuevo"     element={<ProveedorForm />} />
+            <Route path="/proveedores/editar/:id" element={<ProveedorForm />} />
           </Route>
         </Route>
       </Route>
