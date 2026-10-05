@@ -14,6 +14,7 @@ import { PortalClientePage } from '../pages/clients/PortalClientePage';
 import { DashboardPage }  from '../pages/dashboard/DashboardPage';
 import { EventsPage }     from '../pages/events/EventsPage';
 import { EventDetailPage } from '../pages/events/EventDetailPage';
+import { EventoForm }      from '../pages/events/EventoForm';
 
 // ── Módulo Cotizaciones ───────────────────────────────────────────────────────
 import { CotizacionesList } from '../pages/cotizaciones/CotizacionesList';
@@ -68,6 +69,10 @@ export const AppRoutes = () => {
           <Route path="/dashboard" element={<DashboardPage />} />
 
           {/* Eventos */}
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE]} />}>
+            <Route path="/eventos/nuevo"      element={<EventoForm />} />
+            <Route path="/eventos/editar/:id" element={<EventoForm />} />
+          </Route>
           <Route path="/eventos"          element={<EventsPage />} />
           <Route path="/eventos/:id"      element={<EventDetailPage />} />
 

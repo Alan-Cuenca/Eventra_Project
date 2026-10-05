@@ -21,36 +21,7 @@ const TABS = [
   { id: 'historial',   label: 'Historial',   icon: <History size={15} /> },
 ];
 
-// ── Mock actividades ──────────────────────────────────────────────────────
-const MOCK_ACTIVIDADES = [
-  { id: 1, nombre: 'Reserva de salón confirmada', responsable: 'Alan Puruncajas', estado: 'Completado', fecha: '2026-09-01' },
-  { id: 2, nombre: 'Degustación de menú con el chef', responsable: 'Jorge Sailema', estado: 'Completado', fecha: '2026-09-15' },
-  { id: 3, nombre: 'Coordinación con DJ y equipo de luces', responsable: 'Jorge Sailema', estado: 'En progreso', fecha: '2026-10-01' },
-  { id: 4, nombre: 'Prueba de decoración floral', responsable: 'Jorge Sailema', estado: 'Pendiente', fecha: '2026-10-10' },
-  { id: 5, nombre: 'Revisión final y ensayo de protocolo', responsable: 'Alan Puruncajas', estado: 'Pendiente', fecha: '2026-11-01' },
-];
 
-// ── Mock pagos ─────────────────────────────────────────────────────────────
-const MOCK_PAGOS = [
-  { id: 'PAG-001', concepto: 'Anticipo del 50% — Reserva inicial', monto: 1950, fecha: '2026-09-05', metodo: 'Transferencia bancaria', estado: 'Completado' },
-  { id: 'PAG-002', concepto: 'Saldo final — Pre-evento', monto: 1950, fecha: '2026-11-10', metodo: 'Pendiente', estado: 'Pendiente' },
-];
-
-// ── Mock archivos ──────────────────────────────────────────────────────────
-const MOCK_ARCHIVOS = [
-  { id: 1, nombre: 'Contrato_Evento_EVT-2026-002.pdf', tipo: 'PDF', tamanio: '248 KB', fecha: '2026-09-05', subido_por: 'Alan Puruncajas' },
-  { id: 2, nombre: 'Cotizacion_QuinceGlamour.pdf', tipo: 'PDF', tamanio: '182 KB', fecha: '2026-09-01', subido_por: 'Sistema' },
-  { id: 3, nombre: 'Inspiracion_decoracion.jpg', tipo: 'IMG', tamanio: '1.4 MB', fecha: '2026-09-18', subido_por: 'Pablo Vayas' },
-];
-
-// ── Mock historial ─────────────────────────────────────────────────────────
-const MOCK_HISTORIAL = [
-  { id: 1, accion: 'Cotización generada y enviada al cliente', usuario: 'Alan Puruncajas', fecha: '2026-09-01 09:15', tipo: 'info' },
-  { id: 2, accion: 'Anticipo de $1,950.00 registrado en el sistema', usuario: 'Alan Puruncajas', fecha: '2026-09-05 11:30', tipo: 'success' },
-  { id: 3, accion: 'Solicitud de modificación recibida (+15 comensales)', usuario: 'Pablo Vayas', fecha: '2026-09-12 14:22', tipo: 'warning' },
-  { id: 4, accion: 'Solicitud de modificación pendiente de aprobación por Gerente', usuario: 'Sistema', fecha: '2026-09-12 14:25', tipo: 'warning' },
-  { id: 5, accion: 'Estado actualizado a "En preparación"', usuario: 'Alan Puruncajas', fecha: '2026-09-20 10:00', tipo: 'info' },
-];
 
 // ══════════════════════════════════════════════════════════════════════════════
 export const EventDetailPage = ({ eventoId: propId }) => {
@@ -58,7 +29,6 @@ export const EventDetailPage = ({ eventoId: propId }) => {
   const { id: paramId } = useParams();
   const eventoId = propId || paramId;
   const [activeTab, setActiveTab] = useState('resumen');
-  const [actividades, setActividades] = useState(MOCK_ACTIVIDADES);
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -77,14 +47,8 @@ export const EventDetailPage = ({ eventoId: propId }) => {
   const fmt = (n) =>
     new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(n);
 
-  const toggleActividad = (id) => {
-    setActividades(prev =>
-      prev.map(a =>
-        a.id === id
-          ? { ...a, estado: a.estado === 'Completado' ? 'Pendiente' : 'Completado' }
-          : a
-      )
-    );
+  const toggleActividad = async (id) => {
+    // API logic later or rely on another module
   };
 
   const actEstadoBadge = (e) => {
@@ -318,7 +282,12 @@ export const EventDetailPage = ({ eventoId: propId }) => {
                   <tr><th>ID</th><th>Concepto</th><th>Monto</th><th>Fecha</th><th>Método</th><th>Estado</th></tr>
                 </thead>
                 <tbody>
-                  {MOCK_PAGOS.map((p) => (
+                  {(evento.pagos || []).length === 0 && (
+                    <tr>
+                      <td colSpan="6" style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)' }}>No hay pagos registrados.</td>
+                    </tr>
+                  )}
+                  {(evento.pagos || []).map((p) => (
                     <tr key={p.id}>
                       <td style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{p.id}</td>
                       <td style={{ fontSize: '0.875rem', fontWeight: 600 }}>{p.concepto}</td>
@@ -362,7 +331,10 @@ export const EventDetailPage = ({ eventoId: propId }) => {
             </button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-            {MOCK_ARCHIVOS.map((f) => (
+            {(evento.archivos || []).length === 0 && (
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No hay archivos adjuntos.</div>
+            )}
+            {(evento.archivos || []).map((f) => (
               <div
                 key={f.id}
                 style={{
@@ -409,7 +381,10 @@ export const EventDetailPage = ({ eventoId: propId }) => {
             <div className="card-title"><History size={17} color="var(--primary)" />Historial de Cambios</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-            {MOCK_HISTORIAL.map((h, i) => {
+            {(evento.historial || []).length === 0 && (
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No hay registros en el historial.</div>
+            )}
+            {(evento.historial || []).map((h, i) => {
               const { color, bg, icon } = histTipo(h.tipo);
               return (
                 <div
@@ -417,14 +392,14 @@ export const EventDetailPage = ({ eventoId: propId }) => {
                   style={{
                     display: 'flex', gap: '1rem', alignItems: 'flex-start',
                     padding: '0.875rem 0',
-                    borderBottom: i < MOCK_HISTORIAL.length - 1 ? '1px solid rgba(206,200,184,0.4)' : 'none',
+                    borderBottom: i < (evento.historial || []).length - 1 ? '1px solid rgba(206,200,184,0.4)' : 'none',
                   }}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
                     <div style={{ width: 28, height: 28, borderRadius: '50%', background: bg, color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: `1px solid ${color}30` }}>
                       {icon}
                     </div>
-                    {i < MOCK_HISTORIAL.length - 1 && (
+                    {i < (evento.historial || []).length - 1 && (
                       <div style={{ width: 1, height: '100%', minHeight: '20px', background: 'var(--border-subtle)' }} />
                     )}
                   </div>
