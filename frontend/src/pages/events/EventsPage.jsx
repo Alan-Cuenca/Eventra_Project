@@ -1,24 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Badge } from '../../components/common/Badge';
-import { MOCK_EVENTOS } from '../../services/mockData';
-import { Calendar, Search, Filter, Plus, User, Phone, Eye, ArrowUpRight } from 'lucide-react';
+import { eventraService } from '../../services/eventraService';
+import { Calendar, Search, Filter, Plus, User, Phone, Eye, ArrowUpRight, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 export const EventsPage = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [eventos, setEventos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const filteredEvents = MOCK_EVENTOS.filter((evt) => {
+  useEffect(() => {
+    const fetchEventos = async () => {
+      try {
+        const data = await eventraService.getEventos();
+        setEventos(data);
+      } catch (err) {
+        setError(err.message || 'Error al cargar eventos.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEventos();
+  }, []);
+
+  const filteredEvents = eventos.filter((evt) => {
+    const titulo = evt.titulo || evt.nombre || '';
+    const cliNombre = evt.cliente?.nombres || evt.cliente_nombre || '';
+    const eid = String(evt.id);
+
     const matchesSearch =
-      evt.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      evt.cliente_nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      evt.id.toLowerCase().includes(searchTerm.toLowerCase());
+      titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cliNombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      eid.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus = filterStatus === 'all' || evt.estado === filterStatus;
+    const matchesStatus = filterStatus === 'all' || evt.estado === filterStatus || evt.estado_progreso === filterStatus;
 
     return matchesSearch && matchesStatus;
   });
+
+  if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}><Loader2 className="animate-spin" /> Cargando eventos...</div>;
+  if (error) return <div style={{ padding: '2rem', color: 'red', textAlign: 'center' }}>{error}</div>;
 
   return (
     <div>
@@ -109,10 +133,10 @@ export const EventsPage = () => {
             <div style={{ marginBottom: '1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginBottom: '0.35rem', fontWeight: 600 }}>
                 <span style={{ color: 'var(--text-muted)' }}>Progreso organizativo</span>
-                <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{evt.progreso_porcentaje}%</span>
+                <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{evt.progreso_porcentaje || 0}%</span>
               </div>
               <div className="progress-bar-container">
-                <div className="progress-bar-fill" style={{ width: `${evt.progreso_porcentaje}%` }} />
+                <div className="progress-bar-fill" style={{ width: `${evt.progreso_porcentaje || 0}%` }} />
               </div>
             </div>
 
@@ -120,12 +144,12 @@ export const EventsPage = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.875rem', borderTop: '1px solid var(--border-subtle)' }}>
               <div style={{ fontSize: '0.8rem' }}>
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Total</span>
-                <div style={{ fontWeight: 800, color: 'var(--primary-dark)', fontFamily: 'Outfit, sans-serif' }}>${evt.monto_total.toFixed(2)}</div>
+                <div style={{ fontWeight: 800, color: 'var(--primary-dark)', fontFamily: 'Outfit, sans-serif' }}>${(evt.monto_total || 0).toFixed(2)}</div>
               </div>
               <div style={{ textAlign: 'right', fontSize: '0.8rem' }}>
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Saldo</span>
-                <div style={{ fontWeight: 800, color: evt.saldo_pendiente > 0 ? 'var(--warning)' : 'var(--success)', fontFamily: 'Outfit, sans-serif' }}>
-                  ${evt.saldo_pendiente.toFixed(2)}
+                <div style={{ fontWeight: 800, color: (evt.saldo_pendiente || 0) > 0 ? 'var(--warning)' : 'var(--success)', fontFamily: 'Outfit, sans-serif' }}>
+                  ${(evt.saldo_pendiente || 0).toFixed(2)}
                 </div>
               </div>
               <Link

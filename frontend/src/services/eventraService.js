@@ -62,6 +62,31 @@ export const eventraService = {
   },
 
   // ==========================================
+  // ACTIVIDADES (/api/actividades)
+  // ==========================================
+  async getActividades(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    const url = query ? `/actividades?${query}` : '/actividades';
+    const response = await api.get(url);
+    return response.data || [];
+  },
+
+  async createActividad(actividadData) {
+    const response = await api.post('/actividades', actividadData);
+    return response.data;
+  },
+
+  async updateActividad(id, actividadData) {
+    const response = await api.put(`/actividades/${id}`, actividadData);
+    return response.data;
+  },
+
+  async deleteActividad(id) {
+    await api.delete(`/actividades/${id}`);
+    return true;
+  },
+
+  // ==========================================
   // PROVEEDORES (/api/proveedores)
   // ==========================================
   async getProveedores() {
@@ -157,16 +182,28 @@ export const eventraService = {
   // EVENTOS (/api/eventos)
   // ==========================================
   async getEventos() {
-    try {
-      const response = await api.get('/eventos');
-      if (response && response.data && response.data.length > 0) {
-        return response.data;
-      }
-      return MOCK_EVENTOS;
-    } catch (err) {
-      console.warn('[eventraService] getEventos fallback:', err.message);
-      return MOCK_EVENTOS;
-    }
+    const response = await api.get('/eventos');
+    return response.data;
+  },
+
+  async getEvento(id) {
+    const response = await api.get(`/eventos/${id}`);
+    return response.data;
+  },
+
+  async createEvento(eventoData) {
+    const response = await api.post('/eventos', eventoData);
+    return response.data;
+  },
+
+  async updateEvento(id, eventoData) {
+    const response = await api.put(`/eventos/${id}`, eventoData);
+    return response.data;
+  },
+
+  async deleteEvento(id) {
+    await api.delete(`/eventos/${id}`);
+    return true;
   },
 
   async updateEstadoEvento(eventoId, nuevoEstado) {

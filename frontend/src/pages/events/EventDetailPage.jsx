@@ -2,14 +2,14 @@
  * EVENTRA — Detalle de Evento con Tabs navegables
  * Tabs: Resumen | Actividades | Pagos | Archivos | Historial
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Badge } from '../../components/common/Badge';
-import { MOCK_EVENTOS } from '../../services/mockData';
+import { eventraService } from '../../services/eventraService';
 import {
   CalendarDays, Users, DollarSign, Check, X, Upload, Download,
   Clock, AlertCircle, CheckCircle2, FileText, History, ChevronLeft,
-  Plus, Trash2, Eye, User,
+  Plus, Trash2, Eye, User, Loader2
 } from 'lucide-react';
 
 // ── Tabs config ────────────────────────────────────────────────────────────
@@ -56,13 +56,24 @@ const MOCK_HISTORIAL = [
 export const EventDetailPage = ({ eventoId: propId }) => {
   const navigate = useNavigate();
   const { id: paramId } = useParams();
-  const eventoId = propId || paramId || 'EVT-2026-002';
+  const eventoId = propId || paramId;
   const [activeTab, setActiveTab] = useState('resumen');
   const [actividades, setActividades] = useState(MOCK_ACTIVIDADES);
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState(null);
 
-  const evento = MOCK_EVENTOS.find(e => e.id === eventoId) || MOCK_EVENTOS[1];
+  const [evento, setEvento] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!eventoId) return;
+    eventraService.getEvento(eventoId)
+      .then(data => setEvento(data))
+      .catch(err => setError(err.message || 'Error al cargar el evento'))
+      .finally(() => setLoading(false));
+  }, [eventoId]);
+
   const fmt = (n) =>
     new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(n);
 
@@ -132,10 +143,10 @@ export const EventDetailPage = ({ eventoId: propId }) => {
           <button className="btn btn-ghost btn-sm" style={{ marginBottom: '0.5rem', paddingLeft: 0 }} onClick={() => navigate('/eventos')}>
             <ChevronLeft size={16} /> Volver a eventos
           </button>
-          <h1 style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>{evento.titulo}</h1>
+          <h1 style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>{evento.titulo || evento.nombre || `Evento #${evento.id}`}</h1>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <Badge variant={evento.estado === 'Confirmado' ? 'success' : evento.estado === 'En preparación' ? 'primary' : 'warning'}>
-              {evento.estado}
+            <Badge variant={evento.estado === 'Confirmado' || evento.estado_progreso === 'Confirmado' ? 'success' : evento.estado === 'En preparación' || evento.estado_progreso === 'En preparación' ? 'primary' : 'warning'}>
+              {evento.estado || evento.estado_progreso || 'Registrado'}
             </Badge>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>·</span>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -174,10 +185,10 @@ export const EventDetailPage = ({ eventoId: propId }) => {
           {/* KPIs rápidos */}
           <div className="grid-cols-4">
             {[
-              { label: 'Costo Total', value: fmt(evento.monto_total), icon: DollarSign, color: 'var(--primary)' },
-              { label: 'Anticipo Pagado', value: fmt(evento.anticipo_pagado), icon: CheckCircle2, color: 'var(--success)' },
-              { label: 'Saldo Pendiente', value: fmt(evento.saldo_pendiente), icon: Clock, color: 'var(--warning)' },
-              { label: 'Invitados', value: evento.invitados, icon: Users, color: 'var(--info)' },
+              { label: 'Costo Total', value: fmt(evento.monto_total || 0), icon: DollarSign, color: 'var(--primary)' },
+              { label: 'Anticipo Pagado', value: fmt(evento.anticipo_pagado || 0), icon: CheckCircle2, color: 'var(--success)' },
+              { label: 'Saldo Pendiente', value: fmt(evento.saldo_pendiente || 0), icon: Clock, color: 'var(--warning)' },
+              { label: 'Invitados', value: evento.invitados || 0, icon: Users, color: 'var(--info)' },
             ].map(({ label, value, icon: Icon, color }) => (
               <div key={label} className="kpi-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
@@ -199,12 +210,12 @@ export const EventDetailPage = ({ eventoId: propId }) => {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.875rem' }}>
                 {[
-                  ['Cliente', evento.cliente_nombre],
-                  ['Email', evento.cliente_email],
-                  ['Teléfono', evento.cliente_telefono],
-                  ['Tipo de evento', evento.tipo],
-                  ['Paquete', evento.paquete],
-                  ['Responsable', evento.responsable],
+                  ['Cliente', evento.cliente?.nombres ? `${evento.cliente.nombres} ${evento.cliente.apellidos}` : evento.cliente_nombre || 'No asignado'],
+                  ['Email', evento.cliente?.email || evento.cliente_email || 'N/A'],
+                  ['Teléfono', evento.cliente?.telefono || evento.cliente_telefono || 'N/A'],
+                  ['Tipo de evento', evento.tipo || 'General'],
+                  ['Paquete', evento.paquete?.nombre || evento.paquete || 'Personalizado'],
+                  ['Responsable', evento.responsable || 'Sin asignar'],
                 ].map(([label, val]) => (
                   <div key={label} style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(206,200,184,0.4)' }}>
                     <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>{label}</span>
@@ -217,10 +228,10 @@ export const EventDetailPage = ({ eventoId: propId }) => {
             <div className="card">
               <div className="card-header">
                 <div className="card-title">Progreso de Organización</div>
-                <span style={{ fontWeight: 800, color: 'var(--primary)', fontFamily: 'Outfit, sans-serif' }}>{evento.progreso_porcentaje}%</span>
+                <span style={{ fontWeight: 800, color: 'var(--primary)', fontFamily: 'Outfit, sans-serif' }}>{evento.progreso_porcentaje || 0}%</span>
               </div>
               <div className="progress-bar-container" style={{ height: '12px', marginBottom: '1.5rem' }}>
-                <div className="progress-bar-fill" style={{ width: `${evento.progreso_porcentaje}%` }} />
+                <div className="progress-bar-fill" style={{ width: `${evento.progreso_porcentaje || 0}%` }} />
               </div>
               {/* Etapas */}
               {[

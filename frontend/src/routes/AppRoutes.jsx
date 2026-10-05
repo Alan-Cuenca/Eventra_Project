@@ -38,7 +38,17 @@ import { ClienteForm }   from '../pages/clients/ClienteForm';
 import { ProveedoresList } from '../pages/proveedores/ProveedoresList';
 import { ProveedorForm }   from '../pages/proveedores/ProveedorForm';
 
+// ── Actividades ───────────────────────────────────────────────────────────────
+import { MisActividades }  from '../pages/actividades/MisActividades';
+import { ActividadesList } from '../pages/actividades/ActividadesList';
+import { useAuth } from '../context/AuthContext';
+
 import { ROLES } from '../services/mockData';
+
+const ActividadesRouter = () => {
+  const { isTrabajador } = useAuth();
+  return isTrabajador ? <MisActividades /> : <ActividadesList />;
+};
 
 export const AppRoutes = () => {
   return (
@@ -60,6 +70,9 @@ export const AppRoutes = () => {
           {/* Eventos */}
           <Route path="/eventos"          element={<EventsPage />} />
           <Route path="/eventos/:id"      element={<EventDetailPage />} />
+
+          {/* Actividades (Routing según rol) */}
+          <Route path="/actividades"      element={<ActividadesRouter />} />
 
           {/* Cotizaciones */}
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR, ROLES.CLIENTE]} />}>

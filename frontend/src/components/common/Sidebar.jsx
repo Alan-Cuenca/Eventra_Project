@@ -35,9 +35,15 @@ export const Sidebar = () => {
       items: [
         {
           to: '/eventos',
-          label: isTrabajador ? 'Mis Actividades' : isCliente ? 'Mi Evento' : 'Eventos & Reservas',
-          icon: isTrabajador ? <CheckSquare size={18} /> : <CalendarDays size={18} />,
-          visible: true,
+          label: isCliente ? 'Mi Evento' : 'Eventos',
+          icon: <CalendarDays size={18} />,
+          visible: isAdmin || isGerente || isCliente,
+        },
+        {
+          to: '/actividades',
+          label: isTrabajador ? 'Mis Actividades' : 'Checklist Operativo',
+          icon: <CheckSquare size={18} />,
+          visible: isAdmin || isGerente || isTrabajador,
         },
         {
           to: '/reservas',
