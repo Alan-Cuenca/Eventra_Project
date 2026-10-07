@@ -1,5 +1,5 @@
 import express from 'express';
-import { crearActividad, obtenerActividades, actualizarEstadoActividad } from '../controllers/actividadController.js';
+import { crearActividad, obtenerActividades, actualizarEstadoActividad, actualizarActividad, eliminarActividad } from '../controllers/actividadController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -38,5 +38,19 @@ router.get('/', verifyToken, obtenerActividades);
  * }
  */
 router.patch('/:id/estado', verifyToken, actualizarEstadoActividad);
+
+/**
+ * @route  PUT /api/actividades/:id
+ * @desc   Actualiza los datos de una actividad existente
+ * @access Private + RBAC — solo Administrador (1) y Gerente (2)
+ */
+router.put('/:id', verifyToken, authorizeRoles([1, 2]), actualizarActividad);
+
+/**
+ * @route  DELETE /api/actividades/:id
+ * @desc   Elimina una actividad
+ * @access Private + RBAC — solo Administrador (1) y Gerente (2)
+ */
+router.delete('/:id', verifyToken, authorizeRoles([1, 2]), eliminarActividad);
 
 export default router;

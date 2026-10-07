@@ -1,5 +1,5 @@
 import express from 'express';
-import { crearEvento, obtenerEventos, actualizarEstadoEvento } from '../controllers/eventoController.js';
+import { crearEvento, obtenerEventos, actualizarEstadoEvento, obtenerEventoPorId, actualizarEvento, eliminarEvento } from '../controllers/eventoController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -36,5 +36,26 @@ router.get('/', verifyToken, obtenerEventos);
  * }
  */
 router.patch('/:id/estado', verifyToken, authorizeRoles([1, 2, 3]), actualizarEstadoEvento);
+
+/**
+ * @route  GET /api/eventos/:id
+ * @desc   Obtiene el detalle de un evento por su ID
+ * @access Private — cualquier usuario autenticado con JWT válido
+ */
+router.get('/:id', verifyToken, obtenerEventoPorId);
+
+/**
+ * @route  PUT /api/eventos/:id
+ * @desc   Actualiza los datos de un evento
+ * @access Private + RBAC — solo Administrador (1) y Gerente (2)
+ */
+router.put('/:id', verifyToken, authorizeRoles([1, 2]), actualizarEvento);
+
+/**
+ * @route  DELETE /api/eventos/:id
+ * @desc   Elimina un evento
+ * @access Private + RBAC — solo Administrador (1) y Gerente (2)
+ */
+router.delete('/:id', verifyToken, authorizeRoles([1, 2]), eliminarEvento);
 
 export default router;

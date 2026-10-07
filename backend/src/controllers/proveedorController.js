@@ -173,3 +173,51 @@ export const actualizarProveedor = async (req, res) => {
     });
   }
 };
+
+/**
+ * Obtiene un proveedor por su ID.
+ */
+export const obtenerProveedorPorId = async (req, res) => {
+  const { id } = req.params;
+  const empresa_id = req.user.empresa_id;
+
+  try {
+    const result = await pool.query(
+      `SELECT * FROM proveedores WHERE id = $1 AND empresa_id = $2`,
+      [id, empresa_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Proveedor no encontrado.' });
+    }
+
+    return res.status(200).json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error('[proveedorController] Error en obtenerProveedorPorId:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno al obtener proveedor.' });
+  }
+};
+
+/**
+ * Elimina (borrado lógico) un proveedor.
+ */
+export const eliminarProveedor = async (req, res) => {
+  const { id } = req.params;
+  const empresa_id = req.user.empresa_id;
+
+  try {
+    const result = await pool.query(
+      `UPDATE proveedores SET estado_activo = false WHERE id = $1 AND empresa_id = $2 RETURNING id`,
+      [id, empresa_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Proveedor no encontrado.' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Proveedor eliminado (borrado lógico).' });
+  } catch (error) {
+    console.error('[proveedorController] Error en eliminarProveedor:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno al eliminar.' });
+  }
+};

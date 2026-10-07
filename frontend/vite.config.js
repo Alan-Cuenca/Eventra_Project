@@ -11,9 +11,9 @@ export default defineConfig({
     //  herramientas o peticiones que usen rutas relativas en dev)
     proxy: {
       '/api': {
-        target: 'https://eventra-project-l3hl.onrender.com',
+        target: 'http://localhost:3000',
         changeOrigin: true,
-        secure: true,
+        secure: false,
       },
     },
   },

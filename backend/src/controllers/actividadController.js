@@ -182,3 +182,58 @@ export const actualizarEstadoActividad = async (req, res) => {
     });
   }
 };
+
+/**
+ * Actualiza los datos de una actividad existente.
+ */
+export const actualizarActividad = async (req, res) => {
+  const { id } = req.params;
+  const empresa_id = req.user.empresa_id;
+  const { titulo, descripcion, fecha_vencimiento, responsable_id } = req.body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE actividades 
+       SET titulo = COALESCE($1, titulo),
+           descripcion = COALESCE($2, descripcion),
+           fecha_vencimiento = COALESCE($3, fecha_vencimiento),
+           responsable_id = COALESCE($4, responsable_id)
+       WHERE id = $5 AND empresa_id = $6
+       RETURNING id, titulo, descripcion, fecha_vencimiento, responsable_id`,
+      [titulo, descripcion, fecha_vencimiento, responsable_id, id, empresa_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Actividad no encontrada.' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Actividad actualizada.', data: result.rows[0] });
+  } catch (error) {
+    console.error('[actividadController] Error en actualizarActividad:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno al actualizar.' });
+  }
+};
+
+/**
+ * Elimina una actividad.
+ */
+export const eliminarActividad = async (req, res) => {
+  const { id } = req.params;
+  const empresa_id = req.user.empresa_id;
+
+  try {
+    const result = await pool.query(
+      `DELETE FROM actividades WHERE id = $1 AND empresa_id = $2 RETURNING id`,
+      [id, empresa_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Actividad no encontrada.' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Actividad eliminada.' });
+  } catch (error) {
+    console.error('[actividadController] Error en eliminarActividad:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno al eliminar.' });
+  }
+};

@@ -42,6 +42,10 @@ import { ProveedorForm }   from '../pages/proveedores/ProveedorForm';
 // ── Actividades ───────────────────────────────────────────────────────────────
 import { MisActividades }  from '../pages/actividades/MisActividades';
 import { ActividadesList } from '../pages/actividades/ActividadesList';
+
+// ── Pagos ─────────────────────────────────────────────────────────────────────
+import PagoProcesador from '../pages/pagos/PagoProcesador';
+import PagosList from '../pages/pagos/PagosList';
 import { useAuth } from '../context/AuthContext';
 
 import { ROLES } from '../services/mockData';
@@ -90,6 +94,14 @@ export const AppRoutes = () => {
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR, ROLES.CLIENTE]} />}>
             <Route path="/reservas"       element={<ReservasList />} />
             <Route path="/reservas/nueva" element={<ReservaForm />} />
+          </Route>
+
+          {/* Pagos */}
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR, ROLES.CLIENTE]} />}>
+            <Route path="/pagos/procesar" element={<PagoProcesador />} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR]} />}>
+            <Route path="/pagos"          element={<PagosList />} />
           </Route>
 
           {/* Admin + Gerente únicamente */}

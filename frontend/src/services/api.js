@@ -1,13 +1,17 @@
 /**
  * EVENTRA - Cliente HTTP (Axios)
- * Conectado al backend en producción (Render).
+ * En desarrollo local apunta a http://localhost:3000/api
+ * En producción apunta al backend desplegado en Render.
  * Interceptor JWT: lee el token de localStorage y lo adjunta en cada petición.
  */
 
 import axios from 'axios';
 
-// URL base del backend desplegado en Render
-const BASE_URL = 'https://eventra-project-l3hl.onrender.com/api';
+// URL base: local en dev, Render en producción
+const BASE_URL =
+  window.location.hostname === 'localhost'
+    ? 'http://localhost:3000/api'
+    : 'https://eventra-project-l3hl.onrender.com/api';
 
 const apiClient = axios.create({
   baseURL: BASE_URL,

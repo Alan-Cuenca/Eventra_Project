@@ -317,7 +317,41 @@ export const eventraService = {
       console.warn('[eventraService] Chatbot API fallback:', err.message);
       return {
         respuesta: `Hola, soy el asistente virtual EVARA de EVENTRA. Estoy preparado para orientarte en bodas, quinceañeras y recepciones. Recibí tu consulta: "${mensaje}". Actualmente te recomiendo revisar nuestros paquetes prediseñados en la sección de Servicios.`,
-      };
+  },
+
+  // ==========================================
+  // PAGOS (/api/pagos)
+  // ==========================================
+  async getPagos() {
+    try {
+      const response = await api.get('/pagos');
+      return response.data || [];
+    } catch (err) {
+      console.warn('[eventraService] getPagos error:', err.message);
+      return [];
+    }
+  },
+
+  async uploadPago(formData) {
+    try {
+      // Axios usa "data" para el payload, no "body"
+      const response = await api.post('/pagos', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    } catch (err) {
+      console.warn('[eventraService] uploadPago error:', err.message);
+      throw err;
+    }
+  },
+
+  async actualizarEstadoPago(id, estado) {
+    try {
+      const response = await api.put(`/pagos/${id}/estado`, { estado });
+      return response.data;
+    } catch (err) {
+      console.warn('[eventraService] actualizarEstadoPago error:', err.message);
+      throw err;
     }
   },
 };

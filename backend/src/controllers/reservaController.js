@@ -137,3 +137,59 @@ export const obtenerReservas = async (req, res) => {
     });
   }
 };
+
+/**
+ * Actualiza los datos de una reserva (estado, horas, etc).
+ */
+export const actualizarReserva = async (req, res) => {
+  const { id } = req.params;
+  const empresa_id = req.user.empresa_id;
+  const { salon_o_lugar, fecha_evento, hora_inicio, hora_fin, estado } = req.body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE reservas 
+       SET salon_o_lugar = COALESCE($1, salon_o_lugar),
+           fecha_evento = COALESCE($2, fecha_evento),
+           hora_inicio = COALESCE($3, hora_inicio),
+           hora_fin = COALESCE($4, hora_fin),
+           estado = COALESCE($5, estado)
+       WHERE id = $6 AND empresa_id = $7
+       RETURNING id, salon_o_lugar, fecha_evento, hora_inicio, hora_fin, estado`,
+      [salon_o_lugar, fecha_evento, hora_inicio, hora_fin, estado, id, empresa_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Reserva no encontrada.' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Reserva actualizada.', data: result.rows[0] });
+  } catch (error) {
+    console.error('[reservaController] Error en actualizarReserva:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno al actualizar.' });
+  }
+};
+
+/**
+ * Elimina una reserva (o la cancela).
+ */
+export const eliminarReserva = async (req, res) => {
+  const { id } = req.params;
+  const empresa_id = req.user.empresa_id;
+
+  try {
+    const result = await pool.query(
+      `UPDATE reservas SET estado = 'Cancelada' WHERE id = $1 AND empresa_id = $2 RETURNING id`,
+      [id, empresa_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Reserva no encontrada.' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Reserva cancelada.' });
+  } catch (error) {
+    console.error('[reservaController] Error en eliminarReserva:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno al cancelar la reserva.' });
+  }
+};

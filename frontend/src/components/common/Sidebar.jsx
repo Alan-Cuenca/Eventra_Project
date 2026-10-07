@@ -12,6 +12,7 @@ import {
   Package,
   Sparkles,
   Building2,
+  CreditCard,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
@@ -62,6 +63,18 @@ export const Sidebar = () => {
           label: 'Cotizador Dinámico',
           icon: <Sparkles size={18} />,
           visible: isAdmin || isGerente || isCliente,
+        },
+        {
+          to: '/pagos',
+          label: 'Gestión de Pagos',
+          icon: <CreditCard size={18} />,
+          visible: isAdmin || isGerente || isTrabajador,
+        },
+        {
+          to: '/pagos/procesar',
+          label: 'Realizar Pago',
+          icon: <CreditCard size={18} />,
+          visible: isCliente,
         },
       ],
     },

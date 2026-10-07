@@ -3,6 +3,8 @@ import {
   crearProveedor,
   obtenerProveedores,
   actualizarProveedor,
+  obtenerProveedorPorId,
+  eliminarProveedor,
 } from '../controllers/proveedorController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
@@ -45,5 +47,19 @@ router.get('/', verifyToken, authorizeRoles([1, 2, 3]), obtenerProveedores);
  * }
  */
 router.put('/:id', verifyToken, authorizeRoles([1, 2]), actualizarProveedor);
+
+/**
+ * @route  GET /api/proveedores/:id
+ * @desc   Obtiene un proveedor por su ID
+ * @access Private + RBAC — Administrador (1), Gerente (2) y Trabajador (3)
+ */
+router.get('/:id', verifyToken, authorizeRoles([1, 2, 3]), obtenerProveedorPorId);
+
+/**
+ * @route  DELETE /api/proveedores/:id
+ * @desc   Elimina (borrado lógico) un proveedor
+ * @access Private + RBAC — solo Administrador (1) y Gerente (2)
+ */
+router.delete('/:id', verifyToken, authorizeRoles([1, 2]), eliminarProveedor);
 
 export default router;

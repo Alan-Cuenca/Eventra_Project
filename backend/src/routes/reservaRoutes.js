@@ -1,5 +1,5 @@
 import express from 'express';
-import { crearReserva, obtenerReservas } from '../controllers/reservaController.js';
+import { crearReserva, obtenerReservas, actualizarReserva, eliminarReserva } from '../controllers/reservaController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -26,5 +26,19 @@ router.post('/', verifyToken, authorizeRoles([1, 2, 3]), crearReserva);
  * @access Private — cualquier usuario autenticado con JWT válido
  */
 router.get('/', verifyToken, obtenerReservas);
+
+/**
+ * @route  PUT /api/reservas/:id
+ * @desc   Actualiza los datos de una reserva
+ * @access Private + RBAC — solo Administrador (1) y Gerente (2)
+ */
+router.put('/:id', verifyToken, authorizeRoles([1, 2]), actualizarReserva);
+
+/**
+ * @route  DELETE /api/reservas/:id
+ * @desc   Cancela una reserva
+ * @access Private + RBAC — solo Administrador (1) y Gerente (2)
+ */
+router.delete('/:id', verifyToken, authorizeRoles([1, 2]), eliminarReserva);
 
 export default router;

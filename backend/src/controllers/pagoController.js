@@ -1,7 +1,8 @@
 import pool from '../config/db.js';
+import { supabase } from '../config/supabase.js';
 
 // Estados y conceptos válidos para validación en el servidor
-const ESTADOS_VALIDOS  = ['Pendiente', 'Completado', 'Anulado'];
+const ESTADOS_VALIDOS  = ['Pendiente', 'En Revisión', 'Aprobado', 'Rechazado', 'Anulado'];
 const CONCEPTOS_VALIDOS = ['Anticipo', 'Abono', 'Liquidación'];
 
 /**
@@ -41,19 +42,50 @@ export const registrarPago = async (req, res) => {
       });
     }
 
+    // --- Subida de Comprobante (Supabase Storage) ---
+    let comprobante_url = null;
+    let estadoPago = estado || (metodo_pago === 'Efectivo' ? 'Pendiente' : 'En Revisión');
+
+    if (req.file) {
+      if (!supabase) {
+        return res.status(500).json({ success: false, message: 'Supabase no está configurado.' });
+      }
+
+      const file = req.file;
+      const fileExt = file.originalname.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `${empresa_id}/${fileName}`;
+
+      const { data, error: uploadError } = await supabase.storage
+        .from('comprobantes')
+        .upload(filePath, file.buffer, {
+          contentType: file.mimetype,
+        });
+
+      if (uploadError) {
+        console.error('Error subiendo comprobante:', uploadError);
+        return res.status(500).json({ success: false, message: 'Error subiendo comprobante.' });
+      }
+
+      const { data: publicUrlData } = supabase.storage.from('comprobantes').getPublicUrl(filePath);
+      comprobante_url = publicUrlData.publicUrl;
+      estadoPago = 'En Revisión';
+    }
+
     // --- Insertar pago (SQL parametrizado) ---
     const result = await pool.query(
-      `INSERT INTO pagos (empresa_id, evento_id, monto, concepto, metodo_pago, estado)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO pagos (empresa_id, evento_id, monto, concepto, metodo_pago, estado, comprobante_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id, empresa_id, evento_id, monto, concepto,
-                 metodo_pago, fecha_pago, estado, fecha_registro`,
+                 metodo_pago, fecha_pago, estado, comprobante_url, fecha_registro`,
       [
         empresa_id,
         evento_id,
         Number(monto),
         concepto,
         metodo_pago || null,
-        estado || 'Completado',
+        estadoPago,
+        comprobante_url
       ]
     );
 
@@ -101,6 +133,7 @@ export const obtenerPagos = async (req, res) => {
          p.metodo_pago,
          p.fecha_pago,
          p.estado,
+         p.comprobante_url,
          p.fecha_registro,
          -- Contexto del evento asociado
          e.id     AS evento_id,
@@ -151,6 +184,7 @@ export const obtenerPagosPorEvento = async (req, res) => {
          p.metodo_pago,
          p.fecha_pago,
          p.estado,
+         p.comprobante_url,
          p.fecha_registro
        FROM pagos p
        WHERE p.evento_id = $1
@@ -159,7 +193,7 @@ export const obtenerPagosPorEvento = async (req, res) => {
       [evento_id, empresa_id]
     );
 
-    // Sumatoria de montos (solo pagos en estado 'Completado')
+    // Sumatoria de montos (solo pagos en estado 'Aprobado')
     const sumaResult = await pool.query(
       `SELECT
          COALESCE(SUM(monto), 0) AS total_pagado,
@@ -167,7 +201,7 @@ export const obtenerPagosPorEvento = async (req, res) => {
        FROM pagos
        WHERE evento_id  = $1
          AND empresa_id = $2
-         AND estado     = 'Completado'`,
+         AND estado     = 'Aprobado'`,
       [evento_id, empresa_id]
     );
 
@@ -188,5 +222,43 @@ export const obtenerPagosPorEvento = async (req, res) => {
       success: false,
       message: 'Error interno del servidor al obtener los pagos del evento.',
     });
+  }
+};
+
+/**
+ * Actualiza el estado de un pago.
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ */
+export const actualizarEstadoPago = async (req, res) => {
+  const empresa_id = req.user.empresa_id;
+  const { id } = req.params;
+  const { estado } = req.body;
+
+  try {
+    if (!estado || !ESTADOS_VALIDOS.includes(estado)) {
+      return res.status(400).json({
+        success: false,
+        message: `Estado inválido. Los valores permitidos son: ${ESTADOS_VALIDOS.join(', ')}.`
+      });
+    }
+
+    const result = await pool.query(
+      `UPDATE pagos
+       SET estado = $1
+       WHERE id = $2 AND empresa_id = $3
+       RETURNING id, estado`,
+      [estado, id, empresa_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Pago no encontrado o no pertenece a la empresa.' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Estado del pago actualizado.', data: result.rows[0] });
+  } catch (error) {
+    console.error('[pagoController] Error en actualizarEstadoPago:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno al actualizar estado del pago.' });
   }
 };

@@ -91,3 +91,58 @@ export const obtenerServicios = async (req, res) => {
     });
   }
 };
+
+/**
+ * Actualiza un servicio existente.
+ */
+export const actualizarServicio = async (req, res) => {
+  const { id } = req.params;
+  const empresa_id = req.user.empresa_id;
+  const { nombre, descripcion, precio_base, estado_activo } = req.body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE servicios 
+       SET nombre = COALESCE($1, nombre),
+           descripcion = COALESCE($2, descripcion),
+           precio_base = COALESCE($3, precio_base),
+           estado_activo = COALESCE($4, estado_activo)
+       WHERE id = $5 AND empresa_id = $6
+       RETURNING id, nombre, descripcion, precio_base, estado_activo`,
+      [nombre, descripcion, precio_base, estado_activo, id, empresa_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Servicio no encontrado o no pertenece a tu empresa.' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Servicio actualizado.', data: result.rows[0] });
+  } catch (error) {
+    console.error('[servicioController] Error en actualizarServicio:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno al actualizar.' });
+  }
+};
+
+/**
+ * Elimina (borrado lógico) un servicio.
+ */
+export const eliminarServicio = async (req, res) => {
+  const { id } = req.params;
+  const empresa_id = req.user.empresa_id;
+
+  try {
+    const result = await pool.query(
+      `UPDATE servicios SET estado_activo = false WHERE id = $1 AND empresa_id = $2 RETURNING id`,
+      [id, empresa_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Servicio no encontrado.' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Servicio eliminado (borrado lógico).' });
+  } catch (error) {
+    console.error('[servicioController] Error en eliminarServicio:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno al eliminar.' });
+  }
+};

@@ -171,3 +171,83 @@ export const actualizarEstadoEvento = async (req, res) => {
     });
   }
 };
+
+/**
+ * Obtiene el detalle de un evento por su ID.
+ */
+export const obtenerEventoPorId = async (req, res) => {
+  const { id } = req.params;
+  const empresa_id = req.user.empresa_id;
+
+  try {
+    const result = await pool.query(
+      `SELECT e.*, r.salon_o_lugar, r.fecha_evento, r.hora_inicio, r.hora_fin, r.estado AS reserva_estado
+       FROM eventos e
+       INNER JOIN reservas r ON e.reserva_id = r.id
+       WHERE e.id = $1 AND e.empresa_id = $2`,
+      [id, empresa_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Evento no encontrado.' });
+    }
+
+    return res.status(200).json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error('[eventoController] Error en obtenerEventoPorId:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno al obtener evento.' });
+  }
+};
+
+/**
+ * Actualiza los datos principales de un evento.
+ */
+export const actualizarEvento = async (req, res) => {
+  const { id } = req.params;
+  const empresa_id = req.user.empresa_id;
+  const { titulo, descripcion } = req.body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE eventos 
+       SET titulo = COALESCE($1, titulo),
+           descripcion = COALESCE($2, descripcion)
+       WHERE id = $3 AND empresa_id = $4
+       RETURNING id, titulo, descripcion`,
+      [titulo, descripcion, id, empresa_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Evento no encontrado.' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Evento actualizado.', data: result.rows[0] });
+  } catch (error) {
+    console.error('[eventoController] Error en actualizarEvento:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno al actualizar.' });
+  }
+};
+
+/**
+ * Elimina un evento.
+ */
+export const eliminarEvento = async (req, res) => {
+  const { id } = req.params;
+  const empresa_id = req.user.empresa_id;
+
+  try {
+    const result = await pool.query(
+      `DELETE FROM eventos WHERE id = $1 AND empresa_id = $2 RETURNING id`,
+      [id, empresa_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Evento no encontrado.' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Evento eliminado.' });
+  } catch (error) {
+    console.error('[eventoController] Error en eliminarEvento:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno al eliminar.' });
+  }
+};

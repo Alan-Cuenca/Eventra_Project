@@ -134,7 +134,7 @@ export const DashboardPage = () => {
   const fetchKpis = useCallback(async () => {
     setKpiLoading(true);
     try {
-      const response = await api.get('/dashboard');
+      const response = await api.get('/dashboard/admin');
       if (response?.kpis) { setKpis(response.kpis); setApiOnline(true); }
     } catch {
       setApiOnline(false);

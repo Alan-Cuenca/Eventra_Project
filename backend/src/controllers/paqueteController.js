@@ -136,3 +136,58 @@ export const obtenerPaquetes = async (req, res) => {
     });
   }
 };
+
+/**
+ * Actualiza un paquete existente (sólo cabecera, sin relaciones por ahora).
+ */
+export const actualizarPaquete = async (req, res) => {
+  const { id } = req.params;
+  const empresa_id = req.user.empresa_id;
+  const { nombre, descripcion, precio_total, estado_activo } = req.body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE paquetes 
+       SET nombre = COALESCE($1, nombre),
+           descripcion = COALESCE($2, descripcion),
+           precio_total = COALESCE($3, precio_total),
+           estado_activo = COALESCE($4, estado_activo)
+       WHERE id = $5 AND empresa_id = $6
+       RETURNING id, nombre, descripcion, precio_total, estado_activo`,
+      [nombre, descripcion, precio_total, estado_activo, id, empresa_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Paquete no encontrado o no pertenece a tu empresa.' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Paquete actualizado.', data: result.rows[0] });
+  } catch (error) {
+    console.error('[paqueteController] Error en actualizarPaquete:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno al actualizar.' });
+  }
+};
+
+/**
+ * Elimina (borrado lógico) un paquete.
+ */
+export const eliminarPaquete = async (req, res) => {
+  const { id } = req.params;
+  const empresa_id = req.user.empresa_id;
+
+  try {
+    const result = await pool.query(
+      `UPDATE paquetes SET estado_activo = false WHERE id = $1 AND empresa_id = $2 RETURNING id`,
+      [id, empresa_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Paquete no encontrado.' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Paquete eliminado (borrado lógico).' });
+  } catch (error) {
+    console.error('[paqueteController] Error en eliminarPaquete:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno al eliminar.' });
+  }
+};

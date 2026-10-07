@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Badge } from '../../components/common/Badge';
+import { Card } from '../../components/common/Card';
 import { eventraService } from '../../services/eventraService';
 import { Calendar, Search, Filter, Plus, User, Phone, Eye, ArrowUpRight, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';

@@ -48,7 +48,7 @@ export const ChatbotWidget = () => {
         style={{
           position: 'fixed',
           bottom: '1.25rem',
-          left: '1.25rem',
+          right: '1.25rem',
           zIndex: 9998,
           width: '54px',
           height: '54px',
@@ -82,7 +82,7 @@ export const ChatbotWidget = () => {
           style={{
             position: 'fixed',
             bottom: '5.2rem',
-            left: '1.25rem',
+            right: '1.25rem',
             width: '380px',
             height: '500px',
             maxHeight: '80vh',
@@ -116,7 +116,7 @@ export const ChatbotWidget = () => {
                 style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#FAF8F5', padding: '2px' }}
               />
               <div>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>EVARA AI</div>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#ffffff' }}>EVARA AI</div>
                 <div style={{ fontSize: '0.68rem', color: '#5bc286', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                   <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#5bc286' }} /> Asistente EVENTRA
                 </div>
@@ -154,7 +154,7 @@ export const ChatbotWidget = () => {
                     msg.sender === 'user'
                       ? 'linear-gradient(135deg, var(--primary), var(--primary-hover))'
                       : 'rgba(23, 36, 46, 0.9)',
-                  color: 'var(--text-primary)',
+                  color: '#ffffff',
                   border: msg.sender === 'user' ? 'none' : '1px solid var(--border-subtle)',
                   lineHeight: '1.4',
                 }}

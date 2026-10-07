@@ -1,5 +1,5 @@
 import express from 'express';
-import { crearServicio, obtenerServicios } from '../controllers/servicioController.js';
+import { crearServicio, obtenerServicios, actualizarServicio, eliminarServicio } from '../controllers/servicioController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -17,5 +17,19 @@ router.get('/', verifyToken, obtenerServicios);
  * @access Private + RBAC — solo Administrador (1) y Gerente (2)
  */
 router.post('/', verifyToken, authorizeRoles([1, 2]), crearServicio);
+
+/**
+ * @route  PUT /api/servicios/:id
+ * @desc   Actualiza un servicio existente
+ * @access Private + RBAC — solo Administrador (1) y Gerente (2)
+ */
+router.put('/:id', verifyToken, authorizeRoles([1, 2]), actualizarServicio);
+
+/**
+ * @route  DELETE /api/servicios/:id
+ * @desc   Elimina (borrado lógico) un servicio
+ * @access Private + RBAC — solo Administrador (1) y Gerente (2)
+ */
+router.delete('/:id', verifyToken, authorizeRoles([1, 2]), eliminarServicio);
 
 export default router;

@@ -3,7 +3,11 @@ import {
   registrarPago,
   obtenerPagos,
   obtenerPagosPorEvento,
+  actualizarEstadoPago,
 } from '../controllers/pagoController.js';
+import multer from 'multer';
+
+const upload = multer({ storage: multer.memoryStorage() });
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -22,7 +26,7 @@ const router = express.Router();
  *   "estado":      "Completado" | "Pendiente" | "Anulado"  (opcional)
  * }
  */
-router.post('/', verifyToken, authorizeRoles([1, 2]), registrarPago);
+router.post('/', verifyToken, authorizeRoles([1, 2, 3]), upload.single('comprobante'), registrarPago);
 
 /**
  * @route  GET /api/pagos
@@ -37,5 +41,12 @@ router.get('/', verifyToken, authorizeRoles([1, 2, 3]), obtenerPagos);
  * @access Private — cualquier usuario autenticado con JWT válido
  */
 router.get('/evento/:evento_id', verifyToken, obtenerPagosPorEvento);
+
+/**
+ * @route  PUT /api/pagos/:id/estado
+ * @desc   Aprueba o rechaza un pago (cambia estado)
+ * @access Private + RBAC — Administrador (1) y Gerente (2)
+ */
+router.put('/:id/estado', verifyToken, authorizeRoles([1, 2]), actualizarEstadoPago);
 
 export default router;

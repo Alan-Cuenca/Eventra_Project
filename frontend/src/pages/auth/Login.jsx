@@ -433,7 +433,7 @@ export const Login = () => {
               textAlign: 'center',
             }}
           >
-            🔐 Conexión segura · API: eventra-project-l3hl.onrender.com
+            🔐 Conexión segura · API: {window.location.hostname === 'localhost' ? 'localhost:3000 (local)' : 'eventra-project-l3hl.onrender.com'}
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import express from 'express';
-import { crearPaquete, obtenerPaquetes } from '../controllers/paqueteController.js';
+import { crearPaquete, obtenerPaquetes, actualizarPaquete, eliminarPaquete } from '../controllers/paqueteController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -25,5 +25,19 @@ router.get('/', verifyToken, obtenerPaquetes);
  * }
  */
 router.post('/', verifyToken, authorizeRoles([1, 2]), crearPaquete);
+
+/**
+ * @route  PUT /api/paquetes/:id
+ * @desc   Actualiza un paquete existente
+ * @access Private + RBAC — solo Administrador (1) y Gerente (2)
+ */
+router.put('/:id', verifyToken, authorizeRoles([1, 2]), actualizarPaquete);
+
+/**
+ * @route  DELETE /api/paquetes/:id
+ * @desc   Elimina (borrado lógico) un paquete
+ * @access Private + RBAC — solo Administrador (1) y Gerente (2)
+ */
+router.delete('/:id', verifyToken, authorizeRoles([1, 2]), eliminarPaquete);
 
 export default router;
