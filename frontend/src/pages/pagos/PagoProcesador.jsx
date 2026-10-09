@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Card } from '../../components/ui/Card';
-import { useAuth } from '../../contexts/AuthContext';
+import { Card } from '../../components/common/Card';
+import { useAuth } from '../../context/AuthContext';
 import { eventraService } from '../../services/eventraService';
 import { CreditCard, Banknote, Building, UploadCloud, CheckCircle } from 'lucide-react';
 

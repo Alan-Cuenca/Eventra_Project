@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from '../../components/ui/Card';
+import { Card } from '../../components/common/Card';
 import { eventraService } from '../../services/eventraService';
 import { CheckCircle, XCircle, Eye, AlertTriangle } from 'lucide-react';
 

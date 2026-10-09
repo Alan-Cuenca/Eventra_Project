@@ -15,12 +15,23 @@ import {
   LogOut,
   ChevronRight,
   Sparkles,
+  CreditCard,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
 const ACCESOS_RAPIDOS = [
   {
+    id: 'pagos',
+    to: '/pagos/procesar',
+    icon: CreditCard,
+    titulo: 'Realizar Pago',
+    desc: 'Registra y sube tus comprobantes de pago de forma segura.',
+    color: '#059669',
+    colorBg: 'rgba(5, 150, 105, 0.15)',
+  },
+  {
     id: 'mis-eventos',
+    to: '/eventos',
     icon: CalendarDays,
     titulo: 'Mis Eventos',
     desc: 'Consulta y haz seguimiento de todos tus eventos contratados.',
@@ -238,6 +249,7 @@ export const PortalClientePage = () => {
                 id={`portal-card-${item.id}`}
                 className="glass-card interactive"
                 style={{ cursor: 'pointer', padding: '1.5rem' }}
+                onClick={() => item.to && navigate(item.to)}
               >
                 <div
                   style={{

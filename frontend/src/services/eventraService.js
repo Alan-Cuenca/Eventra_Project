@@ -317,6 +317,8 @@ export const eventraService = {
       console.warn('[eventraService] Chatbot API fallback:', err.message);
       return {
         respuesta: `Hola, soy el asistente virtual EVARA de EVENTRA. Estoy preparado para orientarte en bodas, quinceañeras y recepciones. Recibí tu consulta: "${mensaje}". Actualmente te recomiendo revisar nuestros paquetes prediseñados en la sección de Servicios.`,
+      };
+    }
   },
 
   // ==========================================

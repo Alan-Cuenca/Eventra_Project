@@ -49,8 +49,7 @@ export const Login = () => {
     setLoading(true);
     try {
       const result = await login(formData.email, formData.password);
-      const rolId = result?.user?.rol_id ?? null;
-      navigate(rolId === 4 ? '/portal-cliente' : '/dashboard', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(
         err?.status === 401
