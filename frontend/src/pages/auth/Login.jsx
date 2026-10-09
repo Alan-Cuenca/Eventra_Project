@@ -139,115 +139,7 @@ export const Login = () => {
           eventos con precisión profesional.
         </p>
 
-        {/* Imagen decorativa elegante */}
-        <div
-          style={{
-            width: '100%',
-            maxWidth: '440px',
-            borderRadius: '20px',
-            overflow: 'hidden',
-            boxShadow: 'var(--shadow-lg)',
-            border: '1px solid var(--border-subtle)',
-            marginBottom: '2.5rem',
-            background: 'var(--white)',
-          }}
-        >
-          {/* Mockup de tarjetas de evento */}
-          <div style={{ padding: '1.25rem', background: 'var(--white)' }}>
-            <div
-              style={{
-                fontFamily: 'Outfit, sans-serif',
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                color: 'var(--text-muted)',
-                marginBottom: '0.875rem',
-              }}
-            >
-              ✦ Próximos Eventos
-            </div>
-            {[
-              { titulo: 'Boda Alejandra & Carlos', fecha: '24 Oct 2026', prog: 65, color: '#4D7182' },
-              { titulo: 'Mis XV Años — Valentina', fecha: '14 Nov 2026', prog: 40, color: '#4D9A72' },
-            ].map((evt) => (
-              <div
-                key={evt.titulo}
-                style={{
-                  padding: '0.875rem',
-                  borderRadius: '12px',
-                  border: '1px solid var(--border-subtle)',
-                  marginBottom: '0.6rem',
-                  background: 'var(--cream)',
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--primary-dark)' }}>
-                    {evt.titulo}
-                  </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    {evt.fecha}
-                  </span>
-                </div>
-                <div className="progress-bar-container">
-                  <div
-                    className="progress-bar-fill"
-                    style={{
-                      width: `${evt.prog}%`,
-                      background: `linear-gradient(90deg, ${evt.color}, ${evt.color}99)`,
-                    }}
-                  />
-                </div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
-                  {evt.prog}% organizado
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Features */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem', maxWidth: '420px' }}>
-          {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              style={{ display: 'flex', gap: '0.875rem', alignItems: 'flex-start' }}
-            >
-              <div
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '10px',
-                  background: 'rgba(77,113,130,0.1)',
-                  border: '1px solid rgba(77,113,130,0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--primary)',
-                  flexShrink: 0,
-                }}
-              >
-                {f.icon}
-              </div>
-              <div>
-                <div
-                  style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--primary-dark)' }}
-                >
-                  {f.title}
-                </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
-                  {f.desc}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* ── Panel Derecho — Formulario (Card Blanca) ──────────────────────── */}
@@ -419,21 +311,7 @@ export const Login = () => {
             </Link>
           </div>
 
-          {/* Badge de seguridad */}
-          <div
-            style={{
-              marginTop: '1.25rem',
-              padding: '0.55rem 1rem',
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--cream)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '0.7rem',
-              color: 'var(--text-muted)',
-              textAlign: 'center',
-            }}
-          >
-            🔐 Conexión segura · API: {window.location.hostname === 'localhost' ? 'localhost:3000 (local)' : 'eventra-project-l3hl.onrender.com'}
-          </div>
+
         </div>
       </div>
     </div>

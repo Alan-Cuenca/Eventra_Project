@@ -155,13 +155,13 @@ export const Sidebar = () => {
             marginBottom: '0.15rem',
           }}
         >
-          EVENTRA SaaS MVP
+          EVENTRA
         </div>
         <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-          Fase 3 · Construcción Ágil
+          Sistema de Gestión de Eventos
         </div>
         <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
-          UTA — Software 7mo "A"
+          Plataforma Protegida
         </div>
       </div>
     </aside>

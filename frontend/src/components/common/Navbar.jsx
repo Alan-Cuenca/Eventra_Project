@@ -71,16 +71,6 @@ export const Navbar = () => {
 
   return (
     <header className="app-header">
-      {/* Buscador */}
-      <div className="header-search">
-        <Search size={15} color="var(--text-muted)" />
-        <input
-          type="text"
-          placeholder="Buscar eventos, clientes, cotizaciones..."
-          id="global-search"
-        />
-      </div>
-
       {/* Acciones */}
       <div className="header-actions">
         {/* Estado API */}
