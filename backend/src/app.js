@@ -104,13 +104,16 @@ app.use((req, res) => {
 // importarla directamente sin levantar el servidor en un puerto real.
 export default app;
 
-// Solo levanta el servidor cuando el archivo se ejecuta directamente,
-// nunca cuando es importado por los tests.
 const PORT = process.env.PORT || 3000;
+const HOST = '0.0.0.0';
 
-if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Solo omitir listen en entorno de pruebas Jest (nunca en Render ni producción)
+const isTestEnv = Boolean(process.env.JEST_WORKER_ID) || (process.env.NODE_ENV === 'test' && !process.env.RENDER);
+
+if (!isTestEnv) {
+  app.listen(PORT, HOST, () => {
+    console.log(`Server is running on http://${HOST}:${PORT}`);
   });
 }
+
 
