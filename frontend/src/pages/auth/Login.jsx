@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { ThemeToggle } from '../../components/common/ThemeToggle';
 import {
   Lock, Mail, ArrowRight, Eye, EyeOff, Loader2,
   CalendarDays, Shield, Sparkles, AlertCircle,
@@ -65,6 +66,9 @@ export const Login = () => {
 
   return (
     <div className="login-root">
+      {/* Botón flotante para modo oscuro/claro en esquina superior derecha */}
+      <ThemeToggle floating />
+
       {/* ── Panel Izquierdo — Branding Crema ─────────────────────────────── */}
       <div className="login-left">
         {/* Logo */}

@@ -86,12 +86,15 @@ export const obtenerActividades = async (req, res) => {
         a.estado,
         a.fecha_creacion,
         a.responsable_id,
+        COALESCE(u.nombre_completo, u.nombre, 'Usuario') AS responsable_nombre,
+        u.email  AS responsable_email,
         -- Contexto del evento al que pertenece la actividad
         e.id     AS evento_id,
         e.titulo AS evento_titulo,
         e.estado_progreso AS evento_estado
       FROM actividades a
       INNER JOIN eventos e ON a.evento_id = e.id
+      LEFT JOIN usuarios u ON a.responsable_id = u.id
       WHERE a.empresa_id = $1`;
 
     const params = [empresa_id];

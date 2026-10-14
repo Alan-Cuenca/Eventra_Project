@@ -71,6 +71,59 @@
   /* Sidebar */
   --sidebar-width: 272px;
   --header-height: 70px;
+  --accent:         #C49A3A;   /* Acento dorado                                */
+}
+
+/* ==========================================================================
+   EVENTRA — Modo Oscuro ("Sofisticación Sutil Dark")
+   Paleta Charcoal-Slate refinada · Contraste nítido · Cero saturación agresiva
+   ========================================================================== */
+:root.dark,
+html.dark {
+  /* ── Paleta Modo Oscuro — Sofisticada y elegante ───────────────────────── */
+  --cream:          #141E24;   /* Reemplazo de crema cálido en oscuro         */
+  --beige:          #24343F;   /* Reemplazo de beige / bordes secundarios     */
+  --primary:        #6594AA;   /* Azul grisáceo luminoso para contraste       */
+  --primary-hover:  #7BA8BE;
+  --primary-dark:   #F0F5F7;   /* Encabezados y títulos de alto contraste     */
+  --primary-light:  rgba(101, 148, 170, 0.22);
+  --primary-glow:   rgba(101, 148, 170, 0.35);
+  --white:          #1A262E;   /* Superficies de cards y contenedores         */
+  --accent:         #D4A63B;
+
+  /* Semánticos */
+  --success:        #56BA85;
+  --success-light:  rgba(86, 186, 133, 0.18);
+  --warning:        #DEAE3E;
+  --warning-light:  rgba(222, 174, 62, 0.18);
+  --danger:         #DF6E6E;
+  --danger-light:   rgba(223, 110, 110, 0.18);
+  --info:           #6594AA;
+  --info-light:     rgba(101, 148, 170, 0.18);
+
+  /* ── Superficies Dark ─────────────────────────────────────────────────── */
+  --bg-main:        #10171D;   /* Fondo general profundo de la aplicación     */
+  --bg-surface:     #162128;   /* Sidebar, navbar, cabeceras                  */
+  --bg-card:        #1A262E;   /* Cards elevadas y modales                    */
+  --bg-card-hover:  #22313B;
+  --bg-input:       #131B21;   /* Campos de entrada                           */
+
+  /* Bordes */
+  --border-subtle:  #263640;   /* Bordes nítidos y discretos                  */
+  --border-focus:   #6594AA;
+
+  /* Tipografía */
+  --text-primary:   #EAF1F4;   /* Texto principal claro y nítido              */
+  --text-secondary: #9EB5C2;   /* Texto secundario azulado suave              */
+  --text-muted:     #728996;   /* Texto tenue legible                         */
+  --text-inverse:   #10171D;
+
+  /* Sombras Dark */
+  --shadow-xs:  0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-sm:  0 2px 8px rgba(0, 0, 0, 0.5);
+  --shadow-md:  0 5px 20px rgba(0, 0, 0, 0.6);
+  --shadow-lg:  0 10px 32px rgba(0, 0, 0, 0.75);
+  --shadow-glow:0 0 24px var(--primary-glow);
 }
 
 /* ── Reset & Base ─────────────────────────────────────────────────────────── */
@@ -1149,3 +1202,206 @@ img { max-width: 100%; display: block; }
 .mb-4 { margin-bottom: 1rem; }
 .mb-6 { margin-bottom: 1.5rem; }
 .mt-auto { margin-top: auto; }
+
+/* ── Theme Toggle Button ─────────────────────────────────────────────────── */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-xs);
+  user-select: none;
+  line-height: 1;
+}
+
+.theme-toggle-btn:hover {
+  border-color: var(--primary);
+  background: var(--cream);
+  color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-toggle-btn:active {
+  transform: translateY(0);
+}
+
+.theme-toggle-btn.floating {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 1000;
+  backdrop-filter: blur(12px);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-md);
+  padding: 0.55rem 0.85rem;
+}
+
+.theme-toggle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.theme-toggle-btn:hover .theme-toggle-icon {
+  transform: rotate(25deg) scale(1.12);
+}
+
+.theme-toggle-text {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* ── Ajustes Especiales para Componentes en Modo Oscuro ───────────────────── */
+html.dark body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  background-image:
+    radial-gradient(ellipse at 5% 5%,  rgba(101,148,170,0.08) 0%, transparent 40%),
+    radial-gradient(ellipse at 95% 95%, rgba(36,52,63,0.35) 0%, transparent 40%);
+}
+
+html.dark .login-root {
+  background: var(--bg-main);
+}
+
+html.dark .login-left {
+  background: linear-gradient(145deg, #131c22 0%, #1a2730 50%, #10161b 100%);
+  border-right-color: var(--border-subtle);
+}
+
+html.dark .login-right {
+  background: var(--bg-surface);
+}
+
+html.dark .api-status-badge.connected {
+  background: rgba(86,186,133,0.15);
+  border-color: rgba(86,186,133,0.35);
+  color: #72cca0;
+}
+
+html.dark .api-status-badge.offline {
+  background: rgba(222,174,62,0.15);
+  border-color: rgba(222,174,62,0.35);
+  color: #f0c562;
+}
+
+html.dark .badge-primary { background: rgba(101,148,170,0.2); color: #8ec2da; border-color: rgba(101,148,170,0.4); }
+html.dark .badge-success { background: rgba(86,186,133,0.2); color: #72cca0; border-color: rgba(86,186,133,0.4); }
+html.dark .badge-warning { background: rgba(222,174,62,0.2); color: #f0c562; border-color: rgba(222,174,62,0.4); }
+html.dark .badge-danger  { background: rgba(223,110,110,0.2); color: #f38f8f; border-color: rgba(223,110,110,0.4); }
+html.dark .badge-accent  { background: rgba(36,52,63,0.6); color: #EAF1F4; border-color: var(--border-subtle); }
+html.dark .badge-neutral { background: var(--cream); color: var(--text-secondary); border-color: var(--border-subtle); }
+
+html.dark .custom-table thead th {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+}
+
+html.dark .custom-table tbody tr:hover td {
+  background: rgba(101, 148, 170, 0.08);
+}
+
+html.dark .custom-table tbody td {
+  border-bottom-color: var(--border-subtle);
+}
+
+html.dark .modal-overlay {
+  background: rgba(8, 12, 15, 0.75);
+}
+
+html.dark .btn-secondary {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+}
+
+html.dark .btn-secondary:hover:not(:disabled) {
+  background: var(--cream);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+html.dark .btn-ghost:hover:not(:disabled) {
+  background: var(--cream);
+  color: var(--text-primary);
+}
+
+html.dark .sidebar-footer {
+  background: var(--bg-surface);
+  border-top-color: var(--border-subtle);
+}
+
+html.dark .demo-role-btn {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+}
+
+html.dark .demo-role-btn:hover {
+  background: var(--cream);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+html.dark .checklist-item {
+  background: var(--bg-surface);
+  border-color: var(--border-subtle);
+}
+
+html.dark .checklist-item:hover {
+  background: var(--cream);
+}
+
+html.dark .progress-bar-container {
+  background: var(--bg-surface);
+}
+
+html.dark .skeleton {
+  background: linear-gradient(90deg, var(--bg-surface) 25%, #22313B 50%, var(--bg-surface) 75%);
+}
+
+/* ── Helados La Catedral (Landing Page) Dark Mode Adaptations ─────────────── */
+html.dark [class*="bg-[#EEEBDD]"],
+html.dark [class*="bg-[#EEEBDD]/95"] {
+  background-color: #121A20 !important;
+}
+
+html.dark [class*="bg-[#CBC6B6]"] {
+  background-color: #1A262E !important;
+}
+
+html.dark [class*="border-[#CBC6B6]"],
+html.dark [class*="border-[#526F7D]/20"] {
+  border-color: #263640 !important;
+}
+
+html.dark [class*="text-[#233D49]"] {
+  color: #EAF1F4 !important;
+}
+
+html.dark [class*="text-[#526F7D]"],
+html.dark [class*="text-[#526F7D]/70"] {
+  color: #9EB5C2 !important;
+}
+
+html.dark [class*="bg-white/50"],
+html.dark [class*="bg-white/90"],
+html.dark [class*="bg-white/20"] {
+  background-color: rgba(26, 38, 46, 0.75) !important;
+}
+
+html.dark [class*="bg-white"] {
+  background-color: #1A262E !important;
+}
+
