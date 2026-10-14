@@ -1,16 +1,12 @@
 -- =============================================================================
--- EVENTRA - Script de Inicialización de Base de Datos
--- Compatible con: PostgreSQL 14+
+-- EVENTRA - Script de Inicialización y Migración de Base de Datos
+-- Compatible con: PostgreSQL 14+ / Supabase
 -- =============================================================================
--- Descripción del modelo:
---
---   [empresas] ──< [usuarios] >── [roles]
---
---   Una EMPRESA puede tener múltiples USUARIOS registrados bajo ella.
---   Cada USUARIO pertenece a una sola EMPRESA y tiene un único ROL asignado.
---   Los ROLES definen los permisos y el perfil de acceso de cada usuario
---   dentro del sistema EVENTRA (Administrador, Gerente, Trabajador, Cliente).
+-- Este script es 100% idempotente: es seguro de ejecutar tanto en una base de
+-- datos limpia como en una base de datos existente de Supabase.
 -- =============================================================================
+
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 
 -- =============================================================================
@@ -18,9 +14,6 @@
 -- =============================================================================
 -- Almacena las organizaciones o empresas que utilizan la plataforma EVENTRA.
 -- Es la entidad raíz del sistema: todos los usuarios deben pertenecer a una empresa.
---
--- plan_suscripcion: controla las funcionalidades disponibles según el plan
--- contratado. Valores: 'Basico', 'Profesional', 'Enterprise'.
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS empresas (
     id                 SERIAL       PRIMARY KEY,
@@ -42,10 +35,6 @@ ALTER TABLE empresas
 -- =============================================================================
 -- TABLA: roles
 -- =============================================================================
--- Define los perfiles de acceso disponibles en el sistema.
--- Cada usuario tendrá exactamente un rol, que determina sus permisos
--- y las funcionalidades a las que puede acceder dentro de EVENTRA.
--- =============================================================================
 CREATE TABLE IF NOT EXISTS roles (
     id          SERIAL      PRIMARY KEY,
     nombre      VARCHAR(50) UNIQUE NOT NULL,
@@ -54,61 +43,40 @@ CREATE TABLE IF NOT EXISTS roles (
 
 
 -- =============================================================================
--- DATOS INICIALES: roles
+-- DATOS INICIALES: roles (1..5)
 -- =============================================================================
--- Se insertan los 5 perfiles del sistema SaaS (incluyendo Super_Admin).
--- Se usa ON CONFLICT para garantizar idempotencia.
+-- Se usa ON CONFLICT (id) para garantizar inserción/actualización segura
+-- incluso si la base de datos ya tenía los 4 roles previos.
 -- =============================================================================
 INSERT INTO roles (id, nombre, descripcion) VALUES
-    (1, 'Administrador', 'Acceso total al sistema de su empresa. Gestiona usuarios, eventos, clientes y configuración de su tenant.')
-    ON CONFLICT (nombre) DO UPDATE SET descripcion = EXCLUDED.descripcion;
-
-INSERT INTO roles (id, nombre, descripcion) VALUES
-    (2, 'Gerente', 'Gestiona los eventos y el personal de su empresa. Puede visualizar reportes y administrar trabajadores.')
-    ON CONFLICT (nombre) DO UPDATE SET descripcion = EXCLUDED.descripcion;
-
-INSERT INTO roles (id, nombre, descripcion) VALUES
-    (3, 'Trabajador', 'Personal operativo de la empresa. Accede a los eventos asignados y gestiona sus tareas correspondientes.')
-    ON CONFLICT (nombre) DO UPDATE SET descripcion = EXCLUDED.descripcion;
-
-INSERT INTO roles (id, nombre, descripcion) VALUES
-    (4, 'Cliente', 'Usuario externo que puede consultar, contratar y hacer seguimiento de los servicios de eventos.')
-    ON CONFLICT (nombre) DO UPDATE SET descripcion = EXCLUDED.descripcion;
-
-INSERT INTO roles (id, nombre, descripcion) VALUES
+    (1, 'Administrador', 'Acceso total al sistema de su empresa. Gestiona usuarios, eventos, clientes y configuración de su tenant.'),
+    (2, 'Gerente', 'Gestiona los eventos y el personal de su empresa. Puede visualizar reportes y administrar trabajadores.'),
+    (3, 'Trabajador', 'Personal operativo de la empresa. Accede a los eventos asignados y gestiona sus tareas correspondientes.'),
+    (4, 'Cliente', 'Usuario externo que puede consultar, contratar y hacer seguimiento de los servicios de eventos.'),
     (5, 'Super_Admin', 'Rol supremo global de la plataforma EVENTRA (SaaS Owner). Gestión integral de inquilinos (empresas), planes de suscripción y métricas globales.')
-    ON CONFLICT (nombre) DO UPDATE SET descripcion = EXCLUDED.descripcion;
+ON CONFLICT (id) DO UPDATE SET
+    nombre = EXCLUDED.nombre,
+    descripcion = EXCLUDED.descripcion;
 
--- Ajuste de secuencia de roles para evitar conflictos de llave primaria
+-- Ajuste de secuencia de roles para evitar conflictos de autoincremento
 SELECT setval(pg_get_serial_sequence('roles', 'id'), COALESCE((SELECT MAX(id) FROM roles), 1));
 
 
 -- =============================================================================
 -- TABLA: usuarios
 -- =============================================================================
--- Almacena los usuarios del sistema. Cada usuario está vinculado a una empresa
--- (empresa_id) y tiene un perfil de acceso definido por su rol (rol_id).
--- Para el Super_Admin global (SaaS Owner), empresa_id puede ser NULL.
---
--- Relaciones:
---   - empresa_id → empresas(id): Si se elimina una empresa, se eliminan en
---     cascada todos sus usuarios (ON DELETE CASCADE).
---   - rol_id    → roles(id):    El rol es obligatorio para cada usuario.
---
--- Se utiliza UUID como clave primaria para mayor seguridad y escalabilidad,
--- evitando la exposición de IDs secuenciales en la API.
--- =============================================================================
 CREATE TABLE IF NOT EXISTS usuarios (
-    id               UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-    empresa_id       INTEGER,
-    rol_id           INTEGER      NOT NULL,
-    nombre_completo  VARCHAR(150) NOT NULL,
-    cedula           VARCHAR(20),
-    fecha_nacimiento DATE,
-    email            VARCHAR(150) UNIQUE NOT NULL,
-    password_hash    VARCHAR(255) NOT NULL,
-    estado_activo    BOOLEAN      DEFAULT true,
-    fecha_creacion   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    id                  UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id          INTEGER,
+    rol_id              INTEGER      NOT NULL,
+    nombre_completo     VARCHAR(150) NOT NULL,
+    cedula              VARCHAR(20),
+    fecha_nacimiento    DATE,
+    email               VARCHAR(150) UNIQUE NOT NULL,
+    password_hash       VARCHAR(255) NOT NULL,
+    estado_activo       BOOLEAN      DEFAULT true,
+    fecha_creacion      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_usuarios_empresa
         FOREIGN KEY (empresa_id)
@@ -124,6 +92,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
 ALTER TABLE usuarios ALTER COLUMN empresa_id DROP NOT NULL;
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS cedula VARCHAR(20);
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS fecha_nacimiento DATE;
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 
 
 -- =============================================================================
@@ -139,20 +108,24 @@ ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS fecha_nacimiento DATE;
 --   se eliminan en cascada (ON DELETE CASCADE).
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS clientes (
-    id             UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-    empresa_id     INTEGER      NOT NULL,
-    nombres        VARCHAR(100) NOT NULL,
-    apellidos      VARCHAR(100) NOT NULL,
-    email          VARCHAR(150) UNIQUE,
-    telefono       VARCHAR(20),
-    estado_activo  BOOLEAN      DEFAULT true,
-    fecha_creacion TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    id                  UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id          INTEGER      NOT NULL,
+    nombres             VARCHAR(100) NOT NULL,
+    apellidos           VARCHAR(100) NOT NULL,
+    email               VARCHAR(150) UNIQUE,
+    telefono            VARCHAR(20),
+    estado_activo       BOOLEAN      DEFAULT true,
+    fecha_creacion      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_clientes_empresa
         FOREIGN KEY (empresa_id)
         REFERENCES empresas(id)
         ON DELETE CASCADE
 );
+
+-- Idempotencia para clientes
+ALTER TABLE clientes ADD COLUMN IF NOT EXISTS fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 
 
 -- =============================================================================
@@ -448,6 +421,7 @@ CREATE TABLE IF NOT EXISTS pagos (
     metodo_pago     VARCHAR(50),
     fecha_pago      DATE           DEFAULT CURRENT_DATE,
     estado          VARCHAR(50)    DEFAULT 'Completado',
+    comprobante_url TEXT,
     fecha_registro  TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_pagos_empresa
@@ -460,6 +434,9 @@ CREATE TABLE IF NOT EXISTS pagos (
         REFERENCES eventos(id)
         ON DELETE CASCADE
 );
+
+-- Idempotencia para pagos
+ALTER TABLE pagos ADD COLUMN IF NOT EXISTS comprobante_url TEXT;
 
 
 -- =============================================================================
@@ -543,18 +520,38 @@ CREATE TABLE IF NOT EXISTS solicitudes_modificacion (
 
 
 -- =============================================================================
+-- MIGRACIONES IDEMPOTENTES PARA BASES DE DATOS PREVIAS
+-- =============================================================================
+-- Si las tablas ya existían antes de la arquitectura SaaS o actualizaciones recientes,
+-- estas instrucciones garantizan que todas las columnas existan sin alterar datos.
+-- =============================================================================
+
+-- Asegurar empresa_id con clave foránea en todas las tablas operativas
+ALTER TABLE clientes                 ADD COLUMN IF NOT EXISTS empresa_id INTEGER REFERENCES empresas(id) ON DELETE CASCADE;
+ALTER TABLE servicios                ADD COLUMN IF NOT EXISTS empresa_id INTEGER REFERENCES empresas(id) ON DELETE CASCADE;
+ALTER TABLE paquetes                 ADD COLUMN IF NOT EXISTS empresa_id INTEGER REFERENCES empresas(id) ON DELETE CASCADE;
+ALTER TABLE cotizaciones             ADD COLUMN IF NOT EXISTS empresa_id INTEGER REFERENCES empresas(id) ON DELETE CASCADE;
+ALTER TABLE reservas                 ADD COLUMN IF NOT EXISTS empresa_id INTEGER REFERENCES empresas(id) ON DELETE CASCADE;
+ALTER TABLE eventos                  ADD COLUMN IF NOT EXISTS empresa_id INTEGER REFERENCES empresas(id) ON DELETE CASCADE;
+ALTER TABLE actividades              ADD COLUMN IF NOT EXISTS empresa_id INTEGER REFERENCES empresas(id) ON DELETE CASCADE;
+ALTER TABLE pagos                    ADD COLUMN IF NOT EXISTS empresa_id INTEGER REFERENCES empresas(id) ON DELETE CASCADE;
+ALTER TABLE proveedores              ADD COLUMN IF NOT EXISTS empresa_id INTEGER REFERENCES empresas(id) ON DELETE CASCADE;
+ALTER TABLE solicitudes_modificacion ADD COLUMN IF NOT EXISTS empresa_id INTEGER REFERENCES empresas(id) ON DELETE CASCADE;
+
+
+-- =============================================================================
 -- ÍNDICES MULTI-TENANT (Aislamiento y Rendimiento SaaS)
 -- =============================================================================
 -- Acelera los filtros obligatorios WHERE empresa_id = $1 en toda la plataforma
-CREATE INDEX IF NOT EXISTS idx_usuarios_empresa    ON usuarios(empresa_id);
-CREATE INDEX IF NOT EXISTS idx_clientes_empresa    ON clientes(empresa_id);
-CREATE INDEX IF NOT EXISTS idx_servicios_empresa   ON servicios(empresa_id);
-CREATE INDEX IF NOT EXISTS idx_paquetes_empresa    ON paquetes(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_usuarios_empresa     ON usuarios(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_clientes_empresa     ON clientes(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_servicios_empresa    ON servicios(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_paquetes_empresa     ON paquetes(empresa_id);
 CREATE INDEX IF NOT EXISTS idx_cotizaciones_empresa ON cotizaciones(empresa_id);
-CREATE INDEX IF NOT EXISTS idx_reservas_empresa    ON reservas(empresa_id);
-CREATE INDEX IF NOT EXISTS idx_eventos_empresa     ON eventos(empresa_id);
-CREATE INDEX IF NOT EXISTS idx_actividades_empresa ON actividades(empresa_id);
-CREATE INDEX IF NOT EXISTS idx_pagos_empresa       ON pagos(empresa_id);
-CREATE INDEX IF NOT EXISTS idx_proveedores_empresa ON proveedores(empresa_id);
-CREATE INDEX IF NOT EXISTS idx_solicitudes_empresa ON solicitudes_modificacion(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_reservas_empresa     ON reservas(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_eventos_empresa      ON eventos(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_actividades_empresa  ON actividades(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_pagos_empresa        ON pagos(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_proveedores_empresa  ON proveedores(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_solicitudes_empresa  ON solicitudes_modificacion(empresa_id);
 
