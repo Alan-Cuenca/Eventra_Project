@@ -178,3 +178,46 @@ export const eliminarCliente = async (req, res) => {
     });
   }
 };
+
+/**
+ * Obtiene un cliente específico por su ID garantizando aislamiento por empresa.
+ */
+export const obtenerClientePorId = async (req, res) => {
+  const empresa_id = req.user.empresa_id;
+  const { id } = req.params;
+
+  if (!empresa_id) {
+    return res.status(403).json({
+      success: false,
+      message: 'Acceso denegado. Se requiere pertenecer a una empresa.',
+    });
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT id, empresa_id, nombres, apellidos, email, telefono, estado_activo, fecha_creacion
+       FROM clientes
+       WHERE id = $1 AND empresa_id = $2`,
+      [id, empresa_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Cliente no encontrado o no pertenece a tu empresa.',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error('[clienteController] Error en obtenerClientePorId:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor al obtener el cliente.',
+    });
+  }
+};
+

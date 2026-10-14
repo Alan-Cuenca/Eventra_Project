@@ -1,5 +1,5 @@
 import express from 'express';
-import { crearCliente, obtenerClientes, actualizarCliente, eliminarCliente } from '../controllers/clienteController.js';
+import { crearCliente, obtenerClientes, obtenerClientePorId, actualizarCliente, eliminarCliente } from '../controllers/clienteController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -19,6 +19,13 @@ router.post('/', verifyToken, crearCliente);
 router.get('/', verifyToken, obtenerClientes);
 
 /**
+ * @route  GET /api/clientes/:id
+ * @desc   Retorna un cliente por ID perteneciente a la empresa
+ * @access Private — requiere JWT válido
+ */
+router.get('/:id', verifyToken, obtenerClientePorId);
+
+/**
  * @route  PUT /api/clientes/:id
  * @desc   Actualiza un cliente existente
  * @access Private — Admin y Gerente
@@ -33,3 +40,4 @@ router.put('/:id', verifyToken, authorizeRoles([1, 2]), actualizarCliente);
 router.delete('/:id', verifyToken, authorizeRoles([1, 2]), eliminarCliente);
 
 export default router;
+

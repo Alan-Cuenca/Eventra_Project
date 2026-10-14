@@ -1,16 +1,17 @@
 import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { ROL_SUPER_ADMIN } from '../middlewares/authMiddleware.js';
 
 /**
  * Registra un nuevo usuario en el sistema EVENTRA.
  *
- * Flujo:
- *  1. Extrae los datos del cuerpo de la petición.
- *  2. Verifica que el email no esté ya registrado (unicidad).
- *  3. Encripta la contraseña con bcrypt (salt rounds = 10).
- *  4. Inserta el usuario usando consultas parametrizadas (previene SQL Injection).
- *  5. Retorna 201 con los datos del usuario creado (sin exponer el hash).
+ * Flujo SaaS:
+ *  1. Valida campos obligatorios (nombre_completo, email, password, rol_id, empresa_id).
+ *  2. Previene autoregistro no autorizado con rol Super_Admin (5).
+ *  3. Verifica que el email sea único en la plataforma.
+ *  4. Encripta la contraseña con bcrypt.
+ *  5. Inserta el usuario vinculado a su tenant (empresa_id).
  *
  * @param {import('express').Request}  req
  * @param {import('express').Response} res
@@ -20,10 +21,26 @@ export const registerUser = async (req, res) => {
 
   try {
     // --- Validación de campos obligatorios ---
-    if (!nombre_completo || !email || !password || !rol_id || !empresa_id) {
+    if (!nombre_completo || !email || !password || rol_id === undefined || rol_id === null) {
       return res.status(400).json({
         success: false,
         message: 'Todos los campos son obligatorios: nombre_completo, email, password, rol_id, empresa_id.',
+      });
+    }
+
+    // Para usuarios que no sean Super Admin, empresa_id es estrictamente obligatorio
+    if (Number(rol_id) !== ROL_SUPER_ADMIN && !empresa_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Todos los campos son obligatorios: nombre_completo, email, password, rol_id, empresa_id.',
+      });
+    }
+
+    // Protección de escalabilidad de privilegios: no permitir autoregistro como Super_Admin
+    if (Number(rol_id) === ROL_SUPER_ADMIN) {
+      return res.status(403).json({
+        success: false,
+        message: 'No está permitido registrarse como Super_Admin directamente.',
       });
     }
 
@@ -49,12 +66,11 @@ export const registerUser = async (req, res) => {
       `INSERT INTO usuarios (empresa_id, rol_id, nombre_completo, email, password_hash)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, empresa_id, rol_id, nombre_completo, email, estado_activo, fecha_creacion`,
-      [empresa_id, rol_id, nombre_completo, email, password_hash]
+      [empresa_id || null, Number(rol_id), nombre_completo, email, password_hash]
     );
 
     const newUser = result.rows[0];
 
-    // --- Respuesta exitosa (sin exponer password_hash) ---
     return res.status(201).json({
       success: true,
       message: 'Usuario registrado exitosamente.',
@@ -71,14 +87,16 @@ export const registerUser = async (req, res) => {
 };
 
 /**
- * Inicia sesión de un usuario existente en el sistema EVENTRA.
+ * Inicia sesión de un usuario en el sistema EVENTRA SaaS.
  *
  * Flujo:
  *  1. Extrae email y password del body.
- *  2. Busca el usuario por email. Si no existe → 404.
- *  3. Compara el password con el hash almacenado (bcrypt). Si no coincide → 401.
- *  4. Genera un JWT firmado con JWT_SECRET (payload: id, rol_id, empresa_id).
- *  5. Retorna 200 con el token y los datos básicos del usuario (sin hash).
+ *  2. Busca el usuario por email e incluye rol y estado de empresa (tenant).
+ *  3. Compara el password con el hash almacenado (bcrypt).
+ *  4. Verifica que la cuenta de usuario esté activa.
+ *  5. Verifica que la empresa (tenant) no esté suspendida (si no es Super_Admin).
+ *  6. Genera un JWT firmado con payload: id, rol_id, empresa_id, email.
+ *  7. Retorna 200 con el token y datos del usuario (sin hash).
  *
  * @param {import('express').Request}  req
  * @param {import('express').Response} res
@@ -95,11 +113,17 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    // --- Buscar usuario por email ---
+    // --- Buscar usuario por email con datos de rol y empresa ---
     const result = await pool.query(
-      `SELECT id, empresa_id, rol_id, nombre_completo, email, password_hash, estado_activo
-       FROM usuarios
-       WHERE email = $1`,
+      `SELECT u.id, u.empresa_id, u.rol_id, u.nombre_completo, u.email, u.password_hash, u.estado_activo,
+              r.nombre AS rol_nombre,
+              e.nombre_comercial AS empresa_nombre,
+              e.plan_suscripcion,
+              e.estado_activo AS empresa_activa
+       FROM usuarios u
+       LEFT JOIN roles r ON u.rol_id = r.id
+       LEFT JOIN empresas e ON u.empresa_id = e.id
+       WHERE u.email = $1`,
       [email]
     );
 
@@ -130,11 +154,23 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    // --- Generar token JWT ---
+    // --- Verificar estado del tenant (empresa): si está suspendida, bloquear acceso (excepto Super_Admin) ---
+    if (Number(user.rol_id) !== ROL_SUPER_ADMIN && user.empresa_activa === false) {
+      return res.status(403).json({
+        success: false,
+        message: 'La empresa asociada a su cuenta se encuentra suspendida o inactiva. Contacte a soporte de EVENTRA.',
+      });
+    }
+
+    // --- Generar token JWT con empresa_id y rol_id explícitos ---
     const payload = {
       id: user.id,
-      rol_id: user.rol_id,
-      empresa_id: user.empresa_id,
+      rol_id: Number(user.rol_id),
+      rol: user.rol_nombre,
+      rol_nombre: user.rol_nombre,
+      empresa_id: user.empresa_id !== undefined && user.empresa_id !== null ? Number(user.empresa_id) : null,
+      plan_suscripcion: user.plan_suscripcion || null,
+      email: user.email,
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
@@ -157,3 +193,4 @@ export const loginUser = async (req, res) => {
     });
   }
 };
+

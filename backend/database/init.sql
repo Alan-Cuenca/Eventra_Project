@@ -27,12 +27,16 @@ CREATE TABLE IF NOT EXISTS empresas (
     nombre_comercial   VARCHAR(100) NOT NULL,
     ruc                VARCHAR(20)  UNIQUE,
     plan_suscripcion   VARCHAR(50)  DEFAULT 'Basico',
+    estado_activo      BOOLEAN      DEFAULT true,
     fecha_registro     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 );
 
--- Agrega la columna a instancias ya existentes (idempotente)
+-- Agrega columnas a instancias ya existentes (idempotente)
 ALTER TABLE empresas
     ADD COLUMN IF NOT EXISTS plan_suscripcion VARCHAR(50) DEFAULT 'Basico';
+
+ALTER TABLE empresas
+    ADD COLUMN IF NOT EXISTS estado_activo BOOLEAN DEFAULT true;
 
 
 -- =============================================================================
@@ -52,24 +56,31 @@ CREATE TABLE IF NOT EXISTS roles (
 -- =============================================================================
 -- DATOS INICIALES: roles
 -- =============================================================================
--- Se insertan los 4 perfiles base del sistema. Se usa ON CONFLICT DO NOTHING
--- para que el script sea idempotente (seguro de ejecutar múltiples veces).
+-- Se insertan los 5 perfiles del sistema SaaS (incluyendo Super_Admin).
+-- Se usa ON CONFLICT para garantizar idempotencia.
 -- =============================================================================
-INSERT INTO roles (nombre, descripcion) VALUES
-    ('Administrador', 'Acceso total al sistema. Gestiona empresas, usuarios, roles y configuración global de EVENTRA.')
-    ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO roles (id, nombre, descripcion) VALUES
+    (1, 'Administrador', 'Acceso total al sistema de su empresa. Gestiona usuarios, eventos, clientes y configuración de su tenant.')
+    ON CONFLICT (nombre) DO UPDATE SET descripcion = EXCLUDED.descripcion;
 
-INSERT INTO roles (nombre, descripcion) VALUES
-    ('Gerente', 'Gestiona los eventos y el personal de su empresa. Puede visualizar reportes y administrar trabajadores.')
-    ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO roles (id, nombre, descripcion) VALUES
+    (2, 'Gerente', 'Gestiona los eventos y el personal de su empresa. Puede visualizar reportes y administrar trabajadores.')
+    ON CONFLICT (nombre) DO UPDATE SET descripcion = EXCLUDED.descripcion;
 
-INSERT INTO roles (nombre, descripcion) VALUES
-    ('Trabajador', 'Personal operativo de la empresa. Accede a los eventos asignados y gestiona sus tareas correspondientes.')
-    ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO roles (id, nombre, descripcion) VALUES
+    (3, 'Trabajador', 'Personal operativo de la empresa. Accede a los eventos asignados y gestiona sus tareas correspondientes.')
+    ON CONFLICT (nombre) DO UPDATE SET descripcion = EXCLUDED.descripcion;
 
-INSERT INTO roles (nombre, descripcion) VALUES
-    ('Cliente', 'Usuario externo que puede consultar, contratar y hacer seguimiento de los servicios de eventos.')
-    ON CONFLICT (nombre) DO NOTHING;
+INSERT INTO roles (id, nombre, descripcion) VALUES
+    (4, 'Cliente', 'Usuario externo que puede consultar, contratar y hacer seguimiento de los servicios de eventos.')
+    ON CONFLICT (nombre) DO UPDATE SET descripcion = EXCLUDED.descripcion;
+
+INSERT INTO roles (id, nombre, descripcion) VALUES
+    (5, 'Super_Admin', 'Rol supremo global de la plataforma EVENTRA (SaaS Owner). Gestión integral de inquilinos (empresas), planes de suscripción y métricas globales.')
+    ON CONFLICT (nombre) DO UPDATE SET descripcion = EXCLUDED.descripcion;
+
+-- Ajuste de secuencia de roles para evitar conflictos de llave primaria
+SELECT setval(pg_get_serial_sequence('roles', 'id'), COALESCE((SELECT MAX(id) FROM roles), 1));
 
 
 -- =============================================================================
@@ -77,6 +88,7 @@ INSERT INTO roles (nombre, descripcion) VALUES
 -- =============================================================================
 -- Almacena los usuarios del sistema. Cada usuario está vinculado a una empresa
 -- (empresa_id) y tiene un perfil de acceso definido por su rol (rol_id).
+-- Para el Super_Admin global (SaaS Owner), empresa_id puede ser NULL.
 --
 -- Relaciones:
 --   - empresa_id → empresas(id): Si se elimina una empresa, se eliminan en
@@ -88,7 +100,7 @@ INSERT INTO roles (nombre, descripcion) VALUES
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS usuarios (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-    empresa_id      INTEGER     NOT NULL,
+    empresa_id      INTEGER,
     rol_id          INTEGER     NOT NULL,
     nombre_completo VARCHAR(150) NOT NULL,
     email           VARCHAR(150) UNIQUE NOT NULL,
@@ -105,6 +117,9 @@ CREATE TABLE IF NOT EXISTS usuarios (
         FOREIGN KEY (rol_id)
         REFERENCES roles(id)
 );
+
+-- Idempotencia para empresa_id en usuarios
+ALTER TABLE usuarios ALTER COLUMN empresa_id DROP NOT NULL;
 
 
 -- =============================================================================
@@ -521,3 +536,21 @@ CREATE TABLE IF NOT EXISTS solicitudes_modificacion (
         REFERENCES clientes(id)
         ON DELETE SET NULL
 );
+
+
+-- =============================================================================
+-- ÍNDICES MULTI-TENANT (Aislamiento y Rendimiento SaaS)
+-- =============================================================================
+-- Acelera los filtros obligatorios WHERE empresa_id = $1 en toda la plataforma
+CREATE INDEX IF NOT EXISTS idx_usuarios_empresa    ON usuarios(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_clientes_empresa    ON clientes(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_servicios_empresa   ON servicios(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_paquetes_empresa    ON paquetes(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_cotizaciones_empresa ON cotizaciones(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_reservas_empresa    ON reservas(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_eventos_empresa     ON eventos(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_actividades_empresa ON actividades(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_pagos_empresa       ON pagos(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_proveedores_empresa ON proveedores(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_solicitudes_empresa ON solicitudes_modificacion(empresa_id);
+

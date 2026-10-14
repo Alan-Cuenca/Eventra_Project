@@ -1,5 +1,5 @@
 import express from 'express';
-import { obtenerUsuarios, actualizarUsuario, eliminarUsuario } from '../controllers/usuarioController.js';
+import { obtenerUsuarios, crearUsuario, actualizarUsuario, eliminarUsuario } from '../controllers/usuarioController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -10,6 +10,13 @@ const router = express.Router();
  * @access Private — Solo Administrador (1)
  */
 router.get('/', verifyToken, authorizeRoles([1]), obtenerUsuarios);
+
+/**
+ * @route  POST /api/usuarios
+ * @desc   Crea un nuevo colaborador dentro de la empresa
+ * @access Private — Solo Administrador (1)
+ */
+router.post('/', verifyToken, authorizeRoles([1]), crearUsuario);
 
 /**
  * @route  PUT /api/usuarios/:id
@@ -26,3 +33,4 @@ router.put('/:id', verifyToken, authorizeRoles([1]), actualizarUsuario);
 router.delete('/:id', verifyToken, authorizeRoles([1]), eliminarUsuario);
 
 export default router;
+

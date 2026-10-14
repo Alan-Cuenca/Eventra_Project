@@ -17,6 +17,7 @@ import solicitudRoutes from './routes/solicitudRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import chatbotRoutes from './routes/chatbotRoutes.js';
 import usuarioRoutes from './routes/usuarioRoutes.js';
+import empresaRoutes from './routes/empresaRoutes.js';
 
 dotenv.config();
 
@@ -88,6 +89,9 @@ app.use('/api/chatbot', chatbotRoutes);
 // --- Rutas de usuarios internos (JWT + RBAC: solo Admin) ---
 app.use('/api/usuarios', usuarioRoutes);
 
+// --- Rutas de administración global de inquilinos (JWT + RBAC: solo Super_Admin) ---
+app.use('/api/empresas', empresaRoutes);
+
 // Manejador global para rutas no encontradas (404)
 app.use((req, res) => {
   res.status(404).json({
@@ -104,6 +108,9 @@ export default app;
 // nunca cuando es importado por los tests.
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
+

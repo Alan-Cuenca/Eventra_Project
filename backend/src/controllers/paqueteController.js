@@ -48,6 +48,20 @@ export const crearPaquete = async (req, res) => {
   try {
     await client.query('BEGIN');
 
+    // --- Validación de pertenencia de servicios a la empresa (Aislamiento SaaS) ---
+    const serviciosValidos = await client.query(
+      `SELECT id FROM servicios WHERE id = ANY($1::uuid[]) AND empresa_id = $2`,
+      [servicios_ids, empresa_id]
+    );
+
+    if (serviciosValidos.rowCount !== servicios_ids.length) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        success: false,
+        message: 'Uno o más servicios no existen o pertenecen a otra empresa.',
+      });
+    }
+
     // --- Paso 1: Insertar el paquete ---
     const paqueteResult = await client.query(
       `INSERT INTO paquetes (empresa_id, nombre, descripcion, precio_total)

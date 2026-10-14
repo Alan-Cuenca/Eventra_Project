@@ -16,6 +16,13 @@ export const crearEvento = async (req, res) => {
   const empresa_id = req.user.empresa_id;
   const { reserva_id, titulo, descripcion } = req.body;
 
+  if (!empresa_id) {
+    return res.status(403).json({
+      success: false,
+      message: 'Acceso denegado. Se requiere pertenecer a una empresa.',
+    });
+  }
+
   try {
     // --- Validación de campos obligatorios ---
     if (!reserva_id || !titulo) {
@@ -25,7 +32,20 @@ export const crearEvento = async (req, res) => {
       });
     }
 
-    // --- Insertar evento (SQL parametrizado) ---
+    // Aislamiento SaaS: Validar que la reserva pertenezca a la misma empresa
+    const reservaCheck = await pool.query(
+      `SELECT id FROM reservas WHERE id = $1 AND empresa_id = $2`,
+      [reserva_id, empresa_id]
+    );
+
+    if (reservaCheck.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'La reserva indicada no existe o no pertenece a tu empresa.',
+      });
+    }
+
+    // --- Insertar evento (SQL parametrizado con empresa_id del JWT) ---
     const result = await pool.query(
       `INSERT INTO eventos (empresa_id, reserva_id, titulo, descripcion)
        VALUES ($1, $2, $3, $4)
@@ -40,7 +60,6 @@ export const crearEvento = async (req, res) => {
     });
 
   } catch (error) {
-    // FK inválida: reserva_id no existe o no pertenece a esta empresa
     if (error.code === '23503') {
       return res.status(400).json({
         success: false,
