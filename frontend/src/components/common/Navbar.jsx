@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Badge } from './Badge';
+import { ThemeToggle } from './ThemeToggle';
 import {
   Bell, LogOut, Search, User, CheckCircle2, Clock, AlertCircle, X,
 } from 'lucide-react';
@@ -88,6 +89,9 @@ export const Navbar = () => {
             ? 'API Express Conectada'
             : 'Modo Frontend Activo'}
         </div>
+
+        {/* Selector de modo oscuro/claro */}
+        <ThemeToggle />
 
         {/* Campana de notificaciones */}
         <div style={{ position: 'relative' }} ref={notifRef}>

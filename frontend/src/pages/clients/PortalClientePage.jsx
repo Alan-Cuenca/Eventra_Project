@@ -7,6 +7,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { ThemeToggle } from '../../components/common/ThemeToggle';
 import {
   CalendarDays,
   FileText,
@@ -143,6 +144,7 @@ export const PortalClientePage = () => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <ThemeToggle />
           <div style={{ textAlign: 'right', fontSize: '0.82rem' }}>
             <div style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
               {user?.nombre_completo ?? nombre}

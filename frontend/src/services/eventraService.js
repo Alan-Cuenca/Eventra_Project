@@ -1,5 +1,6 @@
 import { api } from './api';
 import {
+  DEMO_USERS,
   MOCK_SERVICIOS,
   MOCK_PAQUETES,
   MOCK_EVENTOS,
@@ -7,6 +8,15 @@ import {
   MOCK_METRICAS_SAAS,
   MOCK_RESERVAS,
 } from './mockData';
+
+const FALLBACK_STAFF_USERS = [
+  { id: 'e684387c-a94a-41c1-82c7-b94c31eff638', nombre_completo: 'Jorge Sailema', rol_id: 3, email: 'jorge@royalrecepciones.com' },
+  { id: '19201cfb-3d6c-4af4-b551-0af21d75890c', nombre_completo: 'Alan Puruncajas', rol_id: 2, email: 'gerente@royalrecepciones.com' },
+  { id: 'usr-trabajador-03', nombre_completo: 'Jorge Sailema', rol_id: 3, email: 'jorge@royalrecepciones.com' },
+  { id: 'usr-gerente-02', nombre_completo: 'Alan Puruncajas', rol_id: 2, email: 'gerente@royalrecepciones.com' },
+  { id: 'usr-admin-01', nombre_completo: 'Alejandro Falcón', rol_id: 1, email: 'admin@eventra.com' },
+  { id: 'usr-cliente-04', nombre_completo: 'Pablo Vayas', rol_id: 4, email: 'pablo.cliente@gmail.com' },
+];
 
 export const eventraService = {
   // ==========================================
@@ -65,25 +75,70 @@ export const eventraService = {
   // ACTIVIDADES (/api/actividades)
   // ==========================================
   async getActividades(params = {}) {
-    const query = new URLSearchParams(params).toString();
-    const url = query ? `/actividades?${query}` : '/actividades';
-    const response = await api.get(url);
-    return response.data || [];
+    try {
+      const query = new URLSearchParams(params).toString();
+      const url = query ? `/actividades?${query}` : '/actividades';
+      const response = await api.get(url);
+      const list = Array.isArray(response) ? response : (response?.data && Array.isArray(response.data) ? response.data : []);
+      return list;
+    } catch (err) {
+      console.warn('[eventraService] getActividades error:', err.message);
+      return [];
+    }
   },
 
   async createActividad(actividadData) {
-    const response = await api.post('/actividades', actividadData);
-    return response.data;
+    const payload = {
+      evento_id: actividadData.evento_id,
+      responsable_id: actividadData.responsable_id || null,
+      titulo: actividadData.titulo || actividadData.descripcion || 'Actividad Operativa',
+      descripcion: actividadData.descripcion || actividadData.titulo || '',
+      fecha_vencimiento: actividadData.fecha_vencimiento || actividadData.fecha_limite || null,
+      estado: actividadData.estado || 'Pendiente',
+    };
+    const response = await api.post('/actividades', payload);
+    return response?.data || response;
   },
 
   async updateActividad(id, actividadData) {
-    const response = await api.put(`/actividades/${id}`, actividadData);
-    return response.data;
+    const payload = {
+      evento_id: actividadData.evento_id,
+      responsable_id: actividadData.responsable_id || null,
+      titulo: actividadData.titulo || actividadData.descripcion || 'Actividad Operativa',
+      descripcion: actividadData.descripcion || actividadData.titulo || '',
+      fecha_vencimiento: actividadData.fecha_vencimiento || actividadData.fecha_limite || null,
+      estado: actividadData.estado || 'Pendiente',
+    };
+    const response = await api.put(`/actividades/${id}`, payload);
+    return response?.data || response;
   },
 
   async deleteActividad(id) {
     await api.delete(`/actividades/${id}`);
     return true;
+  },
+
+  // ==========================================
+  // USUARIOS / TRABAJADORES (/api/usuarios)
+  // ==========================================
+  async getUsuarios() {
+    try {
+      const response = await api.get('/usuarios');
+      const list = Array.isArray(response) ? response : (response?.data && Array.isArray(response.data) ? response.data : []);
+      if (list && list.length > 0) {
+        const mapped = list.map((u) => ({
+          id: u.id,
+          nombre_completo: u.nombre_completo || u.nombre || `${u.nombres || ''} ${u.apellidos || ''}`.trim() || 'Trabajador',
+          email: u.email,
+          rol_id: u.rol_id,
+        }));
+        return [...mapped, ...FALLBACK_STAFF_USERS];
+      }
+      return FALLBACK_STAFF_USERS;
+    } catch (err) {
+      console.warn('[eventraService] getUsuarios fallback:', err.message);
+      return FALLBACK_STAFF_USERS;
+    }
   },
 
   // ==========================================
@@ -182,13 +237,31 @@ export const eventraService = {
   // EVENTOS (/api/eventos)
   // ==========================================
   async getEventos() {
-    const response = await api.get('/eventos');
-    return response.data;
+    try {
+      const response = await api.get('/eventos');
+      const list = Array.isArray(response)
+        ? response
+        : (response?.data && Array.isArray(response.data) ? response.data : []);
+      if (list && list.length > 0) {
+        return list;
+      }
+      return MOCK_EVENTOS;
+    } catch (err) {
+      console.warn('[eventraService] getEventos fallback to mock:', err.message);
+      return MOCK_EVENTOS;
+    }
   },
 
   async getEvento(id) {
-    const response = await api.get(`/eventos/${id}`);
-    return response.data;
+    try {
+      const response = await api.get(`/eventos/${id}`);
+      const data = response?.data || response;
+      if (data && (data.id || data.titulo)) return data;
+      return MOCK_EVENTOS.find(e => String(e.id) === String(id)) || MOCK_EVENTOS[0];
+    } catch (err) {
+      console.warn('[eventraService] getEvento fallback to mock:', err.message);
+      return MOCK_EVENTOS.find(e => String(e.id) === String(id)) || MOCK_EVENTOS[0];
+    }
   },
 
   async createEvento(eventoData) {

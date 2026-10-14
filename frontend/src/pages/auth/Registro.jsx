@@ -7,6 +7,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../../services/api';
+import { ThemeToggle } from '../../components/common/ThemeToggle';
 import { Lock, Mail, User, Building2, ArrowRight, CheckCircle2, Loader2, Eye, EyeOff } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
@@ -90,6 +91,7 @@ export const Registro = () => {
             'radial-gradient(ellipse 120% 80% at 50% 0%, rgba(69,102,119,0.22) 0%, transparent 60%), var(--bg-main)',
         }}
       >
+        <ThemeToggle floating />
         <div
           className="glass-card animate-fade-in"
           style={{ maxWidth: '400px', width: '100%', textAlign: 'center', padding: '3rem 2rem' }}
@@ -154,6 +156,7 @@ export const Registro = () => {
         overflow: 'hidden',
       }}
     >
+      <ThemeToggle floating />
       {/* Decoración ambiental */}
       <div
         aria-hidden="true"
