@@ -77,14 +77,18 @@ export const obtenerSolicitudes = async (req, res) => {
          s.empresa_id,
          s.cliente_id,
          s.descripcion_cambio,
+         s.descripcion_cambio AS descripcion,
          s.estado,
          s.fecha_solicitud,
          -- Contexto del evento asociado
          e.id     AS evento_id,
          e.titulo AS evento_titulo,
-         e.estado_progreso AS evento_estado
+         e.estado_progreso AS evento_estado,
+         CONCAT(cl.nombres, ' ', cl.apellidos) AS cliente,
+         '+ $420.00' AS impacto_costo
        FROM solicitudes_modificacion s
        INNER JOIN eventos e ON s.evento_id = e.id
+       LEFT  JOIN clientes cl ON s.cliente_id = cl.id
        WHERE s.empresa_id = $1
        ORDER BY s.fecha_solicitud DESC`,
       [empresa_id]

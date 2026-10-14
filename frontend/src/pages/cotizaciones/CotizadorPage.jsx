@@ -97,16 +97,24 @@ export const CotizadorPage = () => {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
-  // Cargar clientes reales del backend (con fallback)
+  const [paquetes, setPaquetes] = useState(MOCK_PAQUETES);
+  const [servicios, setServicios] = useState(MOCK_SERVICIOS);
+
+  // Cargar clientes, paquetes y servicios reales del backend
   useEffect(() => {
     eventraService.getClientes()
       .then(cls => setClientes((cls || []).filter(c => c.estado_activo !== false)))
       .catch(() => setClientes([]))
       .finally(() => setLoadingClientes(false));
-  }, []);
 
-  const paquetes = MOCK_PAQUETES;
-  const servicios = MOCK_SERVICIOS;
+    eventraService.getPaquetes()
+      .then(pqs => { if (pqs && pqs.length > 0) setPaquetes(pqs); })
+      .catch(() => {});
+
+    eventraService.getServicios()
+      .then(srvs => { if (srvs && srvs.length > 0) setServicios(srvs); })
+      .catch(() => {});
+  }, []);
 
   const paqueteSeleccionado = paquetes.find(p => String(p.id) === String(form.paquete_id));
   const costoPaquete = paqueteSeleccionado ? Number(paqueteSeleccionado.precio_total) : 0;

@@ -8,6 +8,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
+import { eventraService } from '../../services/eventraService';
 import { Badge } from '../../components/common/Badge';
 import {
   MOCK_EVENTOS,
@@ -117,10 +118,22 @@ export const DashboardPage = () => {
   const [apiOnline, setApiOnline] = useState(true);
   const [toast, setToast] = useState(null);
 
-  // Estado mutable de solicitudes para aprobación/rechazo
+  // Estado mutable de eventos y solicitudes
+  const [eventos, setEventos] = useState([]);
   const [solicitudes, setSolicitudes] = useState(() =>
     MOCK_SOLICITUDES_CAMBIO.map(s => ({ ...s }))
   );
+
+  useEffect(() => {
+    eventraService.getEventos()
+      .then(data => { if (data && data.length > 0) setEventos(data); })
+      .catch(() => {});
+    eventraService.getSolicitudes()
+      .then(data => { if (data && data.length > 0) setSolicitudes(data); })
+      .catch(() => {});
+  }, []);
+
+  const eventosList = eventos.length > 0 ? eventos : MOCK_EVENTOS;
 
   // Checklist interactivo para trabajador
   const [checklist, setChecklist] = useState([
@@ -149,7 +162,7 @@ export const DashboardPage = () => {
   }, [isAdmin, isGerente, isTrabajador, fetchKpis]);
 
   const kd = {
-    total_eventos_activos: kpis?.total_eventos_activos ?? MOCK_METRICAS_SAAS.eventos_mes,
+    total_eventos_activos: kpis?.total_eventos_activos ?? eventosList.length,
     total_clientes:        kpis?.total_clientes        ?? MOCK_METRICAS_SAAS.clientes_activos,
     ingresos_totales:      kpis?.ingresos_totales      ?? MOCK_METRICAS_SAAS.ingresos_mes,
     tareas_pendientes:     kpis?.tareas_pendientes     ?? 4,
@@ -159,16 +172,22 @@ export const DashboardPage = () => {
     new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n);
 
   // ── Handlers de aprobación ─────────────────────────────────────────────────
-  const handleAprobar = (id) => {
+  const handleAprobar = async (id) => {
+    try {
+      await eventraService.updateEstadoSolicitud(id, 'Aprobada');
+    } catch (_) {}
     setSolicitudes(prev =>
-      prev.map(s => s.id === id ? { ...s, estado: 'Aprobado' } : s)
+      prev.map(s => s.id === id ? { ...s, estado: 'Aprobada' } : s)
     );
     setToast({ msg: '✓ Solicitud aprobada exitosamente.', type: 'success' });
   };
 
-  const handleRechazar = (id) => {
+  const handleRechazar = async (id) => {
+    try {
+      await eventraService.updateEstadoSolicitud(id, 'Rechazada');
+    } catch (_) {}
     setSolicitudes(prev =>
-      prev.map(s => s.id === id ? { ...s, estado: 'Rechazado' } : s)
+      prev.map(s => s.id === id ? { ...s, estado: 'Rechazada' } : s)
     );
     setToast({ msg: '✗ Solicitud rechazada.', type: 'danger' });
   };
@@ -310,11 +329,11 @@ export const DashboardPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {MOCK_EVENTOS.map((evt) => (
+                  {eventosList.map((evt) => (
                     <tr key={evt.id}>
                       <td>
                         <div style={{ fontWeight: 700, fontSize: '0.875rem' }}>{evt.titulo}</div>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{evt.id}</div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{String(evt.id).substring(0, 8).toUpperCase()}</div>
                       </td>
                       <td style={{ fontSize: '0.875rem' }}>{evt.cliente_nombre}</td>
                       <td style={{ fontSize: '0.875rem', whiteSpace: 'nowrap' }}>{evt.fecha}</td>
@@ -445,7 +464,7 @@ export const DashboardPage = () => {
                   <tr><th>Evento</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Saldo</th><th>Estado</th></tr>
                 </thead>
                 <tbody>
-                  {MOCK_EVENTOS.map((evt) => (
+                  {eventosList.map((evt) => (
                     <tr key={evt.id}>
                       <td>
                         <div style={{ fontWeight: 700 }}>{evt.titulo}</div>
@@ -492,7 +511,7 @@ export const DashboardPage = () => {
                 <div className="card-title"><CalendarDays size={18} color="var(--primary)" />Eventos a mi Cargo</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {MOCK_EVENTOS.slice(0, 2).map((evt) => (
+                {eventosList.slice(0, 2).map((evt) => (
                   <div
                     key={evt.id}
                     style={{
@@ -590,7 +609,7 @@ export const DashboardPage = () => {
           VISTA 4: CLIENTE — Portal de seguimiento
          ══════════════════════════════════════════════════════════════════════ */}
       {isCliente && (() => {
-        const evt = MOCK_EVENTOS.find(e => e.id === 'EVT-2026-002') || MOCK_EVENTOS[1];
+        const evt = eventosList.find(e => e.cliente_email === user?.email || e.cliente_nombre?.toLowerCase().includes('pablo')) || eventosList[0] || MOCK_EVENTOS[1];
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {/* Card principal del evento */}

@@ -101,9 +101,12 @@ export const obtenerReservas = async (req, res) => {
       `SELECT
          r.id,
          r.salon_o_lugar,
+         r.salon_o_lugar AS salon,
          r.fecha_evento,
+         r.fecha_evento  AS fecha,
          r.hora_inicio,
          r.hora_fin,
+         CONCAT(TO_CHAR(r.hora_inicio, 'HH24:MI'), ' - ', TO_CHAR(r.hora_fin, 'HH24:MI')) AS horario,
          r.estado,
          r.fecha_creacion,
          -- Datos de la cotización
@@ -114,10 +117,15 @@ export const obtenerReservas = async (req, res) => {
          cl.id             AS cliente_id,
          cl.nombres        AS cliente_nombres,
          cl.apellidos      AS cliente_apellidos,
-         cl.email          AS cliente_email
+         CONCAT(cl.nombres, ' ', cl.apellidos) AS cliente_nombre,
+         cl.email          AS cliente_email,
+         -- Datos del evento asociado
+         e.id              AS evento_id,
+         COALESCE(e.titulo, 'Evento agendado') AS evento_titulo
        FROM reservas r
        INNER JOIN cotizaciones c  ON r.cotizacion_id = c.id
        INNER JOIN clientes     cl ON c.cliente_id    = cl.id
+       LEFT  JOIN eventos      e  ON e.reserva_id     = r.id
        WHERE r.empresa_id = $1
        ORDER BY r.fecha_evento ASC, r.hora_inicio ASC`,
       [empresa_id]

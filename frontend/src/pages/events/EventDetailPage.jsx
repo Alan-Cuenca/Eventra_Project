@@ -63,6 +63,29 @@ export const EventDetailPage = ({ eventoId: propId }) => {
     return { color: 'var(--primary)', bg: 'var(--primary-light)', icon: <Clock size={13} /> };
   };
 
+  if (loading) {
+    return (
+      <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+        <Loader2 size={32} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 1rem', color: 'var(--primary)' }} />
+        <p>Cargando información del evento...</p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (error || !evento) {
+    return (
+      <div style={{ padding: '3rem', textAlign: 'center' }}>
+        <p style={{ color: 'var(--danger)', marginBottom: '1rem' }}>{error || 'Evento no encontrado'}</p>
+        <button className="btn btn-secondary btn-sm" onClick={() => navigate('/eventos')}>
+          <ChevronLeft size={16} /> Volver a eventos
+        </button>
+      </div>
+    );
+  }
+
+  const actividades = evento.actividades || [];
+
   return (
     <div className="animate-fade-in">
       {/* Toast */}
