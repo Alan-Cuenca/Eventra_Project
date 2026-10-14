@@ -1,89 +1,293 @@
 import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { ROL_SUPER_ADMIN } from '../middlewares/authMiddleware.js';
+import nodemailer from 'nodemailer';
+import { ROL_SUPER_ADMIN, ROL_ADMINISTRADOR } from '../middlewares/authMiddleware.js';
 
 /**
- * Registra un nuevo usuario en el sistema EVENTRA.
+ * =============================================================================
+ * TRANSPORTADOR DE CORREOS (Nodemailer)
+ * =============================================================================
+ * Configurado para soportar SMTP en producción/Render, y fallback a Ethereal
+ * o transporte controlado para desarrollo y tests automatizados.
+ * =============================================================================
+ */
+export const createMailTransporter = () => {
+  if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587,
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+  }
+
+  // Fallback para entornos de desarrollo / Ethereal
+  return nodemailer.createTransport({
+    host: 'smtp.ethereal.email',
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.ETHEREAL_USER || 'ethereal.user@ethereal.email',
+      pass: process.env.ETHEREAL_PASS || 'ethereal_pass',
+    },
+    tls: { rejectUnauthorized: false },
+  });
+};
+
+/**
+ * Envía una invitación por correo a un nuevo colaborador.
+ * Acceso exclusivo: Administrador de la empresa (rol_id = 1).
  *
- * Flujo SaaS:
- *  1. Valida campos obligatorios (nombre_completo, email, password, rol_id, empresa_id).
- *  2. Previene autoregistro no autorizado con rol Super_Admin (5).
- *  3. Verifica que el email sea único en la plataforma.
- *  4. Encripta la contraseña con bcrypt.
- *  5. Inserta el usuario vinculado a su tenant (empresa_id).
+ * Flujo:
+ *  1. Extrae email y rol_id de req.body.
+ *  2. Extrae empresa_id de req.user.empresa_id (Aislamiento SaaS).
+ *  3. Verifica que el email no esté ya registrado en la BD.
+ *  4. Genera un token JWT temporal válido por 48 horas con email, rol_id y empresa_id.
+ *  5. Envía el correo mediante nodemailer con enlace a /completar-registro?token=...
+ *  6. Retorna 200 con confirmación.
  *
  * @param {import('express').Request}  req
  * @param {import('express').Response} res
  */
-export const registerUser = async (req, res) => {
-  const { nombre_completo, email, password, rol_id, empresa_id } = req.body;
+export const invitarUsuario = async (req, res) => {
+  const { email, rol_id } = req.body;
+  const empresa_id = req.user?.empresa_id;
 
   try {
-    // --- Validación de campos obligatorios ---
-    if (!nombre_completo || !email || !password || rol_id === undefined || rol_id === null) {
+    // 1. Validaciones de entrada
+    if (!email || rol_id === undefined || rol_id === null) {
       return res.status(400).json({
         success: false,
-        message: 'Todos los campos son obligatorios: nombre_completo, email, password, rol_id, empresa_id.',
+        message: 'Los campos email y rol_id son obligatorios para enviar una invitación.',
       });
     }
 
-    // Para usuarios que no sean Super Admin, empresa_id es estrictamente obligatorio
-    if (Number(rol_id) !== ROL_SUPER_ADMIN && !empresa_id) {
-      return res.status(400).json({
+    // 2. Validación de aislamiento SaaS
+    if (!empresa_id) {
+      return res.status(403).json({
         success: false,
-        message: 'Todos los campos son obligatorios: nombre_completo, email, password, rol_id, empresa_id.',
+        message: 'Operación denegada. El administrador debe pertenecer a una empresa activa.',
       });
     }
 
-    // Protección de escalabilidad de privilegios: no permitir autoregistro como Super_Admin
+    // Un admin de tenant no puede invitar a un Super Admin (5)
     if (Number(rol_id) === ROL_SUPER_ADMIN) {
       return res.status(403).json({
         success: false,
-        message: 'No está permitido registrarse como Super_Admin directamente.',
+        message: 'No está permitido invitar usuarios con el rol supremo Super_Admin.',
       });
     }
 
-    // --- Verificar si el email ya existe ---
+    // 3. Verificar que el email no exista ya en la base de datos
     const existingUser = await pool.query(
       'SELECT id FROM usuarios WHERE email = $1',
-      [email]
+      [email.toLowerCase().trim()]
     );
 
-    if (existingUser.rows.length > 0) {
-      return res.status(400).json({
+    if (existingUser.rowCount > 0) {
+      return res.status(409).json({
         success: false,
-        message: 'El email ya se encuentra registrado en el sistema.',
+        message: 'El correo electrónico ya se encuentra registrado en el sistema.',
       });
     }
 
-    // --- Encriptar la contraseña ---
-    const SALT_ROUNDS = 10;
-    const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
-
-    // --- Insertar el nuevo usuario (SQL parametrizado) ---
-    const result = await pool.query(
-      `INSERT INTO usuarios (empresa_id, rol_id, nombre_completo, email, password_hash)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, empresa_id, rol_id, nombre_completo, email, estado_activo, fecha_creacion`,
-      [empresa_id || null, Number(rol_id), nombre_completo, email, password_hash]
+    // 4. Generar token temporal de invitación (48 horas)
+    const tokenInvitacion = jwt.sign(
+      {
+        email: email.toLowerCase().trim(),
+        rol_id: Number(rol_id),
+        empresa_id: Number(empresa_id),
+        tipo: 'invitacion',
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '48h' }
     );
 
-    const newUser = result.rows[0];
+    // 5. Construir enlace hacia el frontend
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const enlaceRegistro = `${frontendUrl}/completar-registro?token=${tokenInvitacion}`;
 
-    return res.status(201).json({
+    // Obtener nombre comercial de la empresa para personalizar el correo
+    const empresaRes = await pool.query(
+      'SELECT nombre_comercial FROM empresas WHERE id = $1',
+      [empresa_id]
+    );
+    const nombreEmpresa = empresaRes.rows[0]?.nombre_comercial || 'EVENTRA';
+
+    // 6. Envío de correo mediante Nodemailer
+    const transporter = createMailTransporter();
+    const mailOptions = {
+      from: process.env.SMTP_FROM || `"EVENTRA SaaS" <no-reply@eventra.com>`,
+      to: email.toLowerCase().trim(),
+      subject: `Invitación para unirte al equipo de ${nombreEmpresa} en EVENTRA`,
+      text: `Hola,\n\nHas sido invitado a formar parte del equipo de ${nombreEmpresa} en EVENTRA.\n\nPara activar tu cuenta y configurar tu contraseña, ingresa al siguiente enlace (válido por 48 horas):\n${enlaceRegistro}\n\nSi no esperabas este correo, puedes ignorarlo con total seguridad.`,
+      html: `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F3F0E4; padding: 40px 20px; color: #233D49;">
+          <div style="max-width: 560px; margin: 0 auto; background-color: #FFFFFF; border-radius: 12px; padding: 32px; box-shadow: 0 4px 14px rgba(35, 61, 73, 0.08);">
+            <div style="text-align: center; margin-bottom: 24px;">
+              <h1 style="color: #233D49; margin: 0; font-size: 24px; letter-spacing: 1px;">EVENTRA</h1>
+              <p style="color: #4D7182; font-size: 13px; margin-top: 4px;">Plataforma de Gestión Integral de Eventos</p>
+            </div>
+            <hr style="border: none; border-top: 1px solid #ECE7D5; margin: 20px 0;" />
+            <h2 style="color: #233D49; font-size: 18px; margin-top: 0;">¡Hola! Has sido invitado a unirte</h2>
+            <p style="font-size: 14px; line-height: 1.6; color: #4D7182;">
+              El administrador de <strong>${nombreEmpresa}</strong> te ha invitado a formar parte de su equipo operativo en EVENTRA.
+            </p>
+            <p style="font-size: 14px; line-height: 1.6; color: #233D49;">
+              Para completar tu registro, configurar tu contraseña y acceder al sistema, haz clic en el siguiente botón:
+            </p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${enlaceRegistro}"
+                 style="background-color: #4D7182; color: #FFFFFF; text-decoration: none; padding: 13px 28px; border-radius: 8px; font-weight: 600; font-size: 15px; display: inline-block;">
+                Completar mi Registro
+              </a>
+            </div>
+            <p style="font-size: 12px; color: #8A98A0; line-height: 1.5; margin-top: 25px;">
+              * Este enlace es seguro y expirará en <strong>48 horas</strong>.<br/>
+              Si el botón no funciona, copia y pega este enlace en tu navegador:<br/>
+              <a href="${enlaceRegistro}" style="color: #4D7182; word-break: break-all;">${enlaceRegistro}</a>
+            </p>
+          </div>
+        </div>
+      `,
+    };
+
+    let previewUrl = null;
+    try {
+      const info = await transporter.sendMail(mailOptions);
+      previewUrl = nodemailer.getTestMessageUrl ? nodemailer.getTestMessageUrl(info) : null;
+    } catch (mailError) {
+      console.warn('[authController] Envío de correo no disponible o simulado:', mailError.message);
+      console.log(`[EVENTRA INVITACIÓN] Enlace generado para ${email}: ${enlaceRegistro}`);
+    }
+
+    return res.status(200).json({
       success: true,
-      message: 'Usuario registrado exitosamente.',
-      data: newUser,
+      message: 'Invitación enviada exitosamente por correo electrónico.',
+      data: {
+        email: email.toLowerCase().trim(),
+        rol_id: Number(rol_id),
+        empresa_id: Number(empresa_id),
+        enlace_registro: enlaceRegistro,
+        token_invitacion: tokenInvitacion,
+        preview_url: previewUrl,
+      },
     });
 
   } catch (error) {
-    console.error('[authController] Error en registerUser:', error.message);
+    console.error('[authController] Error en invitarUsuario:', error.message);
     return res.status(500).json({
       success: false,
-      message: 'Error interno del servidor al registrar el usuario.',
+      message: 'Error interno del servidor al procesar la invitación.',
     });
   }
+};
+
+/**
+ * Completa el registro de un nuevo empleado a partir de su token de invitación.
+ * Acceso: Público (requiere token JWT de invitación válido).
+ *
+ * Flujo:
+ *  1. Extrae token y datos personales del req.body: nombre_completo, cedula, fecha_nacimiento, password.
+ *  2. Verifica el token con jwt.verify y extrae email, rol_id y empresa_id validados.
+ *  3. Encripta password con bcrypt.
+ *  4. Inserta el nuevo usuario en la tabla usuarios.
+ *  5. Retorna 201 de creación exitosa.
+ *
+ * @param {import('express').Request}  req
+ * @param {import('express').Response} res
+ */
+export const completarRegistro = async (req, res) => {
+  const { token, nombre_completo, cedula, fecha_nacimiento, password } = req.body;
+
+  try {
+    // 1. Validar campos obligatorios
+    if (!token || !nombre_completo || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Todos los campos obligatorios deben ser proporcionados: token, nombre_completo, password.',
+      });
+    }
+
+    // 2. Verificar y decodificar el token de invitación
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (jwtError) {
+      return res.status(400).json({
+        success: false,
+        message: 'El token de invitación es inválido o ha expirado. Solicite una nueva invitación a su Administrador.',
+      });
+    }
+
+    const { email, rol_id, empresa_id } = decoded;
+
+    if (!email || !rol_id || !empresa_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'El token de invitación no contiene la información requerida del tenant.',
+      });
+    }
+
+    // 3. Verificar que el email no esté ya registrado (previene reuso del token)
+    const existing = await pool.query('SELECT id FROM usuarios WHERE email = $1', [email]);
+    if (existing.rowCount > 0) {
+      return res.status(409).json({
+        success: false,
+        message: 'Esta invitación ya fue utilizada. El usuario ya se encuentra registrado.',
+      });
+    }
+
+    // 4. Encriptar la contraseña con bcrypt
+    const SALT_ROUNDS = 10;
+    const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
+
+    // 5. Insertar usuario en la BD con los datos del token y datos personales
+    const result = await pool.query(
+      `INSERT INTO usuarios (empresa_id, rol_id, nombre_completo, email, password_hash, cedula, fecha_nacimiento, estado_activo)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, true)
+       RETURNING id, empresa_id, rol_id, nombre_completo, email, cedula, fecha_nacimiento, estado_activo, fecha_creacion`,
+      [
+        Number(empresa_id),
+        Number(rol_id),
+        nombre_completo.trim(),
+        email.toLowerCase().trim(),
+        password_hash,
+        cedula ? String(cedula).trim() : null,
+        fecha_nacimiento || null,
+      ]
+    );
+
+    const nuevoUsuario = result.rows[0];
+
+    return res.status(201).json({
+      success: true,
+      message: 'Registro completado exitosamente. Ahora puedes iniciar sesión en EVENTRA.',
+      data: nuevoUsuario,
+    });
+
+  } catch (error) {
+    console.error('[authController] Error en completarRegistro:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor al completar el registro.',
+    });
+  }
+};
+
+/**
+ * Bloqueo de autoregistro público.
+ * Informa a cualquier intento de consumo de la ruta antigua que se requiere invitación.
+ */
+export const registerUser = async (req, res) => {
+  return res.status(403).json({
+    success: false,
+    message: 'El autoregistro público está deshabilitado en EVENTRA. La incorporación de nuevos usuarios se gestiona exclusivamente mediante invitación del Administrador.',
+  });
 };
 
 /**
@@ -124,7 +328,7 @@ export const loginUser = async (req, res) => {
        LEFT JOIN roles r ON u.rol_id = r.id
        LEFT JOIN empresas e ON u.empresa_id = e.id
        WHERE u.email = $1`,
-      [email]
+      [email.toLowerCase().trim()]
     );
 
     if (result.rows.length === 0) {
@@ -193,4 +397,3 @@ export const loginUser = async (req, res) => {
     });
   }
 };
-

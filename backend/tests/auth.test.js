@@ -1,11 +1,8 @@
 /**
- * auth.test.js  (v3 — variables de entorno de test explícitas)
+ * auth.test.js
  * =============================================================
- * Pruebas de Autenticación, Registro y Seguridad RBAC — EVENTRA
- *
- * Fix aplicado: process.env.JWT_SECRET se define ANTES de importar la app
- * para que el middleware de autenticación y el controlador de login usen
- * el mismo secreto que los tokens firmados en los tests.
+ * Pruebas de Autenticación, Invitación por Email y Completar Registro — EVENTRA
+ * =============================================================
  */
 
 import request  from 'supertest';
@@ -14,12 +11,11 @@ import jwt      from 'jsonwebtoken';
 import { jest } from '@jest/globals';
 
 // ─── Variables de entorno para el entorno de test ────────────────────────────
-// DEBE ir antes de los mocks y del import de la app para que dotenv no lo pise.
 process.env.JWT_SECRET = 'test_secret_eventra_jest';
 process.env.NODE_ENV   = 'test';
-process.env.PORT       = '0'; // puerto 0 = efímero, evita conflictos
+process.env.PORT       = '0';
 
-const TEST_SECRET = 'test_secret_eventra_jest'; // mismo valor que arriba
+const TEST_SECRET = 'test_secret_eventra_jest';
 
 // ─── Mock de la BD ───────────────────────────────────────────────────────────
 jest.unstable_mockModule('../src/config/db.js', () => ({
@@ -36,50 +32,161 @@ jest.unstable_mockModule('openai', () => ({
 const { default: app }  = await import('../src/app.js');
 const { default: pool } = await import('../src/config/db.js');
 
+const TOKEN_ADMIN = jwt.sign(
+  { id: 'uuid-admin-test', empresa_id: 1, rol_id: 1, email: 'admin@eventra.com' },
+  TEST_SECRET,
+  { expiresIn: '1h' }
+);
+
+const TOKEN_TRABAJADOR = jwt.sign(
+  { id: 'uuid-worker-test', empresa_id: 1, rol_id: 3, email: 'worker@eventra.com' },
+  TEST_SECRET,
+  { expiresIn: '1h' }
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
-// SUITE 1: Registro de usuarios
+// SUITE 1: Flujo de Invitación de Usuarios por Email (Admin)
 // ─────────────────────────────────────────────────────────────────────────────
-describe('POST /api/auth/register', () => {
+describe('POST /api/auth/invitar — Invitación por Correo Electrónico', () => {
 
   beforeEach(() => jest.clearAllMocks());
 
-  it('400 — rechaza registro si faltan campos obligatorios', async () => {
+  it('401 — rechaza la petición si no se envía token de autenticación', async () => {
     const res = await request(app)
-      .post('/api/auth/register')
-      .send({ empresa_id: 1, rol_id: 3 }); // sin email ni password
+      .post('/api/auth/invitar')
+      .send({ email: 'nuevo@empresa.com', rol_id: 3 });
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.success).toBe(false);
+  });
+
+  it('403 — rechaza la invitación si el usuario no tiene rol de Administrador (1)', async () => {
+    const res = await request(app)
+      .post('/api/auth/invitar')
+      .set('Authorization', `Bearer ${TOKEN_TRABAJADOR}`)
+      .send({ email: 'nuevo@empresa.com', rol_id: 3 });
+
+    expect(res.statusCode).toBe(403);
+    expect(res.body.success).toBe(false);
+  });
+
+  it('400 — rechaza si falta el email o el rol_id en el payload', async () => {
+    const res = await request(app)
+      .post('/api/auth/invitar')
+      .set('Authorization', `Bearer ${TOKEN_ADMIN}`)
+      .send({ rol_id: 3 }); // sin email
 
     expect(res.statusCode).toBe(400);
     expect(res.body.success).toBe(false);
     expect(res.body.message).toMatch(/obligatorio/i);
   });
 
-  it('400 — rechaza registro si el email ya está registrado', async () => {
-    // SELECT devuelve fila → email ya existe
+  it('409 — rechaza si el correo electrónico ya está registrado', async () => {
     pool.query.mockResolvedValueOnce({ rows: [{ id: 'uuid-existente' }], rowCount: 1 });
 
     const res = await request(app)
-      .post('/api/auth/register')
+      .post('/api/auth/invitar')
+      .set('Authorization', `Bearer ${TOKEN_ADMIN}`)
+      .send({ email: 'existente@empresa.com', rol_id: 3 });
+
+    expect(res.statusCode).toBe(409);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toMatch(/registrado/i);
+  });
+
+  it('200 — genera y envía la invitación por correo correctamente', async () => {
+    // 1. SELECT email → no existe
+    pool.query.mockResolvedValueOnce({ rows: [], rowCount: 0 });
+    // 2. SELECT nombre_comercial de empresa
+    pool.query.mockResolvedValueOnce({ rows: [{ nombre_comercial: 'Eventos Sol' }], rowCount: 1 });
+
+    const res = await request(app)
+      .post('/api/auth/invitar')
+      .set('Authorization', `Bearer ${TOKEN_ADMIN}`)
+      .send({ email: 'colaborador@empresa.com', rol_id: 3 });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toMatch(/invitación enviada/i);
+    expect(res.body.data).toHaveProperty('token_invitacion');
+    expect(res.body.data).toHaveProperty('enlace_registro');
+
+    // Verificar que el token generado contenga email, rol_id y empresa_id
+    const decoded = jwt.verify(res.body.data.token_invitacion, TEST_SECRET);
+    expect(decoded).toHaveProperty('email', 'colaborador@empresa.com');
+    expect(decoded).toHaveProperty('rol_id', 3);
+    expect(decoded).toHaveProperty('empresa_id', 1);
+  });
+
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUITE 2: Completar Registro (Empleado Onboarding)
+// ─────────────────────────────────────────────────────────────────────────────
+describe('POST /api/auth/completar-registro — Onboarding de Usuario', () => {
+
+  beforeEach(() => jest.clearAllMocks());
+
+  const tokenValido = jwt.sign(
+    { email: 'empleado@empresa.com', rol_id: 3, empresa_id: 1, tipo: 'invitacion' },
+    TEST_SECRET,
+    { expiresIn: '48h' }
+  );
+
+  it('400 — rechaza si faltan campos obligatorios (token, nombre o password)', async () => {
+    const res = await request(app)
+      .post('/api/auth/completar-registro')
+      .send({ nombre_completo: 'Carlos Ruiz' });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
+
+  it('400 — rechaza si el token de invitación es inválido o ha expirado', async () => {
+    const res = await request(app)
+      .post('/api/auth/completar-registro')
       .send({
-        empresa_id: 1, rol_id: 3,
-        nombre_completo: 'Duplicado',
-        email: 'duplicado@eventra.com',
-        password: 'password123',
+        token: 'token_falso_invalido_xyz',
+        nombre_completo: 'Carlos Ruiz',
+        password: 'Password123!',
       });
 
     expect(res.statusCode).toBe(400);
     expect(res.body.success).toBe(false);
-    expect(res.body.message).toMatch(/email/i);
+    expect(res.body.message).toMatch(/inválido|expirado/i);
   });
 
-  it('201 — registra un nuevo usuario correctamente', async () => {
-    // Mock 1: SELECT email → no existe
+  it('409 — rechaza si el email de la invitación ya fue registrado', async () => {
+    pool.query.mockResolvedValueOnce({ rows: [{ id: 'uuid-ya-registrado' }], rowCount: 1 });
+
+    const res = await request(app)
+      .post('/api/auth/completar-registro')
+      .send({
+        token: tokenValido,
+        nombre_completo: 'Carlos Ruiz',
+        cedula: '1723456789',
+        fecha_nacimiento: '1995-04-10',
+        password: 'PasswordSeguro123',
+      });
+
+    expect(res.statusCode).toBe(409);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toMatch(/registrado|utilizada/i);
+  });
+
+  it('201 — completa el registro con datos personales y crea el usuario', async () => {
+    // 1. SELECT email → no existe
     pool.query.mockResolvedValueOnce({ rows: [], rowCount: 0 });
-    // Mock 2: INSERT → usuario creado
+    // 2. INSERT usuario
     pool.query.mockResolvedValueOnce({
       rows: [{
-        id: 'uuid-nuevo', empresa_id: 1, rol_id: 3,
-        nombre_completo: 'Nuevo Usuario',
-        email: 'nuevo@eventra.com',
+        id: 'uuid-nuevo-empleado',
+        empresa_id: 1,
+        rol_id: 3,
+        nombre_completo: 'Carlos Ruiz',
+        email: 'empleado@empresa.com',
+        cedula: '1723456789',
+        fecha_nacimiento: '1995-04-10',
         estado_activo: true,
         fecha_creacion: new Date().toISOString(),
       }],
@@ -87,25 +194,44 @@ describe('POST /api/auth/register', () => {
     });
 
     const res = await request(app)
-      .post('/api/auth/register')
+      .post('/api/auth/completar-registro')
       .send({
-        empresa_id: 1, rol_id: 3,
-        nombre_completo: 'Nuevo Usuario',
-        email: 'nuevo@eventra.com',
-        password: 'segura123',
+        token: tokenValido,
+        nombre_completo: 'Carlos Ruiz',
+        cedula: '1723456789',
+        fecha_nacimiento: '1995-04-10',
+        password: 'PasswordSeguro123',
       });
 
     expect(res.statusCode).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.data).toHaveProperty('id');
-    expect(res.body.data).toHaveProperty('email', 'nuevo@eventra.com');
+    expect(res.body.data).toHaveProperty('cedula', '1723456789');
+    expect(res.body.data).toHaveProperty('email', 'empleado@empresa.com');
     expect(res.body.data).not.toHaveProperty('password_hash');
   });
 
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SUITE 2: Login de usuarios
+// SUITE 3: Bloqueo de autoregistro público
+// ─────────────────────────────────────────────────────────────────────────────
+describe('POST /api/auth/register — Bloqueo de autoregistro', () => {
+
+  it('403 — rechaza autoregistro público informando que se requiere invitación', async () => {
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({ email: 'libre@eventra.com', password: '123' });
+
+    expect(res.statusCode).toBe(403);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toMatch(/deshabilitado|invitación/i);
+  });
+
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUITE 4: Login de usuarios
 // ─────────────────────────────────────────────────────────────────────────────
 describe('POST /api/auth/login', () => {
 
@@ -114,7 +240,7 @@ describe('POST /api/auth/login', () => {
   it('400 — rechaza login si falta email o password', async () => {
     const res = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'solo@email.com' }); // sin password
+      .send({ email: 'solo@email.com' });
 
     expect(res.statusCode).toBe(400);
     expect(res.body.success).toBe(false);
@@ -187,7 +313,7 @@ describe('POST /api/auth/login', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SUITE 3: Protección JWT — GET /api/auth/me
+// SUITE 5: Protección JWT — GET /api/auth/me
 // ─────────────────────────────────────────────────────────────────────────────
 describe('GET /api/auth/me — Barrera JWT', () => {
 
@@ -204,7 +330,6 @@ describe('GET /api/auth/me — Barrera JWT', () => {
   });
 
   it('200 — permite acceso con un JWT válido y retorna el payload', async () => {
-    // Firma el token con el MISMO secreto que process.env.JWT_SECRET
     const tokenValido = jwt.sign(
       { id: 'uuid-test', empresa_id: 1, rol_id: 1 },
       TEST_SECRET,

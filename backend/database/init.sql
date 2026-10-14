@@ -99,14 +99,16 @@ SELECT setval(pg_get_serial_sequence('roles', 'id'), COALESCE((SELECT MAX(id) FR
 -- evitando la exposición de IDs secuenciales en la API.
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS usuarios (
-    id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-    empresa_id      INTEGER,
-    rol_id          INTEGER     NOT NULL,
-    nombre_completo VARCHAR(150) NOT NULL,
-    email           VARCHAR(150) UNIQUE NOT NULL,
-    password_hash   VARCHAR(255) NOT NULL,
-    estado_activo   BOOLEAN     DEFAULT true,
-    fecha_creacion  TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
+    id               UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id       INTEGER,
+    rol_id           INTEGER      NOT NULL,
+    nombre_completo  VARCHAR(150) NOT NULL,
+    cedula           VARCHAR(20),
+    fecha_nacimiento DATE,
+    email            VARCHAR(150) UNIQUE NOT NULL,
+    password_hash    VARCHAR(255) NOT NULL,
+    estado_activo    BOOLEAN      DEFAULT true,
+    fecha_creacion   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_usuarios_empresa
         FOREIGN KEY (empresa_id)
@@ -118,8 +120,10 @@ CREATE TABLE IF NOT EXISTS usuarios (
         REFERENCES roles(id)
 );
 
--- Idempotencia para empresa_id en usuarios
+-- Idempotencia para modificaciones de usuarios
 ALTER TABLE usuarios ALTER COLUMN empresa_id DROP NOT NULL;
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS cedula VARCHAR(20);
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS fecha_nacimiento DATE;
 
 
 -- =============================================================================
