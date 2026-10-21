@@ -13,6 +13,7 @@ import {
   Sparkles,
   Building2,
   CreditCard,
+  UserCheck,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
@@ -104,6 +105,17 @@ export const Sidebar = () => {
           label: 'Proveedores',
           icon: <Building2 size={18} />,
           visible: isAdmin || isGerente,
+        },
+      ],
+    },
+    {
+      label: 'Administración',
+      items: [
+        {
+          to: '/colaboradores',
+          label: 'Equipo y Colaboradores',
+          icon: <UserCheck size={18} />,
+          visible: isAdmin,
         },
       ],
     },

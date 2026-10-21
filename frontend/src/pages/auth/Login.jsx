@@ -343,15 +343,16 @@ export const Login = () => {
               textAlign: 'center',
               fontSize: '0.8125rem',
               color: 'var(--text-muted)',
+              lineHeight: '1.45',
             }}
           >
-            ¿No tienes cuenta?{' '}
+            ¿Buscas el portal de un evento?{' '}
             <Link
               to="/registro"
               id="link-to-registro"
-              style={{ color: 'var(--primary)', fontWeight: 700 }}
+              style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'underline' }}
             >
-              Regístrate aquí
+              Regístrate desde el enlace de la empresa
             </Link>
           </div>
 

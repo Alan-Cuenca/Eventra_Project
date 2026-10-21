@@ -10,10 +10,12 @@ import { GlobalDashboardPage } from '../pages/super-admin/GlobalDashboardPage';
 import { EmpresasManagementPage } from '../pages/super-admin/EmpresasManagementPage';
 
 // ── Autenticación ──────────────────────────────────────────────────────────
-import { Login }    from '../pages/auth/Login';
-import { Registro } from '../pages/auth/Registro';
+import { Login } from '../pages/auth/Login';
+import { RegistroClientePortal } from '../pages/auth/RegistroClientePortal';
+import { PortalRedirect } from '../pages/auth/PortalRedirect';
 import { CompletarRegistro } from '../pages/auth/CompletarRegistro';
 import { PrimerLoginCambioPassword } from '../pages/auth/PrimerLoginCambioPassword';
+import { ColaboradoresPage } from '../pages/admin/ColaboradoresPage';
 
 // ── Sitio Web Público SaaS EVENTRA (Multi-página) ─────────────────────────
 import { PublicLayout } from '../pages/public/PublicLayout';
@@ -83,10 +85,10 @@ export const AppRoutes = () => {
       </Route>
 
       {/* ── Autenticación y Acceso (Aisladas, fuera de PublicLayout) ──────── */}
-      <Route path="/login"    element={<Login />} />
-      <Route path="/registro" element={<Registro />} />
-      <Route path="/portal/:slug/registro" element={<Registro />} />
-      <Route path="/completar-registro" element={<CompletarRegistro />} />
+      <Route path="/login"                  element={<Login />} />
+      <Route path="/registro"               element={<PortalRedirect />} />
+      <Route path="/portal/:slug/registro"  element={<RegistroClientePortal />} />
+      <Route path="/completar-registro"     element={<CompletarRegistro />} />
       <Route path="/primer-acceso/cambiar-password" element={<PrimerLoginCambioPassword />} />
 
       {/* ── Portal Cliente exclusivo (rol 4) ──────────────────────────────── */}
@@ -157,6 +159,11 @@ export const AppRoutes = () => {
             <Route path="/proveedores"           element={<ProveedoresList />} />
             <Route path="/proveedores/nuevo"     element={<ProveedorForm />} />
             <Route path="/proveedores/editar/:id" element={<ProveedorForm />} />
+          </Route>
+
+          {/* Admin únicamente (Gestión de Equipo y Colaboradores) */}
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
+            <Route path="/colaboradores" element={<ColaboradoresPage />} />
           </Route>
         </Route>
       </Route>
