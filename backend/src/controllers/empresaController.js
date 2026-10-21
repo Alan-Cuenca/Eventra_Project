@@ -164,6 +164,7 @@ export const crearEmpresa = async (req, res) => {
 
   // 5. Envío de correo electrónico con credenciales e instrucción de actualización
   let correoEnviado = false;
+  let errorDetalleCorreo = null;
   try {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const loginUrl = `${frontendUrl}/login`;
@@ -177,9 +178,13 @@ export const crearEmpresa = async (req, res) => {
     });
 
     correoEnviado = Boolean(emailResult?.success);
+    if (!correoEnviado) {
+      errorDetalleCorreo = emailResult?.error || 'No se pudo contactar el servidor SMTP de correo.';
+    }
   } catch (mailError) {
     console.error('[empresaController] Fallo en despacho de correo de bienvenida:', mailError.message);
     correoEnviado = false;
+    errorDetalleCorreo = mailError.message;
   }
 
   // 6. Respuesta al cliente diferenciando creación de empresa y estado de correo
@@ -187,9 +192,10 @@ export const crearEmpresa = async (req, res) => {
     success: true,
     empresa_creada: true,
     correo_enviado: correoEnviado,
+    email_error: errorDetalleCorreo,
     message: correoEnviado
       ? 'Empresa y administrador inicial registrados exitosamente. Credenciales de acceso enviadas por correo.'
-      : 'Empresa registrada exitosamente. No fue posible enviar el correo con las credenciales en este momento.',
+      : `Empresa registrada exitosamente, pero no fue posible enviar el correo (${errorDetalleCorreo || 'error de conexión SMTP'}).`,
     data: {
       empresa: nuevaEmpresa,
       administrador_inicial: adminUsuario,

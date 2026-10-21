@@ -54,6 +54,7 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
 
   const [estadoProceso, setEstadoProceso] = useState(ESTADOS_REGISTRO.IDLE);
   const [errorMsg, setErrorMsg] = useState('');
+  const [errorDetalleCorreo, setErrorDetalleCorreo] = useState('');
 
   if (!isOpen) return null;
 
@@ -64,6 +65,7 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
       [name]: value,
     }));
     setErrorMsg('');
+    setErrorDetalleCorreo('');
   };
 
   const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.admin_email.trim());
@@ -77,6 +79,7 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
     if (!formularioCompleto || estadoProceso === ESTADOS_REGISTRO.REGISTRANDO) return;
 
     setErrorMsg('');
+    setErrorDetalleCorreo('');
     setEstadoProceso(ESTADOS_REGISTRO.REGISTRANDO);
 
     try {
@@ -103,6 +106,7 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
       } else {
         // La empresa se creó exitosamente pero falló el envío de correo
         setEstadoProceso(ESTADOS_REGISTRO.ERROR_ENVIO_CORREO);
+        setErrorDetalleCorreo(res?.email_error || res?.message || '');
         if (onEmpresaCreada) onEmpresaCreada();
       }
     } catch (err) {
@@ -186,8 +190,11 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
         {estadoProceso === ESTADOS_REGISTRO.ERROR_ENVIO_CORREO && (
           <div className="px-6 pt-3">
             <div className="p-3 rounded-xl bg-[#C49A3A]/15 border border-[#C49A3A]/30 text-[#C49A3A] text-xs font-semibold flex items-center gap-2">
-              <AlertTriangle size={16} />
-              <span>Empresa registrada exitosamente, pero no fue posible enviar el correo de bienvenida en este momento. Puede reenviarlo posteriormente.</span>
+              <AlertTriangle size={16} className="flex-shrink-0" />
+              <span>
+                Empresa registrada exitosamente, pero no fue posible enviar el correo de bienvenida en este momento
+                {errorDetalleCorreo ? `: ${errorDetalleCorreo}` : '. Puede reenviarlo posteriormente.'}
+              </span>
             </div>
           </div>
         )}
