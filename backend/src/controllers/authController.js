@@ -3,40 +3,17 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import { ROL_SUPER_ADMIN, ROL_ADMINISTRADOR } from '../middlewares/authMiddleware.js';
+import { getMailTransporter } from '../services/emailService.js';
 
 /**
  * =============================================================================
  * TRANSPORTADOR DE CORREOS (Nodemailer)
  * =============================================================================
- * Configurado para soportar SMTP en producción/Render, y fallback a Ethereal
- * o transporte controlado para desarrollo y tests automatizados.
+ * Delegado al servicio centralizado de correos (emailService.js).
  * =============================================================================
  */
-export const createMailTransporter = () => {
-  if (process.env.SMTP_HOST && process.env.SMTP_USER) {
-    return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587,
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-  }
+export const createMailTransporter = () => getMailTransporter();
 
-  // Fallback para entornos de desarrollo / Ethereal
-  return nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.ETHEREAL_USER || 'ethereal.user@ethereal.email',
-      pass: process.env.ETHEREAL_PASS || 'ethereal_pass',
-    },
-    tls: { rejectUnauthorized: false },
-  });
-};
 
 /**
  * Envía una invitación por correo a un nuevo colaborador.
@@ -162,7 +139,6 @@ export const invitarUsuario = async (req, res) => {
       previewUrl = nodemailer.getTestMessageUrl ? nodemailer.getTestMessageUrl(info) : null;
     } catch (mailError) {
       console.warn('[authController] Envío de correo no disponible o simulado:', mailError.message);
-      console.log(`[EVENTRA INVITACIÓN] Enlace generado para ${email}: ${enlaceRegistro}`);
     }
 
     return res.status(200).json({
