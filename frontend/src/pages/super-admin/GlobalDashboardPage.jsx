@@ -157,35 +157,43 @@ export const GlobalDashboardPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* ── Encabezado de la Sección ───────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white rounded-2xl p-6 border border-[#CEC8B8] shadow-sm">
+      {/* ── Encabezado de la Página (Estándar SaaS) ───────────────────────── */}
+      <div className="page-header">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-black text-[#233D49] tracking-tight font-['Outfit']">
-              Supervisión Global SaaS
-            </h2>
-            <span className="px-2 py-0.5 rounded-full bg-[#4D7182]/15 text-[#4D7182] text-xs font-bold uppercase tracking-wider">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+            <h1>Supervisión Global SaaS</h1>
+            <span
+              style={{
+                padding: '0.2rem 0.65rem',
+                borderRadius: 'var(--radius-full)',
+                fontSize: '0.7rem',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                background: 'rgba(77, 113, 130, 0.15)',
+                color: 'var(--primary)',
+                border: '1px solid rgba(77, 113, 130, 0.25)',
+              }}
+            >
               Consulta bajo demanda
             </span>
           </div>
-          <p className="text-sm text-[#7d8f97] mt-1">
-            Métricas de inquilinos, usuarios globales y eventos consolidados de EVENTRA.
-          </p>
+          <p>Métricas de inquilinos, usuarios globales y eventos consolidados de EVENTRA.</p>
           {lastUpdated && (
-            <p className="text-xs text-[#4D7182] mt-1">
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0.35rem 0 0' }}>
               Última sincronización: {lastUpdated.toLocaleTimeString('es-EC')}
             </p>
           )}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <button
             onClick={cargarDatos}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#4D7182] hover:bg-[#3d5f6e] text-white font-semibold text-sm shadow-sm transition-all disabled:opacity-50"
+            className="btn btn-primary"
             title="Refrescar datos desde la API"
           >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
             <span>{loading ? 'Sincronizando...' : 'Actualizar'}</span>
           </button>
         </div>
@@ -195,40 +203,55 @@ export const GlobalDashboardPage = () => {
       {errorInfo && !loading && (
         <div
           role="alert"
-          className="bg-white rounded-2xl p-6 border-2 border-[#C95C5C] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in"
+          className="card animate-fade-in"
+          style={{
+            borderColor: 'var(--danger)',
+            borderWidth: '1.5px',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            flexWrap: 'wrap',
+          }}
         >
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C95C5C]/15 text-[#C95C5C] flex items-center justify-center flex-shrink-0 mt-0.5">
-              {errorInfo.tipo === 'NETWORK' ? (
-                <WifiOff size={20} />
-              ) : (
-                <ShieldAlert size={20} />
-              )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+            <div
+              style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(201, 92, 92, 0.15)',
+                color: 'var(--danger)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              {errorInfo.tipo === 'NETWORK' ? <WifiOff size={20} /> : <ShieldAlert size={20} />}
             </div>
             <div>
-              <h3 className="font-bold text-[#C95C5C] text-sm">
+              <h3 style={{ color: 'var(--danger)', fontSize: '0.95rem', fontWeight: 'bold', margin: 0 }}>
                 {errorInfo.tipo === 'NETWORK'
                   ? 'Error de Conexión con el Backend'
                   : errorInfo.tipo === 'FORBIDDEN'
                   ? 'Permisos Insuficientes'
                   : 'No se pudieron obtener los datos'}
               </h3>
-              <p className="text-xs text-[#233D49] mt-1 max-w-2xl">
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-primary)', margin: '0.25rem 0 0', maxWidth: '650px' }}>
                 {errorInfo.mensaje}
               </p>
             </div>
           </div>
-          <button
-            onClick={cargarDatos}
-            className="px-4 py-2 rounded-xl bg-[#C95C5C] text-white text-xs font-bold hover:bg-[#b54b4b] transition-colors self-end sm:self-center"
-          >
+          <button onClick={cargarDatos} className="btn btn-danger btn-sm">
             Reintentar
           </button>
         </div>
       )}
 
       {/* ── Grid de Tarjetas de Métricas ───────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
         <GlobalStatCard
           title="Total Inquilinos"
           value={loading ? null : metricas.totalEmpresas}
@@ -289,64 +312,115 @@ export const GlobalDashboardPage = () => {
       </div>
 
       {/* ── Directorio de Inquilinos (Tenants) ──────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-[#CEC8B8] shadow-sm overflow-hidden">
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         {/* Cabecera de la tabla y controles */}
-        <div className="p-5 border-b border-[#CEC8B8] flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#F3F0E4]/30">
+        <div
+          style={{
+            padding: '1.25rem 1.5rem',
+            borderBottom: '1px solid var(--border-subtle)',
+            background: 'var(--bg-primary)',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '1rem',
+          }}
+        >
           <div>
-            <h3 className="font-bold text-[#233D49] text-base font-['Outfit']">
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
               Directorio de Inquilinos SaaS
             </h3>
-            <p className="text-xs text-[#7d8f97] mt-0.5">
-              Listado oficial obtenido desde el endpoint protegido <code className="px-1.5 py-0.5 rounded bg-white border border-[#CEC8B8] text-[#4D7182] font-mono text-[11px]">GET /api/empresas</code>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.2rem 0 0' }}>
+              Listado oficial obtenido desde el endpoint protegido <code style={{ padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', color: 'var(--primary)', fontFamily: 'monospace', fontSize: '11px' }}>GET /api/empresas</code>
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
             {/* Buscador */}
-            <div className="relative min-w-[200px]">
+            <div style={{ position: 'relative', minWidth: '220px' }}>
               <Search
                 size={15}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7d8f97] pointer-events-none"
+                style={{
+                  position: 'absolute',
+                  left: '0.85rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--text-muted)',
+                  pointerEvents: 'none',
+                }}
               />
               <input
                 type="text"
                 placeholder="Buscar por nombre o RUC..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-[#CEC8B8] bg-white text-xs text-[#233D49] focus:outline-none focus:border-[#4D7182] transition-colors"
+                className="form-input"
+                style={{ paddingLeft: '2.4rem', paddingRight: '0.75rem', paddingTop: '0.45rem', paddingBottom: '0.45rem', fontSize: '0.8rem' }}
               />
             </div>
 
-            {/* Filtro por estado */}
-            <div className="flex items-center gap-1 bg-white border border-[#CEC8B8] rounded-xl p-1 text-xs">
-              <Filter size={13} className="text-[#7d8f97] ml-1.5" />
+            {/* Filtro por estado con pills */}
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-md)',
+                padding: '0.2rem 0.35rem',
+              }}
+            >
+              <Filter size={13} style={{ color: 'var(--text-muted)', marginLeft: '0.25rem' }} />
               <button
+                type="button"
                 onClick={() => setStatusFilter('ALL')}
-                className={`px-2 py-1 rounded-lg font-semibold transition-colors ${
-                  statusFilter === 'ALL'
-                    ? 'bg-[#4D7182] text-white'
-                    : 'text-[#7d8f97] hover:text-[#233D49]'
-                }`}
+                style={{
+                  padding: '0.25rem 0.6rem',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: statusFilter === 'ALL' ? 'var(--primary)' : 'transparent',
+                  color: statusFilter === 'ALL' ? '#FFFFFF' : 'var(--text-muted)',
+                  transition: 'all 0.15s ease',
+                }}
               >
                 Todas ({empresas.length})
               </button>
               <button
+                type="button"
                 onClick={() => setStatusFilter('ACTIVE')}
-                className={`px-2 py-1 rounded-lg font-semibold transition-colors ${
-                  statusFilter === 'ACTIVE'
-                    ? 'bg-[#4D9A72] text-white'
-                    : 'text-[#7d8f97] hover:text-[#233D49]'
-                }`}
+                style={{
+                  padding: '0.25rem 0.6rem',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: statusFilter === 'ACTIVE' ? 'var(--success)' : 'transparent',
+                  color: statusFilter === 'ACTIVE' ? '#FFFFFF' : 'var(--text-muted)',
+                  transition: 'all 0.15s ease',
+                }}
               >
                 Activas
               </button>
               <button
+                type="button"
                 onClick={() => setStatusFilter('SUSPENDED')}
-                className={`px-2 py-1 rounded-lg font-semibold transition-colors ${
-                  statusFilter === 'SUSPENDED'
-                    ? 'bg-[#C95C5C] text-white'
-                    : 'text-[#7d8f97] hover:text-[#233D49]'
-                }`}
+                style={{
+                  padding: '0.25rem 0.6rem',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: statusFilter === 'SUSPENDED' ? 'var(--danger)' : 'transparent',
+                  color: statusFilter === 'SUSPENDED' ? '#FFFFFF' : 'var(--text-muted)',
+                  transition: 'all 0.15s ease',
+                }}
               >
                 Suspendidas
               </button>
@@ -355,63 +429,47 @@ export const GlobalDashboardPage = () => {
         </div>
 
         {/* Tabla */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+        <div className="table-container">
+          <table className="custom-table">
             <thead>
-              <tr className="border-b border-[#CEC8B8] bg-[#FAFAF7] text-[#4D7182] font-semibold uppercase tracking-wider text-[11px]">
-                <th className="py-3 px-4">Empresa (Inquilino)</th>
-                <th className="py-3 px-4">RUC</th>
-                <th className="py-3 px-4">Plan</th>
-                <th className="py-3 px-4">Estado</th>
-                <th className="py-3 px-4 text-center">Usuarios</th>
-                <th className="py-3 px-4 text-center">Eventos</th>
-                <th className="py-3 px-4 text-right">Facturación</th>
-                <th className="py-3 px-4">Registro</th>
+              <tr>
+                <th>Empresa (Inquilino)</th>
+                <th>RUC</th>
+                <th>Plan</th>
+                <th>Estado</th>
+                <th style={{ textAlign: 'center' }}>Usuarios</th>
+                <th style={{ textAlign: 'center' }}>Eventos</th>
+                <th style={{ textAlign: 'right' }}>Facturación</th>
+                <th>Registro</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#CEC8B8]/60 text-[#233D49]">
+            <tbody>
               {loading ? (
                 // Skeletons de carga
                 [...Array(4)].map((_, i) => (
-                  <tr key={i} className="animate-pulse">
-                    <td className="py-3.5 px-4">
-                      <div className="h-4 bg-[#CEC8B8]/30 rounded w-32"></div>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="h-4 bg-[#CEC8B8]/30 rounded w-24"></div>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="h-4 bg-[#CEC8B8]/30 rounded w-16"></div>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="h-4 bg-[#CEC8B8]/30 rounded w-14"></div>
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="h-4 bg-[#CEC8B8]/30 rounded w-8 mx-auto"></div>
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="h-4 bg-[#CEC8B8]/30 rounded w-8 mx-auto"></div>
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="h-4 bg-[#CEC8B8]/30 rounded w-16 ml-auto"></div>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="h-4 bg-[#CEC8B8]/30 rounded w-20"></div>
-                    </td>
+                  <tr key={i}>
+                    <td><div className="skeleton" style={{ height: '1rem', width: '130px' }}></div></td>
+                    <td><div className="skeleton" style={{ height: '1rem', width: '90px' }}></div></td>
+                    <td><div className="skeleton" style={{ height: '1rem', width: '60px' }}></div></td>
+                    <td><div className="skeleton" style={{ height: '1rem', width: '55px' }}></div></td>
+                    <td style={{ textAlign: 'center' }}><div className="skeleton" style={{ height: '1rem', width: '30px', margin: '0 auto' }}></div></td>
+                    <td style={{ textAlign: 'center' }}><div className="skeleton" style={{ height: '1rem', width: '30px', margin: '0 auto' }}></div></td>
+                    <td style={{ textAlign: 'right' }}><div className="skeleton" style={{ height: '1rem', width: '70px', marginLeft: 'auto' }}></div></td>
+                    <td><div className="skeleton" style={{ height: '1rem', width: '80px' }}></div></td>
                   </tr>
                 ))
               ) : empresasFiltradas.length === 0 ? (
                 // Estado vacío o sin resultados
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-[#7d8f97]">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <Inbox size={32} className="text-[#CEC8B8]" />
-                      <p className="font-semibold text-sm text-[#233D49]">
+                  <td colSpan={8} style={{ padding: '3.5rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
+                      <Inbox size={34} style={{ color: 'var(--border-subtle)' }} />
+                      <p style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)', margin: 0 }}>
                         {searchTerm || statusFilter !== 'ALL'
                           ? 'No se encontraron empresas con los filtros aplicados.'
                           : 'Aún no existen empresas registradas en EVENTRA SaaS.'}
                       </p>
-                      <p className="text-xs text-[#7d8f97]">
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
                         {searchTerm || statusFilter !== 'ALL'
                           ? 'Prueba modificando el término de búsqueda o el selector de estado.'
                           : 'Cuando se den de alta inquilinos, aparecerán listados aquí.'}
@@ -422,58 +480,103 @@ export const GlobalDashboardPage = () => {
               ) : (
                 // Filas de datos
                 empresasFiltradas.map((emp) => (
-                  <tr
-                    key={emp.id}
-                    className="hover:bg-[#F3F0E4]/40 transition-colors"
-                  >
-                    <td className="py-3 px-4 font-semibold text-[#233D49]">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-[#4D7182]/10 text-[#4D7182] flex items-center justify-center font-bold text-xs flex-shrink-0">
+                  <tr key={emp.id}>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                        <div
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: 'var(--radius-md)',
+                            background: 'rgba(77, 113, 130, 0.12)',
+                            color: 'var(--primary)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 700,
+                            fontSize: '0.85rem',
+                            flexShrink: 0,
+                          }}
+                        >
                           {emp.nombre_comercial ? emp.nombre_comercial[0].toUpperCase() : 'E'}
                         </div>
-                        <span className="truncate max-w-[200px]" title={emp.nombre_comercial}>
+                        <span style={{ fontWeight: 600, maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={emp.nombre_comercial}>
                           {emp.nombre_comercial}
                         </span>
                       </div>
                     </td>
 
-                    <td className="py-3 px-4 text-[#7d8f97] font-mono">
+                    <td style={{ fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
                       {emp.ruc || 'No especificado'}
                     </td>
 
-                    <td className="py-3 px-4">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#4D7182]/10 text-[#4D7182] border border-[#4D7182]/20">
+                    <td>
+                      <span
+                        style={{
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: 'var(--radius-full)',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          background: 'rgba(77, 113, 130, 0.12)',
+                          color: 'var(--primary)',
+                          border: '1px solid rgba(77, 113, 130, 0.25)',
+                        }}
+                      >
                         {emp.plan_suscripcion || 'Básico'}
                       </span>
                     </td>
 
-                    <td className="py-3 px-4">
+                    <td>
                       {emp.estado_activo ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#4D9A72]/15 text-[#4D9A72]">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#4D9A72]"></span>
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            padding: '0.2rem 0.6rem',
+                            borderRadius: 'var(--radius-full)',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            background: 'rgba(77, 154, 114, 0.15)',
+                            color: 'var(--success)',
+                          }}
+                        >
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success)' }}></span>
                           Activa
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#C95C5C]/15 text-[#C95C5C]">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#C95C5C]"></span>
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            padding: '0.2rem 0.6rem',
+                            borderRadius: 'var(--radius-full)',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            background: 'rgba(201, 92, 92, 0.15)',
+                            color: 'var(--danger)',
+                          }}
+                        >
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--danger)' }}></span>
                           Suspendida
                         </span>
                       )}
                     </td>
 
-                    <td className="py-3 px-4 text-center font-medium">
+                    <td style={{ textAlign: 'center', fontWeight: 600 }}>
                       {emp.total_usuarios !== undefined ? emp.total_usuarios : '0'}
                     </td>
 
-                    <td className="py-3 px-4 text-center font-medium">
+                    <td style={{ textAlign: 'center', fontWeight: 600 }}>
                       {emp.total_eventos !== undefined ? emp.total_eventos : '0'}
                     </td>
 
-                    <td className="py-3 px-4 text-right font-semibold text-[#233D49]">
+                    <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--text-primary)' }}>
                       {formatearMoneda(Number(emp.total_ingresos || 0))}
                     </td>
 
-                    <td className="py-3 px-4 text-[#7d8f97]">
+                    <td style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
                       {formatearFecha(emp.fecha_registro)}
                     </td>
                   </tr>
@@ -484,11 +587,25 @@ export const GlobalDashboardPage = () => {
         </div>
 
         {/* Footer informativo */}
-        <div className="p-3 border-t border-[#CEC8B8] bg-[#FAFAF7] text-[11px] text-[#7d8f97] flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div
+          style={{
+            padding: '0.85rem 1.25rem',
+            borderTop: '1px solid var(--border-subtle)',
+            background: 'var(--bg-primary)',
+            fontSize: '0.75rem',
+            color: 'var(--text-muted)',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.5rem',
+          }}
+        >
           <span>
             Mostrando <strong>{empresasFiltradas.length}</strong> de <strong>{empresas.length}</strong> inquilinos registrados
           </span>
-          <span className="italic">
+          <span style={{ fontStyle: 'italic' }}>
             Fase 1: Módulo en modo supervisión (operaciones de alta y modificación preparadas para Fase 2).
           </span>
         </div>

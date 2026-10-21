@@ -1169,6 +1169,17 @@ img { max-width: 100%; display: block; }
 @media (max-width: 768px) {
   :root { --sidebar-width: 0px; }
   .sidebar { display: none; }
+  .sidebar.mobile-open {
+    display: flex !important;
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 999;
+    width: 272px !important;
+    box-shadow: var(--shadow-lg);
+    animation: slideInRight 0.25s ease-out;
+  }
   .page-body { padding: 1rem; }
   .grid-cols-2, .grid-cols-3, .grid-cols-4 { grid-template-columns: 1fr; }
   .login-left { display: none; }

@@ -4,9 +4,8 @@ import React from 'react';
  * =============================================================================
  * GlobalStatCard
  * =============================================================================
- * Tarjeta de estadística para métricas del SaaS con diseño "Sofisticación Sutil".
- * Fondo blanco (#FFFFFF), bordes suaves (#CEC8B8), textos de alto contraste (#233D49)
- * e icono lineal en contenedor tintado.
+ * Tarjeta de estadística para métricas del SaaS unificada con la clase .kpi-card
+ * del sistema de diseño EVENTRA. Soporta Light Mode y Dark Mode nativamente.
  * =============================================================================
  */
 export const GlobalStatCard = ({
@@ -14,7 +13,7 @@ export const GlobalStatCard = ({
   value,
   subtitle,
   icon,
-  accentColor = '#4D7182',
+  accentColor = 'var(--primary)',
   loading = false,
   badgeText = null,
   badgeColor = null,
@@ -22,35 +21,49 @@ export const GlobalStatCard = ({
   if (loading) {
     return (
       <div
-        className="bg-white rounded-2xl p-6 border border-[#CEC8B8] shadow-sm animate-pulse flex flex-col justify-between"
-        style={{ minHeight: '140px' }}
+        className="kpi-card"
+        style={{ minHeight: '140px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
       >
-        <div className="flex items-center justify-between">
-          <div className="h-4 bg-[#CEC8B8]/40 rounded w-1/2"></div>
-          <div className="w-10 h-10 bg-[#CEC8B8]/30 rounded-xl"></div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="skeleton" style={{ height: '14px', width: '50%' }} />
+          <div className="skeleton" style={{ width: '38px', height: '38px', borderRadius: '10px' }} />
         </div>
-        <div className="h-8 bg-[#CEC8B8]/50 rounded w-3/4 mt-4"></div>
-        <div className="h-3 bg-[#CEC8B8]/30 rounded w-2/3 mt-2"></div>
+        <div className="skeleton" style={{ height: '28px', width: '70%', marginTop: '1rem' }} />
+        <div className="skeleton" style={{ height: '12px', width: '40%', marginTop: '0.5rem' }} />
       </div>
     );
   }
 
   return (
     <div
-      className="bg-white rounded-2xl p-6 border border-[#CEC8B8] shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
-      style={{ minHeight: '140px' }}
+      className="kpi-card"
+      style={{ minHeight: '140px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem' }}>
         <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#4D7182]">
+          <span
+            style={{
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              color: 'var(--text-secondary)',
+            }}
+          >
             {title}
           </span>
           {badgeText && (
             <span
-              className="ml-2 px-2 py-0.5 text-[10px] font-bold rounded-full inline-block"
               style={{
-                backgroundColor: `${badgeColor || accentColor}18`,
+                marginLeft: '0.5rem',
+                padding: '0.15rem 0.5rem',
+                fontSize: '0.65rem',
+                fontWeight: 700,
+                borderRadius: '9999px',
+                background: `${badgeColor || accentColor}18`,
                 color: badgeColor || accentColor,
+                display: 'inline-block',
+                border: `1px solid ${badgeColor || accentColor}33`,
               }}
             >
               {badgeText}
@@ -58,22 +71,45 @@ export const GlobalStatCard = ({
           )}
         </div>
         <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{
-            backgroundColor: `${accentColor}15`,
+            width: '38px',
+            height: '38px',
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            background: `${accentColor}18`,
             color: accentColor,
+            border: `1px solid ${accentColor}25`,
           }}
         >
           {icon}
         </div>
       </div>
 
-      <div className="mt-3">
-        <div className="text-2xl lg:text-3xl font-extrabold text-[#233D49] tracking-tight">
+      <div style={{ marginTop: '0.75rem' }}>
+        <div
+          style={{
+            fontSize: '1.75rem',
+            fontWeight: 800,
+            color: 'var(--text-primary)',
+            letterSpacing: '-0.02em',
+            lineHeight: 1.1,
+            fontFamily: 'Outfit, sans-serif',
+          }}
+        >
           {value !== null && value !== undefined ? value : '—'}
         </div>
         {subtitle && (
-          <p className="text-xs text-[#7d8f97] mt-1 line-clamp-1">
+          <p
+            style={{
+              fontSize: '0.75rem',
+              color: 'var(--text-muted)',
+              marginTop: '0.25rem',
+              lineHeight: 1.3,
+            }}
+          >
             {subtitle}
           </p>
         )}

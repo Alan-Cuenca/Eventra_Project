@@ -122,46 +122,80 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-[#233D49]/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+      className="modal-overlay"
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-xl rounded-2xl border border-[#CEC8B8] shadow-xl overflow-hidden my-8 animate-fade-in"
+        className="modal-box animate-slide-up"
+        style={{ maxWidth: '580px', padding: 0, overflow: 'hidden' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Cabecera del modal */}
-        <div className="p-5 border-b border-[#CEC8B8] flex items-center justify-between bg-[#F3F0E4]/40">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#4D7182]/10 text-[#4D7182] flex items-center justify-center">
-              <Building2 size={22} />
+        <div
+          style={{
+            padding: '1.25rem 1.5rem',
+            borderBottom: '1px solid var(--border-subtle)',
+            background: 'var(--bg-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div
+              style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(77, 113, 130, 0.12)',
+                color: 'var(--primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Building2 size={20} />
             </div>
             <div>
-              <h3 className="font-bold text-lg text-[#233D49] font-['Outfit']">
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
                 Alta de Empresa & Credenciales Temporales
               </h3>
-              <p className="text-xs text-[#7d8f97]">
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.15rem 0 0' }}>
                 Ingresa los datos requeridos para registrar el inquilino SaaS.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-[#7d8f97] hover:bg-[#CEC8B8]/30 transition-colors"
+            className="btn btn-secondary btn-sm"
+            style={{ padding: '0.35rem 0.5rem' }}
             aria-label="Cerrar modal"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
         {/* Mensaje Informativo Oficial del Flujo */}
-        <div className="px-6 pt-5">
-          <div className="p-4 rounded-xl bg-[#4D7182]/10 border border-[#4D7182]/25 flex items-start gap-3 text-xs text-[#233D49]">
-            <KeyRound size={18} className="text-[#4D7182] flex-shrink-0 mt-0.5" />
-            <div className="leading-relaxed">
-              <span className="font-bold text-[#4D7182] block mb-0.5">
+        <div style={{ padding: '1.25rem 1.5rem 0' }}>
+          <div
+            style={{
+              padding: '0.85rem 1rem',
+              borderRadius: 'var(--radius-md)',
+              background: 'rgba(77, 113, 130, 0.1)',
+              border: '1px solid rgba(77, 113, 130, 0.25)',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.75rem',
+              fontSize: '0.75rem',
+              color: 'var(--text-primary)',
+            }}
+          >
+            <KeyRound size={17} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '2px' }} />
+            <div style={{ lineHeight: '1.45' }}>
+              <span style={{ fontWeight: 700, color: 'var(--primary)', display: 'block', marginBottom: '0.2rem' }}>
                 Generación Automática de Contraseña Temporal
               </span>
-              <p className="text-[#233D49]">
+              <p style={{ margin: 0 }}>
                 Al registrar la empresa, se generará automáticamente una contraseña temporal criptográfica válida por 48 horas y se enviará al correo del administrador inicial. Por seguridad, deberá cambiarla obligatoriamente en su primer inicio de sesión.
               </p>
             </div>
@@ -170,8 +204,22 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
 
         {/* Estados Visuales de Retroalimentación */}
         {estadoProceso === ESTADOS_REGISTRO.REGISTRANDO && (
-          <div className="px-6 pt-3">
-            <div className="p-3 rounded-xl bg-[#4D7182]/10 border border-[#4D7182]/20 text-[#4D7182] text-xs font-semibold flex items-center gap-2 animate-pulse">
+          <div style={{ padding: '0.75rem 1.5rem 0' }}>
+            <div
+              style={{
+                padding: '0.75rem 1rem',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(77, 113, 130, 0.1)',
+                border: '1px solid rgba(77, 113, 130, 0.25)',
+                color: 'var(--primary)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
+              className="animate-pulse"
+            >
               <Loader2 size={16} className="animate-spin" />
               <span>Registrando empresa y enviando credenciales por correo...</span>
             </div>
@@ -179,8 +227,21 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
         )}
 
         {estadoProceso === ESTADOS_REGISTRO.COMPLETADO && (
-          <div className="px-6 pt-3">
-            <div className="p-3 rounded-xl bg-[#4D9A72]/15 border border-[#4D9A72]/30 text-[#4D9A72] text-xs font-semibold flex items-center gap-2">
+          <div style={{ padding: '0.75rem 1.5rem 0' }}>
+            <div
+              style={{
+                padding: '0.75rem 1rem',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(77, 154, 114, 0.15)',
+                border: '1px solid rgba(77, 154, 114, 0.3)',
+                color: 'var(--success)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
+            >
               <CheckCircle2 size={16} />
               <span>Empresa registrada exitosamente. Credenciales temporales enviadas al administrador inicial.</span>
             </div>
@@ -188,8 +249,21 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
         )}
 
         {estadoProceso === ESTADOS_REGISTRO.ERROR_ENVIO_CORREO && (
-          <div className="px-6 pt-3">
-            <div className="p-3 rounded-xl bg-[#C49A3A]/15 border border-[#C49A3A]/30 text-[#C49A3A] text-xs font-semibold flex items-center gap-2">
+          <div style={{ padding: '0.75rem 1.5rem 0' }}>
+            <div
+              style={{
+                padding: '0.75rem 1rem',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(196, 154, 58, 0.15)',
+                border: '1px solid rgba(196, 154, 58, 0.3)',
+                color: 'var(--warning)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
+            >
               <AlertTriangle size={16} className="flex-shrink-0" />
               <span>
                 Empresa registrada exitosamente, pero no fue posible enviar el correo de bienvenida en este momento
@@ -201,26 +275,37 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
 
         {/* Mensaje de error general de registro */}
         {errorMsg && (
-          <div className="px-6 pt-3">
+          <div style={{ padding: '0.75rem 1.5rem 0' }}>
             <div
               role="alert"
-              className="p-3 rounded-xl bg-[#C95C5C]/15 border border-[#C95C5C]/30 text-[#C95C5C] text-xs font-semibold flex items-center gap-2"
+              style={{
+                padding: '0.75rem 1rem',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(201, 92, 92, 0.15)',
+                border: '1px solid rgba(201, 92, 92, 0.3)',
+                color: 'var(--danger)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
             >
-              <AlertCircle size={16} className="flex-shrink-0" />
+              <AlertCircle size={16} style={{ flexShrink: 0 }} />
               <span>{errorMsg}</span>
             </div>
           </div>
         )}
 
         {/* Formulario con exactamente los 4 campos obligatorios */}
-        <form onSubmit={handleCrearEmpresa} className="p-6 space-y-4">
+        <form onSubmit={handleCrearEmpresa} style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {/* 1. Nombre Comercial */}
           <div>
-            <label className="block text-xs font-bold text-[#233D49] mb-1">
-              Nombre Comercial de la Empresa <span className="text-[#C95C5C]">*</span>
+            <label className="form-label" style={{ marginBottom: '0.35rem' }}>
+              Nombre Comercial de la Empresa <span style={{ color: 'var(--danger)' }}>*</span>
             </label>
-            <div className="relative">
-              <Building2 size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7d8f97]" />
+            <div style={{ position: 'relative' }}>
+              <Building2 size={15} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
                 type="text"
                 name="nombre_comercial"
@@ -229,24 +314,26 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
                 placeholder="Ej. Recepciones & Eventos Imperial"
                 required
                 disabled={estadoProceso === ESTADOS_REGISTRO.REGISTRANDO}
-                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#CEC8B8] bg-[#FAFAF7] text-xs text-[#233D49] focus:outline-none focus:border-[#4D7182] transition-colors"
+                className="form-input"
+                style={{ paddingLeft: '2.4rem' }}
               />
             </div>
           </div>
 
           {/* 2. Plan de Suscripción Inicial */}
           <div>
-            <label className="block text-xs font-bold text-[#233D49] mb-1">
-              Plan de Suscripción Inicial <span className="text-[#C95C5C]">*</span>
+            <label className="form-label" style={{ marginBottom: '0.35rem' }}>
+              Plan de Suscripción Inicial <span style={{ color: 'var(--danger)' }}>*</span>
             </label>
-            <div className="relative">
-              <Layers size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7d8f97]" />
+            <div style={{ position: 'relative' }}>
+              <Layers size={15} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <select
                 name="plan_suscripcion"
                 value={formData.plan_suscripcion}
                 onChange={handleChange}
                 disabled={estadoProceso === ESTADOS_REGISTRO.REGISTRANDO}
-                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#CEC8B8] bg-[#FAFAF7] text-xs text-[#233D49] focus:outline-none focus:border-[#4D7182] transition-colors font-semibold"
+                className="form-select"
+                style={{ paddingLeft: '2.4rem', fontWeight: 600 }}
               >
                 {PLANES_DISPONIBLES.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -259,11 +346,11 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
 
           {/* 3. Nombre Completo del Administrador */}
           <div>
-            <label className="block text-xs font-bold text-[#233D49] mb-1">
-              Nombre Completo del Administrador Inicial <span className="text-[#C95C5C]">*</span>
+            <label className="form-label" style={{ marginBottom: '0.35rem' }}>
+              Nombre Completo del Administrador Inicial <span style={{ color: 'var(--danger)' }}>*</span>
             </label>
-            <div className="relative">
-              <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7d8f97]" />
+            <div style={{ position: 'relative' }}>
+              <User size={15} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
                 type="text"
                 name="admin_nombre"
@@ -272,18 +359,19 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
                 placeholder="Ej. Martín Falcon"
                 required
                 disabled={estadoProceso === ESTADOS_REGISTRO.REGISTRANDO}
-                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#CEC8B8] bg-[#FAFAF7] text-xs text-[#233D49] focus:outline-none focus:border-[#4D7182] transition-colors"
+                className="form-input"
+                style={{ paddingLeft: '2.4rem' }}
               />
             </div>
           </div>
 
           {/* 4. Correo Electrónico del Administrador */}
           <div>
-            <label className="block text-xs font-bold text-[#233D49] mb-1">
-              Correo Electrónico del Administrador Inicial <span className="text-[#C95C5C]">*</span>
+            <label className="form-label" style={{ marginBottom: '0.35rem' }}>
+              Correo Electrónico del Administrador Inicial <span style={{ color: 'var(--danger)' }}>*</span>
             </label>
-            <div className="relative">
-              <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7d8f97]" />
+            <div style={{ position: 'relative' }}>
+              <Mail size={15} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
                 type="email"
                 name="admin_email"
@@ -292,21 +380,31 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
                 placeholder="administrador@empresa.com"
                 required
                 disabled={estadoProceso === ESTADOS_REGISTRO.REGISTRANDO}
-                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#CEC8B8] bg-[#FAFAF7] text-xs text-[#233D49] focus:outline-none focus:border-[#4D7182] transition-colors"
+                className="form-input"
+                style={{ paddingLeft: '2.4rem' }}
               />
             </div>
-            <p className="text-[11px] text-[#7d8f97] mt-1">
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.35rem 0 0' }}>
               Las credenciales de acceso con la contraseña temporal se enviarán a esta casilla.
             </p>
           </div>
 
           {/* Footer de botones con el nombre oficial solicitado */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#CEC8B8]">
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: '0.75rem',
+              paddingTop: '1rem',
+              borderTop: '1px solid var(--border-subtle)',
+            }}
+          >
             <button
               type="button"
               onClick={onClose}
               disabled={estadoProceso === ESTADOS_REGISTRO.REGISTRANDO}
-              className="px-4 py-2.5 rounded-xl border border-[#CEC8B8] text-xs font-semibold text-[#233D49] hover:bg-[#F3F0E4] transition-colors"
+              className="btn btn-secondary"
             >
               Cerrar
             </button>
@@ -314,11 +412,7 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
             <button
               type="submit"
               disabled={!formularioCompleto || estadoProceso === ESTADOS_REGISTRO.REGISTRANDO || estadoProceso === ESTADOS_REGISTRO.COMPLETADO}
-              className={`px-5 py-2.5 rounded-xl text-white text-xs font-bold flex items-center gap-2 transition-all ${
-                !formularioCompleto || estadoProceso === ESTADOS_REGISTRO.REGISTRANDO
-                  ? 'bg-[#4D7182]/50 cursor-not-allowed shadow-none'
-                  : 'bg-[#4D7182] hover:bg-[#3d5a68] shadow-sm hover:shadow active:scale-[0.98]'
-              }`}
+              className="btn btn-primary"
             >
               {estadoProceso === ESTADOS_REGISTRO.REGISTRANDO ? (
                 <>

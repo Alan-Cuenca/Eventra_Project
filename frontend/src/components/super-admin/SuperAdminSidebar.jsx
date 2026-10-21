@@ -17,9 +17,8 @@ import logoImg from '../../assets/logo.png';
  * SuperAdminSidebar
  * =============================================================================
  * Menú lateral exclusivo para el Super Administrador de EVENTRA SaaS.
- * Muestra las secciones administrativas del SaaS con estado activo únicamente
- * para el Dashboard en esta Fase 1, y estados informativos "Próximamente" para
- * los módulos de fases siguientes.
+ * Estandarizado con la arquitectura oficial .sidebar, .sidebar-nav, .sidebar-link
+ * para consistencia visual idéntica a los demás roles del sistema.
  * =============================================================================
  */
 export const SuperAdminSidebar = ({ isOpen, onClose }) => {
@@ -83,51 +82,45 @@ export const SuperAdminSidebar = ({ isOpen, onClose }) => {
 
   return (
     <>
-      {/* Overlay para móviles */}
+      {/* Overlay para dispositivos móviles */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-[#233D49]/30 backdrop-blur-sm z-40 lg:hidden"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 900,
+            background: 'rgba(35, 61, 73, 0.45)',
+            backdropFilter: 'blur(4px)',
+          }}
           onClick={onClose}
           aria-hidden="true"
         />
       )}
 
-      <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-white border-r border-[#CEC8B8] flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
+      <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`}>
         {/* Brand Header */}
-        <div className="p-5 border-b border-[#CEC8B8] flex items-center gap-3">
+        <div className="sidebar-brand">
           <img
             src={logoImg}
             alt="EVENTRA Logo"
-            className="w-10 h-10 rounded-xl object-contain bg-[#F3F0E4] p-1.5 border border-[#CEC8B8]"
+            className="sidebar-logo"
           />
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-[#233D49] tracking-tight text-base font-['Outfit']">
-                EVENTRA
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#4D7182] text-white uppercase tracking-wider">
-                SaaS
-              </span>
+            <div className="sidebar-brand-name">
+              EVENTRA
             </div>
-            <div className="text-[11px] font-medium text-[#4D7182] flex items-center gap-1 truncate">
-              <ShieldCheck size={12} />
-              <span>Consola Global</span>
+            <div className="sidebar-brand-tagline">
+              Consola Global SaaS
             </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-6">
+        <nav className="sidebar-nav">
           {menuItems.map((group) => (
             <div key={group.group}>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-[#7d8f97] px-3 mb-2">
-                {group.group}
-              </div>
-              <div className="space-y-1">
+              <div className="sidebar-section-label">{group.group}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 {group.items.map((item) => {
                   if (item.enabled) {
                     return (
@@ -136,17 +129,11 @@ export const SuperAdminSidebar = ({ isOpen, onClose }) => {
                         to={item.to}
                         onClick={onClose}
                         className={({ isActive }) =>
-                          `flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 ${
-                            isActive
-                              ? 'bg-[#4D7182] text-white shadow-sm'
-                              : 'text-[#233D49] hover:bg-[#F3F0E4] hover:text-[#4D7182]'
-                          }`
+                          `sidebar-link ${isActive ? 'active' : ''}`
                         }
                       >
-                        <div className="flex items-center gap-3">
-                          <span className="flex-shrink-0">{item.icon}</span>
-                          <span>{item.label}</span>
-                        </div>
+                        <span className="link-icon">{item.icon}</span>
+                        <span>{item.label}</span>
                       </NavLink>
                     );
                   }
@@ -155,15 +142,23 @@ export const SuperAdminSidebar = ({ isOpen, onClose }) => {
                   return (
                     <div
                       key={item.label}
-                      className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-[#7d8f97] cursor-not-allowed opacity-75 hover:bg-[#F3F0E4]/50"
+                      className="sidebar-link"
+                      style={{ opacity: 0.55, cursor: 'not-allowed' }}
                       title={`${item.label} - Disponible en ${item.badge}`}
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="flex-shrink-0 text-[#7d8f97]">{item.icon}</span>
-                        <span>{item.label}</span>
-                      </div>
-                      <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-[#CEC8B8]/40 text-[#233D49] flex items-center gap-0.5">
-                        <Clock size={9} />
+                      <span className="link-icon" style={{ opacity: 0.7 }}>{item.icon}</span>
+                      <span style={{ flex: 1 }}>{item.label}</span>
+                      <span
+                        style={{
+                          fontSize: '0.62rem',
+                          fontWeight: 700,
+                          padding: '0.1rem 0.4rem',
+                          borderRadius: '9999px',
+                          background: 'var(--cream)',
+                          border: '1px solid var(--border-subtle)',
+                          color: 'var(--text-muted)',
+                        }}
+                      >
                         {item.badge}
                       </span>
                     </div>
@@ -175,17 +170,42 @@ export const SuperAdminSidebar = ({ isOpen, onClose }) => {
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="p-4 border-t border-[#CEC8B8] bg-[#F3F0E4]/40">
-          <div className="flex items-center justify-between text-xs text-[#7d8f97]">
-            <span className="font-semibold text-[#233D49]">Super Admin v1.0</span>
-            <span className="flex items-center gap-1 text-[#4D9A72] font-semibold">
-              <span className="w-2 h-2 rounded-full bg-[#4D9A72]"></span>
-              Global
-            </span>
+        <div className="sidebar-footer">
+          <div
+            style={{
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              color: 'var(--primary)',
+              marginBottom: '0.15rem',
+            }}
+          >
+            SUPER ADMINISTRADOR
           </div>
-          <p className="text-[10px] text-[#7d8f97] mt-1">
-            Gestión Multiempresa de EVENTRA
-          </p>
+          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+            Gobernanza Multi-Tenant
+          </div>
+          <div
+            style={{
+              fontSize: '0.65rem',
+              color: 'var(--success)',
+              marginTop: '0.2rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              fontWeight: 600,
+            }}
+          >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: 'var(--success)',
+                display: 'inline-block',
+              }}
+            />
+            Consola Activa
+          </div>
         </div>
       </aside>
     </>

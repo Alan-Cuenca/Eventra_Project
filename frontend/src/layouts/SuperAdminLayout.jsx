@@ -7,31 +7,31 @@ import { SuperAdminHeader } from '../components/super-admin/SuperAdminHeader';
  * =============================================================================
  * SuperAdminLayout
  * =============================================================================
- * Layout estructural exclusivo para el portal del Super Administrador de EVENTRA.
- * Incluye sidebar lateral desacoplado de las vistas de empresa, encabezado
- * dedicado con branding SaaS y contenedor principal con la paleta oficial (#F3F0E4).
+ * Layout estructural para el portal del Super Administrador de EVENTRA SaaS.
+ * Unificado con la arquitectura de diseño del SaaS (.app-container, .main-content,
+ * .page-body) con soporte completo para Light Mode y Dark Mode nativo.
  * =============================================================================
  */
 export const SuperAdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#F3F0E4] text-[#233D49] flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
-      {/* Sidebar fijo */}
+    <div className="app-container">
+      {/* Sidebar de Super Admin */}
       <SuperAdminSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
 
-      {/* Contenedor principal desplazado en desktop para compensar el ancho del sidebar */}
-      <div className="lg:pl-64 flex flex-col flex-1 min-w-0 transition-all duration-300">
-        {/* Encabezado */}
+      {/* Contenedor principal */}
+      <div className="main-content">
+        {/* Encabezado unificado con Navbar y Perfil */}
         <SuperAdminHeader
           onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
         />
 
-        {/* Cuerpo de página */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto animate-fade-in">
+        {/* Cuerpo de página con espaciado y ancho estándar */}
+        <main className="page-body animate-fade-in">
           <Outlet />
         </main>
       </div>

@@ -54,90 +54,163 @@ export const DetalleEmpresaModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-[#233D49]/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+      className="modal-overlay"
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-xl rounded-2xl border border-[#CEC8B8] shadow-xl overflow-hidden my-8 animate-fade-in"
+        className="modal-box animate-slide-up"
+        style={{ maxWidth: '580px', padding: 0, overflow: 'hidden' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Cabecera */}
-        <div className="p-5 border-b border-[#CEC8B8] flex items-center justify-between bg-[#F3F0E4]/40">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-[#4D7182] text-white flex items-center justify-center font-bold text-lg shadow-sm">
+        <div
+          style={{
+            padding: '1.25rem 1.5rem',
+            borderBottom: '1px solid var(--border-subtle)',
+            background: 'var(--bg-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div
+              style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--primary)',
+                color: '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 700,
+                fontSize: '1.1rem',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
               {empresa.nombre_comercial ? empresa.nombre_comercial[0].toUpperCase() : 'E'}
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg text-[#233D49] font-['Outfit']">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
                   {empresa.nombre_comercial}
                 </h3>
                 {empresa.estado_activo ? (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#4D9A72]/15 text-[#4D9A72] flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#4D9A72]"></span>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      padding: '0.15rem 0.55rem',
+                      borderRadius: 'var(--radius-full)',
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      background: 'rgba(77, 154, 114, 0.15)',
+                      color: 'var(--success)',
+                    }}
+                  >
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success)' }}></span>
                     Activa
                   </span>
                 ) : (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#C95C5C]/15 text-[#C95C5C] flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#C95C5C]"></span>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      padding: '0.15rem 0.55rem',
+                      borderRadius: 'var(--radius-full)',
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      background: 'rgba(201, 92, 92, 0.15)',
+                      color: 'var(--danger)',
+                    }}
+                  >
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--danger)' }}></span>
                     Suspendida
                   </span>
                 )}
               </div>
-              <p className="text-xs text-[#7d8f97] font-mono mt-0.5">
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'monospace', margin: '0.2rem 0 0' }}>
                 RUC: {empresa.ruc || 'No registrado'} · ID Tenant: #{empresa.id}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-[#7d8f97] hover:bg-[#CEC8B8]/30 transition-colors"
+            className="btn btn-secondary btn-sm"
+            style={{ padding: '0.35rem 0.5rem' }}
             aria-label="Cerrar modal"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
         {/* Contenido */}
-        <div className="p-6 space-y-6">
+        <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {/* Métricas clave del Inquilino */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#4D7182] mb-3">
+            <h4 style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--primary)', margin: '0 0 0.75rem' }}>
               Métricas Consolidadas del Inquilino
             </h4>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-xl border border-[#CEC8B8] bg-[#FAFAF7] text-center">
-                <div className="w-7 h-7 mx-auto mb-1.5 rounded-lg bg-[#4D7182]/10 text-[#4D7182] flex items-center justify-center">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
+              <div
+                style={{
+                  padding: '0.85rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-primary)',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ width: '30px', height: '30px', margin: '0 auto 0.4rem', borderRadius: 'var(--radius-sm)', background: 'rgba(77, 113, 130, 0.12)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Users size={16} />
                 </div>
-                <div className="text-xl font-extrabold text-[#233D49]">
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                   {empresa.total_usuarios || 0}
                 </div>
-                <div className="text-[10px] font-bold uppercase text-[#7d8f97] mt-0.5">
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
                   Usuarios Totales
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl border border-[#CEC8B8] bg-[#FAFAF7] text-center">
-                <div className="w-7 h-7 mx-auto mb-1.5 rounded-lg bg-[#C49A3A]/10 text-[#C49A3A] flex items-center justify-center">
+              <div
+                style={{
+                  padding: '0.85rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-primary)',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ width: '30px', height: '30px', margin: '0 auto 0.4rem', borderRadius: 'var(--radius-sm)', background: 'rgba(196, 154, 58, 0.12)', color: 'var(--warning)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <CalendarDays size={16} />
                 </div>
-                <div className="text-xl font-extrabold text-[#233D49]">
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                   {empresa.total_eventos || 0}
                 </div>
-                <div className="text-[10px] font-bold uppercase text-[#7d8f97] mt-0.5">
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
                   Eventos Totales
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl border border-[#CEC8B8] bg-[#FAFAF7] text-center">
-                <div className="w-7 h-7 mx-auto mb-1.5 rounded-lg bg-[#4D9A72]/10 text-[#4D9A72] flex items-center justify-center">
+              <div
+                style={{
+                  padding: '0.85rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-primary)',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ width: '30px', height: '30px', margin: '0 auto 0.4rem', borderRadius: 'var(--radius-sm)', background: 'rgba(77, 154, 114, 0.12)', color: 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <DollarSign size={16} />
                 </div>
-                <div className="text-xl font-extrabold text-[#233D49]">
+                <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                   {formatearMoneda(empresa.total_ingresos)}
                 </div>
-                <div className="text-[10px] font-bold uppercase text-[#7d8f97] mt-0.5" title="Pagos completados registrados en eventos de esta empresa">
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: '0.15rem' }} title="Pagos completados registrados en eventos de esta empresa">
                   Ingresos por eventos
                 </div>
               </div>
@@ -145,44 +218,44 @@ export const DetalleEmpresaModal = ({
           </div>
 
           {/* Ficha técnica del inquilino */}
-          <div className="rounded-xl border border-[#CEC8B8] overflow-hidden text-xs">
-            <div className="p-3 bg-[#F3F0E4]/30 border-b border-[#CEC8B8] font-bold text-[#233D49]">
+          <div style={{ borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', overflow: 'hidden', fontSize: '0.78rem' }}>
+            <div style={{ padding: '0.75rem 1rem', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-subtle)', fontWeight: 700, color: 'var(--text-primary)' }}>
               Ficha Técnica de la Cuenta
             </div>
-            <div className="divide-y divide-[#CEC8B8]/60 bg-white">
-              <div className="p-3 flex justify-between items-center">
-                <span className="text-[#7d8f97] flex items-center gap-1.5">
+            <div style={{ background: 'var(--bg-card)' }}>
+              <div style={{ padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)' }}>
+                <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <FileText size={14} /> Identificador de Empresa:
                 </span>
-                <span className="font-mono font-bold text-[#233D49]">
+                <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--text-primary)' }}>
                   TENANT-{empresa.id}
                 </span>
               </div>
 
-              <div className="p-3 flex justify-between items-center">
-                <span className="text-[#7d8f97] flex items-center gap-1.5">
+              <div style={{ padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)' }}>
+                <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <Layers size={14} /> Plan de Suscripción:
                 </span>
-                <span className="px-2 py-0.5 rounded-full font-bold bg-[#4D7182]/10 text-[#4D7182]">
+                <span style={{ padding: '0.15rem 0.55rem', borderRadius: 'var(--radius-full)', fontWeight: 700, fontSize: '0.72rem', background: 'rgba(77, 113, 130, 0.12)', color: 'var(--primary)', border: '1px solid rgba(77, 113, 130, 0.25)' }}>
                   Plan {empresa.plan_suscripcion || 'Básico'}
                 </span>
               </div>
 
-              <div className="p-3 flex justify-between items-center">
-                <span className="text-[#7d8f97] flex items-center gap-1.5">
+              <div style={{ padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)' }}>
+                <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <Calendar size={14} /> Fecha de Registro:
                 </span>
-                <span className="font-medium text-[#233D49]">
+                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
                   {formatearFecha(empresa.fecha_registro)}
                 </span>
               </div>
 
-              <div className="p-3 flex justify-between items-center">
-                <span className="text-[#7d8f97] flex items-center gap-1.5">
+              <div style={{ padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   {empresa.estado_activo ? <ShieldCheck size={14} /> : <ShieldAlert size={14} />}
                   Estado Operativo:
                 </span>
-                <span className={`font-bold ${empresa.estado_activo ? 'text-[#4D9A72]' : 'text-[#C95C5C]'}`}>
+                <span style={{ fontWeight: 700, color: empresa.estado_activo ? 'var(--success)' : 'var(--danger)' }}>
                   {empresa.estado_activo ? 'Habilitada (Sin restricciones)' : 'Suspendida temporalmente'}
                 </span>
               </div>
@@ -190,20 +263,21 @@ export const DetalleEmpresaModal = ({
           </div>
 
           {/* Nota semántica de aclaración */}
-          <p className="text-[11px] text-[#7d8f97] italic bg-[#FAFAF7] p-2.5 rounded-lg border border-[#CEC8B8]">
+          <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontStyle: 'italic', background: 'var(--bg-primary)', padding: '0.65rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', margin: 0 }}>
             * La métrica de ingresos corresponde a los pagos registrados y completados por concepto de eventos dentro del inquilino, no a cuotas de suscripción SaaS.
           </p>
 
           {/* Acciones directas */}
-          <div className="flex items-center justify-between pt-2 border-t border-[#CEC8B8]">
-            <div className="flex items-center gap-2">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <button
                 type="button"
                 onClick={() => {
                   onClose();
                   onAbrirCambiarPlan(empresa);
                 }}
-                className="px-3 py-2 rounded-xl bg-[#4D7182]/15 text-[#4D7182] hover:bg-[#4D7182] hover:text-white transition-all text-xs font-bold"
+                className="btn btn-secondary btn-sm"
+                style={{ color: 'var(--primary)', fontWeight: 700 }}
               >
                 Cambiar Plan
               </button>
@@ -214,11 +288,7 @@ export const DetalleEmpresaModal = ({
                   onClose();
                   onAbrirSuspender(empresa);
                 }}
-                className={`px-3 py-2 rounded-xl transition-all text-xs font-bold ${
-                  empresa.estado_activo
-                    ? 'bg-[#C95C5C]/15 text-[#C95C5C] hover:bg-[#C95C5C] hover:text-white'
-                    : 'bg-[#4D9A72]/15 text-[#4D9A72] hover:bg-[#4D9A72] hover:text-white'
-                }`}
+                className={`btn btn-sm ${empresa.estado_activo ? 'btn-danger' : 'btn-primary'}`}
               >
                 {empresa.estado_activo ? 'Suspender Acceso' : 'Reactivar Acceso'}
               </button>
@@ -227,7 +297,7 @@ export const DetalleEmpresaModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-[#CEC8B8] text-xs font-semibold text-[#233D49] hover:bg-[#F3F0E4] transition-colors"
+              className="btn btn-secondary"
             >
               Cerrar
             </button>

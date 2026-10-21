@@ -65,30 +65,45 @@ export const SuspenderEmpresaModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-[#233D49]/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+      className="modal-overlay"
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-md rounded-2xl border border-[#CEC8B8] shadow-xl overflow-hidden my-8 animate-fade-in"
+        className="modal-box animate-slide-up"
+        style={{ maxWidth: '480px', padding: 0, overflow: 'hidden' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Cabecera */}
-        <div className="p-5 border-b border-[#CEC8B8] flex items-center justify-between bg-[#F3F0E4]/40">
-          <div className="flex items-center gap-3">
+        <div
+          style={{
+            padding: '1.25rem 1.5rem',
+            borderBottom: '1px solid var(--border-subtle)',
+            background: 'var(--bg-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                estaActiva
-                  ? 'bg-[#C95C5C]/15 text-[#C95C5C]'
-                  : 'bg-[#4D9A72]/15 text-[#4D9A72]'
-              }`}
+              style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: 'var(--radius-md)',
+                background: estaActiva ? 'rgba(201, 92, 92, 0.15)' : 'rgba(77, 154, 114, 0.15)',
+                color: estaActiva ? 'var(--danger)' : 'var(--success)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
-              {estaActiva ? <Power size={22} /> : <RotateCcw size={22} />}
+              {estaActiva ? <Power size={20} /> : <RotateCcw size={20} />}
             </div>
             <div>
-              <h3 className="font-bold text-base text-[#233D49] font-['Outfit']">
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
                 {estaActiva ? 'Suspender Inquilino SaaS' : 'Reactivar Inquilino SaaS'}
               </h3>
-              <p className="text-xs text-[#7d8f97] truncate max-w-[240px]">
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.15rem 0 0', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {empresa.nombre_comercial}
               </p>
             </div>
@@ -96,19 +111,32 @@ export const SuspenderEmpresaModal = ({
           <button
             onClick={onClose}
             disabled={loading}
-            className="p-2 rounded-xl text-[#7d8f97] hover:bg-[#CEC8B8]/30 transition-colors"
+            className="btn btn-secondary btn-sm"
+            style={{ padding: '0.35rem 0.5rem' }}
             aria-label="Cerrar modal"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
         {/* Mensajes */}
-        <div className="px-6 pt-4">
+        <div style={{ padding: '1.25rem 1.5rem 0' }}>
           {errorMsg && (
             <div
               role="alert"
-              className="p-3 rounded-xl bg-[#C95C5C]/15 border border-[#C95C5C]/30 text-[#C95C5C] text-xs font-semibold flex items-center gap-2 animate-fade-in"
+              style={{
+                padding: '0.75rem 1rem',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(201, 92, 92, 0.15)',
+                border: '1px solid rgba(201, 92, 92, 0.3)',
+                color: 'var(--danger)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
+              className="animate-fade-in"
             >
               <AlertCircle size={16} className="flex-shrink-0" />
               <span>{errorMsg}</span>
@@ -118,7 +146,19 @@ export const SuspenderEmpresaModal = ({
           {successMsg && (
             <div
               role="status"
-              className="p-3 rounded-xl bg-[#4D9A72]/15 border border-[#4D9A72]/30 text-[#4D9A72] text-xs font-semibold flex items-center gap-2 animate-fade-in"
+              style={{
+                padding: '0.75rem 1rem',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(77, 154, 114, 0.15)',
+                border: '1px solid rgba(77, 154, 114, 0.3)',
+                color: 'var(--success)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
+              className="animate-fade-in"
             >
               <CheckCircle2 size={16} className="flex-shrink-0" />
               <span>{successMsg}</span>
@@ -127,61 +167,101 @@ export const SuspenderEmpresaModal = ({
         </div>
 
         {/* Contenido / Advertencia */}
-        <div className="p-6 space-y-4">
+        <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {estaActiva ? (
-            <div className="p-4 rounded-xl border border-[#C95C5C]/30 bg-[#C95C5C]/10 space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold text-[#C95C5C]">
+            <div
+              style={{
+                padding: '1rem',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid rgba(201, 92, 92, 0.3)',
+                background: 'rgba(201, 92, 92, 0.1)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.4rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--danger)' }}>
                 <AlertTriangle size={16} />
                 <span>Advertencia de Impacto de Acceso</span>
               </div>
-              <p className="text-xs text-[#233D49] leading-relaxed">
-                Al suspender a <strong className="text-[#C95C5C]">{empresa.nombre_comercial}</strong>,
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-primary)', margin: 0, lineHeight: 1.45 }}>
+                Al suspender a <strong style={{ color: 'var(--danger)' }}>{empresa.nombre_comercial}</strong>,
                 todos los administradores, gerentes y trabajadores asignados a esta empresa{' '}
                 <strong>perderán el acceso inmediato al sistema</strong> hasta que sea reactivada.
               </p>
             </div>
           ) : (
-            <div className="p-4 rounded-xl border border-[#4D9A72]/30 bg-[#4D9A72]/10 space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold text-[#4D9A72]">
+            <div
+              style={{
+                padding: '1rem',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid rgba(77, 154, 114, 0.3)',
+                background: 'rgba(77, 154, 114, 0.1)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.4rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--success)' }}>
                 <ShieldAlert size={16} />
                 <span>Restauración de Operaciones</span>
               </div>
-              <p className="text-xs text-[#233D49] leading-relaxed">
-                Al reactivar a <strong className="text-[#4D9A72]">{empresa.nombre_comercial}</strong>,
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-primary)', margin: 0, lineHeight: 1.45 }}>
+                Al reactivar a <strong style={{ color: 'var(--success)' }}>{empresa.nombre_comercial}</strong>,
                 se rehabilitará el inicio de sesión y la operativa para todos los usuarios y clientes
                 pertenecientes a este inquilino.
               </p>
             </div>
           )}
 
-          <div className="p-3 rounded-xl border border-[#CEC8B8] bg-[#FAFAF7] text-xs space-y-1">
-            <div className="flex justify-between">
-              <span className="text-[#7d8f97]">Estado actual:</span>
-              <span className={`font-bold ${estaActiva ? 'text-[#4D9A72]' : 'text-[#C95C5C]'}`}>
+          <div
+            style={{
+              padding: '0.85rem 1rem',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border-subtle)',
+              background: 'var(--bg-primary)',
+              fontSize: '0.75rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.35rem',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Estado actual:</span>
+              <span style={{ fontWeight: 700, color: estaActiva ? 'var(--success)' : 'var(--danger)' }}>
                 {estaActiva ? 'Activa' : 'Suspendida'}
               </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-[#7d8f97]">Usuarios afectados:</span>
-              <span className="font-bold text-[#233D49]">
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Usuarios afectados:</span>
+              <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
                 {empresa.total_usuarios || 0} usuarios
               </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-[#7d8f97]">Plan:</span>
-              <span className="font-bold text-[#4D7182]">
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Plan:</span>
+              <span style={{ fontWeight: 700, color: 'var(--primary)' }}>
                 {empresa.plan_suscripcion || 'Básico'}
               </span>
             </div>
           </div>
 
           {/* Botones */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#CEC8B8]">
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: '0.75rem',
+              paddingTop: '0.75rem',
+              borderTop: '1px solid var(--border-subtle)',
+            }}
+          >
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2 rounded-xl border border-[#CEC8B8] text-xs font-semibold text-[#233D49] hover:bg-[#F3F0E4] transition-colors"
+              className="btn btn-secondary"
             >
               Cancelar
             </button>
@@ -189,11 +269,7 @@ export const SuspenderEmpresaModal = ({
               type="button"
               onClick={handleConfirmar}
               disabled={loading}
-              className={`px-5 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 ${
-                estaActiva
-                  ? 'bg-[#C95C5C] hover:bg-[#b34949]'
-                  : 'bg-[#4D9A72] hover:bg-[#3d8560]'
-              }`}
+              className={`btn ${estaActiva ? 'btn-danger' : 'btn-primary'}`}
             >
               {loading ? (
                 <>
