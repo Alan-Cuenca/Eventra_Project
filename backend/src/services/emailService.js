@@ -83,25 +83,42 @@ export const getMailTransporter = (customTransporter = null) => {
     throw new Error(`[emailService] Variables SMTP obligatorias no configuradas: ${validation.missing.join(', ')}`);
   }
 
+  const user = process.env.SMTP_USER?.trim();
+  const pass = process.env.SMTP_PASS?.trim();
+  const host = process.env.SMTP_HOST?.trim() || 'smtp.gmail.com';
+  const isGmail = host === 'smtp.gmail.com' || host === 'gmail';
+
+  if (isGmail) {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user,
+        pass,
+      },
+      connectionTimeout: 10000, // 10s max para establecer conexión TCP
+      greetingTimeout: 7000,    // 7s max para saludo SMTP
+      socketTimeout: 15000,     // 15s max de socket inactivo
+    });
+  }
+
   const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587;
   const isSecure = process.env.SMTP_SECURE === 'true';
 
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    host,
     port,
-    secure: isSecure, // false para puerto 587
-    requireTLS: !isSecure, // Fuerza STARTTLS en 587
+    secure: isSecure,
+    requireTLS: !isSecure,
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      user,
+      pass,
     },
-    // Verificación estricta de certificados TLS (rechaza certificados inválidos)
     tls: {
       rejectUnauthorized: true,
     },
-    connectionTimeout: 10000, // 10s max para establecer conexión TCP
-    greetingTimeout: 7000,    // 7s max para saludo SMTP
-    socketTimeout: 15000,     // 15s max de socket inactivo
+    connectionTimeout: 10000,
+    greetingTimeout: 7000,
+    socketTimeout: 15000,
   });
 };
 
