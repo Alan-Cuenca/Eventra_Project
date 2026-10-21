@@ -33,25 +33,53 @@ export const generarSlug = (texto) => {
 
 export const obtenerEmpresas = async (req, res) => {
   try {
-    const result = await pool.query(
-      `SELECT 
-         e.id, 
-         e.nombre_comercial,
-         e.slug,
-         e.ruc, 
-         e.plan_suscripcion, 
-         e.estado_activo, 
-         e.fecha_registro,
-         COUNT(DISTINCT u.id)  AS total_usuarios,
-         COUNT(DISTINCT ev.id) AS total_eventos,
-         COALESCE(SUM(p.monto) FILTER (WHERE p.estado = 'Completado'), 0) AS total_ingresos
-       FROM empresas e
-       LEFT JOIN usuarios u  ON u.empresa_id = e.id
-       LEFT JOIN eventos ev  ON ev.empresa_id = e.id
-       LEFT JOIN pagos p     ON p.empresa_id = e.id
-       GROUP BY e.id, e.nombre_comercial, e.slug, e.ruc, e.plan_suscripcion, e.estado_activo, e.fecha_registro
-       ORDER BY e.fecha_registro DESC`
-    );
+    let result;
+    try {
+      result = await pool.query(
+        `SELECT 
+           e.id, 
+           e.nombre_comercial,
+           e.slug,
+           e.ruc, 
+           e.plan_suscripcion, 
+           e.estado_activo, 
+           e.fecha_registro,
+           COUNT(DISTINCT u.id)  AS total_usuarios,
+           COUNT(DISTINCT ev.id) AS total_eventos,
+           COALESCE(SUM(p.monto) FILTER (WHERE p.estado = 'Completado'), 0) AS total_ingresos
+         FROM empresas e
+         LEFT JOIN usuarios u  ON u.empresa_id = e.id
+         LEFT JOIN eventos ev  ON ev.empresa_id = e.id
+         LEFT JOIN pagos p     ON p.empresa_id = e.id
+         GROUP BY e.id, e.nombre_comercial, e.slug, e.ruc, e.plan_suscripcion, e.estado_activo, e.fecha_registro
+         ORDER BY e.fecha_registro DESC`
+      );
+    } catch (queryErr) {
+      // Si la columna slug aún no está migrada en la base de datos remota
+      if (queryErr.code === '42703' || queryErr.message?.includes('slug')) {
+        result = await pool.query(
+          `SELECT 
+             e.id, 
+             e.nombre_comercial,
+             NULL AS slug,
+             e.ruc, 
+             e.plan_suscripcion, 
+             e.estado_activo, 
+             e.fecha_registro,
+             COUNT(DISTINCT u.id)  AS total_usuarios,
+             COUNT(DISTINCT ev.id) AS total_eventos,
+             COALESCE(SUM(p.monto) FILTER (WHERE p.estado = 'Completado'), 0) AS total_ingresos
+           FROM empresas e
+           LEFT JOIN usuarios u  ON u.empresa_id = e.id
+           LEFT JOIN eventos ev  ON ev.empresa_id = e.id
+           LEFT JOIN pagos p     ON p.empresa_id = e.id
+           GROUP BY e.id, e.nombre_comercial, e.ruc, e.plan_suscripcion, e.estado_activo, e.fecha_registro
+           ORDER BY e.fecha_registro DESC`
+        );
+      } else {
+        throw queryErr;
+      }
+    }
 
     return res.status(200).json({
       success: true,
@@ -133,19 +161,27 @@ export const crearEmpresa = async (req, res) => {
       slugFinal = `empresa-${Date.now()}`;
     }
 
-    // Verificar si el slug ya existe y asegurar unicidad
-    const slugCheck = await client.query('SELECT id FROM empresas WHERE slug = $1', [slugFinal]);
-    if (slugCheck.rowCount > 0) {
-      slugFinal = `${slugFinal}-${Math.floor(1000 + Math.random() * 9000)}`;
+    // 4. Crear el tenant con soporte fallback si la columna slug aún no está migrada en la BD
+    let empresaRes;
+    try {
+      empresaRes = await client.query(
+        `INSERT INTO empresas (nombre_comercial, slug, ruc, plan_suscripcion, estado_activo)
+         VALUES ($1, $2, $3, $4, true)
+         RETURNING id, nombre_comercial, slug, ruc, plan_suscripcion, estado_activo, fecha_registro`,
+        [nombre_comercial.trim(), slugFinal, ruc ? String(ruc).trim() : null, planNormalizado]
+      );
+    } catch (insertErr) {
+      if (insertErr.code === '42703' || insertErr.message?.includes('slug')) {
+        empresaRes = await client.query(
+          `INSERT INTO empresas (nombre_comercial, ruc, plan_suscripcion, estado_activo)
+           VALUES ($1, $2, $3, true)
+           RETURNING id, nombre_comercial, NULL AS slug, ruc, plan_suscripcion, estado_activo, fecha_registro`,
+          [nombre_comercial.trim(), ruc ? String(ruc).trim() : null, planNormalizado]
+        );
+      } else {
+        throw insertErr;
+      }
     }
-
-    // 4. Crear el tenant
-    const empresaRes = await client.query(
-      `INSERT INTO empresas (nombre_comercial, slug, ruc, plan_suscripcion, estado_activo)
-       VALUES ($1, $2, $3, $4, true)
-       RETURNING id, nombre_comercial, slug, ruc, plan_suscripcion, estado_activo, fecha_registro`,
-      [nombre_comercial.trim(), slugFinal, ruc ? String(ruc).trim() : null, planNormalizado]
-    );
 
     nuevaEmpresa = empresaRes.rows[0];
 
