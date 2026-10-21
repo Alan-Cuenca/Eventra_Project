@@ -50,7 +50,21 @@ export const Login = () => {
     setLoading(true);
     try {
       const result = await login(formData.email, formData.password);
-      navigate('/dashboard', { replace: true });
+      const rolId = Number(result?.user?.rol_id);
+      const rolNombre = result?.user?.rol_nombre || result?.user?.rol;
+
+      if (result?.user?.debe_cambiar_password || result?.user?.primer_acceso) {
+        navigate('/primer-acceso/cambiar-password', { replace: true });
+        return;
+      }
+
+      if (rolId === 5 || rolNombre === 'Super_Admin') {
+        navigate('/super-admin/dashboard', { replace: true });
+      } else if (rolId === 4) {
+        navigate('/portal-cliente', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     } catch (err) {
       setError(
         err?.status === 401
