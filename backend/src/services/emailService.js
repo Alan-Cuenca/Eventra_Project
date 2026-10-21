@@ -99,6 +99,9 @@ export const getMailTransporter = (customTransporter = null) => {
     tls: {
       rejectUnauthorized: true,
     },
+    connectionTimeout: 10000, // 10s max para establecer conexión TCP
+    greetingTimeout: 7000,    // 7s max para saludo SMTP
+    socketTimeout: 15000,     // 15s max de socket inactivo
   });
 };
 
