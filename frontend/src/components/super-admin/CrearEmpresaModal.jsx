@@ -107,10 +107,11 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
       }
     } catch (err) {
       setEstadoProceso(ESTADOS_REGISTRO.ERROR_REGISTRO);
+      const isTimeout = err?.code === 'ECONNABORTED' || err?.message?.toLowerCase().includes('timeout');
       setErrorMsg(
-        err?.response?.data?.message ||
-        err?.message ||
-        'Error al registrar la empresa en el servidor.'
+        isTimeout
+          ? 'El servidor tardó en responder (inicio en frío de Render). Por favor, intenta de nuevo en unos segundos.'
+          : (err?.response?.data?.message || err?.message || 'Error al registrar la empresa en el servidor.')
       );
     }
   };

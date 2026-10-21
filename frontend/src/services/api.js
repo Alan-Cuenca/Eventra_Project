@@ -21,7 +21,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000, // 15 s — Render puede tardar en despertar del cold-start
+  timeout: 60000, // 60 s — Soporta el Cold-Start de Render (~30-50s) y el despacho de correo SMTP
 });
 
 // ── Interceptor de Request: inyecta JWT en cada petición protegida ──────────
