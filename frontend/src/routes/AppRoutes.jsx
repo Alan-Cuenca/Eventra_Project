@@ -14,8 +14,13 @@ import { Login }    from '../pages/auth/Login';
 import { Registro } from '../pages/auth/Registro';
 import { PrimerLoginCambioPassword } from '../pages/auth/PrimerLoginCambioPassword';
 
-// ── Landing Page Oficial SaaS EVENTRA ───────────────────────────────────
-import { LandingPublicPage } from '../pages/public/LandingPublicPage';
+// ── Sitio Web Público SaaS EVENTRA (Multi-página) ─────────────────────────
+import { PublicLayout } from '../pages/public/PublicLayout';
+import { Home }         from '../pages/public/Home';
+import { Features }     from '../pages/public/Features';
+import { EvaraAI }      from '../pages/public/EvaraAI';
+import { Pricing }      from '../pages/public/Pricing';
+
 
 // ── Portal del Cliente (rol_id = 4) ─────────────────────────────────────────
 import { PortalClientePage } from '../pages/clients/PortalClientePage';
@@ -68,8 +73,15 @@ const ActividadesRouter = () => {
 export const AppRoutes = () => {
   return (
     <Routes>
-      {/* ── Rutas Públicas ────────────────────────────────────────────────── */}
-      <Route path="/"         element={<LandingPublicPage />} />
+      {/* ── Sitio Web Público Multi-Página (bajo PublicLayout) ───────────── */}
+      <Route element={<PublicLayout />}>
+        <Route path="/"                 element={<Home />} />
+        <Route path="/funcionalidades"  element={<Features />} />
+        <Route path="/evara-ai"         element={<EvaraAI />} />
+        <Route path="/precios"          element={<Pricing />} />
+      </Route>
+
+      {/* ── Autenticación y Acceso (Aisladas, fuera de PublicLayout) ──────── */}
       <Route path="/login"    element={<Login />} />
       <Route path="/registro" element={<Registro />} />
       <Route path="/primer-acceso/cambiar-password" element={<PrimerLoginCambioPassword />} />
