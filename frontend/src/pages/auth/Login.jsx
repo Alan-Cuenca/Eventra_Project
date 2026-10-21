@@ -9,7 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from '../../components/common/ThemeToggle';
 import {
   Lock, Mail, ArrowRight, Eye, EyeOff, Loader2,
-  CalendarDays, Shield, Sparkles, AlertCircle,
+  CalendarDays, Shield, Sparkles, AlertCircle, ArrowLeft,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
@@ -66,9 +66,6 @@ export const Login = () => {
 
   return (
     <div className="login-root">
-      {/* Botón flotante para modo oscuro/claro en esquina superior derecha */}
-      <ThemeToggle floating />
-
       {/* ── Panel Izquierdo — Branding Crema ─────────────────────────────── */}
       <div className="login-left">
         {/* Logo */}
@@ -149,6 +146,35 @@ export const Login = () => {
       {/* ── Panel Derecho — Formulario (Card Blanca) ──────────────────────── */}
       <div className="login-right">
         <div className="login-card animate-fade-in">
+          {/* Botón de Retorno al Landing Principal */}
+          <div style={{ marginBottom: '1.25rem' }}>
+            <Link
+              to="/"
+              id="back-to-landing-link"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                fontSize: '0.8125rem',
+                fontWeight: 600,
+                color: 'var(--primary)',
+                textDecoration: 'none',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--primary-dark)';
+                e.currentTarget.style.transform = 'translateX(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--primary)';
+                e.currentTarget.style.transform = 'none';
+              }}
+            >
+              <ArrowLeft size={15} />
+              <span>Volver a la página principal</span>
+            </Link>
+          </div>
+
           {/* Header del formulario */}
           <div style={{ marginBottom: '1.75rem' }}>
             <h2

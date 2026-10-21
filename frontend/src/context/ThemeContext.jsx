@@ -8,30 +8,28 @@ const ThemeContext = createContext({
 });
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setThemeState] = useState(() => {
+  const [theme, setTheme] = useState(() => {
     try {
-      const savedTheme = localStorage.getItem('eventra_theme');
-      if (savedTheme === 'dark' || savedTheme === 'light') {
-        return savedTheme;
-      }
+      const saved = localStorage.getItem('eventra_theme');
+      if (saved === 'dark' || saved === 'light') return saved;
     } catch {
-      // localStorage may fail in some environments
+      // Fallback si localStorage falla
     }
-    // Mantener modo claro por defecto
     return 'light';
   });
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === 'dark') {
+    const isDark = theme === 'dark';
+
+    if (isDark) {
       root.classList.add('dark');
-      root.setAttribute('data-theme', 'dark');
-      root.style.colorScheme = 'dark';
     } else {
       root.classList.remove('dark');
-      root.setAttribute('data-theme', 'light');
-      root.style.colorScheme = 'light';
     }
+
+    root.setAttribute('data-theme', theme);
+    root.style.colorScheme = theme;
 
     try {
       localStorage.setItem('eventra_theme', theme);
@@ -41,20 +39,16 @@ export const ThemeProvider = ({ children }) => {
   }, [theme]);
 
   const toggleTheme = () => {
-    setThemeState((prev) => (prev === 'light' ? 'dark' : 'light'));
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
-  const setTheme = (newTheme) => {
-    if (newTheme === 'light' || newTheme === 'dark') {
-      setThemeState(newTheme);
-    }
-  };
+  const isDark = theme === 'dark';
 
   return (
     <ThemeContext.Provider
       value={{
         theme,
-        isDark: theme === 'dark',
+        isDark,
         toggleTheme,
         setTheme,
       }}

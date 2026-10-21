@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { Badge } from './Badge';
-import { ThemeToggle } from './ThemeToggle';
 import {
-  Bell, LogOut, Search, User, CheckCircle2, Clock, AlertCircle, X,
+  Bell, LogOut, Search, User, CheckCircle2, Clock, AlertCircle, X, ChevronDown, Moon, Sun,
 } from 'lucide-react';
 import { api } from '../../services/api';
 
@@ -39,10 +39,13 @@ const MOCK_NOTIFS = [
 
 export const Navbar = () => {
   const { user, roleConfig, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const [backendStatus, setBackendStatus] = useState('checking');
   const [notifOpen, setNotifOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(2);
   const notifRef = useRef(null);
+  const profileRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -63,6 +66,26 @@ export const Navbar = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, [notifOpen]);
 
+  // Cerrar menú de perfil al click fuera o Escape
+  useEffect(() => {
+    const handler = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    const escHandler = (e) => {
+      if (e.key === 'Escape') setProfileOpen(false);
+    };
+    if (profileOpen) {
+      document.addEventListener('mousedown', handler);
+      document.addEventListener('keydown', escHandler);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('keydown', escHandler);
+    };
+  }, [profileOpen]);
+
   const initials = user?.nombre_completo
     ? user.nombre_completo.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
     : '?';
@@ -72,13 +95,17 @@ export const Navbar = () => {
 
   return (
     <header className="app-header">
-      {/* Acciones */}
-      <div className="header-actions">
-        {/* Estado API */}
+      {/* Lado Izquierdo (Espaciador / Contexto) */}
+      <div className="header-left flex items-center gap-2" />
+
+      {/* Acciones y Perfil Alineados a la Derecha */}
+      <div className="header-actions" style={{ marginLeft: 'auto' }}>
+        {/* Estado API Sutil */}
         <div
           className={`api-status-badge ${
             backendStatus === 'connected' ? 'connected' : 'offline'
           }`}
+          title={backendStatus === 'connected' ? 'API Express & Supabase Conectadas' : 'Modo Frontend / Sin Conexión'}
         >
           <span
             className={`status-dot ${
@@ -86,12 +113,9 @@ export const Navbar = () => {
             }`}
           />
           {backendStatus === 'connected'
-            ? 'API Express Conectada'
-            : 'Modo Frontend Activo'}
+            ? 'API Conectada'
+            : 'Sin Conexión'}
         </div>
-
-        {/* Selector de modo oscuro/claro */}
-        <ThemeToggle />
 
         {/* Campana de notificaciones */}
         <div style={{ position: 'relative' }} ref={notifRef}>
@@ -207,38 +231,121 @@ export const Navbar = () => {
           )}
         </div>
 
-        {/* Avatar + info de usuario */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <div className="avatar" id="user-avatar">
-            {initials}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span
+        {/* Perfil de Usuario con Menú Desplegable */}
+        <div style={{ position: 'relative' }} ref={profileRef}>
+          <button
+            id="user-profile-menu-btn"
+            type="button"
+            className={`profile-trigger-btn ${profileOpen ? 'active' : ''}`}
+            onClick={() => setProfileOpen((prev) => !prev)}
+            aria-expanded={profileOpen}
+            aria-haspopup="true"
+            aria-label="Menú de perfil de usuario"
+          >
+            <div className="avatar" id="user-avatar" style={{ pointerEvents: 'none' }}>
+              {initials}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+              <span
+                style={{
+                  fontSize: '0.8125rem',
+                  fontWeight: 700,
+                  color: 'var(--text-primary)',
+                  lineHeight: 1.2,
+                }}
+              >
+                {user?.nombre_completo?.split(' ')[0] || 'Usuario'}
+              </span>
+              <Badge variant={roleVariant} style={{ fontSize: '0.6rem', padding: '0.1rem 0.45rem' }}>
+                {roleConfig?.nombre || 'Rol'}
+              </Badge>
+            </div>
+            <ChevronDown
+              size={14}
               style={{
-                fontSize: '0.8125rem',
-                fontWeight: 700,
-                color: 'var(--text-primary)',
-                lineHeight: 1.2,
+                color: 'var(--text-muted)',
+                transition: 'transform 0.2s ease',
+                transform: profileOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                marginLeft: '0.1rem',
               }}
-            >
-              {user?.nombre_completo?.split(' ')[0] || 'Usuario'}
-            </span>
-            <Badge variant={roleVariant} style={{ fontSize: '0.6rem', padding: '0.1rem 0.45rem' }}>
-              {roleConfig?.nombre || 'Rol'}
-            </Badge>
-          </div>
-        </div>
+            />
+          </button>
 
-        {/* Logout */}
-        <button
-          id="logout-btn"
-          onClick={logout}
-          className="btn btn-secondary btn-sm"
-          title="Cerrar sesión"
-        >
-          <LogOut size={15} />
-          <span>Salir</span>
-        </button>
+          {/* Menú Desplegable del Perfil */}
+          {profileOpen && (
+            <div className="profile-dropdown-panel" id="user-profile-dropdown">
+              {/* Encabezado con datos del usuario */}
+              <div className="profile-dropdown-header">
+                <div style={{ fontSize: '0.875rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.15rem' }}>
+                  {user?.nombre_completo || 'Usuario'}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem', wordBreak: 'break-all' }}>
+                  {user?.email || 'usuario@eventra.com'}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Badge variant={roleVariant} style={{ fontSize: '0.62rem', padding: '0.12rem 0.45rem' }}>
+                    {roleConfig?.nombre || 'Rol'}
+                  </Badge>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                    Empresa #{user?.empresa_id || 1}
+                  </span>
+                </div>
+              </div>
+
+              {/* Sección de Preferencias / Tema */}
+              <div className="profile-dropdown-section">
+                <button
+                  type="button"
+                  id="profile-toggle-theme-btn"
+                  className="profile-dropdown-item"
+                  onClick={toggleTheme}
+                  title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    {isDark ? (
+                      <Moon size={16} color="var(--primary)" />
+                    ) : (
+                      <Sun size={16} color="var(--warning)" />
+                    )}
+                    <span>{isDark ? 'Modo Oscuro' : 'Modo Claro'}</span>
+                  </div>
+
+                  {/* Switch iOS/SaaS estilizado */}
+                  <div className={`theme-switch-track ${isDark ? 'active' : ''}`} aria-hidden="true">
+                    <div className={`theme-switch-thumb ${isDark ? 'active' : ''}`}>
+                      {isDark ? (
+                        <Moon size={11} color="#6594AA" />
+                      ) : (
+                        <Sun size={11} color="#C49A3A" />
+                      )}
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0 0.5rem' }} />
+
+              {/* Sección de Salir / Logout */}
+              <div className="profile-dropdown-section">
+                <button
+                  type="button"
+                  id="logout-btn"
+                  className="profile-dropdown-item danger"
+                  onClick={() => {
+                    setProfileOpen(false);
+                    logout();
+                  }}
+                  title="Cerrar sesión"
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <LogOut size={16} />
+                    <span>Cerrar sesión</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

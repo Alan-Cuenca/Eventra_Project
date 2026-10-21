@@ -7,8 +7,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../../services/api';
-import { ThemeToggle } from '../../components/common/ThemeToggle';
-import { Lock, Mail, User, Building2, ArrowRight, CheckCircle2, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Lock, Mail, User, Building2, ArrowRight, ArrowLeft, CheckCircle2, Loader2, Eye, EyeOff } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
 const ROLES_OPCIONES = [
@@ -91,7 +90,6 @@ export const Registro = () => {
             'radial-gradient(ellipse 120% 80% at 50% 0%, rgba(69,102,119,0.22) 0%, transparent 60%), var(--bg-main)',
         }}
       >
-        <ThemeToggle floating />
         <div
           className="glass-card animate-fade-in"
           style={{ maxWidth: '400px', width: '100%', textAlign: 'center', padding: '3rem 2rem' }}
@@ -135,6 +133,27 @@ export const Registro = () => {
               }}
             />
           </div>
+
+          <div style={{ marginTop: '1.75rem', display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+            <Link
+              to="/login"
+              id="success-go-to-login"
+              className="btn btn-primary"
+              style={{ fontSize: '0.85rem', padding: '0.55rem 1rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+            >
+              <span>Ir al login ahora</span>
+              <ArrowRight size={14} />
+            </Link>
+            <Link
+              to="/"
+              id="success-go-to-landing"
+              className="btn btn-outline"
+              style={{ fontSize: '0.85rem', padding: '0.55rem 0.9rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+            >
+              <ArrowLeft size={14} />
+              <span>Volver al inicio</span>
+            </Link>
+          </div>
         </div>
         <style>{`@keyframes progress { from { width: 0% } to { width: 100% } }`}</style>
       </div>
@@ -156,7 +175,6 @@ export const Registro = () => {
         overflow: 'hidden',
       }}
     >
-      <ThemeToggle floating />
       {/* Decoración ambiental */}
       <div
         aria-hidden="true"
@@ -173,6 +191,71 @@ export const Registro = () => {
       />
 
       <div style={{ width: '100%', maxWidth: '500px' }} className="animate-fade-in">
+        {/* Barra superior con botones de regreso */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', gap: '0.75rem' }}>
+          <Link
+            to="/"
+            id="reg-back-to-landing-top"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              color: 'var(--primary)',
+              textDecoration: 'none',
+              background: '#FFFFFF',
+              padding: '0.45rem 0.85rem',
+              borderRadius: '10px',
+              border: '1px solid var(--border-subtle)',
+              boxShadow: '0 1px 3px rgba(35,61,73,0.06)',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--primary-dark)';
+              e.currentTarget.style.transform = 'translateX(-3px)';
+              e.currentTarget.style.borderColor = 'var(--primary)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--primary)';
+              e.currentTarget.style.transform = 'none';
+              e.currentTarget.style.borderColor = 'var(--border-subtle)';
+            }}
+          >
+            <ArrowLeft size={15} />
+            <span>Volver al inicio</span>
+          </Link>
+
+          <Link
+            to="/login"
+            id="reg-back-to-login-top"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              color: 'var(--primary)',
+              textDecoration: 'none',
+              background: '#FFFFFF',
+              padding: '0.45rem 0.85rem',
+              borderRadius: '10px',
+              border: '1px solid var(--border-subtle)',
+              boxShadow: '0 1px 3px rgba(35,61,73,0.06)',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--primary-dark)';
+              e.currentTarget.style.borderColor = 'var(--primary)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--primary)';
+              e.currentTarget.style.borderColor = 'var(--border-subtle)';
+            }}
+          >
+            <span>Iniciar sesión</span>
+          </Link>
+        </div>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.65rem', marginBottom: '1.25rem' }}>
@@ -400,16 +483,55 @@ export const Registro = () => {
             </button>
           </form>
 
-          {/* Footer */}
-          <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            ¿Ya tienes cuenta?{' '}
+          {/* Footer con opciones de retorno */}
+          <div
+            style={{
+              marginTop: '1.5rem',
+              paddingTop: '1.25rem',
+              borderTop: '1px solid var(--border-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '0.85rem',
+              flexWrap: 'wrap',
+              gap: '0.75rem',
+            }}
+          >
             <Link
-              to="/login"
-              id="link-to-login"
-              style={{ color: 'var(--accent)', fontWeight: 600 }}
+              to="/"
+              id="reg-footer-back-to-landing"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                color: 'var(--primary)',
+                textDecoration: 'none',
+                fontWeight: 600,
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--primary-dark)';
+                e.currentTarget.style.transform = 'translateX(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--primary)';
+                e.currentTarget.style.transform = 'none';
+              }}
             >
-              Inicia sesión aquí
+              <ArrowLeft size={14} />
+              <span>Volver a la página principal</span>
             </Link>
+
+            <span style={{ color: 'var(--text-muted)' }}>
+              ¿Ya tienes cuenta?{' '}
+              <Link
+                to="/login"
+                id="link-to-login"
+                style={{ color: 'var(--primary)', fontWeight: 700, textDecoration: 'none' }}
+              >
+                Inicia sesión aquí
+              </Link>
+            </span>
           </div>
         </div>
       </div>

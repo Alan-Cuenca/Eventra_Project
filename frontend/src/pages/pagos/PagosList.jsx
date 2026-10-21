@@ -1,13 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../../components/common/Card';
 import { eventraService } from '../../services/eventraService';
-import { CheckCircle, XCircle, Eye, AlertTriangle } from 'lucide-react';
+import { 
+  CheckCircle, 
+  XCircle, 
+  Eye, 
+  AlertTriangle, 
+  CheckCircle2, 
+  AlertCircle, 
+  DollarSign, 
+  Calendar, 
+  CreditCard, 
+  X,
+  FileCheck,
+  ExternalLink
+} from 'lucide-react';
 
-const PagosList = () => {
+export const PagosList = () => {
   const [pagos, setPagos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagoSeleccionado, setPagoSeleccionado] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   useEffect(() => {
     cargarPagos();
@@ -17,9 +36,10 @@ const PagosList = () => {
     setLoading(true);
     try {
       const data = await eventraService.getPagos();
-      setPagos(data);
+      setPagos(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error cargando pagos', error);
+      showToast('Error al cargar la lista de pagos', 'error');
     } finally {
       setLoading(false);
     }
@@ -35,180 +55,292 @@ const PagosList = () => {
       await eventraService.actualizarEstadoPago(id, nuevoEstado);
       setIsModalOpen(false);
       setPagoSeleccionado(null);
-      cargarPagos(); // Recargar lista
+      showToast(`Pago marcado como "${nuevoEstado}" correctamente`);
+      cargarPagos();
     } catch (error) {
-      alert('Error al cambiar el estado del pago');
+      showToast('No se pudo actualizar el estado del pago', 'error');
     }
   };
 
   const pagosPendientes = pagos.filter(p => p.estado === 'En Revisión' || p.estado === 'Pendiente');
   const pagosHistorial = pagos.filter(p => p.estado !== 'En Revisión' && p.estado !== 'Pendiente');
 
+  const totalAprobado = pagos
+    .filter(p => p.estado === 'Aprobado')
+    .reduce((acc, curr) => acc + (Number(curr.monto) || 0), 0);
+
   return (
-    <div className="fade-in" style={{ padding: '1rem' }}>
-      <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1.5rem', color: 'var(--text-primary)' }}>
-        Gestión de Pagos
-      </h1>
+    <div className="space-y-6 animate-fade-in text-[#233D49]">
+      
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border text-sm font-semibold animate-fade-in ${
+          toast.type === 'error'
+            ? 'bg-[#C95C5C] text-white border-[#C95C5C]'
+            : 'bg-[#4D9A72] text-white border-[#4D9A72]'
+        }`}>
+          {toast.type === 'error' ? <AlertCircle size={18} /> : <CheckCircle2 size={18} />}
+          <span>{toast.message}</span>
+        </div>
+      )}
+
+      {/* Cabecera de Página */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#CEC8B8]/60">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#233D49] tracking-tight">
+            Gestión Financiera & Pagos
+          </h1>
+          <p className="text-sm text-[#4D7182] mt-1">
+            Validación de comprobantes, abonos bancarios y conciliación de eventos.
+          </p>
+        </div>
+
+        {/* Resumen Superior */}
+        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white border border-[#CEC8B8] shadow-sm">
+          <DollarSign size={20} className="text-[#4D9A72]" />
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#4D7182]">Total Verificado</span>
+            <p className="text-base font-extrabold text-[#233D49] leading-tight">
+              ${totalAprobado.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </p>
+          </div>
+        </div>
+      </div>
 
       {loading ? (
-        <p>Cargando pagos...</p>
+        <div className="p-12 text-center text-[#4D7182] bg-white rounded-2xl border border-[#CEC8B8]">
+          <p className="font-semibold text-sm">Cargando registros de pagos...</p>
+        </div>
       ) : (
-        <>
+        <div className="space-y-8">
+          
           {/* SECCIÓN PRIORITARIA: Pagos por Verificar */}
-          <section style={{ marginBottom: '3rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', color: '#b45309', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <AlertTriangle size={20} /> Pagos por Verificar ({pagosPendientes.length})
-            </h2>
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-[#233D49] flex items-center gap-2">
+                <AlertTriangle size={18} className="text-[#C49A3A]" />
+                <span>Pagos por Verificar</span>
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#C49A3A]/15 text-[#C49A3A]">
+                  {pagosPendientes.length}
+                </span>
+              </h2>
+            </div>
             
             {pagosPendientes.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)' }}>No hay pagos pendientes de verificación.</p>
+              <div className="p-8 rounded-2xl bg-white border border-[#CEC8B8]/60 text-center text-sm text-[#7D8F97]">
+                <FileCheck size={32} className="mx-auto mb-2 text-[#4D9A72]/60" />
+                <p className="font-semibold text-[#233D49]">Todos los pagos están al día</p>
+                <p className="text-xs text-[#7D8F97] mt-0.5">No hay comprobantes pendientes de validación.</p>
+              </div>
             ) : (
-              <div style={{ display: 'grid', gap: '1rem' }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {pagosPendientes.map(pago => (
-                  <Card key={pago.id}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem' }}>
+                  <div
+                    key={pago.id}
+                    className="bg-white rounded-2xl p-5 border-2 border-[#C49A3A]/40 shadow-sm hover:shadow-md transition-shadow space-y-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
                       <div>
-                        <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>${pago.monto} - {pago.concepto}</div>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                          Método: {pago.metodo_pago} | Evento: {pago.evento_id}
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <span style={{ 
-                          padding: '0.25rem 0.5rem', 
-                          borderRadius: '12px', 
-                          fontSize: '0.75rem', 
-                          fontWeight: 600,
-                          backgroundColor: pago.estado === 'En Revisión' ? '#fef3c7' : '#f1f5f9',
-                          color: pago.estado === 'En Revisión' ? '#92400e' : '#475569'
-                        }}>
-                          {pago.estado}
+                        <span className="text-xs font-bold text-[#4D7182] uppercase tracking-wider">
+                          Abono Pendiente
                         </span>
-                        <button 
-                          onClick={() => handleVerDetalle(pago)}
-                          className="btn-secondary"
-                          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                        >
-                          <Eye size={16} /> Verificar
-                        </button>
+                        <h3 className="text-lg font-extrabold text-[#233D49] mt-0.5">
+                          ${Number(pago.monto).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </h3>
+                        <p className="text-xs font-medium text-[#233D49]/80 mt-1">
+                          Concepto: <strong>{pago.concepto || 'Abono a evento'}</strong>
+                        </p>
+                        <p className="text-xs text-[#4D7182] mt-0.5">
+                          Método: {pago.metodo_pago || 'Transferencia'} · Evento #{pago.evento_id}
+                        </p>
                       </div>
+
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#C49A3A]/15 text-[#C49A3A] border border-[#C49A3A]/30">
+                        {pago.estado}
+                      </span>
                     </div>
-                  </Card>
+
+                    <div className="pt-3 border-t border-[#CEC8B8]/40 flex items-center justify-between">
+                      <span className="text-xs text-[#7D8F97]">
+                        {new Date(pago.fecha_pago || pago.fecha_registro || Date.now()).toLocaleDateString('es-ES')}
+                      </span>
+                      <button
+                        onClick={() => handleVerDetalle(pago)}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#4D7182] hover:bg-[#3E5763] text-white text-xs font-bold shadow-sm transition-all"
+                      >
+                        <Eye size={14} />
+                        <span>Ver Comprobante</span>
+                      </button>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
           </section>
 
-          {/* SECCIÓN: Historial de Pagos */}
-          <section>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-primary)' }}>
-              Historial de Pagos
+          {/* SECCIÓN: Historial de Pagos Verificados */}
+          <section className="space-y-4">
+            <h2 className="text-lg font-bold text-[#233D49]">
+              Historial de Pagos Registrados
             </h2>
-            <Card>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border-subtle)', textAlign: 'left' }}>
-                    <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Fecha</th>
-                    <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Monto</th>
-                    <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Concepto</th>
-                    <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Método</th>
-                    <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pagosHistorial.map(pago => (
-                    <tr key={pago.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                      <td style={{ padding: '1rem' }}>{new Date(pago.fecha_pago || pago.fecha_registro).toLocaleDateString()}</td>
-                      <td style={{ padding: '1rem', fontWeight: 600 }}>${pago.monto}</td>
-                      <td style={{ padding: '1rem' }}>{pago.concepto}</td>
-                      <td style={{ padding: '1rem' }}>{pago.metodo_pago}</td>
-                      <td style={{ padding: '1rem' }}>
-                        <span style={{ 
-                          padding: '0.25rem 0.5rem', 
-                          borderRadius: '12px', 
-                          fontSize: '0.75rem', 
-                          fontWeight: 600,
-                          backgroundColor: pago.estado === 'Aprobado' ? '#dcfce7' : '#fee2e2',
-                          color: pago.estado === 'Aprobado' ? '#166534' : '#991b1b'
-                        }}>
-                          {pago.estado}
-                        </span>
-                      </td>
+
+            <div className="bg-white rounded-2xl border border-[#CEC8B8] shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-[#FAF8F5] border-b-2 border-[#CEC8B8] text-[11px] font-bold uppercase tracking-wider text-[#4D7182]">
+                      <th className="py-3.5 px-5">Fecha</th>
+                      <th className="py-3.5 px-5">Monto</th>
+                      <th className="py-3.5 px-5">Concepto</th>
+                      <th className="py-3.5 px-5">Método</th>
+                      <th className="py-3.5 px-5">Estado</th>
                     </tr>
-                  ))}
-                  {pagosHistorial.length === 0 && (
-                    <tr>
-                      <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                        No hay pagos registrados.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </Card>
+                  </thead>
+                  <tbody className="divide-y divide-[#CEC8B8]/40 text-xs text-[#233D49]">
+                    {pagosHistorial.map(pago => {
+                      const isApproved = pago.estado === 'Aprobado';
+                      return (
+                        <tr key={pago.id} className="hover:bg-[#FAF8F2] transition-colors">
+                          <td className="py-3.5 px-5 font-medium">
+                            {new Date(pago.fecha_pago || pago.fecha_registro || Date.now()).toLocaleDateString('es-ES')}
+                          </td>
+                          <td className="py-3.5 px-5 font-bold text-sm">
+                            ${Number(pago.monto).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="py-3.5 px-5 font-medium">
+                            {pago.concepto || 'Abono general'}
+                          </td>
+                          <td className="py-3.5 px-5 text-[#4D7182]">
+                            {pago.metodo_pago || 'Transferencia'}
+                          </td>
+                          <td className="py-3.5 px-5">
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                              isApproved 
+                                ? 'bg-[#4D9A72]/15 text-[#4D9A72] border border-[#4D9A72]/30' 
+                                : 'bg-[#C95C5C]/15 text-[#C95C5C] border border-[#C95C5C]/30'
+                            }`}>
+                              {isApproved ? <CheckCircle size={12} /> : <XCircle size={12} />}
+                              <span>{pago.estado}</span>
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {pagosHistorial.length === 0 && (
+                      <tr>
+                        <td colSpan="5" className="py-8 text-center text-[#7D8F97]">
+                          No hay historial de pagos conciliados todavía.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </section>
-        </>
+
+        </div>
       )}
 
-      {/* Modal de Detalle */}
+      {/* Modal de Detalle y Verificación */}
       {isModalOpen && pagoSeleccionado && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '12px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>Verificación de Pago</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-[#CEC8B8] shadow-2xl space-y-5 animate-scale-up">
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
-              <div><strong>Monto:</strong> ${pagoSeleccionado.monto}</div>
-              <div><strong>Concepto:</strong> {pagoSeleccionado.concepto}</div>
-              <div><strong>Método:</strong> {pagoSeleccionado.metodo_pago}</div>
-              <div><strong>ID Evento:</strong> {pagoSeleccionado.evento_id}</div>
+            <div className="flex items-center justify-between pb-3 border-b border-[#CEC8B8]/60">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-[#4D7182]/10 text-[#4D7182] flex items-center justify-center">
+                  <CreditCard size={18} />
+                </div>
+                <h3 className="text-lg font-bold text-[#233D49]">
+                  Verificación de Comprobante
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-1.5 rounded-lg text-[#7D8F97] hover:bg-[#F3F0E4] hover:text-[#233D49] transition-colors"
+              >
+                <X size={18} />
+              </button>
             </div>
 
-            {pagoSeleccionado.comprobante_url ? (
-              <div style={{ marginBottom: '1.5rem' }}>
-                <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Comprobante Adjunto:</p>
-                <img 
-                  src={pagoSeleccionado.comprobante_url} 
-                  alt="Comprobante" 
-                  style={{ width: '100%', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}
-                />
+            {/* Ficha técnica del pago */}
+            <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-[#F3F0E4]/60 border border-[#CEC8B8] text-xs">
+              <div>
+                <span className="text-[#4D7182] font-semibold">Monto Depositado:</span>
+                <p className="text-base font-extrabold text-[#233D49]">
+                  ${Number(pagoSeleccionado.monto).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </p>
               </div>
-            ) : (
-              <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f8fafc', borderRadius: '8px', textAlign: 'center' }}>
-                <p style={{ color: 'var(--text-muted)' }}>No hay comprobante adjunto.</p>
-                {pagoSeleccionado.metodo_pago === 'Efectivo' && (
-                  <p style={{ fontSize: '0.85rem', color: '#b45309', marginTop: '0.5rem' }}>Verifica físicamente la entrega del dinero antes de aprobar.</p>
-                )}
+              <div>
+                <span className="text-[#4D7182] font-semibold">Método:</span>
+                <p className="text-sm font-bold text-[#233D49]">
+                  {pagoSeleccionado.metodo_pago}
+                </p>
               </div>
-            )}
+              <div className="col-span-2 pt-2 border-t border-[#CEC8B8]/40">
+                <span className="text-[#4D7182] font-semibold">Concepto:</span>
+                <p className="font-medium text-[#233D49]">
+                  {pagoSeleccionado.concepto || 'Sin concepto especificado'}
+                </p>
+              </div>
+            </div>
 
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
+            {/* Visualizador del Comprobante */}
+            <div className="space-y-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#4D7182]">
+                Comprobante de Pago
+              </span>
+              {pagoSeleccionado.comprobante_url ? (
+                <div className="rounded-2xl border border-[#CEC8B8] overflow-hidden bg-[#F3F0E4]/40 p-2 text-center">
+                  <img
+                    src={pagoSeleccionado.comprobante_url}
+                    alt="Comprobante de Pago"
+                    className="max-h-60 mx-auto rounded-xl object-contain shadow-sm"
+                  />
+                  <div className="pt-2">
+                    <a
+                      href={pagoSeleccionado.comprobante_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-[#4D7182] hover:text-[#233D49]"
+                    >
+                      <ExternalLink size={12} />
+                      <span>Abrir comprobante en tamaño completo</span>
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-6 rounded-2xl bg-[#FAF8F2] border border-[#CEC8B8] text-center text-xs text-[#7D8F97]">
+                  <p className="font-semibold text-[#233D49]">Sin comprobante digital adjunto</p>
+                  <p className="mt-1">Si el pago fue en efectivo o posnet físico, valida el recibo de caja antes de aprobar.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Acciones de Validación */}
+            <div className="pt-3 border-t border-[#CEC8B8]/60 flex items-center gap-3">
+              <button
                 onClick={() => handleCambiarEstado(pagoSeleccionado.id, 'Aprobado')}
-                style={{ flex: 1, padding: '0.75rem', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-[#4D9A72] hover:bg-[#3D825E] text-white text-xs font-bold shadow-sm transition-colors"
               >
-                <CheckCircle size={18} /> Aprobar Pago
+                <CheckCircle size={16} />
+                <span>Aprobar Abono</span>
               </button>
-              <button 
+
+              <button
                 onClick={() => handleCambiarEstado(pagoSeleccionado.id, 'Rechazado')}
-                style={{ flex: 1, padding: '0.75rem', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-[#C95C5C] hover:bg-[#AF4E4E] text-white text-xs font-bold shadow-sm transition-colors"
               >
-                <XCircle size={18} /> Rechazar Pago
+                <XCircle size={16} />
+                <span>Rechazar Abono</span>
               </button>
             </div>
-            
-            <button 
-              onClick={() => setIsModalOpen(false)}
-              style={{ width: '100%', padding: '0.75rem', marginTop: '1rem', backgroundColor: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: '8px', cursor: 'pointer' }}
-            >
-              Cancelar
-            </button>
+
           </div>
         </div>
       )}
+
     </div>
   );
 };

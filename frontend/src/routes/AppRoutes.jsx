@@ -7,8 +7,8 @@ import { DashboardLayout } from '../layouts/DashboardLayout';
 import { Login }    from '../pages/auth/Login';
 import { Registro } from '../pages/auth/Registro';
 
-// ── Landing Page (Helados La Catedral) ──────────────────────────────────
-import { LandingPage } from '../pages/landing/LandingPage';
+// ── Landing Page Oficial SaaS EVENTRA ───────────────────────────────────
+import { LandingPublicPage } from '../pages/public/LandingPublicPage';
 
 // ── Portal del Cliente (rol_id = 4) ─────────────────────────────────────────
 import { PortalClientePage } from '../pages/clients/PortalClientePage';
@@ -62,7 +62,7 @@ export const AppRoutes = () => {
   return (
     <Routes>
       {/* ── Rutas Públicas ────────────────────────────────────────────────── */}
-      <Route path="/"         element={<LandingPage />} />
+      <Route path="/"         element={<LandingPublicPage />} />
       <Route path="/login"    element={<Login />} />
       <Route path="/registro" element={<Registro />} />
 
