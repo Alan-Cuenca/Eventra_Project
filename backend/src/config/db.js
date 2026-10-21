@@ -20,4 +20,11 @@ pool.on('error', (err, client) => {
   process.exit(-1);
 });
 
+// En entornos reales (Render / producción), asegura que la columna slug exista en Supabase
+if (process.env.NODE_ENV !== 'test') {
+  pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS slug VARCHAR(100);').catch((err) => {
+    console.warn('[db] Auto-verificación de columna slug en Supabase:', err.message);
+  });
+}
+
 export default pool;

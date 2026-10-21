@@ -31,12 +31,29 @@ export const generarSlug = (texto) => {
     .replace(/^-|-$/g, '');
 };
 
+let columnaSlugDisponible = null;
+export const checkColumnaSlug = async () => {
+  if (columnaSlugDisponible !== null) return columnaSlugDisponible;
+  if (process.env.NODE_ENV === 'test') {
+    columnaSlugDisponible = false;
+    return false;
+  }
+  try {
+    const res = await pool.query(
+      "SELECT 1 FROM information_schema.columns WHERE table_name = 'empresas' AND column_name = 'slug' LIMIT 1"
+    );
+    columnaSlugDisponible = res.rowCount > 0;
+  } catch {
+    columnaSlugDisponible = false;
+  }
+  return columnaSlugDisponible;
+};
+
 export const obtenerEmpresas = async (req, res) => {
   try {
-    let result;
-    try {
-      result = await pool.query(
-        `SELECT 
+    const tieneSlug = await checkColumnaSlug();
+    const querySql = tieneSlug
+      ? `SELECT 
            e.id, 
            e.nombre_comercial,
            e.slug,
@@ -53,33 +70,25 @@ export const obtenerEmpresas = async (req, res) => {
          LEFT JOIN pagos p     ON p.empresa_id = e.id
          GROUP BY e.id, e.nombre_comercial, e.slug, e.ruc, e.plan_suscripcion, e.estado_activo, e.fecha_registro
          ORDER BY e.fecha_registro DESC`
-      );
-    } catch (queryErr) {
-      // Si la columna slug aún no está migrada en la base de datos remota
-      if (queryErr.code === '42703' || queryErr.message?.includes('slug')) {
-        result = await pool.query(
-          `SELECT 
-             e.id, 
-             e.nombre_comercial,
-             NULL AS slug,
-             e.ruc, 
-             e.plan_suscripcion, 
-             e.estado_activo, 
-             e.fecha_registro,
-             COUNT(DISTINCT u.id)  AS total_usuarios,
-             COUNT(DISTINCT ev.id) AS total_eventos,
-             COALESCE(SUM(p.monto) FILTER (WHERE p.estado = 'Completado'), 0) AS total_ingresos
-           FROM empresas e
-           LEFT JOIN usuarios u  ON u.empresa_id = e.id
-           LEFT JOIN eventos ev  ON ev.empresa_id = e.id
-           LEFT JOIN pagos p     ON p.empresa_id = e.id
-           GROUP BY e.id, e.nombre_comercial, e.ruc, e.plan_suscripcion, e.estado_activo, e.fecha_registro
-           ORDER BY e.fecha_registro DESC`
-        );
-      } else {
-        throw queryErr;
-      }
-    }
+      : `SELECT 
+           e.id, 
+           e.nombre_comercial,
+           NULL AS slug,
+           e.ruc, 
+           e.plan_suscripcion, 
+           e.estado_activo, 
+           e.fecha_registro,
+           COUNT(DISTINCT u.id)  AS total_usuarios,
+           COUNT(DISTINCT ev.id) AS total_eventos,
+           COALESCE(SUM(p.monto) FILTER (WHERE p.estado = 'Completado'), 0) AS total_ingresos
+         FROM empresas e
+         LEFT JOIN usuarios u  ON u.empresa_id = e.id
+         LEFT JOIN eventos ev  ON ev.empresa_id = e.id
+         LEFT JOIN pagos p     ON p.empresa_id = e.id
+         GROUP BY e.id, e.nombre_comercial, e.ruc, e.plan_suscripcion, e.estado_activo, e.fecha_registro
+         ORDER BY e.fecha_registro DESC`;
+
+    const result = await pool.query(querySql);
 
     return res.status(200).json({
       success: true,
@@ -148,6 +157,7 @@ export const crearEmpresa = async (req, res) => {
   // 2. Generación automática de contraseña temporal segura (o provista en tests)
   const tempPassword = admin_password || generarPasswordTemporal(12);
 
+  const tieneSlug = await checkColumnaSlug();
   const client = await pool.connect();
   let nuevaEmpresa = null;
   let adminUsuario = null;
@@ -161,31 +171,27 @@ export const crearEmpresa = async (req, res) => {
       slugFinal = `empresa-${Date.now()}`;
     }
 
-    // 4. Crear el tenant con soporte fallback si la columna slug aún no está migrada en la BD
+    // 4. Crear el tenant según la disponibilidad de la columna slug
     let empresaRes;
-    try {
+    if (tieneSlug) {
       empresaRes = await client.query(
         `INSERT INTO empresas (nombre_comercial, slug, ruc, plan_suscripcion, estado_activo)
          VALUES ($1, $2, $3, $4, true)
          RETURNING id, nombre_comercial, slug, ruc, plan_suscripcion, estado_activo, fecha_registro`,
         [nombre_comercial.trim(), slugFinal, ruc ? String(ruc).trim() : null, planNormalizado]
       );
-    } catch (insertErr) {
-      if (insertErr.code === '42703' || insertErr.message?.includes('slug')) {
-        empresaRes = await client.query(
-          `INSERT INTO empresas (nombre_comercial, ruc, plan_suscripcion, estado_activo)
-           VALUES ($1, $2, $3, true)
-           RETURNING id, nombre_comercial, NULL AS slug, ruc, plan_suscripcion, estado_activo, fecha_registro`,
-          [nombre_comercial.trim(), ruc ? String(ruc).trim() : null, planNormalizado]
-        );
-      } else {
-        throw insertErr;
-      }
+    } else {
+      empresaRes = await client.query(
+        `INSERT INTO empresas (nombre_comercial, ruc, plan_suscripcion, estado_activo)
+         VALUES ($1, $2, $3, true)
+         RETURNING id, nombre_comercial, NULL AS slug, ruc, plan_suscripcion, estado_activo, fecha_registro`,
+        [nombre_comercial.trim(), ruc ? String(ruc).trim() : null, planNormalizado]
+      );
     }
 
     nuevaEmpresa = empresaRes.rows[0];
 
-    // 4. Crear administrador inicial en el tenant con hash de contraseña
+    // 5. Crear administrador inicial en el tenant con hash de contraseña
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(tempPassword, salt);
 
@@ -217,7 +223,7 @@ export const crearEmpresa = async (req, res) => {
     console.error('[empresaController] Error en crearEmpresa:', error.message);
     return res.status(500).json({
       success: false,
-      message: 'Error interno del servidor al crear la empresa y su administrador inicial.',
+      message: `Error interno del servidor al crear la empresa y su administrador inicial: ${error.message}`,
     });
   } finally {
     client.release();
