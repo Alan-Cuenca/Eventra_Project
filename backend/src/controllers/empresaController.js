@@ -149,7 +149,7 @@ export const crearEmpresa = async (req, res) => {
     if (error.code === '23505') {
       return res.status(409).json({
         success: false,
-        message: 'El RUC de la empresa o el email del administrador inicial ya se encuentra registrado en el sistema.',
+        message: 'El correo electrónico del administrador ya se encuentra registrado en el sistema.',
       });
     }
 
