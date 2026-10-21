@@ -140,13 +140,129 @@ export const sendMail = async ({ to, subject, text, html, transporter = null }) 
     };
   }
 
+  const normalizedTo = to.trim().toLowerCase();
+
+  // 1. Si se pasa un transportador simulado (ej. tests unitarios), usarlo directamente
+  if (transporter) {
+    try {
+      const fromAddress = process.env.SMTP_FROM || `"EVENTRA" <${process.env.SMTP_USER || 'no-reply@eventra.com'}>`;
+      const info = await transporter.sendMail({
+        from: fromAddress,
+        to: normalizedTo,
+        subject,
+        text,
+        html,
+      });
+      return { success: true, messageId: info.messageId };
+    } catch (error) {
+      console.error('[emailService] Error al enviar correo:', {
+        destinatario: normalizedTo,
+        asunto: subject,
+        codigoError: error.code || 'UNKNOWN',
+        mensaje: error.message,
+      });
+      return { success: false, error: error.message || 'Error al enviar correo' };
+    }
+  }
+
+  // 2. Modo Simulación
+  const isSimulation = process.env.EMAIL_SIMULATION_MODE === 'true';
+  if (isSimulation) {
+    const activeTransporter = getMailTransporter();
+    const fromAddress = process.env.SMTP_FROM || `"EVENTRA" <${process.env.SMTP_USER || 'no-reply@eventra.com'}>`;
+    const info = await activeTransporter.sendMail({
+      from: fromAddress,
+      to: normalizedTo,
+      subject,
+      text,
+      html,
+    });
+    return { success: true, messageId: info.messageId };
+  }
+
+  // 3. Envío HTTP API vía Resend (HTTPS puerto 443 — No bloqueado por Render)
+  if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.trim()) {
+    try {
+      const fromAddress = process.env.RESEND_FROM || 'EVENTRA <onboarding@resend.dev>';
+      const resp = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY.trim()}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: fromAddress,
+          to: [normalizedTo],
+          subject,
+          text,
+          html,
+        }),
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) {
+        throw new Error(data.message || `Error HTTP ${resp.status} de Resend: ${JSON.stringify(data)}`);
+      }
+
+      return {
+        success: true,
+        messageId: data.id,
+      };
+    } catch (resendError) {
+      console.error('[emailService] Error con Resend HTTP API:', resendError.message);
+      return {
+        success: false,
+        error: resendError.message,
+      };
+    }
+  }
+
+  // 4. Envío HTTP API vía Brevo (HTTPS puerto 443 — No bloqueado por Render)
+  if (process.env.BREVO_API_KEY && process.env.BREVO_API_KEY.trim()) {
+    try {
+      const senderEmail = process.env.BREVO_SENDER_EMAIL || process.env.SMTP_USER || 'mateotkd123@gmail.com';
+      const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': process.env.BREVO_API_KEY.trim(),
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+        },
+        body: JSON.stringify({
+          sender: { name: 'EVENTRA', email: senderEmail },
+          to: [{ email: normalizedTo }],
+          subject,
+          textContent: text,
+          htmlContent: html,
+        }),
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) {
+        throw new Error(data.message || `Error HTTP ${resp.status} de Brevo: ${JSON.stringify(data)}`);
+      }
+
+      return {
+        success: true,
+        messageId: data.messageId,
+      };
+    } catch (brevoError) {
+      console.error('[emailService] Error con Brevo HTTP API:', brevoError.message);
+      return {
+        success: false,
+        error: brevoError.message,
+      };
+    }
+  }
+
+  // 5. Fallback a Nodemailer SMTP (entorno local o Render de pago)
   try {
-    const activeTransporter = getMailTransporter(transporter);
+    const activeTransporter = getMailTransporter();
     const fromAddress = process.env.SMTP_FROM || `"EVENTRA" <${process.env.SMTP_USER || 'no-reply@eventra.com'}>`;
 
     const info = await activeTransporter.sendMail({
       from: fromAddress,
-      to: to.trim().toLowerCase(),
+      to: normalizedTo,
       subject,
       text,
       html,
@@ -157,9 +273,8 @@ export const sendMail = async ({ to, subject, text, html, transporter = null }) 
       messageId: info.messageId,
     };
   } catch (error) {
-    // IMPORTANTE: No exponer secretos ni contraseñas en los logs
     console.error('[emailService] Error al enviar correo:', {
-      destinatario: to.trim().toLowerCase(),
+      destinatario: normalizedTo,
       asunto: subject,
       codigoError: error.code || 'UNKNOWN',
       mensaje: error.message,
