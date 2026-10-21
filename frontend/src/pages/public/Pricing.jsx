@@ -6,7 +6,6 @@ import {
   Sparkles, 
   ArrowRight, 
   ShieldCheck, 
-  Bot, 
   HelpCircle, 
   Zap, 
   Calendar, 
@@ -259,7 +258,7 @@ export const Pricing = () => {
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49] font-medium">
                   <div className="w-4 h-4 rounded-full bg-[#526F7D]/15 flex items-center justify-center shrink-0 mt-0.5">
-                    <Bot className="w-3 h-3 text-[#526F7D]" />
+                    <Sparkles className="w-3 h-3 text-[#526F7D]" />
                   </div>
                   <span><strong>Asistente EVARA AI 24/7</strong> conectada a tu catálogo real</span>
                 </div>

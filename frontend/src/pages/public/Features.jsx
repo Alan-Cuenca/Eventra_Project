@@ -91,7 +91,8 @@ export const Features = () => {
     }
   ];
 
-  const currentMod = modules[activeTab];
+  const currentMod = modules[activeTab] || modules[0];
+  const CurrentIcon = currentMod.icon;
 
   return (
     <div className="py-12 md:py-16">
@@ -146,7 +147,7 @@ export const Features = () => {
           {/* Lado Izquierdo: Descripción B2B */}
           <div className="lg:col-span-6 space-y-6">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#526F7D]/10 text-xs font-bold text-[#526F7D]">
-              <currentMod.icon className="w-3.5 h-3.5" />
+              <CurrentIcon className="w-3.5 h-3.5" />
               <span>{currentMod.badge}</span>
             </div>
 
@@ -465,7 +466,7 @@ export const Features = () => {
 
             <div className="bg-[#EEEBDD]/40 rounded-2xl p-7 border border-[#CBC6B6]/70 shadow-xs space-y-3">
               <div className="w-10 h-10 rounded-xl bg-[#526F7D] text-white flex items-center justify-center">
-                <Bot className="w-5 h-5" />
+                <Sparkles className="w-5 h-5" />
               </div>
               <h3 className="text-lg font-bold text-[#233D49]">EVARA AI Desacoplada</h3>
               <p className="text-xs sm:text-sm text-[#233D49]/80 leading-relaxed">

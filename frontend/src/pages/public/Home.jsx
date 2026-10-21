@@ -7,7 +7,6 @@ import {
   XCircle, 
   ShieldCheck, 
   CalendarCheck, 
-  Bot, 
   TrendingUp, 
   Clock, 
   Users, 
@@ -184,7 +183,7 @@ export const Home = () => {
                 <div className="flex items-center justify-between p-3 rounded-xl bg-[#526F7D]/10 border border-[#526F7D]/30 text-xs">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-lg bg-[#526F7D] flex items-center justify-center text-white">
-                      <Bot className="w-3.5 h-3.5" />
+                      <Sparkles className="w-3.5 h-3.5" />
                     </div>
                     <span className="font-semibold text-[#233D49]">
                       EVARA AI cotizando en segundo plano
@@ -441,7 +440,7 @@ export const Home = () => {
               to="/evara-ai"
               className="inline-flex items-center gap-2 px-6 py-4 rounded-xl bg-white hover:bg-[#FAFAF8] text-[#233D49] border border-[#CBC6B6] font-semibold text-base shadow-xs hover:shadow-md transition-all duration-200"
             >
-              <Bot className="w-4 h-4 text-[#526F7D]" />
+              <Sparkles className="w-4 h-4 text-[#526F7D]" />
               <span>Conocer EVARA AI</span>
             </Link>
           </div>
