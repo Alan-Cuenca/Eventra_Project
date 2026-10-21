@@ -26,6 +26,35 @@ export const crearSolicitud = async (req, res) => {
       });
     }
 
+    // --- Blindaje SaaS Multi-tenant (Anti-IDOR) ---
+    // 1. Validar que el evento pertenezca a la empresa en sesión
+    const eventoCheck = await pool.query(
+      'SELECT id FROM eventos WHERE id = $1 AND empresa_id = $2',
+      [evento_id, empresa_id]
+    );
+
+    if (eventoCheck.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'El evento especificado no existe o no pertenece a su empresa.',
+      });
+    }
+
+    // 2. Si se proporciona cliente_id, validar que pertenezca a la empresa
+    if (cliente_id) {
+      const clienteCheck = await pool.query(
+        'SELECT id FROM clientes WHERE id = $1 AND empresa_id = $2',
+        [cliente_id, empresa_id]
+      );
+
+      if (clienteCheck.rowCount === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'El cliente especificado no pertenece a su empresa.',
+        });
+      }
+    }
+
     // --- Insertar solicitud (SQL parametrizado) ---
     const result = await pool.query(
       `INSERT INTO solicitudes_modificacion
@@ -84,8 +113,7 @@ export const obtenerSolicitudes = async (req, res) => {
          e.id     AS evento_id,
          e.titulo AS evento_titulo,
          e.estado_progreso AS evento_estado,
-         CONCAT(cl.nombres, ' ', cl.apellidos) AS cliente,
-         '+ $420.00' AS impacto_costo
+         CONCAT(cl.nombres, ' ', cl.apellidos) AS cliente
        FROM solicitudes_modificacion s
        INNER JOIN eventos e ON s.evento_id = e.id
        LEFT  JOIN clientes cl ON s.cliente_id = cl.id

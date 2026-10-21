@@ -28,6 +28,35 @@ export const crearActividad = async (req, res) => {
       });
     }
 
+    // --- Blindaje SaaS Multi-tenant (Anti-IDOR) ---
+    // 1. Validar que el evento pertenezca estrictamente a la empresa en sesión
+    const eventoCheck = await pool.query(
+      'SELECT id FROM eventos WHERE id = $1 AND empresa_id = $2',
+      [evento_id, empresa_id]
+    );
+
+    if (eventoCheck.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'El evento especificado no existe o no pertenece a su empresa.',
+      });
+    }
+
+    // 2. Si se asigna un responsable, validar que pertenezca a la misma empresa
+    if (responsable_id) {
+      const usuarioCheck = await pool.query(
+        'SELECT id FROM usuarios WHERE id = $1 AND empresa_id = $2',
+        [responsable_id, empresa_id]
+      );
+
+      if (usuarioCheck.rowCount === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'El colaborador responsable especificado no pertenece a su empresa.',
+        });
+      }
+    }
+
     // --- Insertar actividad (SQL parametrizado) ---
     const result = await pool.query(
       `INSERT INTO actividades (empresa_id, evento_id, responsable_id, titulo, descripcion, fecha_vencimiento)

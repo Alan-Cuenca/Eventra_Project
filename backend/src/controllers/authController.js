@@ -256,14 +256,257 @@ export const completarRegistro = async (req, res) => {
 };
 
 /**
- * Bloqueo de autoregistro público.
+ * Bloqueo de autoregistro público general (para evitar registro directo de roles internos).
  * Informa a cualquier intento de consumo de la ruta antigua que se requiere invitación.
  */
 export const registerUser = async (req, res) => {
   return res.status(403).json({
     success: false,
-    message: 'El autoregistro público está deshabilitado en EVENTRA. La incorporación de nuevos usuarios se gestiona exclusivamente mediante invitación del Administrador.',
+    message: 'El autoregistro general está deshabilitado en EVENTRA. Los colaboradores deben ser invitados por su Administrador, y los clientes deben registrarse desde el portal específico de la empresa.',
   });
+};
+
+/**
+ * =============================================================================
+ * FLUJO SAAS NIVEL 3: Autoregistro de Clientes Finales
+ * =============================================================================
+ * Permite a los clientes finales auto-registrarse de forma segura ÚNICAMENTE desde
+ * el portal web específico de una empresa (identificada por su slug).
+ *
+ * Reglas de Seguridad SaaS:
+ *  1. Valida que la empresa exista y esté activa según el empresa_slug.
+ *  2. Asigna obligatoriamente rol_id = 4 (Cliente), ignorando cualquier rol manipulado en el body.
+ *  3. Inyecta de forma segura el empresa_id obtenido del slug verificado.
+ *  4. Ejecuta transacción atómica: crea el usuario en 'usuarios' y el perfil en 'clientes'.
+ *  5. Retorna 201 con token JWT firmado para autenticación inmediata.
+ *
+ * @param {import('express').Request}  req
+ * @param {import('express').Response} res
+ */
+export const registrarClientePortal = async (req, res) => {
+  const {
+    empresa_slug,
+    nombre_completo,
+    nombres,
+    apellidos,
+    email,
+    password,
+    telefono,
+    cedula,
+  } = req.body;
+
+  // 1. Validaciones básicas de entrada
+  if (!empresa_slug || !empresa_slug.trim()) {
+    return res.status(400).json({
+      success: false,
+      message: 'El parámetro empresa_slug es obligatorio para identificar el portal de la empresa.',
+    });
+  }
+
+  const nombreFinal = (nombre_completo || '').trim() || `${(nombres || '').trim()} ${(apellidos || '').trim()}`.trim();
+
+  if (!nombreFinal) {
+    return res.status(400).json({
+      success: false,
+      message: 'El nombre completo es obligatorio.',
+    });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || !emailRegex.test(email.trim())) {
+    return res.status(400).json({
+      success: false,
+      message: 'Debe proporcionar un correo electrónico válido.',
+    });
+  }
+
+  if (!password || password.length < 6) {
+    return res.status(400).json({
+      success: false,
+      message: 'La contraseña es obligatoria y debe tener al menos 6 caracteres.',
+    });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    // 2. Buscar empresa por slug y verificar estado activo
+    const empresaRes = await client.query(
+      `SELECT id, nombre_comercial, slug, plan_suscripcion, estado_activo
+       FROM empresas
+       WHERE LOWER(slug) = LOWER($1)`,
+      [empresa_slug.trim()]
+    );
+
+    if (empresaRes.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No existe ninguna empresa asociada al portal especificado.',
+      });
+    }
+
+    const empresa = empresaRes.rows[0];
+
+    if (!empresa.estado_activo) {
+      return res.status(403).json({
+        success: false,
+        message: 'El portal de esta empresa se encuentra temporalmente inactivo. Contacte al organizador.',
+      });
+    }
+
+    const emailNormalizado = email.toLowerCase().trim();
+
+    // 3. Verificar que el email no esté registrado en usuarios
+    const userExists = await client.query(
+      'SELECT id FROM usuarios WHERE email = $1',
+      [emailNormalizado]
+    );
+
+    if (userExists.rowCount > 0) {
+      return res.status(409).json({
+        success: false,
+        message: 'Ya existe una cuenta registrada con este correo electrónico. Inicia sesión en su lugar.',
+      });
+    }
+
+    // 4. Iniciar transacción atómica (usuarios + clientes)
+    await client.query('BEGIN');
+
+    // Hashear contraseña con bcrypt
+    const SALT_ROUNDS = 10;
+    const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
+
+    // Inserción en usuarios con rol_id = 4 estricto (Cliente)
+    const ROL_CLIENTE_ID = 4;
+    const usuarioRes = await client.query(
+      `INSERT INTO usuarios (empresa_id, rol_id, nombre_completo, email, password_hash, cedula, estado_activo)
+       VALUES ($1, $2, $3, $4, $5, $6, true)
+       RETURNING id, empresa_id, rol_id, nombre_completo, email, cedula, estado_activo, fecha_creacion`,
+      [
+        empresa.id,
+        ROL_CLIENTE_ID,
+        nombreFinal,
+        emailNormalizado,
+        password_hash,
+        cedula ? String(cedula).trim() : null,
+      ]
+    );
+
+    const nuevoUsuario = usuarioRes.rows[0];
+
+    // Desglosar nombres y apellidos para la tabla de CRM clientes
+    const partes = nombreFinal.split(/\s+/);
+    const nombresCliente = (nombres && nombres.trim()) || (partes.length > 1 ? partes.slice(0, -1).join(' ') : partes[0]);
+    const apellidosCliente = (apellidos && apellidos.trim()) || (partes.length > 1 ? partes.slice(-1).join(' ') : ' ');
+
+    const clienteRes = await client.query(
+      `INSERT INTO clientes (empresa_id, nombres, apellidos, email, telefono, estado_activo)
+       VALUES ($1, $2, $3, $4, $5, true)
+       RETURNING id, empresa_id, nombres, apellidos, email, telefono, estado_activo, fecha_creacion`,
+      [
+        empresa.id,
+        nombresCliente,
+        apellidosCliente,
+        emailNormalizado,
+        telefono ? String(telefono).trim() : null,
+      ]
+    );
+
+    const nuevoCliente = clienteRes.rows[0];
+
+    await client.query('COMMIT');
+
+    // 5. Generar token JWT para inicio de sesión inmediato
+    const payload = {
+      id: nuevoUsuario.id,
+      rol_id: ROL_CLIENTE_ID,
+      rol: 'Cliente',
+      rol_nombre: 'Cliente',
+      empresa_id: empresa.id,
+      empresa_nombre: empresa.nombre_comercial,
+      plan_suscripcion: empresa.plan_suscripcion,
+      email: nuevoUsuario.email,
+      cliente_id: nuevoCliente.id,
+    };
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+    return res.status(201).json({
+      success: true,
+      message: `¡Bienvenido! Te has registrado exitosamente en ${empresa.nombre_comercial}.`,
+      token,
+      data: {
+        usuario: nuevoUsuario,
+        cliente: nuevoCliente,
+        empresa: {
+          id: empresa.id,
+          nombre_comercial: empresa.nombre_comercial,
+          slug: empresa.slug,
+        },
+      },
+    });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('[authController] Error en registrarClientePortal:', error.message);
+
+    // Detección de colisión de unicidad
+    if (error.code === '23505') {
+      return res.status(409).json({
+        success: false,
+        message: 'El correo electrónico o la cédula ya se encuentran registrados en el sistema.',
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor al procesar el registro del cliente.',
+    });
+  } finally {
+    client.release();
+  }
+};
+
+/**
+ * Consulta la información pública del portal de una empresa por su slug.
+ * Permite a la página de registro/login de clientes validar la empresa y personalizar la interfaz.
+ */
+export const obtenerInfoPortalEmpresa = async (req, res) => {
+  const { slug } = req.params;
+
+  if (!slug) {
+    return res.status(400).json({
+      success: false,
+      message: 'El parámetro slug es requerido.',
+    });
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT id, nombre_comercial, slug, plan_suscripcion, estado_activo
+       FROM empresas
+       WHERE LOWER(slug) = LOWER($1)`,
+      [slug.trim()]
+    );
+
+    if (result.rowCount === 0 || !result.rows[0].estado_activo) {
+      return res.status(404).json({
+        success: false,
+        message: 'El portal de la empresa no existe o no se encuentra activo.',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error('[authController] Error en obtenerInfoPortalEmpresa:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al consultar la información del portal.',
+    });
+  }
 };
 
 /**

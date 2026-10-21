@@ -29,6 +29,35 @@ export const crearCotizacion = async (req, res) => {
       });
     }
 
+    // --- Blindaje SaaS Multi-tenant (Anti-IDOR) ---
+    // 1. Validar que el cliente exista y pertenezca a la empresa en sesión
+    const clienteCheck = await pool.query(
+      'SELECT id FROM clientes WHERE id = $1 AND empresa_id = $2',
+      [cliente_id, empresa_id]
+    );
+
+    if (clienteCheck.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'El cliente especificado no existe o no pertenece a su empresa.',
+      });
+    }
+
+    // 2. Si se especifica paquete_id, validar que pertenezca a la empresa en sesión
+    if (paquete_id) {
+      const paqueteCheck = await pool.query(
+        'SELECT id FROM paquetes WHERE id = $1 AND empresa_id = $2',
+        [paquete_id, empresa_id]
+      );
+
+      if (paqueteCheck.rowCount === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'El paquete especificado no existe o no pertenece a su empresa.',
+        });
+      }
+    }
+
     // --- Insertar cotización (SQL parametrizado) ---
     // paquete_id puede ser null (cotización sin paquete base)
     const result = await pool.query(

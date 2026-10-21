@@ -21,12 +21,23 @@ const PLANES_VALIDOS = ['Basico', 'Premium', 'Enterprise'];
  * @param {import('express').Request}  req
  * @param {import('express').Response} res
  */
+export const generarSlug = (texto) => {
+  return texto
+    .toLowerCase()
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+};
+
 export const obtenerEmpresas = async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT 
          e.id, 
-         e.nombre_comercial, 
+         e.nombre_comercial,
+         e.slug,
          e.ruc, 
          e.plan_suscripcion, 
          e.estado_activo, 
@@ -38,7 +49,7 @@ export const obtenerEmpresas = async (req, res) => {
        LEFT JOIN usuarios u  ON u.empresa_id = e.id
        LEFT JOIN eventos ev  ON ev.empresa_id = e.id
        LEFT JOIN pagos p     ON p.empresa_id = e.id
-       GROUP BY e.id, e.nombre_comercial, e.ruc, e.plan_suscripcion, e.estado_activo, e.fecha_registro
+       GROUP BY e.id, e.nombre_comercial, e.slug, e.ruc, e.plan_suscripcion, e.estado_activo, e.fecha_registro
        ORDER BY e.fecha_registro DESC`
     );
 
@@ -59,12 +70,13 @@ export const obtenerEmpresas = async (req, res) => {
 /**
  * Da de alta una nueva empresa SaaS (Tenant) y su administrador inicial.
  * Flujo:
- *  1. Valida los 4 campos (nombre_comercial, plan_suscripcion, admin_nombre, admin_email).
- *  2. Genera automáticamente una contraseña segura mediante crypto.
- *  3. Ejecuta transacción atómica: INSERT en empresas + INSERT en usuarios (rol_id = 1).
- *  4. Almacena el hash bcrypt de la contraseña en la columna password_hash existente.
- *  5. Envía el correo con credenciales e instrucción de actualización mediante emailService.
- *  6. Retorna resultado diferenciando estado de registro de empresa del envío de correo.
+ *  1. Valida los campos obligatorios.
+ *  2. Genera automáticamente un slug único si no es proporcionado.
+ *  3. Genera automáticamente una contraseña segura mediante crypto.
+ *  4. Ejecuta transacción atómica: INSERT en empresas + INSERT en usuarios (rol_id = 1).
+ *  5. Almacena el hash bcrypt de la contraseña.
+ *  6. Envía el correo con credenciales e instrucción de actualización mediante emailService.
+ *  7. Retorna resultado diferenciando estado de registro de empresa del envío de correo.
  *
  * @param {import('express').Request}  req
  * @param {import('express').Response} res
@@ -72,6 +84,7 @@ export const obtenerEmpresas = async (req, res) => {
 export const crearEmpresa = async (req, res) => {
   const {
     nombre_comercial,
+    slug,
     ruc,
     plan_suscripcion = 'Basico',
     admin_nombre,
@@ -114,12 +127,24 @@ export const crearEmpresa = async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    // 3. Crear el tenant
+    // 3. Generar slug único
+    let slugFinal = slug ? generarSlug(slug) : generarSlug(nombre_comercial);
+    if (!slugFinal) {
+      slugFinal = `empresa-${Date.now()}`;
+    }
+
+    // Verificar si el slug ya existe y asegurar unicidad
+    const slugCheck = await client.query('SELECT id FROM empresas WHERE slug = $1', [slugFinal]);
+    if (slugCheck.rowCount > 0) {
+      slugFinal = `${slugFinal}-${Math.floor(1000 + Math.random() * 9000)}`;
+    }
+
+    // 4. Crear el tenant
     const empresaRes = await client.query(
-      `INSERT INTO empresas (nombre_comercial, ruc, plan_suscripcion, estado_activo)
-       VALUES ($1, $2, $3, true)
-       RETURNING id, nombre_comercial, ruc, plan_suscripcion, estado_activo, fecha_registro`,
-      [nombre_comercial.trim(), ruc ? String(ruc).trim() : null, planNormalizado]
+      `INSERT INTO empresas (nombre_comercial, slug, ruc, plan_suscripcion, estado_activo)
+       VALUES ($1, $2, $3, $4, true)
+       RETURNING id, nombre_comercial, slug, ruc, plan_suscripcion, estado_activo, fecha_registro`,
+      [nombre_comercial.trim(), slugFinal, ruc ? String(ruc).trim() : null, planNormalizado]
     );
 
     nuevaEmpresa = empresaRes.rows[0];
@@ -292,6 +317,51 @@ export const suspenderEmpresa = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Error interno al actualizar el estado de la empresa.',
+    });
+  }
+};
+
+/**
+ * Consulta pública de datos básicos de una empresa por slug para su portal.
+ * Permite al frontend validar que la empresa exista y esté activa antes de registrar clientes.
+ *
+ * @param {import('express').Request}  req
+ * @param {import('express').Response} res
+ */
+export const obtenerEmpresaPublicaPorSlug = async (req, res) => {
+  const { slug } = req.params;
+
+  try {
+    if (!slug) {
+      return res.status(400).json({
+        success: false,
+        message: 'El parámetro slug es obligatorio.',
+      });
+    }
+
+    const result = await pool.query(
+      `SELECT id, nombre_comercial, slug, plan_suscripcion, estado_activo
+       FROM empresas
+       WHERE LOWER(slug) = LOWER($1)`,
+      [slug.trim()]
+    );
+
+    if (result.rowCount === 0 || !result.rows[0].estado_activo) {
+      return res.status(404).json({
+        success: false,
+        message: 'Portal de empresa no encontrado o temporalmente inactivo.',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error('[empresaController] Error en obtenerEmpresaPublicaPorSlug:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al consultar los datos del portal.',
     });
   }
 };

@@ -42,6 +42,20 @@ export const registrarPago = async (req, res) => {
       });
     }
 
+    // --- Blindaje SaaS Multi-tenant (Anti-IDOR) ---
+    // Validar que el evento pertenezca estrictamente a la empresa en sesión
+    const eventoCheck = await pool.query(
+      'SELECT id FROM eventos WHERE id = $1 AND empresa_id = $2',
+      [evento_id, empresa_id]
+    );
+
+    if (eventoCheck.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'El evento especificado no existe o no pertenece a su empresa.',
+      });
+    }
+
     // --- Subida de Comprobante (Supabase Storage) ---
     let comprobante_url = null;
     let estadoPago = estado || (metodo_pago === 'Efectivo' ? 'Pendiente' : 'En Revisión');

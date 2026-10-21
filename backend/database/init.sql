@@ -18,6 +18,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE IF NOT EXISTS empresas (
     id                 SERIAL       PRIMARY KEY,
     nombre_comercial   VARCHAR(100) NOT NULL,
+    slug               VARCHAR(100) UNIQUE,
     ruc                VARCHAR(20)  UNIQUE,
     plan_suscripcion   VARCHAR(50)  DEFAULT 'Basico',
     estado_activo      BOOLEAN      DEFAULT true,
@@ -30,6 +31,24 @@ ALTER TABLE empresas
 
 ALTER TABLE empresas
     ADD COLUMN IF NOT EXISTS estado_activo BOOLEAN DEFAULT true;
+
+ALTER TABLE empresas
+    ADD COLUMN IF NOT EXISTS slug VARCHAR(100);
+
+-- Si existen empresas sin slug, genera un slug base normalizado a partir del nombre_comercial
+UPDATE empresas
+    SET slug = LOWER(REGEXP_REPLACE(REGEXP_REPLACE(nombre_comercial, '[^a-zA-Z0-9]+', '-', 'g'), '^-|-$', '', 'g')) || '-' || id
+    WHERE slug IS NULL;
+
+-- Asegurar restricción UNIQUE en empresas(slug)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'uq_empresas_slug'
+    ) THEN
+        ALTER TABLE empresas ADD CONSTRAINT uq_empresas_slug UNIQUE (slug);
+    END IF;
+END $$;
 
 
 -- =============================================================================
@@ -112,7 +131,7 @@ CREATE TABLE IF NOT EXISTS clientes (
     empresa_id          INTEGER      NOT NULL,
     nombres             VARCHAR(100) NOT NULL,
     apellidos           VARCHAR(100) NOT NULL,
-    email               VARCHAR(150) UNIQUE,
+    email               VARCHAR(150),
     telefono            VARCHAR(20),
     estado_activo       BOOLEAN      DEFAULT true,
     fecha_creacion      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -121,11 +140,34 @@ CREATE TABLE IF NOT EXISTS clientes (
     CONSTRAINT fk_clientes_empresa
         FOREIGN KEY (empresa_id)
         REFERENCES empresas(id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+
+    CONSTRAINT uq_clientes_empresa_email
+        UNIQUE (empresa_id, email)
 );
 
 -- Idempotencia para clientes
 ALTER TABLE clientes ADD COLUMN IF NOT EXISTS fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- Migración idempotente: eliminar restricción UNIQUE global previa de email si existe
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'clientes_email_key'
+    ) THEN
+        ALTER TABLE clientes DROP CONSTRAINT clientes_email_key;
+    END IF;
+END $$;
+
+-- Asegurar restricción UNIQUE compuesta (empresa_id, email)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'uq_clientes_empresa_email'
+    ) THEN
+        ALTER TABLE clientes ADD CONSTRAINT uq_clientes_empresa_email UNIQUE (empresa_id, email);
+    END IF;
+END $$;
 
 
 -- =============================================================================

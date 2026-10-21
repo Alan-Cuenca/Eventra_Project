@@ -27,6 +27,20 @@ export const crearReserva = async (req, res) => {
       });
     }
 
+    // --- Blindaje SaaS Multi-tenant (Anti-IDOR) ---
+    // Validar que la cotización pertenezca estrictamente a la empresa en sesión
+    const cotizacionCheck = await pool.query(
+      'SELECT id FROM cotizaciones WHERE id = $1 AND empresa_id = $2',
+      [cotizacion_id, empresa_id]
+    );
+
+    if (cotizacionCheck.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'La cotización especificada no existe o no pertenece a su empresa.',
+      });
+    }
+
     // --- Control de concurrencia (Capa 1: Aplicación) ---
     // Verifica si ya existe una reserva CONFIRMADA para ese salón y fecha
     const conflicto = await pool.query(

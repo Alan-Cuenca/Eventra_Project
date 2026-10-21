@@ -12,6 +12,7 @@ import { EmpresasManagementPage } from '../pages/super-admin/EmpresasManagementP
 // ── Autenticación ──────────────────────────────────────────────────────────
 import { Login }    from '../pages/auth/Login';
 import { Registro } from '../pages/auth/Registro';
+import { CompletarRegistro } from '../pages/auth/CompletarRegistro';
 import { PrimerLoginCambioPassword } from '../pages/auth/PrimerLoginCambioPassword';
 
 // ── Sitio Web Público SaaS EVENTRA (Multi-página) ─────────────────────────
@@ -84,6 +85,8 @@ export const AppRoutes = () => {
       {/* ── Autenticación y Acceso (Aisladas, fuera de PublicLayout) ──────── */}
       <Route path="/login"    element={<Login />} />
       <Route path="/registro" element={<Registro />} />
+      <Route path="/portal/:slug/registro" element={<Registro />} />
+      <Route path="/completar-registro" element={<CompletarRegistro />} />
       <Route path="/primer-acceso/cambiar-password" element={<PrimerLoginCambioPassword />} />
 
       {/* ── Portal Cliente exclusivo (rol 4) ──────────────────────────────── */}

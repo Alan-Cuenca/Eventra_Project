@@ -166,5 +166,35 @@ export const authService = {
   async solicitarRecuperacionCredencial(email) {
     return await api.post('/auth/recuperar-credencial', { email });
   },
+
+  /**
+   * GET /api/auth/portal/:slug
+   * Obtiene la información pública del portal de una empresa.
+   */
+  async obtenerInfoPortal(slug) {
+    const response = await api.get(`/auth/portal/${slug}`);
+    return response.data || response;
+  },
+
+  /**
+   * POST /api/auth/registro-cliente
+   * Registra a un cliente final en el portal de una empresa específica.
+   */
+  async registrarClientePortal(payload) {
+    const response = await api.post('/auth/registro-cliente', payload);
+    if (response && response.token) {
+      localStorage.setItem(TOKEN_KEY, response.token);
+      localStorage.setItem(USER_KEY, JSON.stringify(response.data.usuario));
+      localStorage.setItem(ROL_ID_KEY, String(response.data.usuario.rol_id || 4));
+      localStorage.setItem(ROL_NOMBRE_KEY, 'Cliente');
+      return {
+        user: response.data.usuario,
+        token: response.token,
+        cliente: response.data.cliente,
+        empresa: response.data.empresa,
+      };
+    }
+    return response;
+  },
 };
 
