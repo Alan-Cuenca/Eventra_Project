@@ -7,8 +7,14 @@
 
 import axios from 'axios';
 
-// URL base: siempre apuntando al backend en Render
-const BASE_URL = 'https://eventra-project-l3hl.onrender.com/api';
+// ── Configuración de URL Base (VITE_API_URL) ──────────────────────────────────
+// Prioriza la variable de entorno VITE_API_URL; si no está definida, apunta
+// directamente al backend desplegado en Render.
+const getBaseUrl = () => {
+  return import.meta.env.VITE_API_URL || 'https://eventra-project-l3hl.onrender.com/api';
+};
+
+const BASE_URL = getBaseUrl();
 
 const apiClient = axios.create({
   baseURL: BASE_URL,

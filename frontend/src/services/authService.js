@@ -17,13 +17,15 @@ const ROLES_NOMBRES = {
   2: 'Gerente',
   3: 'Trabajador',
   4: 'Cliente',
+  5: 'Super_Admin',
 };
 
 export const authService = {
   /**
    * POST /auth/login
-   * Guarda el JWT en localStorage con la clave 'eventra_token'.
+   * Guarda el JWT en localStorage con la clave 'token'.
    * Si el backend no está disponible (error de red sin status), usa demo.
+   * IMPORTANTE: Los roles demo NUNCA conceden acceso a Super Admin.
    */
   async login(email, password) {
     try {
@@ -32,11 +34,15 @@ export const authService = {
       if (response && response.token) {
         localStorage.setItem(TOKEN_KEY, response.token);
         localStorage.setItem(USER_KEY, JSON.stringify(response.data));
+        if (response.data?.rol_id) {
+          localStorage.setItem(ROL_ID_KEY, String(response.data.rol_id));
+          localStorage.setItem(ROL_NOMBRE_KEY, response.data.rol_nombre || ROLES_NOMBRES[response.data.rol_id] || 'Usuario');
+        }
         return { user: response.data, token: response.token, isRealBackend: true };
       }
       throw new Error('Respuesta inválida del servidor');
     } catch (error) {
-      // Si fue error HTTP del servidor (401, 409, 500…) → lo propagamos tal cual
+      // Si fue error HTTP del servidor (401, 403, 404, 500…) → lo propagamos tal cual
       if (error.status) {
         throw error;
       }
@@ -50,7 +56,8 @@ export const authService = {
           u.password === password
       );
 
-      if (demoUser) {
+      // Los usuarios demo solo son para roles locales (1 a 4). Ningún demo es Super_Admin.
+      if (demoUser && demoUser.rol_id !== 5) {
         const mockToken = `mock-jwt-demo-role${demoUser.rol_id}-${Date.now()}`;
         const { password: _, ...userData } = demoUser;
         localStorage.setItem(TOKEN_KEY,     mockToken);
@@ -61,6 +68,19 @@ export const authService = {
       }
 
       throw new Error('No se pudo conectar al servidor y las credenciales no coinciden con ningún usuario demo');
+    }
+  },
+
+  /**
+   * GET /auth/me
+   * Valida la sesión activa y retorna el payload del usuario autenticado (id, rol_id, empresa_id, email).
+   */
+  async getMe() {
+    try {
+      const response = await api.get('/auth/me');
+      return response.data || response;
+    } catch (error) {
+      throw error;
     }
   },
 
@@ -116,4 +136,35 @@ export const authService = {
       return null;
     }
   },
+
+  /**
+   * POST /api/auth/cambiar-password-obligatorio
+   * Actualiza la contraseña en el primer inicio de sesión y guarda el nuevo token limpio.
+   */
+  async cambiarPasswordObligatorio({ password_temporal, password_nuevo, password_confirmar }) {
+    const response = await api.post('/auth/cambiar-password-obligatorio', {
+      password_temporal,
+      password_nuevo,
+      password_confirmar,
+    });
+
+    if (response && response.token) {
+      localStorage.setItem(TOKEN_KEY, response.token);
+      localStorage.setItem(USER_KEY, JSON.stringify(response.data));
+      if (response.data?.rol_id) {
+        localStorage.setItem(ROL_ID_KEY, String(response.data.rol_id));
+        localStorage.setItem(ROL_NOMBRE_KEY, response.data.rol_nombre || ROLES_NOMBRES[response.data.rol_id] || 'Usuario');
+      }
+    }
+    return response;
+  },
+
+  /**
+   * POST /api/auth/recuperar-credencial
+   * Solicita regeneración y despacho de credenciales caducadas por correo.
+   */
+  async solicitarRecuperacionCredencial(email) {
+    return await api.post('/auth/recuperar-credencial', { email });
+  },
 };
+

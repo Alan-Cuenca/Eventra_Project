@@ -3,9 +3,16 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 
+// ── Super Administrador (ADMIN_GLOBAL, rol_id = 5) ──────────────────────────
+import { SuperAdminRoute } from '../components/super-admin/SuperAdminRoute';
+import { SuperAdminLayout } from '../layouts/SuperAdminLayout';
+import { GlobalDashboardPage } from '../pages/super-admin/GlobalDashboardPage';
+import { EmpresasManagementPage } from '../pages/super-admin/EmpresasManagementPage';
+
 // ── Autenticación ──────────────────────────────────────────────────────────
 import { Login }    from '../pages/auth/Login';
 import { Registro } from '../pages/auth/Registro';
+import { PrimerLoginCambioPassword } from '../pages/auth/PrimerLoginCambioPassword';
 
 // ── Landing Page Oficial SaaS EVENTRA ───────────────────────────────────
 import { LandingPublicPage } from '../pages/public/LandingPublicPage';
@@ -65,10 +72,20 @@ export const AppRoutes = () => {
       <Route path="/"         element={<LandingPublicPage />} />
       <Route path="/login"    element={<Login />} />
       <Route path="/registro" element={<Registro />} />
+      <Route path="/primer-acceso/cambiar-password" element={<PrimerLoginCambioPassword />} />
 
       {/* ── Portal Cliente exclusivo (rol 4) ──────────────────────────────── */}
       <Route element={<ProtectedRoute />}>
         <Route path="/portal-cliente" element={<PortalClientePage />} />
+      </Route>
+
+      {/* ── Consola del Super Administrador (rol_id = 5 / ADMIN_GLOBAL) ──────── */}
+      <Route element={<SuperAdminRoute />}>
+        <Route element={<SuperAdminLayout />}>
+          <Route path="/super-admin" element={<Navigate to="/super-admin/dashboard" replace />} />
+          <Route path="/super-admin/dashboard" element={<GlobalDashboardPage />} />
+          <Route path="/super-admin/empresas" element={<EmpresasManagementPage />} />
+        </Route>
       </Route>
 
       {/* ── Panel Interno — roles 1, 2, 3 ─────────────────────────────────── */}

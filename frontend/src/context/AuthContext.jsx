@@ -36,21 +36,42 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
   };
 
+  const refreshSession = async () => {
+    try {
+      const meData = await authService.getMe();
+      if (meData) {
+        setUser((prev) => ({ ...prev, ...meData }));
+        return meData;
+      }
+    } catch (err) {
+      console.warn('[AuthContext] No se pudo validar la sesión actual:', err?.message);
+      return null;
+    }
+  };
+
+  const isSuperAdmin =
+    Number(user?.rol_id) === 5 ||
+    Number(user?.rol_id) === ROLES.SUPER_ADMIN ||
+    user?.rol === 'Super_Admin' ||
+    user?.rol_nombre === 'Super_Admin';
+
   const currentRoleConfig = user?.rol_id ? ROLES_CONFIG[user.rol_id] : null;
 
   const value = {
     user,
     token,
     loading,
-    roleId: user?.rol_id || null,
+    roleId: user?.rol_id ? Number(user.rol_id) : null,
     roleConfig: currentRoleConfig,
-    isAdmin: user?.rol_id === ROLES.ADMIN,
-    isGerente: user?.rol_id === ROLES.GERENTE,
-    isTrabajador: user?.rol_id === ROLES.TRABAJADOR,
-    isCliente: user?.rol_id === ROLES.CLIENTE,
+    isSuperAdmin,
+    isAdmin: Number(user?.rol_id) === ROLES.ADMIN,
+    isGerente: Number(user?.rol_id) === ROLES.GERENTE,
+    isTrabajador: Number(user?.rol_id) === ROLES.TRABAJADOR,
+    isCliente: Number(user?.rol_id) === ROLES.CLIENTE,
     login,
     register,
     logout,
+    refreshSession,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

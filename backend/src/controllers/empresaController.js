@@ -1,5 +1,9 @@
 import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
+import { generarPasswordTemporal } from '../utils/passwordGenerator.js';
+import { sendWelcomeAdminEmail } from '../services/emailService.js';
+
+const PLANES_VALIDOS = ['Basico', 'Premium', 'Enterprise'];
 
 /**
  * =============================================================================
@@ -53,8 +57,14 @@ export const obtenerEmpresas = async (req, res) => {
 };
 
 /**
- * Da de alta a una nueva empresa (inquilino / tenant) en EVENTRA SaaS.
- * Opcionalmente crea en una transacción atómica el usuario Administrador inicial.
+ * Da de alta una nueva empresa SaaS (Tenant) y su administrador inicial.
+ * Flujo:
+ *  1. Valida los 4 campos (nombre_comercial, plan_suscripcion, admin_nombre, admin_email).
+ *  2. Genera automáticamente una contraseña segura mediante crypto.
+ *  3. Ejecuta transacción atómica: INSERT en empresas + INSERT en usuarios (rol_id = 1).
+ *  4. Almacena el hash bcrypt de la contraseña en la columna password_hash existente.
+ *  5. Envía el correo con credenciales e instrucción de actualización mediante emailService.
+ *  6. Retorna resultado diferenciando estado de registro de empresa del envío de correo.
  *
  * @param {import('express').Request}  req
  * @param {import('express').Response} res
@@ -69,69 +79,125 @@ export const crearEmpresa = async (req, res) => {
     admin_password,
   } = req.body;
 
-  if (!nombre_comercial) {
+  // 1. Validaciones de entrada
+  if (!nombre_comercial || !nombre_comercial.trim()) {
     return res.status(400).json({
       success: false,
       message: 'El campo nombre_comercial es obligatorio.',
     });
   }
 
+  if (!admin_nombre || !admin_nombre.trim()) {
+    return res.status(400).json({
+      success: false,
+      message: 'El campo admin_nombre (nombre del administrador inicial) es obligatorio.',
+    });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!admin_email || !emailRegex.test(admin_email.trim())) {
+    return res.status(400).json({
+      success: false,
+      message: 'El campo admin_email es obligatorio y debe ser un correo electrónico válido.',
+    });
+  }
+
+  const planNormalizado = PLANES_VALIDOS.includes(plan_suscripcion) ? plan_suscripcion : 'Basico';
+
+  // 2. Generación automática de contraseña temporal segura (o provista en tests)
+  const tempPassword = admin_password || generarPasswordTemporal(12);
+
   const client = await pool.connect();
+  let nuevaEmpresa = null;
+  let adminUsuario = null;
+
   try {
     await client.query('BEGIN');
 
-    // 1. Crear el tenant
+    // 3. Crear el tenant
     const empresaRes = await client.query(
       `INSERT INTO empresas (nombre_comercial, ruc, plan_suscripcion, estado_activo)
        VALUES ($1, $2, $3, true)
        RETURNING id, nombre_comercial, ruc, plan_suscripcion, estado_activo, fecha_registro`,
-      [nombre_comercial, ruc || null, plan_suscripcion]
+      [nombre_comercial.trim(), ruc ? String(ruc).trim() : null, planNormalizado]
     );
 
-    const nuevaEmpresa = empresaRes.rows[0];
-    let adminUsuario = null;
+    nuevaEmpresa = empresaRes.rows[0];
 
-    // 2. Si se suministran credenciales de Administrador inicial, darlo de alta en el tenant
-    if (admin_email && admin_password) {
-      const salt = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash(admin_password, salt);
+    // 4. Crear administrador inicial en el tenant con hash de contraseña
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(tempPassword, salt);
 
-      const adminRes = await client.query(
-        `INSERT INTO usuarios (empresa_id, rol_id, nombre_completo, email, password_hash)
-         VALUES ($1, 1, $2, $3, $4)
-         RETURNING id, empresa_id, rol_id, nombre_completo, email, estado_activo, fecha_creacion`,
-        [nuevaEmpresa.id, admin_nombre || `Admin ${nombre_comercial}`, admin_email, passwordHash]
-      );
-      adminUsuario = adminRes.rows[0];
-    }
+    const adminRes = await client.query(
+      `INSERT INTO usuarios (empresa_id, rol_id, nombre_completo, email, password_hash)
+       VALUES ($1, 1, $2, $3, $4)
+       RETURNING id, empresa_id, rol_id, nombre_completo, email, estado_activo, fecha_creacion`,
+      [
+        nuevaEmpresa.id,
+        admin_nombre.trim(),
+        admin_email.trim().toLowerCase(),
+        passwordHash,
+      ]
+    );
+
+    adminUsuario = adminRes.rows[0];
 
     await client.query('COMMIT');
-
-    return res.status(201).json({
-      success: true,
-      message: 'Empresa (Tenant) creada exitosamente en EVENTRA SaaS.',
-      data: {
-        empresa: nuevaEmpresa,
-        administrador_inicial: adminUsuario,
-      },
-    });
   } catch (error) {
     await client.query('ROLLBACK');
+
     if (error.code === '23505') {
       return res.status(409).json({
         success: false,
-        message: 'El RUC de la empresa o el email del administrador ya se encuentra registrado.',
+        message: 'El RUC de la empresa o el email del administrador inicial ya se encuentra registrado en el sistema.',
       });
     }
+
     console.error('[empresaController] Error en crearEmpresa:', error.message);
     return res.status(500).json({
       success: false,
-      message: 'Error interno del servidor al crear la empresa.',
+      message: 'Error interno del servidor al crear la empresa y su administrador inicial.',
     });
   } finally {
     client.release();
   }
+
+  // 5. Envío de correo electrónico con credenciales e instrucción de actualización
+  let correoEnviado = false;
+  try {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const loginUrl = `${frontendUrl}/login`;
+
+    const emailResult = await sendWelcomeAdminEmail({
+      to: admin_email.trim().toLowerCase(),
+      adminNombre: admin_nombre.trim(),
+      empresaNombre: nombre_comercial.trim(),
+      tempPassword,
+      loginUrl,
+    });
+
+    correoEnviado = Boolean(emailResult?.success);
+  } catch (mailError) {
+    console.error('[empresaController] Fallo en despacho de correo de bienvenida:', mailError.message);
+    correoEnviado = false;
+  }
+
+  // 6. Respuesta al cliente diferenciando creación de empresa y estado de correo
+  return res.status(201).json({
+    success: true,
+    empresa_creada: true,
+    correo_enviado: correoEnviado,
+    message: correoEnviado
+      ? 'Empresa y administrador inicial registrados exitosamente. Credenciales de acceso enviadas por correo.'
+      : 'Empresa registrada exitosamente. No fue posible enviar el correo con las credenciales en este momento.',
+    data: {
+      empresa: nuevaEmpresa,
+      administrador_inicial: adminUsuario,
+    },
+  });
 };
+
+
 
 /**
  * Actualiza el plan de suscripción de una empresa SaaS.
