@@ -180,7 +180,46 @@ export const sendMail = async ({ to, subject, text, html, transporter = null }) 
     return { success: true, messageId: info.messageId };
   }
 
-  // 3. Envío HTTP API vía Resend (HTTPS puerto 443 — No bloqueado por Render)
+  // 3. Envío HTTP API vía Brevo (HTTPS puerto 443 — Envía a CUALQUIER dominio: Gmail, Hotmail, Outlook)
+  if (process.env.BREVO_API_KEY && process.env.BREVO_API_KEY.trim()) {
+    try {
+      const senderEmail = process.env.BREVO_SENDER_EMAIL || process.env.SMTP_USER || 'mateotkd123@gmail.com';
+      const senderName = process.env.BREVO_SENDER_NAME || 'EVENTRA SaaS';
+      const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': process.env.BREVO_API_KEY.trim(),
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+        },
+        body: JSON.stringify({
+          sender: { name: senderName, email: senderEmail },
+          to: [{ email: normalizedTo }],
+          subject,
+          textContent: text,
+          htmlContent: html,
+        }),
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) {
+        throw new Error(data.message || `Error HTTP ${resp.status} de Brevo: ${JSON.stringify(data)}`);
+      }
+
+      return {
+        success: true,
+        messageId: data.messageId,
+      };
+    } catch (brevoError) {
+      console.error('[emailService] Error con Brevo HTTP API:', brevoError.message);
+      return {
+        success: false,
+        error: brevoError.message,
+      };
+    }
+  }
+
+  // 4. Envío HTTP API vía Resend (HTTPS puerto 443)
   if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.trim()) {
     try {
       const fromAddress = process.env.RESEND_FROM || 'EVENTRA <onboarding@resend.dev>';
@@ -213,44 +252,6 @@ export const sendMail = async ({ to, subject, text, html, transporter = null }) 
       return {
         success: false,
         error: resendError.message,
-      };
-    }
-  }
-
-  // 4. Envío HTTP API vía Brevo (HTTPS puerto 443 — No bloqueado por Render)
-  if (process.env.BREVO_API_KEY && process.env.BREVO_API_KEY.trim()) {
-    try {
-      const senderEmail = process.env.BREVO_SENDER_EMAIL || process.env.SMTP_USER || 'mateotkd123@gmail.com';
-      const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'api-key': process.env.BREVO_API_KEY.trim(),
-          'Content-Type': 'application/json',
-          'accept': 'application/json',
-        },
-        body: JSON.stringify({
-          sender: { name: 'EVENTRA', email: senderEmail },
-          to: [{ email: normalizedTo }],
-          subject,
-          textContent: text,
-          htmlContent: html,
-        }),
-      });
-
-      const data = await resp.json();
-      if (!resp.ok) {
-        throw new Error(data.message || `Error HTTP ${resp.status} de Brevo: ${JSON.stringify(data)}`);
-      }
-
-      return {
-        success: true,
-        messageId: data.messageId,
-      };
-    } catch (brevoError) {
-      console.error('[emailService] Error con Brevo HTTP API:', brevoError.message);
-      return {
-        success: false,
-        error: brevoError.message,
       };
     }
   }
