@@ -185,10 +185,12 @@ export const sendMail = async ({ to, subject, text, html, transporter = null }) 
     try {
       const senderEmail = process.env.BREVO_SENDER_EMAIL || process.env.SMTP_USER || 'mateotkd123@gmail.com';
       const senderName = process.env.BREVO_SENDER_NAME || 'EVENTRA SaaS';
+      const rawApiKey = process.env.BREVO_API_KEY.trim();
+      const apiKey = rawApiKey.startsWith('xkeysib-') ? rawApiKey : `xkeysib-${rawApiKey}`;
       const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
-          'api-key': process.env.BREVO_API_KEY.trim(),
+          'api-key': apiKey,
           'Content-Type': 'application/json',
           'accept': 'application/json',
         },
