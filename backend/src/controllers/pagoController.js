@@ -9,7 +9,7 @@ const CONCEPTOS_VALIDOS = ['Anticipo', 'Abono', 'Liquidación'];
  * Registra un nuevo pago o anticipo vinculado a un evento.
  *
  * Aislamiento SaaS: empresa_id proviene exclusivamente del JWT.
- * RBAC: Solo Admin (1) y Gerente (2) pueden registrar (controlado en rutas).
+ * RBAC: Admin (1), Gerente (2), Trabajador (3) y Cliente (4).
  *
  * @param {import('express').Request}  req
  * @param {import('express').Response} res
@@ -34,13 +34,7 @@ export const registrarPago = async (req, res) => {
       });
     }
 
-    // Validar estado si se provee; de lo contrario la BD asigna 'Completado'
-    if (estado && !ESTADOS_VALIDOS.includes(estado)) {
-      return res.status(400).json({
-        success: false,
-        message: `Estado inválido. Los valores permitidos son: ${ESTADOS_VALIDOS.join(', ')}.`,
-      });
-    }
+    const metodoNormalizado = metodo_pago ? String(metodo_pago).trim() : 'Efectivo';
 
     // --- Blindaje SaaS Multi-tenant (Anti-IDOR) ---
     // Validar que el evento pertenezca estrictamente a la empresa en sesión
@@ -56,34 +50,53 @@ export const registrarPago = async (req, res) => {
       });
     }
 
-    // --- Subida de Comprobante (Supabase Storage) ---
+    // --- Lógica de Comprobante y Estados ---
+    // Si es "Deuna" o "Transferencia", requiere comprobante y estado = "En Revisión".
+    // Si es "Efectivo", ignora archivo y estado = "Pendiente".
     let comprobante_url = null;
-    let estadoPago = estado || (metodo_pago === 'Efectivo' ? 'Pendiente' : 'En Revisión');
+    let estadoPago = 'Pendiente';
 
-    if (req.file) {
-      if (!supabase) {
-        return res.status(500).json({ success: false, message: 'Supabase no está configurado.' });
-      }
-
-      const file = req.file;
-      const fileExt = file.originalname.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `${empresa_id}/${fileName}`;
-
-      const { data, error: uploadError } = await supabase.storage
-        .from('comprobantes')
-        .upload(filePath, file.buffer, {
-          contentType: file.mimetype,
+    if (metodoNormalizado === 'Efectivo') {
+      estadoPago = 'Pendiente';
+      comprobante_url = null;
+    } else if (metodoNormalizado === 'Deuna' || metodoNormalizado === 'Transferencia') {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'El archivo de comprobante es obligatorio para pagos por Deuna o Transferencia.',
         });
-
-      if (uploadError) {
-        console.error('Error subiendo comprobante:', uploadError);
-        return res.status(500).json({ success: false, message: 'Error subiendo comprobante.' });
       }
 
-      const { data: publicUrlData } = supabase.storage.from('comprobantes').getPublicUrl(filePath);
-      comprobante_url = publicUrlData.publicUrl;
       estadoPago = 'En Revisión';
+      const file = req.file;
+
+      if (supabase) {
+        const fileExt = file.originalname.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `${empresa_id}/${fileName}`;
+
+        const { data, error: uploadError } = await supabase.storage
+          .from('comprobantes')
+          .upload(filePath, file.buffer, {
+            contentType: file.mimetype,
+            upsert: true,
+          });
+
+        if (uploadError) {
+          console.error('[pagoController] Error subiendo comprobante a Supabase Storage:', uploadError.message);
+          // Si el bucket aún no existe o hay error en Supabase, registrar fallback de datos en dev
+          comprobante_url = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+        } else {
+          const { data: publicUrlData } = supabase.storage.from('comprobantes').getPublicUrl(filePath);
+          comprobante_url = publicUrlData.publicUrl;
+        }
+      } else {
+        // Fallback resiliente para entornos locales sin credenciales directas de Supabase Storage
+        comprobante_url = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+      }
+    } else {
+      // Otros métodos (ej. Tarjeta de crédito física, POS)
+      estadoPago = estado || 'Completado';
     }
 
     // --- Insertar pago (SQL parametrizado) ---
@@ -97,9 +110,9 @@ export const registrarPago = async (req, res) => {
         evento_id,
         Number(monto),
         concepto,
-        metodo_pago || null,
+        metodoNormalizado,
         estadoPago,
-        comprobante_url
+        comprobante_url,
       ]
     );
 
@@ -110,7 +123,6 @@ export const registrarPago = async (req, res) => {
     });
 
   } catch (error) {
-    // Violación de FK: evento_id no existe o no pertenece a la empresa
     if (error.code === '23503') {
       return res.status(400).json({
         success: false,
@@ -127,7 +139,7 @@ export const registrarPago = async (req, res) => {
 
 /**
  * Obtiene todos los pagos de la empresa del usuario autenticado,
- * enriquecidos con el título del evento mediante JOIN.
+ * enriquecidos con el título del evento y datos del cliente mediante JOIN.
  *
  * Aislamiento SaaS: filtra estrictamente por pagos.empresa_id.
  *
@@ -152,9 +164,16 @@ export const obtenerPagos = async (req, res) => {
          -- Contexto del evento asociado
          e.id     AS evento_id,
          e.titulo AS evento_titulo,
-         e.estado_progreso AS evento_estado
+         e.estado_progreso AS evento_estado,
+         -- Cliente asociado
+         COALESCE(TRIM(CONCAT(cl.nombres, ' ', cl.apellidos)), 'Cliente General') AS cliente_nombre,
+         cl.email AS cliente_email,
+         c.total_calculado AS evento_total
        FROM pagos p
        INNER JOIN eventos e ON p.evento_id = e.id
+       LEFT JOIN reservas r ON e.reserva_id = r.id
+       LEFT JOIN cotizaciones c ON r.cotizacion_id = c.id
+       LEFT JOIN clientes cl ON c.cliente_id = cl.id
        WHERE p.empresa_id = $1
        ORDER BY p.fecha_pago DESC, p.fecha_registro DESC`,
       [empresa_id]
@@ -241,6 +260,7 @@ export const obtenerPagosPorEvento = async (req, res) => {
 
 /**
  * Actualiza el estado de un pago.
+ * RBAC: Administrador (1) y Gerente (2).
  *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
@@ -251,10 +271,10 @@ export const actualizarEstadoPago = async (req, res) => {
   const { estado } = req.body;
 
   try {
-    if (!estado || !ESTADOS_VALIDOS.includes(estado)) {
+    if (!estado || !['Aprobado', 'Rechazado', 'Pendiente', 'En Revisión'].includes(estado)) {
       return res.status(400).json({
         success: false,
-        message: `Estado inválido. Los valores permitidos son: ${ESTADOS_VALIDOS.join(', ')}.`
+        message: 'Estado inválido. Los valores permitidos son: Aprobado, Rechazado, Pendiente, En Revisión.'
       });
     }
 
@@ -262,7 +282,7 @@ export const actualizarEstadoPago = async (req, res) => {
       `UPDATE pagos
        SET estado = $1
        WHERE id = $2 AND empresa_id = $3
-       RETURNING id, estado`,
+       RETURNING id, empresa_id, evento_id, monto, concepto, metodo_pago, estado, comprobante_url`,
       [estado, id, empresa_id]
     );
 
@@ -270,7 +290,7 @@ export const actualizarEstadoPago = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Pago no encontrado o no pertenece a la empresa.' });
     }
 
-    return res.status(200).json({ success: true, message: 'Estado del pago actualizado.', data: result.rows[0] });
+    return res.status(200).json({ success: true, message: `Estado del pago actualizado a ${estado}.`, data: result.rows[0] });
   } catch (error) {
     console.error('[pagoController] Error en actualizarEstadoPago:', error.message);
     return res.status(500).json({ success: false, message: 'Error interno al actualizar estado del pago.' });

@@ -400,7 +400,9 @@ export const eventraService = {
   async getPagos() {
     try {
       const response = await api.get('/pagos');
-      return response.data || [];
+      if (Array.isArray(response)) return response;
+      if (response && Array.isArray(response.data)) return response.data;
+      return [];
     } catch (err) {
       console.warn('[eventraService] getPagos error:', err.message);
       return [];

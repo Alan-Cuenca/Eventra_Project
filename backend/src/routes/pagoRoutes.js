@@ -15,18 +15,18 @@ const router = express.Router();
 /**
  * @route  POST /api/pagos
  * @desc   Registra un nuevo pago o anticipo para un evento
- * @access Private + RBAC — solo Administrador (1) y Gerente (2)
+ * @access Private + RBAC — Administrador (1), Gerente (2), Trabajador (3) y Cliente (4)
  *
- * Body esperado:
+ * Body esperado (multipart/form-data):
  * {
  *   "evento_id":   "uuid-del-evento",
  *   "monto":       500.00,
  *   "concepto":    "Anticipo" | "Abono" | "Liquidación",
- *   "metodo_pago": "Transferencia" | "Efectivo" | "Tarjeta",
- *   "estado":      "Completado" | "Pendiente" | "Anulado"  (opcional)
+ *   "metodo_pago": "Transferencia" | "Deuna" | "Efectivo",
+ *   "comprobante": File (obligatorio si Deuna o Transferencia)
  * }
  */
-router.post('/', verifyToken, authorizeRoles([1, 2, 3]), upload.single('comprobante'), registrarPago);
+router.post('/', verifyToken, authorizeRoles([1, 2, 3, 4]), upload.single('comprobante'), registrarPago);
 
 /**
  * @route  GET /api/pagos
