@@ -385,7 +385,7 @@ export const eventraService = {
   async enviarMensajeChatbot(mensaje) {
     try {
       const response = await api.post('/chatbot', { mensaje });
-      return response.data;
+      return response.respuesta ? response : (response.data || response);
     } catch (err) {
       console.warn('[eventraService] Chatbot API fallback:', err.message);
       return {

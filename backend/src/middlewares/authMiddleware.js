@@ -59,6 +59,38 @@ export const verifyToken = (req, res, next) => {
 };
 
 /**
+ * Middleware: optionalVerifyToken
+ * -----------------------------------------------------------------------
+ * Intenta autenticar el token JWT si está presente en la cabecera.
+ * Si no está presente, permite que la petición continúe (ej. para consultas
+ * públicas de clientes en la landing page del inquilino).
+ */
+export const optionalVerifyToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next();
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = {
+      ...decoded,
+      id: decoded.id,
+      rol_id: decoded.rol_id !== undefined ? Number(decoded.rol_id) : undefined,
+      empresa_id: decoded.empresa_id !== undefined && decoded.empresa_id !== null ? Number(decoded.empresa_id) : null,
+      email: decoded.email,
+    };
+  } catch (error) {
+    // Si el token es inválido o expiró, simplemente se ignora y continúa como visitante público
+  }
+
+  next();
+};
+
+/**
  * Middleware: authorizeRoles
  * -----------------------------------------------------------------------
  * Control de Acceso Basado en Roles (RBAC).

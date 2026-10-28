@@ -1,30 +1,17 @@
 import express from 'express';
-import { consultarAsistente } from '../controllers/chatbotController.js';
-import { verifyToken } from '../middlewares/authMiddleware.js';
+import { consultarEvara } from '../controllers/chatbotController.js';
+import { optionalVerifyToken } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
 /**
- * @route  POST /api/chatbot
- * @desc   Consulta al asistente conversacional EVARA con contexto del catálogo
- *         real de la empresa autenticada. La respuesta es generada por gpt-4o-mini.
- * @access Private — cualquier usuario autenticado con JWT válido
- *
- * Body esperado:
- * {
- *   "mensaje": "¿Qué paquetes tienen disponibles para una boda de 100 personas?"
- * }
- *
- * Respuesta exitosa (200):
- * {
- *   "success": true,
- *   "data": {
- *     "respuesta":     "¡Hola! Con mucho gusto te ayudo...",
- *     "modelo_usado":  "gpt-4o-mini",
- *     "tokens_usados": 312
- *   }
- * }
+ * @route   POST /api/chatbot
+ * @desc    Consulta conversacional al asistente EVARA AI.
+ *          El aislamiento multi-tenant se garantiza mediante:
+ *          - req.user.empresa_id si el usuario está autenticado con JWT (Anti-IDOR estricto).
+ *          - slug o empresa_id de la empresa si es un cliente público en la landing del inquilino.
+ * @access  Public / Authenticated (optionalVerifyToken)
  */
-router.post('/', verifyToken, consultarAsistente);
+router.post('/', optionalVerifyToken, consultarEvara);
 
 export default router;

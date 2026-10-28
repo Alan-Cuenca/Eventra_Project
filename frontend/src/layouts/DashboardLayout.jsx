@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../components/common/Sidebar';
 import { Navbar } from '../components/common/Navbar';
-import { ChatbotWidget } from '../components/common/ChatbotWidget';
+import { EvaraChatWidget } from '../components/chat/EvaraChatWidget';
 
 export const DashboardLayout = () => {
   return (
@@ -14,7 +14,7 @@ export const DashboardLayout = () => {
           <Outlet />
         </main>
       </div>
-      <ChatbotWidget />
+      <EvaraChatWidget />
     </div>
   );
 };
