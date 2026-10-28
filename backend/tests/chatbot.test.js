@@ -1,7 +1,7 @@
 /**
  * chatbot.test.js
  * ====================================================================
- * Pruebas: EVARA AI Chatbot Multi-Tenant
+ * Pruebas: EVARA AI Chatbot Multi-Tenant con Google Gemini (@google/genai)
  * ====================================================================
  */
 
@@ -9,9 +9,10 @@ import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { jest } from '@jest/globals';
 
-process.env.JWT_SECRET = 'test_secret_eventra_chatbot';
-process.env.NODE_ENV   = 'test';
-process.env.PORT       = '0';
+process.env.JWT_SECRET     = 'test_secret_eventra_chatbot';
+process.env.GEMINI_API_KEY = 'test_gemini_key_eventra';
+process.env.NODE_ENV       = 'test';
+process.env.PORT           = '0';
 
 const TEST_SECRET = 'test_secret_eventra_chatbot';
 
@@ -23,15 +24,15 @@ jest.unstable_mockModule('../src/config/db.js', () => ({
   },
 }));
 
-// Mock de OpenAI
-const mockCreate = jest.fn();
-jest.unstable_mockModule('openai', () => ({
-  default: class {
-    chat = {
-      completions: {
-        create: mockCreate,
-      },
-    };
+// Mock del SDK oficial de Google Gemini (@google/genai)
+const mockGenerateContent = jest.fn();
+jest.unstable_mockModule('@google/genai', () => ({
+  GoogleGenAI: class {
+    constructor() {
+      this.models = {
+        generateContent: mockGenerateContent,
+      };
+    }
   },
 }));
 
@@ -44,7 +45,7 @@ const TOKEN_CLIENTE_EMPRESA_1 = jwt.sign(
   { expiresIn: '1h' }
 );
 
-describe('EVARA AI — Asistente Conversacional Multi-Tenant', () => {
+describe('EVARA AI — Asistente Conversacional Multi-Tenant con Google Gemini', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -59,7 +60,7 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant', () => {
     expect(res.body.success).toBe(false);
   });
 
-  it('debe consultar el catálogo SQL dinámico de la empresa y retornar 200', async () => {
+  it('debe consultar el catálogo SQL dinámico de la empresa y llamar a Gemini retornando 200', async () => {
     // 1. Mock consulta paquetes
     pool.query.mockResolvedValueOnce({
       rowCount: 1,
@@ -85,17 +86,9 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant', () => {
       ],
     });
 
-    // Mock respuesta OpenAI
-    mockCreate.mockResolvedValueOnce({
-      model: 'gpt-4o-mini',
-      usage: { total_tokens: 150 },
-      choices: [
-        {
-          message: {
-            content: '¡Hola! En base a nuestro catálogo, el paquete Boda Diamante ($2500.00) incluye catering y fotografía.',
-          },
-        },
-      ],
+    // Mock respuesta Gemini
+    mockGenerateContent.mockResolvedValueOnce({
+      text: '¡Hola! En base a nuestro catálogo oficial, el paquete Boda Diamante ($2500.00) incluye catering y fotografía.',
     });
 
     const res = await request(app)
@@ -106,6 +99,15 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant', () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.respuesta).toBeTruthy();
+    expect(mockGenerateContent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: 'gemini-1.5-flash',
+        contents: '¿Qué paquetes tienen para bodas?',
+        config: expect.objectContaining({
+          systemInstruction: expect.stringContaining('Eres EVARA'),
+        }),
+      })
+    );
     expect(pool.query).toHaveBeenCalledWith(
       expect.stringContaining('FROM paquetes p'),
       [1]
@@ -131,6 +133,11 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant', () => {
       rows: [],
     });
 
+    // Mock respuesta Gemini
+    mockGenerateContent.mockResolvedValueOnce({
+      text: '¡Hola! Soy EVARA, asistente de ventas de esta empresa. ¿En qué podemos orientarte hoy?',
+    });
+
     const res = await request(app)
       .post('/api/chatbot')
       .send({ mensaje: 'Hola, buenas tardes', slug: 'recepciones-norte' });
@@ -140,4 +147,3 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant', () => {
     expect(res.body.respuesta).toContain('EVARA');
   });
 });
-
