@@ -16,13 +16,14 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- Es la entidad raíz del sistema: todos los usuarios deben pertenecer a una empresa.
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS empresas (
-    id                 SERIAL       PRIMARY KEY,
-    nombre_comercial   VARCHAR(100) NOT NULL,
-    slug               VARCHAR(100) UNIQUE,
-    ruc                VARCHAR(20)  UNIQUE,
-    plan_suscripcion   VARCHAR(50)  DEFAULT 'Basico',
-    estado_activo      BOOLEAN      DEFAULT true,
-    fecha_registro     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+    id                   SERIAL       PRIMARY KEY,
+    nombre_comercial     VARCHAR(100) NOT NULL,
+    slug                 VARCHAR(100) UNIQUE,
+    ruc                  VARCHAR(20)  UNIQUE,
+    plan_suscripcion     VARCHAR(50)  DEFAULT 'Basico',
+    estado_activo        BOOLEAN      DEFAULT true,
+    mensajes_chatbot_mes INTEGER      DEFAULT 0,
+    fecha_registro       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Agrega columnas a instancias ya existentes (idempotente)
@@ -34,6 +35,9 @@ ALTER TABLE empresas
 
 ALTER TABLE empresas
     ADD COLUMN IF NOT EXISTS slug VARCHAR(100);
+
+ALTER TABLE empresas
+    ADD COLUMN IF NOT EXISTS mensajes_chatbot_mes INTEGER DEFAULT 0;
 
 -- Si existen empresas sin slug, genera un slug base normalizado a partir del nombre_comercial
 UPDATE empresas

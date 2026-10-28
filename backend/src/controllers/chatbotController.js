@@ -144,7 +144,13 @@ export const consultarEvara = async (req, res) => {
       textoIA = generarRespuestaContextual(mensaje, catalogoEmpresa.paquetes, catalogoEmpresa.servicios);
     }
 
-    // 6. Retorna la respuesta de texto de la IA al frontend con status 200
+    // 6. Incrementar contador de mensajes de chatbot de la empresa para control de cuotas SaaS
+    await pool.query(
+      'UPDATE empresas SET mensajes_chatbot_mes = COALESCE(mensajes_chatbot_mes, 0) + 1 WHERE id = $1',
+      [empresa_id]
+    ).catch((err) => console.warn('[chatbotController] No se pudo incrementar mensajes_chatbot_mes:', err.message));
+
+    // 7. Retorna la respuesta de texto de la IA al frontend con status 200
     return res.status(200).json({
       success: true,
       respuesta: textoIA,

@@ -234,11 +234,11 @@ export const actualizarEstadoSuscripcion = async (req, res) => {
       [estado, id]
     );
 
-    // Si se aprueba, se renueva y activa el plan correspondiente de la empresa
+    // Si se aprueba, se renueva y activa el plan correspondiente de la empresa y se reinicia la cuota de chatbot
     if (estado === 'Aprobado') {
       await pool.query(
         `UPDATE empresas
-         SET plan_suscripcion = $1, estado_activo = true
+         SET plan_suscripcion = $1, estado_activo = true, mensajes_chatbot_mes = 0
          WHERE id = $2`,
         [pago.plan_nombre, pago.empresa_id]
       );

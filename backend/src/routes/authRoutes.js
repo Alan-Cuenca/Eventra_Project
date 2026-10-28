@@ -8,6 +8,7 @@ import {
   loginUser,
 } from '../controllers/authController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+import { verificarLimitePlan } from '../middlewares/planLimitsMiddleware.js';
 
 const router = express.Router();
 
@@ -55,7 +56,7 @@ const router = express.Router();
  *       409:
  *         description: El email ya está registrado
  */
-router.post('/invitar', verifyToken, authorizeRoles([1]), invitarUsuario);
+router.post('/invitar', verifyToken, authorizeRoles([1]), verificarLimitePlan('usuarios'), invitarUsuario);
 
 /**
  * @openapi
@@ -165,7 +166,7 @@ router.post('/register', registerUser);
  *       409:
  *         description: El email ya se encuentra registrado
  */
-router.post('/registro-cliente', registrarClientePortal);
+router.post('/registro-cliente', verificarLimitePlan('clientes'), registrarClientePortal);
 
 /**
  * @openapi

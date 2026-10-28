@@ -20,10 +20,13 @@ pool.on('error', (err, client) => {
   process.exit(-1);
 });
 
-// En entornos reales (Render / producción), asegura que la columna slug exista en Supabase
+// En entornos reales (Render / producción), asegura que las columnas requeridas existan en Supabase
 if (process.env.NODE_ENV !== 'test') {
   pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS slug VARCHAR(100);').catch((err) => {
     console.warn('[db] Auto-verificación de columna slug en Supabase:', err.message);
+  });
+  pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS mensajes_chatbot_mes INTEGER DEFAULT 0;').catch((err) => {
+    console.warn('[db] Auto-verificación de columna mensajes_chatbot_mes en Supabase:', err.message);
   });
 }
 

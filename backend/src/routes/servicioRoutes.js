@@ -1,6 +1,7 @@
 import express from 'express';
 import { crearServicio, obtenerServicios, actualizarServicio, eliminarServicio } from '../controllers/servicioController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+import { verificarLimitePlan } from '../middlewares/planLimitsMiddleware.js';
 
 const router = express.Router();
 
@@ -14,9 +15,9 @@ router.get('/', verifyToken, obtenerServicios);
 /**
  * @route  POST /api/servicios
  * @desc   Crea un nuevo servicio en el catálogo de la empresa
- * @access Private + RBAC — solo Administrador (1) y Gerente (2)
+ * @access Private + RBAC + Límites de Plan SaaS (20 Básico, 50 Premium)
  */
-router.post('/', verifyToken, authorizeRoles([1, 2]), crearServicio);
+router.post('/', verifyToken, authorizeRoles([1, 2]), verificarLimitePlan('servicios'), crearServicio);
 
 /**
  * @route  PUT /api/servicios/:id

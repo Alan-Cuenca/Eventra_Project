@@ -1,6 +1,7 @@
 import express from 'express';
 import { obtenerUsuarios, crearUsuario, actualizarUsuario, eliminarUsuario } from '../controllers/usuarioController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+import { verificarLimitePlan } from '../middlewares/planLimitsMiddleware.js';
 
 const router = express.Router();
 
@@ -14,9 +15,9 @@ router.get('/', verifyToken, authorizeRoles([1]), obtenerUsuarios);
 /**
  * @route  POST /api/usuarios
  * @desc   Crea un nuevo colaborador dentro de la empresa
- * @access Private — Solo Administrador (1)
+ * @access Private — Solo Administrador (1) + Límites de Plan SaaS (3 Básico, 10 Premium)
  */
-router.post('/', verifyToken, authorizeRoles([1]), crearUsuario);
+router.post('/', verifyToken, authorizeRoles([1]), verificarLimitePlan('usuarios'), crearUsuario);
 
 /**
  * @route  PUT /api/usuarios/:id
@@ -33,4 +34,3 @@ router.put('/:id', verifyToken, authorizeRoles([1]), actualizarUsuario);
 router.delete('/:id', verifyToken, authorizeRoles([1]), eliminarUsuario);
 
 export default router;
-

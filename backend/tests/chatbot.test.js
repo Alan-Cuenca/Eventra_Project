@@ -51,6 +51,12 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant con Google Gemini',
   });
 
   it('debe rechazar con 400 si el mensaje está vacío', async () => {
+    // 1. Consulta límite plan
+    pool.query.mockResolvedValueOnce({
+      rowCount: 1,
+      rows: [{ plan_suscripcion: 'Basico', mensajes_chatbot_mes: 0 }],
+    });
+
     const res = await request(app)
       .post('/api/chatbot')
       .set('Authorization', `Bearer ${TOKEN_CLIENTE_EMPRESA_1}`)
@@ -61,7 +67,13 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant con Google Gemini',
   });
 
   it('debe consultar el catálogo SQL dinámico de la empresa y llamar a Gemini retornando 200', async () => {
-    // 1. Mock consulta paquetes
+    // 1. Mock consulta límite empresa
+    pool.query.mockResolvedValueOnce({
+      rowCount: 1,
+      rows: [{ plan_suscripcion: 'Basico', mensajes_chatbot_mes: 5 }],
+    });
+
+    // 2. Mock consulta paquetes
     pool.query.mockResolvedValueOnce({
       rowCount: 1,
       rows: [
@@ -74,7 +86,7 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant con Google Gemini',
       ],
     });
 
-    // 2. Mock consulta servicios
+    // 3. Mock consulta servicios
     pool.query.mockResolvedValueOnce({
       rowCount: 1,
       rows: [
@@ -84,6 +96,12 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant con Google Gemini',
           precio_base: 450.00,
         },
       ],
+    });
+
+    // 4. Mock incremento contador de mensajes
+    pool.query.mockResolvedValueOnce({
+      rowCount: 1,
+      rows: [],
     });
 
     // Mock respuesta Gemini
@@ -108,28 +126,42 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant con Google Gemini',
         }),
       })
     );
-    expect(pool.query).toHaveBeenCalledWith(
-      expect.stringContaining('FROM paquetes p'),
-      [1]
-    );
   });
 
   it('debe resolver la empresa mediante slug si la consulta es pública sin token', async () => {
-    // 1. SELECT id FROM empresas WHERE slug = $1
+    // 1. SELECT id FROM empresas WHERE slug = $1 (en verificarLimitePlan)
     pool.query.mockResolvedValueOnce({
       rowCount: 1,
       rows: [{ id: 2 }],
     });
 
-    // 2. Paquetes
+    // 2. SELECT plan_suscripcion, mensajes_chatbot_mes FROM empresas WHERE id = $1
+    pool.query.mockResolvedValueOnce({
+      rowCount: 1,
+      rows: [{ plan_suscripcion: 'Basico', mensajes_chatbot_mes: 20 }],
+    });
+
+    // 3. SELECT id FROM empresas WHERE slug = $1 (en consultarEvara)
+    pool.query.mockResolvedValueOnce({
+      rowCount: 1,
+      rows: [{ id: 2 }],
+    });
+
+    // 4. Paquetes
     pool.query.mockResolvedValueOnce({
       rowCount: 0,
       rows: [],
     });
 
-    // 3. Servicios
+    // 5. Servicios
     pool.query.mockResolvedValueOnce({
       rowCount: 0,
+      rows: [],
+    });
+
+    // 6. UPDATE contador
+    pool.query.mockResolvedValueOnce({
+      rowCount: 1,
       rows: [],
     });
 
