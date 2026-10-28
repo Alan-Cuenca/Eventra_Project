@@ -597,3 +597,28 @@ CREATE INDEX IF NOT EXISTS idx_pagos_empresa        ON pagos(empresa_id);
 CREATE INDEX IF NOT EXISTS idx_proveedores_empresa  ON proveedores(empresa_id);
 CREATE INDEX IF NOT EXISTS idx_solicitudes_empresa  ON solicitudes_modificacion(empresa_id);
 
+
+-- =============================================================================
+-- TABLA: suscripciones_pagos
+-- =============================================================================
+-- Registra los pagos de suscripción mensual/anual de las empresas hacia el SaaS EVENTRA.
+-- Supervisado por el Super_Admin (5) y liquidado por el Administrador de cada empresa (1).
+CREATE TABLE IF NOT EXISTS suscripciones_pagos (
+    id              UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id      INTEGER        NOT NULL,
+    plan_nombre     VARCHAR(50)    NOT NULL,
+    monto           DECIMAL(10, 2) NOT NULL,
+    comprobante_url TEXT,
+    estado          VARCHAR(50)    DEFAULT 'En Revisión',
+    fecha_pago      DATE           DEFAULT CURRENT_DATE,
+    fecha_registro  TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_suscripciones_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresas(id)
+        ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_suscripciones_pagos_empresa ON suscripciones_pagos(empresa_id);
+
+

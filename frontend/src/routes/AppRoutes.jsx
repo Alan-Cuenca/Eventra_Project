@@ -64,6 +64,11 @@ import { ActividadesList } from '../pages/actividades/ActividadesList';
 // ── Pagos ─────────────────────────────────────────────────────────────────────
 import PagoProcesador from '../pages/pagos/PagoProcesador';
 import PagosList from '../pages/pagos/PagosList';
+
+// ── Suscripciones SaaS ────────────────────────────────────────────────────────
+import MiSuscripcion from '../pages/admin/MiSuscripcion';
+import FacturacionSuperAdmin from '../pages/superadmin/FacturacionSuperAdmin';
+
 import { useAuth } from '../context/AuthContext';
 
 import { ROLES } from '../services/mockData';
@@ -102,6 +107,7 @@ export const AppRoutes = () => {
           <Route path="/super-admin" element={<Navigate to="/super-admin/dashboard" replace />} />
           <Route path="/super-admin/dashboard" element={<GlobalDashboardPage />} />
           <Route path="/super-admin/empresas" element={<EmpresasManagementPage />} />
+          <Route path="/super-admin/facturacion" element={<FacturacionSuperAdmin />} />
         </Route>
       </Route>
 
@@ -161,9 +167,10 @@ export const AppRoutes = () => {
             <Route path="/proveedores/editar/:id" element={<ProveedorForm />} />
           </Route>
 
-          {/* Admin únicamente (Gestión de Equipo y Colaboradores) */}
+          {/* Admin únicamente (Gestión de Equipo, Colaboradores y Suscripción SaaS) */}
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
             <Route path="/colaboradores" element={<ColaboradoresPage />} />
+            <Route path="/mi-suscripcion" element={<MiSuscripcion />} />
           </Route>
         </Route>
       </Route>

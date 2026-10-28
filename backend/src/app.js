@@ -18,6 +18,7 @@ import dashboardRoutes from './routes/dashboardRoutes.js';
 import chatbotRoutes from './routes/chatbotRoutes.js';
 import usuarioRoutes from './routes/usuarioRoutes.js';
 import empresaRoutes from './routes/empresaRoutes.js';
+import suscripcionRoutes from './routes/suscripcionRoutes.js';
 
 dotenv.config();
 
@@ -91,6 +92,9 @@ app.use('/api/usuarios', usuarioRoutes);
 
 // --- Rutas de administración global de inquilinos (JWT + RBAC: solo Super_Admin) ---
 app.use('/api/empresas', empresaRoutes);
+
+// --- Rutas de suscripciones y facturación SaaS (JWT + RBAC: Admin y Super_Admin) ---
+app.use('/api/suscripciones', suscripcionRoutes);
 
 // Manejador global para rutas no encontradas (404)
 app.use((req, res) => {

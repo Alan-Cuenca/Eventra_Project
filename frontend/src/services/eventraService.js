@@ -431,4 +431,41 @@ export const eventraService = {
       throw err;
     }
   },
+
+  // ==========================================
+  // SUSCRIPCIONES SAAS (/api/suscripciones)
+  // ==========================================
+  async getSuscripciones() {
+    try {
+      const response = await api.get('/suscripciones');
+      if (Array.isArray(response)) return response;
+      if (response && Array.isArray(response.data)) return response.data;
+      return [];
+    } catch (err) {
+      console.warn('[eventraService] getSuscripciones error:', err.message);
+      return [];
+    }
+  },
+
+  async pagarSuscripcion(formData) {
+    try {
+      const response = await api.post('/suscripciones/pagar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    } catch (err) {
+      console.warn('[eventraService] pagarSuscripcion error:', err.message);
+      throw err;
+    }
+  },
+
+  async actualizarEstadoSuscripcion(id, estado) {
+    try {
+      const response = await api.put(`/suscripciones/${id}/estado`, { estado });
+      return response.data;
+    } catch (err) {
+      console.warn('[eventraService] actualizarEstadoSuscripcion error:', err.message);
+      throw err;
+    }
+  },
 };

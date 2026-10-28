@@ -159,19 +159,19 @@ export const PagoProcesador = () => {
       )}
 
       {/* Cabecera */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#CEC8B8]/60">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#CBC6B6]/60">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#233D49] tracking-tight">
             Portal de Pagos & Anticipos
           </h1>
-          <p className="text-sm text-[#4D7182] mt-1">
+          <p className="text-sm text-[#526F7D] mt-1">
             Realiza abonos a tus recepciones y eventos corporativos con verificación inmediata.
           </p>
         </div>
 
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#CEC8B8] text-xs font-bold text-[#4D7182] shadow-sm transition-all self-start sm:self-auto"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#CBC6B6] text-xs font-bold text-[#526F7D] shadow-sm transition-all self-start sm:self-auto"
         >
           <ArrowLeft size={14} />
           <span>Volver</span>
@@ -197,24 +197,24 @@ export const PagoProcesador = () => {
               }}
               className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between gap-3 ${
                 activo
-                  ? 'bg-white border-[#4D7182] shadow-md ring-2 ring-[#4D7182]/20'
-                  : 'bg-white/80 hover:bg-white border-[#CEC8B8] shadow-sm opacity-80 hover:opacity-100'
+                  ? 'bg-white border-[#526F7D] shadow-md ring-2 ring-[#526F7D]/20'
+                  : 'bg-white/80 hover:bg-white border-[#CBC6B6] shadow-sm opacity-80 hover:opacity-100'
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                  activo ? 'bg-[#4D7182] text-white' : 'bg-[#4D7182]/10 text-[#4D7182]'
+                  activo ? 'bg-[#526F7D] text-white' : 'bg-[#526F7D]/10 text-[#526F7D]'
                 }`}>
                   <Icon size={18} />
                 </div>
                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                  activo ? 'bg-[#4D7182]/15 text-[#4D7182]' : 'bg-[#FAF8F5] text-[#7D8F97]'
+                  activo ? 'bg-[#526F7D]/15 text-[#526F7D]' : 'bg-[#FAF8F5] text-[#7D8F97]'
                 }`}>
                   {tab.badge}
                 </span>
               </div>
               <div>
-                <p className={`text-sm font-extrabold ${activo ? 'text-[#233D49]' : 'text-[#4D7182]'}`}>
+                <p className={`text-sm font-extrabold ${activo ? 'text-[#233D49]' : 'text-[#526F7D]'}`}>
                   {tab.label}
                 </p>
                 <p className="text-[11px] text-[#7D8F97] mt-0.5">
@@ -235,15 +235,15 @@ export const PagoProcesador = () => {
         
         {/* TAB 1: DEUNA */}
         {metodo === 'Deuna' && (
-          <div className="bg-white rounded-2xl border border-[#CEC8B8] p-6 shadow-sm animate-fade-in space-y-4">
+          <div className="bg-white rounded-2xl border border-[#CBC6B6] p-6 shadow-sm animate-fade-in space-y-4">
             <div className="flex items-center gap-2 text-sm font-bold text-[#233D49]">
-              <QrCode size={18} className="text-[#4D7182]" />
+              <QrCode size={18} className="text-[#526F7D]" />
               <span>Escanea el Código QR Deuna</span>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-6 p-4 rounded-xl bg-[#FAF8F5] border border-[#CEC8B8]/60">
+            <div className="flex flex-col md:flex-row items-center gap-6 p-4 rounded-xl bg-[#FAF8F5] border border-[#CBC6B6]/60">
               {/* QR Estático de Prueba */}
-              <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-[#4D7182]/40 shadow-sm flex flex-col items-center">
+              <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-[#526F7D]/40 shadow-sm flex flex-col items-center">
                 <svg
                   className="w-40 h-40"
                   viewBox="0 0 100 100"
@@ -254,26 +254,26 @@ export const PagoProcesador = () => {
                   <rect width="100" height="100" rx="8" fill="#FFFFFF" />
                   <rect x="10" y="10" width="25" height="25" rx="3" fill="#233D49" />
                   <rect x="14" y="14" width="17" height="17" rx="2" fill="#FFFFFF" />
-                  <rect x="18" y="18" width="9" height="9" fill="#4D7182" />
+                  <rect x="18" y="18" width="9" height="9" fill="#526F7D" />
 
                   <rect x="65" y="10" width="25" height="25" rx="3" fill="#233D49" />
                   <rect x="69" y="14" width="17" height="17" rx="2" fill="#FFFFFF" />
-                  <rect x="73" y="18" width="9" height="9" fill="#4D7182" />
+                  <rect x="73" y="18" width="9" height="9" fill="#526F7D" />
 
                   <rect x="10" y="65" width="25" height="25" rx="3" fill="#233D49" />
                   <rect x="14" y="69" width="17" height="17" rx="2" fill="#FFFFFF" />
-                  <rect x="18" y="73" width="9" height="9" fill="#4D7182" />
+                  <rect x="18" y="73" width="9" height="9" fill="#526F7D" />
 
-                  <rect x="42" y="15" width="8" height="8" rx="1" fill="#4D7182" />
+                  <rect x="42" y="15" width="8" height="8" rx="1" fill="#526F7D" />
                   <rect x="52" y="25" width="6" height="6" rx="1" fill="#233D49" />
                   <rect x="42" y="38" width="16" height="16" rx="3" fill="#4D9A72" />
                   <rect x="25" y="45" width="8" height="8" rx="1" fill="#233D49" />
                   <rect x="45" y="65" width="10" height="10" rx="2" fill="#233D49" />
-                  <rect x="65" y="45" width="12" height="12" rx="2" fill="#4D7182" />
+                  <rect x="65" y="45" width="12" height="12" rx="2" fill="#526F7D" />
                   <rect x="65" y="68" width="22" height="8" rx="2" fill="#233D49" />
-                  <rect x="78" y="80" width="10" height="8" rx="2" fill="#4D7182" />
+                  <rect x="78" y="80" width="10" height="8" rx="2" fill="#526F7D" />
                 </svg>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#4D7182] mt-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#526F7D] mt-2">
                   DEUNA QR OFICIAL
                 </span>
               </div>
@@ -298,45 +298,45 @@ export const PagoProcesador = () => {
 
         {/* TAB 2: TRANSFERENCIA BANCARIA */}
         {metodo === 'Transferencia' && (
-          <div className="bg-white rounded-2xl border border-[#CEC8B8] p-6 shadow-sm animate-fade-in space-y-4">
+          <div className="bg-white rounded-2xl border border-[#CBC6B6] p-6 shadow-sm animate-fade-in space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-bold text-[#233D49]">
-                <Building2 size={18} className="text-[#4D7182]" />
+                <Building2 size={18} className="text-[#526F7D]" />
                 <span>Datos Bancarios Oficiales</span>
               </div>
               <button
                 type="button"
                 onClick={() => copiarAlPortapapeles("Banco: Banco Pichincha | Cuenta Corriente: 2100458921 | Titular: EVENTRA S.A.S. | RUC: 1793145678001")}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FAF8F5] hover:bg-[#F3F0E4] border border-[#CEC8B8] text-xs font-bold text-[#4D7182] transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FAF8F5] hover:bg-[#F3F0E4] border border-[#CBC6B6] text-xs font-bold text-[#526F7D] transition-colors"
               >
                 <Copy size={13} />
                 <span>{copiado ? '¡Copiado!' : 'Copiar Datos'}</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-[#FAF8F5] border border-[#CEC8B8]/60 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-[#FAF8F5] border border-[#CBC6B6]/60 text-xs">
               <div>
-                <span className="text-[#4D7182] font-semibold">Institución Bancaria:</span>
+                <span className="text-[#526F7D] font-semibold">Institución Bancaria:</span>
                 <p className="font-extrabold text-[#233D49] text-sm">Banco Pichincha</p>
               </div>
               <div>
-                <span className="text-[#4D7182] font-semibold">Tipo de Cuenta:</span>
+                <span className="text-[#526F7D] font-semibold">Tipo de Cuenta:</span>
                 <p className="font-extrabold text-[#233D49] text-sm">Cuenta Corriente</p>
               </div>
               <div>
-                <span className="text-[#4D7182] font-semibold">Número de Cuenta:</span>
+                <span className="text-[#526F7D] font-semibold">Número de Cuenta:</span>
                 <p className="font-extrabold text-[#233D49] text-sm font-mono tracking-wider">2100458921</p>
               </div>
               <div>
-                <span className="text-[#4D7182] font-semibold">Beneficiario / Titular:</span>
+                <span className="text-[#526F7D] font-semibold">Beneficiario / Titular:</span>
                 <p className="font-extrabold text-[#233D49] text-sm">EVENTRA S.A.S.</p>
               </div>
               <div>
-                <span className="text-[#4D7182] font-semibold">RUC Institucional:</span>
+                <span className="text-[#526F7D] font-semibold">RUC Institucional:</span>
                 <p className="font-bold text-[#233D49]">1793145678001</p>
               </div>
               <div>
-                <span className="text-[#4D7182] font-semibold">Correo de Notificación:</span>
+                <span className="text-[#526F7D] font-semibold">Correo de Notificación:</span>
                 <p className="font-bold text-[#233D49]">pagos@eventra.ec</p>
               </div>
             </div>
@@ -354,7 +354,7 @@ export const PagoProcesador = () => {
               Acércate a nuestras oficinas centrales en horario de atención (Lunes a Viernes de 08:30 a 17:30). 
               Indica en caja tu <strong>nombre completo</strong> y el <strong>código del evento</strong>.
             </p>
-            <div className="p-3 rounded-xl bg-white border border-[#CEC8B8]/60 text-xs text-[#7D8F97] flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-white border border-[#CBC6B6]/60 text-xs text-[#7D8F97] flex items-center gap-2">
               <CheckCircle2 size={16} className="text-[#C49A3A] shrink-0" />
               <span>Este registro creará un ticket en estado <strong>"Pendiente"</strong> que se confirmará una vez recibido el dinero en caja física.</span>
             </div>
@@ -362,8 +362,8 @@ export const PagoProcesador = () => {
         )}
 
         {/* Datos Generales del Pago: Evento, Concepto, Monto */}
-        <div className="bg-white rounded-2xl border border-[#CEC8B8] p-6 shadow-sm space-y-5">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-[#4D7182]">
+        <div className="bg-white rounded-2xl border border-[#CBC6B6] p-6 shadow-sm space-y-5">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-[#526F7D]">
             Información del Abono
           </h2>
 
@@ -379,7 +379,7 @@ export const PagoProcesador = () => {
                   value={eventoId}
                   onChange={(e) => setEventoId(e.target.value)}
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#CEC8B8] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:border-[#4D7182] text-xs font-semibold text-[#233D49]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBC6B6] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:border-[#526F7D] text-xs font-semibold text-[#233D49]"
                 >
                   <option value="">Selecciona un evento...</option>
                   {eventosDisponibles.map((ev) => (
@@ -395,7 +395,7 @@ export const PagoProcesador = () => {
                   value={eventoId}
                   onChange={(e) => setEventoId(e.target.value)}
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#CEC8B8] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:border-[#4D7182] text-xs font-semibold text-[#233D49]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBC6B6] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:border-[#526F7D] text-xs font-semibold text-[#233D49]"
                 />
               )}
             </div>
@@ -409,7 +409,7 @@ export const PagoProcesador = () => {
                 value={concepto}
                 onChange={(e) => setConcepto(e.target.value)}
                 required
-                className="w-full px-3.5 py-2.5 rounded-xl border border-[#CEC8B8] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:border-[#4D7182] text-xs font-semibold text-[#233D49]"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBC6B6] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:border-[#526F7D] text-xs font-semibold text-[#233D49]"
               >
                 <option value="Anticipo">Anticipo (Reserva inicial)</option>
                 <option value="Abono">Abono (Pago parcial intermedio)</option>
@@ -423,7 +423,7 @@ export const PagoProcesador = () => {
                 Monto a Transferir ($ USD) <span className="text-[#C95C5C]">*</span>
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-[#4D7182]">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-[#526F7D]">
                   $
                 </span>
                 <input
@@ -434,7 +434,7 @@ export const PagoProcesador = () => {
                   value={monto}
                   onChange={(e) => setMonto(e.target.value)}
                   required
-                  className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-[#CEC8B8] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:border-[#4D7182] text-sm font-extrabold text-[#233D49]"
+                  className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-[#CBC6B6] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:border-[#526F7D] text-sm font-extrabold text-[#233D49]"
                 />
               </div>
             </div>
@@ -449,7 +449,7 @@ export const PagoProcesador = () => {
               </label>
               
               {!archivo ? (
-                <div className="border-2 border-dashed border-[#CEC8B8] hover:border-[#4D7182] rounded-2xl p-6 text-center bg-[#FAF8F5] transition-colors relative">
+                <div className="border-2 border-dashed border-[#CBC6B6] hover:border-[#526F7D] rounded-2xl p-6 text-center bg-[#FAF8F5] transition-colors relative">
                   <input
                     type="file"
                     id="comprobante-input"
@@ -459,7 +459,7 @@ export const PagoProcesador = () => {
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <div className="w-10 h-10 rounded-xl bg-[#4D7182]/10 text-[#4D7182] flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-[#526F7D]/10 text-[#526F7D] flex items-center justify-center">
                       <UploadCloud size={20} />
                     </div>
                     <div>
@@ -473,16 +473,16 @@ export const PagoProcesador = () => {
                   </div>
                 </div>
               ) : (
-                <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#CEC8B8] flex items-center justify-between gap-3">
+                <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#CBC6B6] flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     {previewUrl ? (
                       <img
                         src={previewUrl}
                         alt="Preview"
-                        className="w-12 h-12 rounded-xl object-cover border border-[#CEC8B8]"
+                        className="w-12 h-12 rounded-xl object-cover border border-[#CBC6B6]"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-xl bg-[#4D7182]/10 text-[#4D7182] flex items-center justify-center font-bold">
+                      <div className="w-12 h-12 rounded-xl bg-[#526F7D]/10 text-[#526F7D] flex items-center justify-center font-bold">
                         <FileCheck size={20} />
                       </div>
                     )}
@@ -513,7 +513,7 @@ export const PagoProcesador = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-xl bg-[#4D7182] hover:bg-[#3E5763] text-white font-bold text-xs tracking-wide shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-3.5 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white font-bold text-xs tracking-wide shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
               <span>Procesando pago...</span>

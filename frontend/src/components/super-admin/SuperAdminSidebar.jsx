@@ -9,6 +9,7 @@ import {
   Settings,
   ShieldCheck,
   Clock,
+  CreditCard,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
@@ -41,6 +42,12 @@ export const SuperAdminSidebar = ({ isOpen, onClose }) => {
           to: '/super-admin/empresas',
           label: 'Empresas (Tenants)',
           icon: <Building2 size={18} />,
+          enabled: true,
+        },
+        {
+          to: '/super-admin/facturacion',
+          label: 'Facturación SaaS',
+          icon: <CreditCard size={18} />,
           enabled: true,
         },
         {

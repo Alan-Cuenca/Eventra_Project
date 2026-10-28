@@ -14,6 +14,7 @@ import {
   Building2,
   CreditCard,
   UserCheck,
+  ShieldCheck,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
@@ -115,6 +116,12 @@ export const Sidebar = () => {
           to: '/colaboradores',
           label: 'Equipo y Colaboradores',
           icon: <UserCheck size={18} />,
+          visible: isAdmin,
+        },
+        {
+          to: '/mi-suscripcion',
+          label: 'Mi Suscripción SaaS',
+          icon: <ShieldCheck size={18} />,
           visible: isAdmin,
         },
       ],

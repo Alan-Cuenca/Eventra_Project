@@ -128,12 +128,12 @@ export const PagosList = () => {
       )}
 
       {/* Cabecera de Página */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#CEC8B8]/60">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#CBC6B6]/60">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#233D49] tracking-tight">
             Gestión Financiera & Pagos
           </h1>
-          <p className="text-sm text-[#4D7182] mt-1">
+          <p className="text-sm text-[#526F7D] mt-1">
             Supervisión de recaudación, validación de comprobantes y conciliación de anticipos.
           </p>
         </div>
@@ -141,7 +141,7 @@ export const PagosList = () => {
         <button
           onClick={cargarPagos}
           disabled={loading}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#CEC8B8] text-xs font-bold text-[#4D7182] shadow-sm transition-all"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#CBC6B6] text-xs font-bold text-[#526F7D] shadow-sm transition-all"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           <span>Actualizar Datos</span>
@@ -152,9 +152,9 @@ export const PagosList = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         
         {/* KPI 1: Total Recaudado */}
-        <div className="bg-white shadow-sm rounded-2xl border border-[#CEC8B8] p-5 relative overflow-hidden transition-all hover:shadow-md">
+        <div className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-5 relative overflow-hidden transition-all hover:shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#4D7182]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
               Total Recaudado
             </span>
             <div className="w-9 h-9 rounded-xl bg-[#4D9A72]/15 text-[#4D9A72] flex items-center justify-center">
@@ -171,12 +171,12 @@ export const PagosList = () => {
         </div>
 
         {/* KPI 2: Anticipos Cobrados */}
-        <div className="bg-white shadow-sm rounded-2xl border border-[#CEC8B8] p-5 relative overflow-hidden transition-all hover:shadow-md">
+        <div className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-5 relative overflow-hidden transition-all hover:shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#4D7182]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
               Anticipos Cobrados
             </span>
-            <div className="w-9 h-9 rounded-xl bg-[#4D7182]/15 text-[#4D7182] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-[#526F7D]/15 text-[#526F7D] flex items-center justify-center">
               <TrendingUp size={20} />
             </div>
           </div>
@@ -184,15 +184,15 @@ export const PagosList = () => {
             ${anticiposCobrados.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <p className="text-xs text-[#7D8F97] mt-1.5 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#4D7182]"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#526F7D]"></span>
             Garantías y confirmaciones de eventos
           </p>
         </div>
 
         {/* KPI 3: Saldos Pendientes */}
-        <div className="bg-white shadow-sm rounded-2xl border border-[#CEC8B8] p-5 relative overflow-hidden transition-all hover:shadow-md">
+        <div className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-5 relative overflow-hidden transition-all hover:shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#4D7182]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
               Saldos Pendientes
             </span>
             <div className="w-9 h-9 rounded-xl bg-[#C49A3A]/15 text-[#C49A3A] flex items-center justify-center">
@@ -211,10 +211,10 @@ export const PagosList = () => {
       </div>
 
       {/* Tarjeta de Integración DEUNA */}
-      <div className="bg-white shadow-sm rounded-2xl border border-[#CEC8B8] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-[#4D7182]/10 border border-[#4D7182]/20 flex items-center justify-center text-[#4D7182]">
-            <Zap size={22} className="text-[#4D7182]" />
+          <div className="w-11 h-11 rounded-xl bg-[#526F7D]/10 border border-[#526F7D]/20 flex items-center justify-center text-[#526F7D]">
+            <Zap size={22} className="text-[#526F7D]" />
           </div>
           <div>
             <h2 className="text-sm font-bold text-[#233D49]">
@@ -247,7 +247,7 @@ export const PagosList = () => {
           </div>
           <button
             onClick={() => setFiltroEstado('En Revisión')}
-            className="text-xs font-bold text-[#4D7182] hover:text-[#233D49] underline"
+            className="text-xs font-bold text-[#526F7D] hover:text-[#233D49] underline"
           >
             Filtrar comprobantes pendientes
           </button>
@@ -255,7 +255,7 @@ export const PagosList = () => {
       )}
 
       {/* Barra de Búsqueda y Filtros */}
-      <div className="bg-white rounded-2xl border border-[#CEC8B8] p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-[#CBC6B6] p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
         
         {/* Input de Búsqueda */}
         <div className="relative w-full sm:w-72">
@@ -265,7 +265,7 @@ export const PagosList = () => {
             placeholder="Buscar por cliente, evento o método..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-[#CEC8B8] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:border-[#4D7182] text-[#233D49] placeholder-[#7D8F97]"
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-[#CBC6B6] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:border-[#526F7D] text-[#233D49] placeholder-[#7D8F97]"
           />
         </div>
 
@@ -279,8 +279,8 @@ export const PagosList = () => {
                 onClick={() => setFiltroEstado(estado)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                   activo
-                    ? 'bg-[#4D7182] text-white shadow-sm'
-                    : 'bg-[#F3F0E4]/70 hover:bg-[#F3F0E4] text-[#4D7182] border border-[#CEC8B8]/50'
+                    ? 'bg-[#526F7D] text-white shadow-sm'
+                    : 'bg-[#F3F0E4]/70 hover:bg-[#F3F0E4] text-[#526F7D] border border-[#CBC6B6]/50'
                 }`}
               >
                 {estado}
@@ -292,11 +292,11 @@ export const PagosList = () => {
       </div>
 
       {/* Tabla de Historial de Pagos */}
-      <div className="bg-white rounded-2xl border border-[#CEC8B8] shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#CBC6B6] shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#FAF8F5] border-b-2 border-[#CEC8B8] text-[11px] font-bold uppercase tracking-wider text-[#4D7182]">
+              <tr className="bg-[#FAF8F5] border-b-2 border-[#CBC6B6] text-[11px] font-bold uppercase tracking-wider text-[#526F7D]">
                 <th className="py-3.5 px-5">Cliente</th>
                 <th className="py-3.5 px-5">Evento</th>
                 <th className="py-3.5 px-5">Monto</th>
@@ -306,12 +306,12 @@ export const PagosList = () => {
                 <th className="py-3.5 px-5 text-right">Acción</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#CEC8B8]/40 text-xs text-[#233D49]">
+            <tbody className="divide-y divide-[#CBC6B6]/40 text-xs text-[#233D49]">
               {loading ? (
                 <tr>
                   <td colSpan="7" className="py-12 text-center text-[#7D8F97]">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <RefreshCw size={24} className="animate-spin text-[#4D7182]" />
+                      <RefreshCw size={24} className="animate-spin text-[#526F7D]" />
                       <span className="font-semibold">Cargando pagos y comprobantes...</span>
                     </div>
                   </td>
@@ -320,7 +320,7 @@ export const PagosList = () => {
                 <tr>
                   <td colSpan="7" className="py-12 text-center text-[#7D8F97]">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <FileCheck size={32} className="text-[#4D7182]/50" />
+                      <FileCheck size={32} className="text-[#526F7D]/50" />
                       <p className="font-semibold text-[#233D49]">No se encontraron pagos registrados</p>
                       <p className="text-xs text-[#7D8F97]">No hay transacciones que coincidan con los filtros actuales.</p>
                     </div>
@@ -342,7 +342,7 @@ export const PagosList = () => {
                       {/* 1. Cliente */}
                       <td className="py-3.5 px-5">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-[#4D7182]/10 text-[#4D7182] flex items-center justify-center font-bold text-xs shrink-0">
+                          <div className="w-7 h-7 rounded-full bg-[#526F7D]/10 text-[#526F7D] flex items-center justify-center font-bold text-xs shrink-0">
                             {(pago.cliente_nombre || 'C').charAt(0).toUpperCase()}
                           </div>
                           <div>
@@ -373,17 +373,17 @@ export const PagosList = () => {
                         <span className="font-extrabold text-sm text-[#233D49] block">
                           ${Number(pago.monto).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
-                        <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#4D7182]/10 text-[#4D7182]">
+                        <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#526F7D]/10 text-[#526F7D]">
                           {pago.concepto || 'Abono'}
                         </span>
                       </td>
 
                       {/* 4. Método */}
-                      <td className="py-3.5 px-5 text-[#4D7182] font-semibold">
+                      <td className="py-3.5 px-5 text-[#526F7D] font-semibold">
                         <div className="flex items-center gap-1.5">
-                          {pago.metodo_pago === 'Deuna' && <Zap size={14} className="text-[#4D7182]" />}
-                          {pago.metodo_pago === 'Transferencia' && <Building2 size={14} className="text-[#4D7182]" />}
-                          {pago.metodo_pago === 'Efectivo' && <DollarSign size={14} className="text-[#4D7182]" />}
+                          {pago.metodo_pago === 'Deuna' && <Zap size={14} className="text-[#526F7D]" />}
+                          {pago.metodo_pago === 'Transferencia' && <Building2 size={14} className="text-[#526F7D]" />}
+                          {pago.metodo_pago === 'Efectivo' && <DollarSign size={14} className="text-[#526F7D]" />}
                           <span>{pago.metodo_pago || 'Transferencia'}</span>
                         </div>
                       </td>
@@ -418,7 +418,7 @@ export const PagosList = () => {
                         {pago.estado === 'En Revisión' ? (
                           <button
                             onClick={() => handleVerDetalle(pago)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#4D7182] hover:bg-[#3E5763] text-white font-bold text-xs shadow-sm transition-all"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white font-bold text-xs shadow-sm transition-all"
                           >
                             <span>Ver</span>
                             <ArrowRight size={13} />
@@ -426,7 +426,7 @@ export const PagosList = () => {
                         ) : (
                           <button
                             onClick={() => handleVerDetalle(pago)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[#4D7182] hover:bg-[#F3F0E4] font-semibold text-xs transition-colors"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[#526F7D] hover:bg-[#F3F0E4] font-semibold text-xs transition-colors"
                           >
                             <span>Detalle</span>
                             <ArrowRight size={12} />
@@ -445,12 +445,12 @@ export const PagosList = () => {
       {/* Modal de Aprobación y Validación de Comprobante */}
       {isModalOpen && pagoSeleccionado && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-[#CEC8B8] shadow-2xl space-y-5 animate-scale-up">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-[#CBC6B6] shadow-2xl space-y-5 animate-scale-up">
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-[#CEC8B8]/60">
+            <div className="flex items-center justify-between pb-3 border-b border-[#CBC6B6]/60">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#4D7182]/10 text-[#4D7182] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-[#526F7D]/10 text-[#526F7D] flex items-center justify-center">
                   <CreditCard size={18} />
                 </div>
                 <div>
@@ -471,33 +471,33 @@ export const PagosList = () => {
             </div>
 
             {/* Ficha técnica del pago */}
-            <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-[#F3F0E4]/60 border border-[#CEC8B8] text-xs">
+            <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-[#F3F0E4]/60 border border-[#CBC6B6] text-xs">
               <div>
-                <span className="text-[#4D7182] font-semibold">Cliente:</span>
+                <span className="text-[#526F7D] font-semibold">Cliente:</span>
                 <p className="text-sm font-bold text-[#233D49] truncate">
                   {pagoSeleccionado.cliente_nombre || 'Cliente General'}
                 </p>
               </div>
               <div>
-                <span className="text-[#4D7182] font-semibold">Monto Depositado:</span>
+                <span className="text-[#526F7D] font-semibold">Monto Depositado:</span>
                 <p className="text-base font-extrabold text-[#233D49]">
                   ${Number(pagoSeleccionado.monto).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </p>
               </div>
               <div>
-                <span className="text-[#4D7182] font-semibold">Método de Pago:</span>
+                <span className="text-[#526F7D] font-semibold">Método de Pago:</span>
                 <p className="font-bold text-[#233D49]">
                   {pagoSeleccionado.metodo_pago || 'Transferencia'}
                 </p>
               </div>
               <div>
-                <span className="text-[#4D7182] font-semibold">Concepto:</span>
+                <span className="text-[#526F7D] font-semibold">Concepto:</span>
                 <p className="font-bold text-[#233D49]">
                   {pagoSeleccionado.concepto || 'Anticipo'}
                 </p>
               </div>
-              <div className="col-span-2 pt-2 border-t border-[#CEC8B8]/40">
-                <span className="text-[#4D7182] font-semibold">Evento Asociado:</span>
+              <div className="col-span-2 pt-2 border-t border-[#CBC6B6]/40">
+                <span className="text-[#526F7D] font-semibold">Evento Asociado:</span>
                 <p className="font-medium text-[#233D49]">
                   {pagoSeleccionado.evento_titulo || `Evento #${pagoSeleccionado.evento_id}`}
                 </p>
@@ -506,22 +506,22 @@ export const PagosList = () => {
 
             {/* Visualizador del Comprobante (URL de Supabase Storage) */}
             <div className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#4D7182]">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
                 Comprobante Digital
               </span>
               {pagoSeleccionado.comprobante_url ? (
-                <div className="rounded-2xl border border-[#CEC8B8] overflow-hidden bg-[#FAF8F5] p-3 text-center">
+                <div className="rounded-2xl border border-[#CBC6B6] overflow-hidden bg-[#FAF8F5] p-3 text-center">
                   <img
                     src={pagoSeleccionado.comprobante_url}
                     alt="Comprobante de Pago"
-                    className="max-h-64 mx-auto rounded-xl object-contain shadow-sm border border-[#CEC8B8]/40"
+                    className="max-h-64 mx-auto rounded-xl object-contain shadow-sm border border-[#CBC6B6]/40"
                   />
                   <div className="pt-2.5">
                     <a
                       href={pagoSeleccionado.comprobante_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4D7182] hover:text-[#233D49] hover:underline"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#526F7D] hover:text-[#233D49] hover:underline"
                     >
                       <ExternalLink size={13} />
                       <span>Abrir comprobante en tamaño completo</span>
@@ -529,8 +529,8 @@ export const PagosList = () => {
                   </div>
                 </div>
               ) : (
-                <div className="p-6 rounded-2xl bg-[#FAF8F5] border border-[#CEC8B8] text-center text-xs text-[#7D8F97]">
-                  <FileCheck size={28} className="mx-auto mb-1 text-[#4D7182]/50" />
+                <div className="p-6 rounded-2xl bg-[#FAF8F5] border border-[#CBC6B6] text-center text-xs text-[#7D8F97]">
+                  <FileCheck size={28} className="mx-auto mb-1 text-[#526F7D]/50" />
                   <p className="font-semibold text-[#233D49]">Sin comprobante digital adjunto</p>
                   <p className="mt-0.5">El pago fue registrado bajo modalidad en efectivo o caja física.</p>
                 </div>
@@ -538,7 +538,7 @@ export const PagosList = () => {
             </div>
 
             {/* Acciones de Validación: Aprobar Pago / Rechazar Pago */}
-            <div className="pt-3 border-t border-[#CEC8B8]/60 flex items-center gap-3">
+            <div className="pt-3 border-t border-[#CBC6B6]/60 flex items-center gap-3">
               <button
                 disabled={procesandoAccion}
                 onClick={() => handleCambiarEstado(pagoSeleccionado.id, 'Aprobado')}
