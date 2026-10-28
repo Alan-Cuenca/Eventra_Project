@@ -69,9 +69,9 @@ const Modal = ({ title, subtitle, onClose, children }) => (
     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
     background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(8px)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    zIndex: 10000, padding: '1rem',
+    zIndex: 10000, padding: '1rem', overflowY: 'auto',
   }}>
-    <div className="glass-card animate-fade-in" style={{ maxWidth: '480px', width: '100%', border: '1px solid var(--accent)' }}>
+    <div className="glass-card animate-fade-in" style={{ maxWidth: '480px', width: '100%', border: '1px solid var(--accent)', maxHeight: 'calc(100vh - 3rem)', overflowY: 'auto', margin: 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
         <div>
           <h3 style={{ fontSize: '1.2rem', margin: 0 }}>{title}</h3>
@@ -444,9 +444,9 @@ export const ClientsPage = () => {
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(8px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 10000, padding: '1rem',
+          zIndex: 10000, padding: '1rem', overflowY: 'auto',
         }}>
-          <div className="glass-card animate-fade-in" style={{ maxWidth: '400px', width: '100%', border: '1px solid rgba(185,74,72,0.4)', textAlign: 'center' }}>
+          <div className="glass-card animate-fade-in" style={{ maxWidth: '400px', width: '100%', border: '1px solid rgba(185,74,72,0.4)', textAlign: 'center', maxHeight: 'calc(100vh - 3rem)', overflowY: 'auto', margin: 'auto' }}>
             <div style={{
               width: '56px', height: '56px', borderRadius: '50%',
               background: 'rgba(185,74,72,0.15)', border: '1px solid rgba(185,74,72,0.35)',

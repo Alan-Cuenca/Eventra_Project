@@ -4,13 +4,10 @@ import {
   X, 
   Send, 
   Bot, 
-  User, 
-  MessageSquare,
   RefreshCw,
   HelpCircle
 } from 'lucide-react';
 import { api } from '../../services/api';
-import logoImg from '../../assets/logo.png';
 
 export const EvaraChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -95,7 +92,7 @@ export const EvaraChatWidget = () => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-[#526F7D] hover:bg-[#3E5763] text-white shadow-lg hover:shadow-xl flex items-center justify-center transition-all duration-200 hover:scale-105 focus:outline-none"
+        className="fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full bg-[#526F7D] hover:bg-[#3E5763] text-white shadow-lg hover:shadow-xl flex items-center justify-center transition-all duration-200 hover:scale-105 focus:outline-none"
         title="Consultar con EVARA AI"
       >
         {isOpen ? (
@@ -113,24 +110,24 @@ export const EvaraChatWidget = () => {
 
       {/* Ventana de Chat Flotante ("Sofisticación Sutil") */}
       {isOpen && (
-        <div className="fixed bottom-22 right-5 z-50 w-88 sm:w-96 max-w-[calc(100vw-2rem)] h-[520px] max-h-[82vh] flex flex-col rounded-3xl bg-white border border-[#CBC6B6] shadow-2xl overflow-hidden animate-scale-up">
+        <div className="fixed bottom-20 right-4 sm:right-6 z-40 w-[350px] sm:w-[380px] max-w-[calc(100vw-2rem)] h-[440px] sm:h-[470px] max-h-[calc(100vh-6.5rem)] flex flex-col rounded-2xl sm:rounded-3xl bg-white border border-[#CBC6B6] shadow-xl overflow-hidden animate-scale-up">
           
-          {/* Cabecera Azul Grisáceo #526F7D */}
-          <div className="bg-[#526F7D] text-white px-5 py-4 flex items-center justify-between shrink-0 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center text-white shrink-0">
-                <Sparkles size={18} />
+          {/* Cabecera Azul Grisáceo #526F7D - Siempre visible en la parte superior del widget */}
+          <div className="bg-[#526F7D] text-white px-4 py-3 flex items-center justify-between shrink-0 shadow-xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center text-white shrink-0">
+                <Sparkles size={16} />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <h3 className="text-sm font-bold tracking-tight text-white">
+                  <h3 className="text-xs sm:text-sm font-bold tracking-tight text-white truncate">
                     EVARA AI
                   </h3>
-                  <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-[#4D9A72] text-white">
+                  <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-[#4D9A72] text-white shrink-0">
                     En línea
                   </span>
                 </div>
-                <p className="text-[11px] text-white/80">
+                <p className="text-[10px] sm:text-[11px] text-white/80 truncate">
                   Asistente de Ventas y Catálogo
                 </p>
               </div>
@@ -139,14 +136,15 @@ export const EvaraChatWidget = () => {
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="p-1 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-1 rounded-lg text-white/80 hover:text-white hover:bg-white/15 transition-colors shrink-0"
+              title="Cerrar chat"
             >
               <X size={18} />
             </button>
           </div>
 
           {/* Área de Mensajes con Fondo Crema #F3F0E4 */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#F3F0E4]/70">
+          <div className="flex-1 overflow-y-auto p-3.5 space-y-3 bg-[#F3F0E4]/70">
             {messages.map((msg, index) => {
               const isUser = msg.sender === 'user';
               return (
@@ -154,7 +152,7 @@ export const EvaraChatWidget = () => {
                   key={index}
                   className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
                 >
-                  <div className="flex items-start gap-2 max-w-[85%]">
+                  <div className={`flex items-start gap-1.5 max-w-[88%] min-w-0 ${isUser ? 'justify-end' : 'justify-start'}`}>
                     {!isUser && (
                       <div className="w-6 h-6 rounded-full bg-[#526F7D]/15 text-[#526F7D] flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">
                         <Bot size={13} />
@@ -163,7 +161,7 @@ export const EvaraChatWidget = () => {
 
                     {/* Burbujas: Usuario en Beige #CEC8B8, EVARA en Blanco con borde */}
                     <div
-                      className={`px-4 py-2.5 rounded-2xl text-xs leading-relaxed shadow-xs ${
+                      className={`px-3.5 py-2 rounded-2xl text-xs leading-relaxed shadow-xs break-words overflow-hidden ${
                         isUser
                           ? 'bg-[#CEC8B8] text-[#233D49] rounded-tr-xs font-medium'
                           : 'bg-white text-[#233D49] border border-[#CBC6B6] rounded-tl-xs font-normal'
@@ -173,7 +171,7 @@ export const EvaraChatWidget = () => {
                     </div>
                   </div>
 
-                  <span className="text-[10px] text-[#7D8F97] mt-1 px-1">
+                  <span className="text-[10px] text-[#7D8F97] mt-0.5 px-1 tabular-nums">
                     {msg.timestamp}
                   </span>
                 </div>
@@ -182,11 +180,11 @@ export const EvaraChatWidget = () => {
 
             {/* Indicador Escribiendo... */}
             {loading && (
-              <div className="flex items-start gap-2 max-w-[85%] animate-fade-in">
+              <div className="flex items-start gap-1.5 max-w-[85%] animate-fade-in">
                 <div className="w-6 h-6 rounded-full bg-[#526F7D]/15 text-[#526F7D] flex items-center justify-center shrink-0 mt-0.5">
                   <Bot size={13} />
                 </div>
-                <div className="px-4 py-2.5 rounded-2xl rounded-tl-xs bg-white border border-[#CBC6B6] text-xs text-[#7D8F97] flex items-center gap-1.5 shadow-xs">
+                <div className="px-3.5 py-2 rounded-2xl rounded-tl-xs bg-white border border-[#CBC6B6] text-xs text-[#7D8F97] flex items-center gap-1.5 shadow-xs">
                   <span>EVARA está escribiendo</span>
                   <span className="flex gap-1 items-center">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#526F7D] animate-bounce"></span>
@@ -202,13 +200,13 @@ export const EvaraChatWidget = () => {
 
           {/* Sugerencias Rápidas */}
           {messages.length <= 2 && !loading && (
-            <div className="px-3 py-2 bg-white border-t border-[#CBC6B6]/50 flex gap-1.5 overflow-x-auto text-[11px]">
+            <div className="px-3 py-1.5 bg-white border-t border-[#CBC6B6]/50 flex gap-1.5 overflow-x-auto text-[11px] shrink-0">
               {sugerencias.map((sug, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => setInputMessage(sug)}
-                  className="px-2.5 py-1 rounded-full bg-[#FAF8F5] hover:bg-[#F3F0E4] border border-[#CBC6B6] text-[#526F7D] whitespace-nowrap transition-colors"
+                  className="px-2.5 py-1 rounded-full bg-[#FAF8F5] hover:bg-[#F3F0E4] border border-[#CBC6B6] text-[#526F7D] whitespace-nowrap transition-colors text-[10px] sm:text-[11px]"
                 >
                   {sug}
                 </button>
@@ -219,7 +217,7 @@ export const EvaraChatWidget = () => {
           {/* Formulario de Entrada con Input y Botón de Enviar */}
           <form
             onSubmit={handleSend}
-            className="p-3 bg-white border-t border-[#CBC6B6] flex items-center gap-2 shrink-0"
+            className="p-2.5 bg-white border-t border-[#CBC6B6] flex items-center gap-2 shrink-0"
           >
             <input
               type="text"
@@ -227,7 +225,7 @@ export const EvaraChatWidget = () => {
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               disabled={loading}
-              className="flex-1 px-3.5 py-2.5 text-xs rounded-xl border border-[#CBC6B6] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:border-[#526F7D] text-[#233D49] placeholder-[#7D8F97]"
+              className="flex-1 px-3 py-2 text-xs rounded-xl border border-[#CBC6B6] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:border-[#526F7D] text-[#233D49] placeholder-[#7D8F97]"
             />
 
             <button
@@ -236,7 +234,7 @@ export const EvaraChatWidget = () => {
               className="p-2.5 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
               title="Enviar mensaje"
             >
-              <Send size={15} />
+              <Send size={14} />
             </button>
           </form>
 

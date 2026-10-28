@@ -140,3 +140,4 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant', () => {
     expect(res.body.respuesta).toContain('EVARA');
   });
 });
+

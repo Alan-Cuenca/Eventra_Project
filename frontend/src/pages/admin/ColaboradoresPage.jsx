@@ -470,6 +470,7 @@ export const ColaboradoresPage = () => {
             justifyContent: 'center',
             padding: '16px',
             zIndex: 1000,
+            overflowY: 'auto',
           }}
         >
           <div
@@ -482,6 +483,9 @@ export const ColaboradoresPage = () => {
               boxShadow: '0 8px 32px rgba(35, 61, 73, 0.15)',
               position: 'relative',
               boxSizing: 'border-box',
+              maxHeight: 'calc(100vh - 3.5rem)',
+              overflowY: 'auto',
+              margin: 'auto',
             }}
           >
             {/* Botón cerrar */}

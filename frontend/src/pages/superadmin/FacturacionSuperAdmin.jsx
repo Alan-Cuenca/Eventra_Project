@@ -371,11 +371,11 @@ export const FacturacionSuperAdmin = () => {
 
       {/* Modal de Revisión y Aprobación de Suscripción */}
       {isModalOpen && pagoSeleccionado && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white shadow-md rounded-2xl border border-[#CBC6B6] p-6 sm:p-8 max-w-lg w-full space-y-5 animate-scale-up">
+        <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/40 backdrop-blur-sm flex items-center justify-center animate-fade-in">
+          <div className="bg-white shadow-xl rounded-2xl sm:rounded-3xl border border-[#CBC6B6] p-5 sm:p-7 max-w-lg w-full space-y-4 my-auto max-h-[calc(100vh-3.5rem)] overflow-y-auto animate-scale-up">
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-[#CBC6B6]/60">
+            <div className="flex items-center justify-between pb-3 border-b border-[#CBC6B6]/60 sticky top-0 bg-white z-10">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-[#526F7D]/10 text-[#526F7D] flex items-center justify-center">
                   <CreditCard size={18} />
@@ -393,34 +393,35 @@ export const FacturacionSuperAdmin = () => {
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="p-1.5 rounded-lg text-[#7D8F97] hover:bg-[#F3F0E4] hover:text-[#233D49] transition-colors"
+                title="Cerrar modal"
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Ficha Técnica */}
-            <div className="grid grid-cols-2 gap-3 p-4 rounded-xl bg-[#FAF8F5] border border-[#CBC6B6]/60 text-xs">
-              <div>
-                <span className="text-[#526F7D] font-semibold">Empresa Solicitante:</span>
-                <p className="text-sm font-bold text-[#233D49]">
+            <div className="grid grid-cols-2 gap-3 p-4 rounded-xl bg-[#FAF8F5] border border-[#CBC6B6]/60 text-xs overflow-hidden">
+              <div className="min-w-0">
+                <span className="text-[#526F7D] font-semibold text-[11px] block">Empresa Solicitante:</span>
+                <p className="text-sm font-bold text-[#233D49] truncate">
                   {pagoSeleccionado.empresa_nombre || 'Empresa Tenant'}
                 </p>
               </div>
-              <div>
-                <span className="text-[#526F7D] font-semibold">Monto Depositado:</span>
-                <p className="text-base font-extrabold text-[#233D49] tabular-nums font-mono">
+              <div className="min-w-0 text-right">
+                <span className="text-[#526F7D] font-semibold text-[11px] block">Monto Depositado:</span>
+                <p className="text-sm sm:text-base font-extrabold text-[#233D49] tabular-nums font-mono truncate">
                   ${Number(pagoSeleccionado.monto).toFixed(2)}
                 </p>
               </div>
-              <div>
-                <span className="text-[#526F7D] font-semibold">Plan a Renovar:</span>
-                <p className="font-bold text-[#233D49]">
+              <div className="min-w-0">
+                <span className="text-[#526F7D] font-semibold text-[11px] block">Plan a Renovar:</span>
+                <p className="font-bold text-[#233D49] truncate">
                   Plan {pagoSeleccionado.plan_nombre}
                 </p>
               </div>
-              <div>
-                <span className="text-[#526F7D] font-semibold">Estado Actual:</span>
-                <p className="font-bold text-[#233D49]">
+              <div className="min-w-0 text-right">
+                <span className="text-[#526F7D] font-semibold text-[11px] block">Estado Actual:</span>
+                <p className="font-bold text-[#233D49] truncate">
                   {pagoSeleccionado.estado}
                 </p>
               </div>
@@ -436,7 +437,7 @@ export const FacturacionSuperAdmin = () => {
                   <img
                     src={pagoSeleccionado.comprobante_url}
                     alt="Comprobante de Suscripción"
-                    className="max-h-60 mx-auto rounded-lg object-contain border border-[#CBC6B6]/40 shadow-sm"
+                    className="max-h-48 sm:max-h-56 mx-auto rounded-lg object-contain border border-[#CBC6B6]/40 shadow-sm"
                   />
                   <div className="pt-2">
                     <a
@@ -451,8 +452,8 @@ export const FacturacionSuperAdmin = () => {
                   </div>
                 </div>
               ) : (
-                <div className="p-6 rounded-xl bg-[#FAF8F5] border border-[#CBC6B6] text-center text-xs text-[#7D8F97]">
-                  <FileCheck size={28} className="mx-auto mb-1 text-[#526F7D]/50" />
+                <div className="p-5 rounded-xl bg-[#FAF8F5] border border-[#CBC6B6] text-center text-xs text-[#7D8F97]">
+                  <FileCheck size={26} className="mx-auto mb-1 text-[#526F7D]/50" />
                   <p className="font-semibold text-[#233D49]">Sin comprobante digital adjunto</p>
                   <p className="mt-0.5">El pago fue ingresado manualmente por el administrador.</p>
                 </div>
@@ -489,4 +490,3 @@ export const FacturacionSuperAdmin = () => {
 };
 
 export default FacturacionSuperAdmin;
-

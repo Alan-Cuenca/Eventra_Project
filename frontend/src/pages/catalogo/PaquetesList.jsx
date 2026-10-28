@@ -133,8 +133,8 @@ export const PaquetesList = () => {
 
       {/* Modal Confirmación Delete */}
       {deleteTarget && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="glass-card animate-fade-in" style={{ maxWidth: '400px', textAlign: 'center', border: '1px solid rgba(185,74,72,0.4)' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', overflowY: 'auto' }}>
+          <div className="glass-card animate-fade-in" style={{ maxWidth: '400px', width: '100%', textAlign: 'center', border: '1px solid rgba(185,74,72,0.4)', maxHeight: 'calc(100vh - 3rem)', overflowY: 'auto', margin: 'auto' }}>
             <AlertTriangle size={32} color="#e27d7c" style={{ margin: '0 auto 1rem' }} />
             <h3 style={{ marginBottom: '0.5rem' }}>¿Desactivar paquete?</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.85rem' }}>

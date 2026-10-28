@@ -115,7 +115,7 @@ export const obtenerActividades = async (req, res) => {
         a.estado,
         a.fecha_creacion,
         a.responsable_id,
-        COALESCE(u.nombre_completo, u.nombre, 'Usuario') AS responsable_nombre,
+        COALESCE(u.nombre_completo, 'Usuario') AS responsable_nombre,
         u.email  AS responsable_email,
         -- Contexto del evento al que pertenece la actividad
         e.id     AS evento_id,

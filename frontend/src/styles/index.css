@@ -694,6 +694,7 @@ img { max-width: 100%; display: block; }
   justify-content: center;
   z-index: 500;
   padding: 1rem;
+  overflow-y: auto;
   animation: fadeIn 0.2s ease;
 }
 
@@ -703,6 +704,9 @@ img { max-width: 100%; display: block; }
   box-shadow: var(--shadow-lg);
   width: 100%;
   max-width: 520px;
+  max-height: calc(100vh - 3.5rem);
+  overflow-y: auto;
+  margin: auto;
   padding: 2rem;
   animation: slideUp 0.25s ease;
   border: 1px solid var(--border-subtle);

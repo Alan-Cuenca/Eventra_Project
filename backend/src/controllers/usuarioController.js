@@ -19,8 +19,8 @@ export const obtenerUsuarios = async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT u.id, u.empresa_id, u.rol_id, 
-              COALESCE(u.nombre_completo, u.nombre) AS nombre_completo,
-              COALESCE(u.nombre_completo, u.nombre) AS nombre,
+              u.nombre_completo,
+              u.nombre_completo AS nombre,
               u.email, u.estado_activo, u.fecha_creacion,
               r.nombre AS rol_nombre
        FROM usuarios u
