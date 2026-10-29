@@ -478,4 +478,39 @@ export const eventraService = {
       return null;
     }
   },
+
+  // ==========================================
+  // SOLICITUDES DE MODIFICACIÓN (/api/solicitudes)
+  // ==========================================
+  async getSolicitudes() {
+    try {
+      const response = await api.get('/solicitudes');
+      if (Array.isArray(response)) return response;
+      if (response && Array.isArray(response.data)) return response.data;
+      return [];
+    } catch (err) {
+      console.warn('[eventraService] getSolicitudes error:', err.message);
+      throw err;
+    }
+  },
+
+  async crearSolicitud(solicitudData) {
+    try {
+      const response = await api.post('/solicitudes', solicitudData);
+      return response?.data || response;
+    } catch (err) {
+      console.warn('[eventraService] crearSolicitud error:', err.message);
+      throw err;
+    }
+  },
+
+  async actualizarEstadoSolicitud(id, estado) {
+    try {
+      const response = await api.put(`/solicitudes/${id}/estado`, { estado });
+      return response?.data || response;
+    } catch (err) {
+      console.warn('[eventraService] actualizarEstadoSolicitud error:', err.message);
+      throw err;
+    }
+  },
 };

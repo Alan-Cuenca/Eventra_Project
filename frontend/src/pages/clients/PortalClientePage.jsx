@@ -21,7 +21,8 @@ import {
   Building2,
   CalendarCheck,
   Moon,
-  Sun
+  Sun,
+  FileEdit
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
@@ -86,6 +87,14 @@ export const PortalClientePage = () => {
       titulo: 'Mis Cotizaciones',
       desc: 'Revisa presupuestos detallados y aprueba nuevas opciones de paquetes.',
       badge: 'Propuestas'
+    },
+    {
+      id: 'solicitudes',
+      to: '/portal-cliente/solicitudes',
+      icon: FileEdit,
+      titulo: 'Solicitar Cambios',
+      desc: 'Pide ajustes a tus eventos agendados (horarios, comensales, menú o decoración).',
+      badge: 'Requerimientos'
     },
     {
       id: 'reservas',

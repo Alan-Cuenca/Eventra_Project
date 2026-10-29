@@ -20,13 +20,26 @@ pool.on('error', (err, client) => {
   process.exit(-1);
 });
 
-// En entornos reales (Render / producción), asegura que las columnas requeridas existan en Supabase
+// En entornos reales (Render / producción), asegura que las tablas y columnas requeridas existan en Supabase
 if (process.env.NODE_ENV !== 'test') {
   pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS slug VARCHAR(100);').catch((err) => {
     console.warn('[db] Auto-verificación de columna slug en Supabase:', err.message);
   });
   pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS mensajes_chatbot_mes INTEGER DEFAULT 0;').catch((err) => {
     console.warn('[db] Auto-verificación de columna mensajes_chatbot_mes en Supabase:', err.message);
+  });
+  pool.query(`
+    CREATE TABLE IF NOT EXISTS solicitudes_modificacion (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      empresa_id INTEGER NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
+      evento_id UUID NOT NULL REFERENCES eventos(id) ON DELETE CASCADE,
+      cliente_id UUID REFERENCES clientes(id) ON DELETE SET NULL,
+      descripcion_cambio TEXT NOT NULL,
+      estado VARCHAR(50) DEFAULT 'Pendiente',
+      fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `).catch((err) => {
+    console.warn('[db] Auto-verificación de tabla solicitudes_modificacion en Supabase:', err.message);
   });
 }
 

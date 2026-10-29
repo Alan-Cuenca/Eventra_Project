@@ -27,6 +27,8 @@ import { Pricing }      from '../pages/public/Pricing';
 
 // ── Portal del Cliente (rol_id = 4) ─────────────────────────────────────────
 import { PortalClientePage } from '../pages/clients/PortalClientePage';
+import { SolicitudesCliente } from '../pages/portal/SolicitudesCliente';
+import { GestorSolicitudes } from '../pages/admin/GestorSolicitudes';
 
 // ── Panel de Gestión Interna ─────────────────────────────────────────────────
 import { DashboardPage }  from '../pages/dashboard/DashboardPage';
@@ -78,6 +80,11 @@ const ActividadesRouter = () => {
   return isTrabajador ? <MisActividades /> : <ActividadesList />;
 };
 
+const SolicitudesRouter = () => {
+  const { isCliente } = useAuth();
+  return isCliente ? <SolicitudesCliente /> : <GestorSolicitudes />;
+};
+
 export const AppRoutes = () => {
   return (
     <Routes>
@@ -99,6 +106,7 @@ export const AppRoutes = () => {
       {/* ── Portal Cliente exclusivo (rol 4) ──────────────────────────────── */}
       <Route element={<ProtectedRoute />}>
         <Route path="/portal-cliente" element={<PortalClientePage />} />
+        <Route path="/portal-cliente/solicitudes" element={<SolicitudesCliente />} />
       </Route>
 
       {/* ── Consola del Super Administrador (rol_id = 5 / ADMIN_GLOBAL) ──────── */}
@@ -146,6 +154,11 @@ export const AppRoutes = () => {
           </Route>
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR]} />}>
             <Route path="/pagos"          element={<PagosList />} />
+          </Route>
+
+          {/* Solicitudes de Modificación */}
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.CLIENTE]} />}>
+            <Route path="/solicitudes" element={<SolicitudesRouter />} />
           </Route>
 
           {/* Admin + Gerente únicamente */}

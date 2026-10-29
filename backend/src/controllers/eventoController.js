@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import { notificarNuevoEvento } from '../services/emailService.js';
 
 // Estados válidos del ciclo de vida de un evento
 const ESTADOS_VALIDOS = ['En Planificación', 'En Progreso', 'Finalizado', 'Cancelado'];
@@ -53,10 +54,44 @@ export const crearEvento = async (req, res) => {
       [empresa_id, reserva_id, titulo, descripcion || null]
     );
 
+    const nuevoEvento = result.rows[0];
+
+    // Disparar notificación por correo de nuevo evento de forma asíncrona
+    try {
+      const clienteQuery = await pool.query(
+        `SELECT
+           cl.email,
+           CONCAT(cl.nombres, ' ', cl.apellidos) AS cliente_nombre,
+           r.fecha_evento,
+           r.salon_o_lugar,
+           c.total_calculado
+         FROM reservas r
+         LEFT JOIN cotizaciones c ON r.cotizacion_id = c.id
+         LEFT JOIN clientes cl ON c.cliente_id = cl.id
+         WHERE r.id = $1 AND r.empresa_id = $2`,
+        [reserva_id, empresa_id]
+      );
+
+      if (clienteQuery?.rows?.length > 0 && clienteQuery.rows[0].email) {
+        const clData = clienteQuery.rows[0];
+        notificarNuevoEvento(clData.email, {
+          titulo,
+          fecha: clData.fecha_evento,
+          salon: clData.salon_o_lugar,
+          clienteNombre: clData.cliente_nombre,
+          montoTotal: clData.total_calculado,
+        }).catch((emailErr) => {
+          console.error('[eventoController] Error enviando correo de nuevo evento:', emailErr.message);
+        });
+      }
+    } catch (notifErr) {
+      console.error('[eventoController] Error preparando notificación de nuevo evento:', notifErr.message);
+    }
+
     return res.status(201).json({
       success: true,
       message: 'Evento creado exitosamente.',
-      data: result.rows[0],
+      data: nuevoEvento,
     });
 
   } catch (error) {

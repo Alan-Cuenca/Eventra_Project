@@ -11,9 +11,13 @@ import {
   validateSmtpConfig,
   getMailTransporter,
   sendMail,
+  enviarCorreoCore,
   buildWelcomeAdminEmail,
   sendWelcomeAdminEmail,
   sendInvitationEmail,
+  notificarNuevoEvento,
+  notificarPagoAprobado,
+  notificarModificacion,
 } from '../src/services/emailService.js';
 
 describe('emailService — Servicio Centralizado de Correo', () => {
@@ -171,6 +175,54 @@ describe('emailService — Servicio Centralizado de Correo', () => {
 
       expect(res.success).toBe(true);
       expect(res.messageId).toBeDefined();
+    });
+  });
+
+  describe('Notificaciones Automáticas y Plantillas de Sofisticación Sutil', () => {
+    beforeEach(() => {
+      process.env.EMAIL_SIMULATION_MODE = 'true';
+    });
+
+    it('enviarCorreoCore funciona en modo simulación', async () => {
+      const res = await enviarCorreoCore({
+        to: 'cliente@eventra.com',
+        subject: 'Prueba Core',
+        text: 'Cuerpo de prueba',
+      });
+      expect(res.success).toBe(true);
+      expect(res.simulated).toBe(true);
+    });
+
+    it('notificarNuevoEvento genera y despacha notificación formal', async () => {
+      const res = await notificarNuevoEvento('cliente@bodas.com', {
+        titulo: 'Boda Real Ana & Pedro',
+        fecha: '2026-11-20',
+        salon: 'Salón Imperial',
+        clienteNombre: 'Ana Gómez',
+        montoTotal: 12500,
+      });
+      expect(res.success).toBe(true);
+    });
+
+    it('notificarPagoAprobado genera y despacha notificación de abono', async () => {
+      const res = await notificarPagoAprobado('cliente@bodas.com', 3500, 'Boda Real Ana & Pedro');
+      expect(res.success).toBe(true);
+    });
+
+    it('notificarModificacion genera y despacha notificación de solicitud resuelta', async () => {
+      const resAprobada = await notificarModificacion('cliente@bodas.com', 'Aprobada', {
+        eventoNombre: 'Boda Real Ana & Pedro',
+        clienteNombre: 'Ana Gómez',
+        descripcionCambio: 'Añadir 2 mesas adicionales para 20 comensales',
+      });
+      expect(resAprobada.success).toBe(true);
+
+      const resRechazada = await notificarModificacion('cliente@bodas.com', 'Rechazada', {
+        eventoNombre: 'Boda Real Ana & Pedro',
+        clienteNombre: 'Ana Gómez',
+        descripcionCambio: 'Cambio de salón no factible por aforo',
+      });
+      expect(resRechazada.success).toBe(true);
     });
   });
 });

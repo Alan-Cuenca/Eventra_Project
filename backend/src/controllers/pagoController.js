@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 import { supabase } from '../config/supabase.js';
+import { notificarPagoAprobado } from '../services/emailService.js';
 
 // Estados y conceptos válidos para validación en el servidor
 const ESTADOS_VALIDOS  = ['Pendiente', 'En Revisión', 'Aprobado', 'Rechazado', 'Anulado'];
@@ -290,7 +291,37 @@ export const actualizarEstadoPago = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Pago no encontrado o no pertenece a la empresa.' });
     }
 
-    return res.status(200).json({ success: true, message: `Estado del pago actualizado a ${estado}.`, data: result.rows[0] });
+    const pagoActualizado = result.rows[0];
+
+    // Disparar notificación por correo al cliente si el pago fue Aprobado
+    if (estado === 'Aprobado') {
+      try {
+        const queryInfo = await pool.query(
+          `SELECT
+             p.monto,
+             e.titulo AS evento_titulo,
+             cl.email AS cliente_email
+           FROM pagos p
+           JOIN eventos e ON p.evento_id = e.id
+           LEFT JOIN reservas r ON e.reserva_id = r.id
+           LEFT JOIN cotizaciones c ON r.cotizacion_id = c.id
+           LEFT JOIN clientes cl ON c.cliente_id = cl.id
+           WHERE p.id = $1 AND p.empresa_id = $2`,
+          [id, empresa_id]
+        );
+
+        if (queryInfo?.rows?.length > 0 && queryInfo.rows[0].cliente_email) {
+          const { monto, evento_titulo, cliente_email } = queryInfo.rows[0];
+          notificarPagoAprobado(cliente_email, monto, evento_titulo).catch((emailErr) => {
+            console.error('[pagoController] Error enviando correo de pago aprobado:', emailErr.message);
+          });
+        }
+      } catch (notifErr) {
+        console.error('[pagoController] Error preparando correo de pago aprobado:', notifErr.message);
+      }
+    }
+
+    return res.status(200).json({ success: true, message: `Estado del pago actualizado a ${estado}.`, data: pagoActualizado });
   } catch (error) {
     console.error('[pagoController] Error en actualizarEstadoPago:', error.message);
     return res.status(500).json({ success: false, message: 'Error interno al actualizar estado del pago.' });

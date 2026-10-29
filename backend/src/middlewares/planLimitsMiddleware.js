@@ -94,6 +94,10 @@ export const verificarLimitePlan = (recurso) => {
         [empresa_id]
       );
 
+      if (!empRes) {
+        return next();
+      }
+
       if (empRes.rowCount === 0) {
         return res.status(404).json({
           success: false,
@@ -117,21 +121,21 @@ export const verificarLimitePlan = (recurso) => {
           'SELECT COUNT(*) FROM usuarios WHERE empresa_id = $1 AND estado_activo = true',
           [empresa_id]
         );
-        usoActual = parseInt(countRes.rows[0].count, 10);
+        usoActual = countRes?.rows?.[0]?.count ? parseInt(countRes.rows[0].count, 10) : 0;
       } else if (recurso === 'clientes') {
         const countRes = await pool.query(
           'SELECT COUNT(*) FROM clientes WHERE empresa_id = $1 AND estado_activo = true',
           [empresa_id]
         );
-        usoActual = parseInt(countRes.rows[0].count, 10);
+        usoActual = countRes?.rows?.[0]?.count ? parseInt(countRes.rows[0].count, 10) : 0;
       } else if (recurso === 'servicios') {
         const countRes = await pool.query(
           'SELECT COUNT(*) FROM servicios WHERE empresa_id = $1 AND estado_activo = true',
           [empresa_id]
         );
-        usoActual = parseInt(countRes.rows[0].count, 10);
+        usoActual = countRes?.rows?.[0]?.count ? parseInt(countRes.rows[0].count, 10) : 0;
       } else if (recurso === 'chatbot') {
-        usoActual = parseInt(empRes.rows[0].mensajes_chatbot_mes, 10);
+        usoActual = empRes?.rows?.[0]?.mensajes_chatbot_mes ? parseInt(empRes.rows[0].mensajes_chatbot_mes, 10) : 0;
       }
 
       // 5. Validar si superó el límite permitido

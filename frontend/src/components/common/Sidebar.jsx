@@ -15,6 +15,7 @@ import {
   CreditCard,
   UserCheck,
   ShieldCheck,
+  FileEdit,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
@@ -77,6 +78,12 @@ export const Sidebar = () => {
           label: 'Realizar Pago',
           icon: <CreditCard size={18} />,
           visible: isCliente,
+        },
+        {
+          to: '/solicitudes',
+          label: 'Solicitudes de Cambio',
+          icon: <FileEdit size={18} />,
+          visible: isAdmin || isGerente || isCliente,
         },
       ],
     },
