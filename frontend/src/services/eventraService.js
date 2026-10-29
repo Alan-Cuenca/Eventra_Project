@@ -542,9 +542,7 @@ export const eventraService = {
 
   async actualizarMiBranding(formDataOrPayload) {
     try {
-      const isFormData = typeof FormData !== 'undefined' && formDataOrPayload instanceof FormData;
-      const headers = isFormData ? { 'Content-Type': 'multipart/form-data' } : undefined;
-      const response = await api.put('/empresas/mi-branding', formDataOrPayload, { headers });
+      const response = await api.put('/empresas/mi-branding', formDataOrPayload);
       return response?.data || response;
     } catch (err) {
       console.warn('[eventraService] actualizarMiBranding error:', err.message);

@@ -122,9 +122,12 @@ export const ConfiguracionMarca = () => {
       setTimeout(() => setMensajeExito(''), 4500);
     } catch (err) {
       console.error('[ConfiguracionMarca] Error al guardar:', err);
-      setMensajeError(
-        err.response?.data?.message || 'Error al guardar los cambios de marca. Intenta nuevamente.'
-      );
+      const errorMsg =
+        err.data?.message ||
+        err.response?.data?.message ||
+        err.message ||
+        'Error al guardar los cambios de marca. Intenta nuevamente.';
+      setMensajeError(errorMsg);
     } finally {
       setGuardando(false);
     }
@@ -140,11 +143,11 @@ export const ConfiguracionMarca = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-12 animate-fade-in">
-      {/* Encabezado */}
-      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-[#CBC6B6]/60 pb-6">
+    <div className="max-w-7xl mx-auto space-y-8 pt-2 pb-12 animate-fade-in font-sans">
+      {/* Encabezado en Card Protectora "Sofisticación Sutil" */}
+      <div className="bg-white rounded-2xl border border-[#CBC6B6]/60 p-6 sm:p-8 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="flex items-center gap-2 mb-2">
             <span className="p-2 rounded-xl bg-[#526F7D]/10 text-[#526F7D]">
               <Palette size={20} />
             </span>
@@ -155,18 +158,18 @@ export const ConfiguracionMarca = () => {
           <h1 className="text-2xl md:text-3xl font-extrabold text-[#233D49] tracking-tight">
             Identidad Corporativa y Portal de Empresa
           </h1>
-          <p className="text-sm text-[#233D49]/70 mt-1">
+          <p className="text-sm text-[#233D49]/70 mt-1.5 max-w-2xl">
             Personaliza el logotipo, la paleta armónica y la bienvenida que tus clientes verán en su portal exclusivo.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           <button
             type="button"
             onClick={handleGuardarCambios}
             disabled={guardando}
-            className="btn btn-primary flex items-center gap-2 shadow-sm font-semibold"
-            style={{ minWidth: '160px' }}
+            className="btn btn-primary flex items-center justify-center gap-2 shadow-sm font-semibold py-3 px-6 rounded-xl"
+            style={{ minWidth: '170px' }}
           >
             {guardando ? (
               <>
@@ -181,7 +184,7 @@ export const ConfiguracionMarca = () => {
             )}
           </button>
         </div>
-      </header>
+      </div>
 
       {/* Alertas de Éxito / Error */}
       {mensajeExito && (

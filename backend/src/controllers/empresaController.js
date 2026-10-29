@@ -487,7 +487,12 @@ export const obtenerMiBranding = async (req, res) => {
  */
 export const actualizarMiBranding = async (req, res) => {
   try {
-    const empresa_id = req.user?.empresa_id;
+    let empresa_id = req.user?.empresa_id;
+
+    // Si es Super_Admin sin empresa_id fija, actualizar la empresa objetivo o la empresa 1 por defecto
+    if (!empresa_id && (Number(req.user?.rol_id) === 5 || req.user?.rol === 'Super_Admin' || req.user?.rol_nombre === 'Super_Admin')) {
+      empresa_id = req.body?.empresa_id ? Number(req.body.empresa_id) : 1;
+    }
 
     if (!empresa_id) {
       return res.status(400).json({
