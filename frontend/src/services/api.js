@@ -53,6 +53,36 @@ apiClient.interceptors.response.use(
         window.location.href = '/login';
       }
     }
+
+    // ── Manejo crítico: límite de plan SaaS alcanzado (403 Forbidden) ───────
+    let isPlanLimit = false;
+    if (error.response?.status === 403) {
+      const errorData = error.response?.data;
+      isPlanLimit =
+        errorData?.error === 'PLAN_LIMIT_EXCEEDED' ||
+        (typeof errorData?.message === 'string' &&
+          (errorData.message.toLowerCase().includes('límite') ||
+           errorData.message.toLowerCase().includes('limite') ||
+           errorData.message.toLowerCase().includes('plan')));
+
+      if (isPlanLimit) {
+        console.warn('[api] Límite de plan SaaS alcanzado:', errorData?.message);
+        if (typeof window !== 'undefined' && window.dispatchEvent) {
+          window.dispatchEvent(
+            new CustomEvent('eventra:plan-limit-exceeded', {
+              detail: {
+                message: errorData?.message || 'Has alcanzado el límite de tu plan de suscripción.',
+                recurso: errorData?.data?.recurso || errorData?.recurso,
+                plan: errorData?.data?.plan || errorData?.plan || 'Basico',
+                limite: errorData?.data?.limite_maximo || errorData?.limite,
+                actual: errorData?.data?.uso_actual || errorData?.actual,
+                data: errorData,
+              },
+            })
+          );
+        }
+      }
+    }
     // ─────────────────────────────────────────────────────────────────
 
     const message =
@@ -61,8 +91,9 @@ apiClient.interceptors.response.use(
       'Error al conectar con el servidor';
 
     const normalized = new Error(message);
-    normalized.status = error.response?.status ?? null;
-    normalized.data   = error.response?.data  ?? null;
+    normalized.status      = error.response?.status ?? null;
+    normalized.data        = error.response?.data   ?? null;
+    normalized.isPlanLimit = isPlanLimit;
 
     return Promise.reject(normalized);
   }

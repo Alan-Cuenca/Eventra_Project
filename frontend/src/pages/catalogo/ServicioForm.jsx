@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { api } from '../../services/api';
 import { Card } from '../../components/common/Card';
+import { PlanLimitAlert } from '../../components/ui/PlanLimitAlert';
 import { ArrowLeft, Save, Loader2, Edit2, PlusCircle, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 export const ServicioForm = () => {
@@ -18,6 +19,7 @@ export const ServicioForm = () => {
   const [loading, setLoading] = useState(isEditMode);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [planLimitError, setPlanLimitError] = useState(null);
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
@@ -43,6 +45,7 @@ export const ServicioForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setPlanLimitError(null);
     setSubmitting(true);
     try {
       if (isEditMode) await api.put(`/servicios/${id}`, { ...form, precio_base: parseFloat(form.precio_base) });
@@ -50,7 +53,11 @@ export const ServicioForm = () => {
       setSuccess(true);
       setTimeout(() => navigate('/servicios', { replace: true }), 1500);
     } catch (err) {
-      setError(err.message || 'Error al guardar el servicio.');
+      if (err.status === 403 || err.isPlanLimit) {
+        setPlanLimitError(err.message || 'Has alcanzado el límite de servicios de tu plan actual.');
+      } else {
+        setError(err.message || 'Error al guardar el servicio.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -80,8 +87,19 @@ export const ServicioForm = () => {
         </Link>
       </div>
 
-      <Card style={{ maxWidth: '600px' }}>
-        {loading ? (
+      <div style={{ maxWidth: '600px' }}>
+        {planLimitError && (
+          <div style={{ marginBottom: '1.25rem' }}>
+            <PlanLimitAlert
+              message={planLimitError}
+              recurso="servicios"
+              onClose={() => setPlanLimitError(null)}
+            />
+          </div>
+        )}
+
+        <Card>
+          {loading ? (
           <div style={{ padding: '2rem', textAlign: 'center' }}>
             <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', margin: '0 auto', color: 'var(--primary)' }} />
           </div>
@@ -122,6 +140,7 @@ export const ServicioForm = () => {
           </form>
         )}
       </Card>
+      </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );

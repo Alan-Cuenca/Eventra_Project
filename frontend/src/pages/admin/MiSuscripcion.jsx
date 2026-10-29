@@ -15,7 +15,9 @@ import {
   RefreshCw,
   Building2,
   X,
-  FileCheck
+  FileCheck,
+  BarChart3,
+  ArrowRight
 } from 'lucide-react';
 
 export const MiSuscripcion = () => {
@@ -27,6 +29,11 @@ export const MiSuscripcion = () => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [enviando, setEnviando] = useState(false);
   const [toast, setToast] = useState(null);
+  const [consumo, setConsumo] = useState({
+    plan: 'Basico',
+    limites: { usuarios: 3, clientes: 50, servicios: 20, chatbot: 300 },
+    uso: { usuarios: 3, clientes: 50, servicios: 20, chatbot: 300 },
+  });
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -40,8 +47,14 @@ export const MiSuscripcion = () => {
   const cargarHistorial = async () => {
     setLoading(true);
     try {
-      const data = await eventraService.getSuscripciones();
+      const [data, consumoData] = await Promise.all([
+        eventraService.getSuscripciones(),
+        eventraService.getConsumoSuscripcion(),
+      ]);
       setSuscripciones(Array.isArray(data) ? data : []);
+      if (consumoData && consumoData.limites && consumoData.uso) {
+        setConsumo(consumoData);
+      }
     } catch (error) {
       console.error('Error cargando suscripciones:', error);
       showToast('Error al cargar historial de suscripción', 'error');
@@ -143,86 +156,209 @@ export const MiSuscripcion = () => {
       </div>
 
       {/* Tarjetas KPI de Estado de Suscripción */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
         {/* KPI 1: Plan Actual */}
-        <div className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-5 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
-              Plan Contratado
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-[#526F7D]/10 text-[#526F7D] flex items-center justify-center">
-              <Zap size={18} />
+        <div className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-5 relative overflow-hidden flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
+                Plan Contratado
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-[#526F7D]/10 text-[#526F7D] flex items-center justify-center">
+                <Zap size={18} />
+              </div>
+            </div>
+            <div className="mt-3 flex items-baseline gap-2">
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-[#233D49]">
+                Plan {planActual}
+              </h3>
+              <span className="text-sm font-bold text-[#526F7D] tabular-nums">
+                ${costoActual.toFixed(2)}/mes
+              </span>
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-[#233D49]">
-              Plan {planActual}
-            </h3>
-            <span className="text-sm font-bold text-[#526F7D] tabular-nums">
-              ${costoActual.toFixed(2)}/mes
-            </span>
-          </div>
-          <p className="text-xs text-[#7D8F97] mt-1.5 flex items-center gap-1.5">
+          <p className="text-xs text-[#7D8F97] mt-3 pt-2 border-t border-[#CBC6B6]/40 flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[#4D9A72]"></span>
-            <span>Acceso completo a módulos y soporte empresarial</span>
+            <span>Módulos y soporte SaaS activo</span>
           </p>
         </div>
 
         {/* KPI 2: Estado de la Cuenta */}
-        <div className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-5 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
-              Estado de Cuenta
-            </span>
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-              tienePagoPendiente ? 'bg-[#C49A3A]/15 text-[#C49A3A]' : 'bg-[#4D9A72]/15 text-[#4D9A72]'
-            }`}>
-              <ShieldCheck size={18} />
+        <div className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-5 relative overflow-hidden flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
+                Estado de Cuenta
+              </span>
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                tienePagoPendiente ? 'bg-[#C49A3A]/15 text-[#C49A3A]' : 'bg-[#4D9A72]/15 text-[#4D9A72]'
+              }`}>
+                <ShieldCheck size={18} />
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-2">
+              <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
+                tienePagoPendiente 
+                  ? 'bg-[#C49A3A]/15 text-[#C49A3A] border-[#C49A3A]/30'
+                  : 'bg-[#4D9A72]/15 text-[#4D9A72] border-[#4D9A72]/30'
+              }`}>
+                {tienePagoPendiente ? 'En Revisión' : 'Activa y Vigente'}
+              </span>
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-2">
-            <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
-              tienePagoPendiente 
-                ? 'bg-[#C49A3A]/15 text-[#C49A3A] border-[#C49A3A]/30'
-                : 'bg-[#4D9A72]/15 text-[#4D9A72] border-[#4D9A72]/30'
-            }`}>
-              {tienePagoPendiente ? 'En Revisión' : 'Activa y Vigente'}
-            </span>
-          </div>
-          <p className="text-xs text-[#7D8F97] mt-2">
+          <p className="text-xs text-[#7D8F97] mt-3 pt-2 border-t border-[#CBC6B6]/40">
             {tienePagoPendiente 
               ? 'Comprobante en auditoría por el equipo global.' 
-              : 'Sin vencimientos ni suspensiones pendientes.'}
+              : 'Sin vencimientos pendientes.'}
           </p>
         </div>
 
         {/* KPI 3: Total Facturado */}
-        <div className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-5 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
-              Facturas Aprobadas
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-[#526F7D]/10 text-[#526F7D] flex items-center justify-center">
-              <FileText size={18} />
+        <div className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-5 relative overflow-hidden flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
+                Facturas Aprobadas
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-[#526F7D]/10 text-[#526F7D] flex items-center justify-center">
+                <FileText size={18} />
+              </div>
+            </div>
+            <div className="mt-3 flex items-baseline gap-2">
+              <p className="text-2xl sm:text-3xl font-extrabold text-[#233D49] tabular-nums">
+                {suscripciones.filter((s) => s.estado === 'Aprobado').length}
+              </p>
+              <span className="text-xs font-semibold text-[#7D8F97]">meses pagos</span>
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <p className="text-2xl sm:text-3xl font-extrabold text-[#233D49] tabular-nums">
-              {suscripciones.filter((s) => s.estado === 'Aprobado').length}
-            </p>
-            <span className="text-xs font-semibold text-[#7D8F97]">meses cancelados</span>
-          </div>
-          <p className="text-xs text-[#7D8F97] mt-1.5 flex items-center gap-1.5">
+          <p className="text-xs text-[#7D8F97] mt-3 pt-2 border-t border-[#CBC6B6]/40 flex items-center gap-1.5">
             <Clock size={13} className="text-[#526F7D]" />
-            <span>Facturación recurrente unificada</span>
+            <span>Facturación unificada</span>
+          </p>
+        </div>
+
+        {/* KPI 4: Consumo del Plan (Toss-style) */}
+        <div className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-5 relative overflow-hidden flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
+                Consumo del Plan
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-[#526F7D]/10 text-[#526F7D] flex items-center justify-center">
+                <BarChart3 size={18} />
+              </div>
+            </div>
+
+            <div className="mt-3 space-y-2">
+              {/* Barra: Usuarios */}
+              <div>
+                <div className="flex justify-between text-[11px] mb-0.5">
+                  <span className="font-semibold text-[#233D49]">Usuarios</span>
+                  <span className="font-mono text-[#7D8F97] font-bold">
+                    {consumo.uso?.usuarios ?? 3} / {consumo.limites?.usuarios ?? 3}
+                  </span>
+                </div>
+                <div className="w-full bg-[#F3F0E4] rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      (consumo.uso?.usuarios ?? 3) >= (consumo.limites?.usuarios ?? 3)
+                        ? 'bg-[#C95C5C]'
+                        : 'bg-[#526F7D]'
+                    }`}
+                    style={{
+                      width: `${Math.min(100, Math.round(((consumo.uso?.usuarios ?? 3) / (consumo.limites?.usuarios ?? 3)) * 100))}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Barra: Clientes */}
+              <div>
+                <div className="flex justify-between text-[11px] mb-0.5">
+                  <span className="font-semibold text-[#233D49]">Clientes</span>
+                  <span className="font-mono text-[#7D8F97] font-bold">
+                    {consumo.uso?.clientes ?? 50} / {consumo.limites?.clientes ?? 50}
+                  </span>
+                </div>
+                <div className="w-full bg-[#F3F0E4] rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      (consumo.uso?.clientes ?? 50) >= (consumo.limites?.clientes ?? 50)
+                        ? 'bg-[#C95C5C]'
+                        : 'bg-[#526F7D]'
+                    }`}
+                    style={{
+                      width: `${Math.min(100, Math.round(((consumo.uso?.clientes ?? 50) / (consumo.limites?.clientes ?? 50)) * 100))}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Barra: Mensajes de IA */}
+              <div>
+                <div className="flex justify-between text-[11px] mb-0.5">
+                  <span className="font-semibold text-[#233D49]">Mensajes de IA</span>
+                  <span className="font-mono text-[#7D8F97] font-bold">
+                    {consumo.uso?.chatbot ?? 300} / {consumo.limites?.chatbot ?? 300}
+                  </span>
+                </div>
+                <div className="w-full bg-[#F3F0E4] rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      (consumo.uso?.chatbot ?? 300) >= (consumo.limites?.chatbot ?? 300)
+                        ? 'bg-[#C95C5C]'
+                        : 'bg-[#526F7D]'
+                    }`}
+                    style={{
+                      width: `${Math.min(100, Math.round(((consumo.uso?.chatbot ?? 300) / (consumo.limites?.chatbot ?? 300)) * 100))}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-[11px] text-[#7D8F97] mt-3 pt-2 border-t border-[#CBC6B6]/40">
+            Cuota mensual asignada
           </p>
         </div>
 
       </div>
 
+      {/* Banner Destacado para Upgrade a Plan Premium */}
+      {!esPremium && (
+        <div className="bg-gradient-to-r from-[#F3F0E4] via-[#FAF8F2] to-white border border-[#C49A3A]/40 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-5 animate-fade-in">
+          <div className="space-y-1.5 max-w-2xl">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#C49A3A]/15 text-[#9A7422] border border-[#C49A3A]/30">
+              <Sparkles size={13} />
+              Oportunidad de Crecimiento SaaS
+            </span>
+            <h3 className="text-lg sm:text-xl font-extrabold text-[#233D49]">
+              ¿Tu empresa necesita más capacidad? Pasa a Premium por $99/mes
+            </h3>
+            <p className="text-xs sm:text-sm text-[#233D49]/80 leading-relaxed">
+              Desbloquea hasta <strong>200 clientes</strong> en tu directorio, <strong>10 colaboradores</strong> simultáneos, <strong>50 servicios</strong> en tu catálogo y hasta <strong>1,500 consultas mensuales</strong> con nuestro asistente inteligente <strong>EVARA AI 24/7</strong>.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setPlanSeleccionado('Premium');
+              const el = document.getElementById('seccion-formulario-pago');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white text-xs sm:text-sm font-bold shadow-md transition-all shrink-0 hover:scale-[1.02] cursor-pointer"
+          >
+            <span>Mejorar a Premium ($99)</span>
+            <ArrowRight size={16} />
+          </button>
+        </div>
+      )}
+
       {/* Formulario de Pago y Renovación de Mensualidad */}
-      <div className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-6 space-y-5">
+      <div id="seccion-formulario-pago" className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-6 space-y-5">
         <div className="flex items-center gap-2.5 pb-3 border-b border-[#CBC6B6]/60">
           <div className="w-9 h-9 rounded-xl bg-[#526F7D]/10 text-[#526F7D] flex items-center justify-center">
             <CreditCard size={18} />

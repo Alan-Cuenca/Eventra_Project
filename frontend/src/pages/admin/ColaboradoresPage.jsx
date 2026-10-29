@@ -9,6 +9,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { PlanLimitAlert } from '../../components/ui/PlanLimitAlert';
 import {
   Users,
   UserPlus,
@@ -39,6 +40,7 @@ export const ColaboradoresPage = () => {
   });
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError] = useState('');
+  const [planLimitError, setPlanLimitError] = useState(null);
   const [inviteSuccess, setInviteSuccess] = useState(null);
 
   // 1. Cargar colaboradores de la empresa
@@ -88,10 +90,15 @@ export const ColaboradoresPage = () => {
       cargarColaboradores();
     } catch (err) {
       console.error('[ColaboradoresPage] Error en invitarUsuario:', err);
-      setInviteError(
-        err.message ||
-        'Ocurrió un error al enviar la invitación. Verifica los datos e intenta nuevamente.'
-      );
+      if (err.status === 403 || err.isPlanLimit) {
+        setPlanLimitError(err.message || 'Has alcanzado el límite de usuarios de tu plan.');
+        setInviteError('');
+      } else {
+        setInviteError(
+          err.message ||
+          'Ocurrió un error al enviar la invitación. Verifica los datos e intenta nuevamente.'
+        );
+      }
     } finally {
       setInviteLoading(false);
     }
@@ -527,6 +534,17 @@ export const ColaboradoresPage = () => {
                 El usuario recibirá un correo con un enlace criptográfico válido por 48 horas para activar su cuenta.
               </p>
             </div>
+
+            {/* Alerta de Límite de Plan */}
+            {planLimitError && (
+              <div style={{ marginBottom: '16px' }}>
+                <PlanLimitAlert
+                  message={planLimitError}
+                  recurso="usuarios"
+                  onClose={() => setPlanLimitError(null)}
+                />
+              </div>
+            )}
 
             {/* Error dentro del modal */}
             {inviteError && (

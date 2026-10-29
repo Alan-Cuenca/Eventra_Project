@@ -468,4 +468,14 @@ export const eventraService = {
       throw err;
     }
   },
+
+  async getConsumoSuscripcion() {
+    try {
+      const response = await api.get('/suscripciones/consumo');
+      return response?.data || response;
+    } catch (err) {
+      console.warn('[eventraService] getConsumoSuscripcion error:', err.message);
+      return null;
+    }
+  },
 };

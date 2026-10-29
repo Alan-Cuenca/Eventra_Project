@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 import { supabase } from '../config/supabase.js';
+import { obtenerConsumoPlanEmpresa } from '../middlewares/planLimitsMiddleware.js';
 
 const ESTADOS_VALIDOS = ['En Revisión', 'Aprobado', 'Rechazado'];
 
@@ -258,4 +259,37 @@ export const actualizarEstadoSuscripcion = async (req, res) => {
     });
   }
 };
+
+/**
+ * Retorna el consumo y límites de la empresa en sesión.
+ * Permite renderizar las barras de uso del plan en el portal administrativo.
+ *
+ * @param {import('express').Request}  req
+ * @param {import('express').Response} res
+ */
+export const obtenerConsumoSuscripcion = async (req, res) => {
+  try {
+    const empresa_id = req.user?.empresa_id;
+    if (!empresa_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'No se identificó la empresa del usuario autenticado.',
+      });
+    }
+
+    const consumo = await obtenerConsumoPlanEmpresa(empresa_id);
+
+    return res.status(200).json({
+      success: true,
+      data: consumo,
+    });
+  } catch (error) {
+    console.error('[suscripcionController] Error en obtenerConsumoSuscripcion:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al consultar el consumo del plan de suscripción.',
+    });
+  }
+};
+
 

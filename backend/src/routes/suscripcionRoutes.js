@@ -4,6 +4,7 @@ import {
   registrarPagoSuscripcion,
   obtenerSuscripciones,
   actualizarEstadoSuscripcion,
+  obtenerConsumoSuscripcion,
 } from '../controllers/suscripcionController.js';
 import {
   verifyToken,
@@ -32,6 +33,18 @@ router.post(
   authorizeRoles([ROL_ADMINISTRADOR, ROL_GERENTE]),
   upload.single('comprobante'),
   registrarPagoSuscripcion
+);
+
+/**
+ * @route   GET /api/suscripciones/consumo
+ * @desc    Obtiene el uso y los límites del plan de la empresa
+ * @access  Private — Administrador (1) y Gerente (2)
+ */
+router.get(
+  '/consumo',
+  verifyToken,
+  authorizeRoles([ROL_ADMINISTRADOR, ROL_GERENTE]),
+  obtenerConsumoSuscripcion
 );
 
 /**

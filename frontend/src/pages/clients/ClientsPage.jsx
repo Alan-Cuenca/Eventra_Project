@@ -11,6 +11,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
+import { PlanLimitAlert } from '../../components/ui/PlanLimitAlert';
 import { eventraService } from '../../services/eventraService';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -155,6 +156,7 @@ export const ClientsPage = () => {
   const [showCreate, setShowCreate]   = useState(false);
   const [editTarget, setEditTarget]   = useState(null);   // cliente a editar
   const [deleteTarget, setDeleteTarget] = useState(null); // cliente a eliminar
+  const [planLimitError, setPlanLimitError] = useState(null);
 
   // Estado de operaciones
   const [submitting, setSubmitting]   = useState(false);
@@ -183,6 +185,7 @@ export const ClientsPage = () => {
   // ── CREAR — POST /api/clientes ────────────────────────────────────────────
   const handleCreate = async (form) => {
     setSubmitting(true);
+    setPlanLimitError(null);
     try {
       const created = await eventraService.createCliente(form);
       // Añadir el cliente creado al estado local sin recargar toda la lista
@@ -190,6 +193,9 @@ export const ClientsPage = () => {
       setShowCreate(false);
       showToast(`Cliente "${form.nombres} ${form.apellidos}" registrado.`);
     } catch (err) {
+      if (err.status === 403 || err.isPlanLimit) {
+        setPlanLimitError(err.message || 'Has alcanzado el límite de clientes de tu plan actual.');
+      }
       const msg = err.status === 409
         ? 'Ya existe un cliente con ese email.'
         : err.message || 'Error al registrar cliente.';
@@ -412,11 +418,20 @@ export const ClientsPage = () => {
 
       {/* ── MODAL: Crear Cliente ──────────────────────────────────────── */}
       {showCreate && (
-        <Modal title="Registrar Nuevo Cliente" onClose={() => setShowCreate(false)}>
+        <Modal title="Registrar Nuevo Cliente" onClose={() => { setShowCreate(false); setPlanLimitError(null); }}>
+          {planLimitError && (
+            <div style={{ marginBottom: '1rem' }}>
+              <PlanLimitAlert
+                message={planLimitError}
+                recurso="clientes"
+                onClose={() => setPlanLimitError(null)}
+              />
+            </div>
+          )}
           <ClienteFormModal
             onSubmit={handleCreate}
             submitting={submitting}
-            onCancel={() => setShowCreate(false)}
+            onCancel={() => { setShowCreate(false); setPlanLimitError(null); }}
           />
         </Modal>
       )}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { Card } from '../../components/common/Card';
+import { PlanLimitAlert } from '../../components/ui/PlanLimitAlert';
 import { eventraService } from '../../services/eventraService';
 import { Save, X, Loader2, ArrowLeft, Calendar, Users, Package } from 'lucide-react';
 
@@ -23,6 +24,7 @@ export const EventoForm = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [planLimitError, setPlanLimitError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,6 +64,7 @@ export const EventoForm = () => {
     e.preventDefault();
     setSubmitting(true);
     setError('');
+    setPlanLimitError(null);
 
     try {
       if (isEditing) {
@@ -71,7 +74,11 @@ export const EventoForm = () => {
       }
       navigate('/eventos');
     } catch (err) {
-      setError(err.message || 'Error al guardar el evento.');
+      if (err.status === 403 || err.isPlanLimit) {
+        setPlanLimitError(err.message || 'Has alcanzado el límite permitido para tu plan actual.');
+      } else {
+        setError(err.message || 'Error al guardar el evento.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -89,6 +96,16 @@ export const EventoForm = () => {
           {isEditing ? 'Editar Evento' : 'Nuevo Evento'}
         </h1>
       </div>
+
+      {planLimitError && (
+        <div style={{ marginBottom: '1.5rem' }}>
+          <PlanLimitAlert
+            message={planLimitError}
+            recurso="eventos"
+            onClose={() => setPlanLimitError(null)}
+          />
+        </div>
+      )}
 
       {error && (
         <div style={{ padding: '1rem', background: 'var(--danger-light)', color: 'var(--danger)', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem' }}>

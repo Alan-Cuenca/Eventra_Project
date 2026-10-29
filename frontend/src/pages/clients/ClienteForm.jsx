@@ -10,6 +10,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { api } from '../../services/api';
 import { Card } from '../../components/common/Card';
+import { PlanLimitAlert } from '../../components/ui/PlanLimitAlert';
 import {
   User,
   Mail,
@@ -41,6 +42,7 @@ export const ClienteForm = () => {
   const [loading, setLoading]     = useState(isEditMode); // carga datos si es edición
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]         = useState('');
+  const [planLimitError, setPlanLimitError] = useState(null);
   const [success, setSuccess]     = useState(false);
   const [notFound, setNotFound]   = useState(false);
 
@@ -84,6 +86,7 @@ export const ClienteForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setPlanLimitError(null);
     setSubmitting(true);
 
     try {
@@ -99,6 +102,10 @@ export const ClienteForm = () => {
       // Redirigir a /clientes tras 1.5 s para que el usuario vea el mensaje de éxito
       setTimeout(() => navigate('/clientes', { replace: true }), 1500);
     } catch (err) {
+      if (err.status === 403 || err.isPlanLimit) {
+        setPlanLimitError(err.message || 'Has alcanzado el límite de clientes de tu plan actual.');
+        return;
+      }
       let msg = 'Error inesperado. Intenta de nuevo.';
       if (err.status === 409) msg = 'Ya existe un cliente registrado con ese email.';
       else if (err.status === 400) msg = err.message || 'Completa los campos obligatorios.';
@@ -200,6 +207,16 @@ export const ClienteForm = () => {
       </div>
 
       <div style={{ maxWidth: '600px' }}>
+        {planLimitError && (
+          <div style={{ marginBottom: '1.25rem' }}>
+            <PlanLimitAlert
+              message={planLimitError}
+              recurso="clientes"
+              onClose={() => setPlanLimitError(null)}
+            />
+          </div>
+        )}
+
         <Card>
           {/* Error */}
           {error && (
