@@ -483,7 +483,12 @@ export const obtenerInfoPortalEmpresa = async (req, res) => {
 
   try {
     const result = await pool.query(
-      `SELECT id, nombre_comercial, slug, plan_suscripcion, estado_activo
+      `SELECT id, nombre_comercial, slug, plan_suscripcion, estado_activo,
+              logo_url,
+              COALESCE(paleta_colores, 'sofisticacion_sutil') AS paleta_colores,
+              COALESCE(marca_agua_activa, true) AS marca_agua_activa,
+              portal_titulo,
+              portal_descripcion
        FROM empresas
        WHERE LOWER(slug) = LOWER($1)`,
       [slug.trim()]

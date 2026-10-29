@@ -566,3 +566,4 @@ export const ReportesPage = () => {
 };
 
 export default ReportesPage;
+

@@ -23,6 +23,11 @@ CREATE TABLE IF NOT EXISTS empresas (
     plan_suscripcion     VARCHAR(50)  DEFAULT 'Basico',
     estado_activo        BOOLEAN      DEFAULT true,
     mensajes_chatbot_mes INTEGER      DEFAULT 0,
+    logo_url             VARCHAR(255),
+    paleta_colores       VARCHAR(50)  DEFAULT 'sofisticacion_sutil',
+    marca_agua_activa    BOOLEAN      DEFAULT true,
+    portal_titulo        VARCHAR(150),
+    portal_descripcion   TEXT,
     fecha_registro       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -41,6 +46,18 @@ ALTER TABLE empresas
 
 ALTER TABLE empresas
     ADD COLUMN IF NOT EXISTS logo_url VARCHAR(255);
+
+ALTER TABLE empresas
+    ADD COLUMN IF NOT EXISTS paleta_colores VARCHAR(50) DEFAULT 'sofisticacion_sutil';
+
+ALTER TABLE empresas
+    ADD COLUMN IF NOT EXISTS marca_agua_activa BOOLEAN DEFAULT true;
+
+ALTER TABLE empresas
+    ADD COLUMN IF NOT EXISTS portal_titulo VARCHAR(150);
+
+ALTER TABLE empresas
+    ADD COLUMN IF NOT EXISTS portal_descripcion TEXT;
 
 -- Asignar logotipo por defecto a empresas históricas (ej. Helados La Catedral)
 UPDATE empresas

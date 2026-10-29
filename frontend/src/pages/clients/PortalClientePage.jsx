@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useBranding } from '../../context/ThemeBrandingContext';
+import { WatermarkOverlay } from '../../components/common/WatermarkOverlay';
 import { eventraService } from '../../services/eventraService';
 import {
   CalendarDays,
@@ -29,10 +31,15 @@ import logoImg from '../../assets/logo.png';
 export const PortalClientePage = () => {
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+  const { branding } = useBranding();
   const navigate = useNavigate();
 
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const brandLogo = branding?.logo_url || logoImg;
+  const brandName = branding?.nombre_comercial || 'EVENTRA';
+  const brandTagline = branding?.portal_titulo || 'Seguimiento Exclusivo de Recepciones';
 
   useEffect(() => {
     const fetchClientData = async () => {
@@ -107,27 +114,28 @@ export const PortalClientePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F3F0E4] text-[#233D49] flex flex-col font-sans selection:bg-[#4D7182] selection:text-white">
+    <div className="min-h-screen bg-[#F3F0E4] text-[#233D49] flex flex-col font-sans selection:bg-[#4D7182] selection:text-white relative">
+      <WatermarkOverlay />
       
       {/* ── Top Bar Oficial "Sofisticación Sutil" ─────────────────────── */}
       <header className="sticky top-0 z-50 bg-[#F3F0E4]/95 backdrop-blur-md border-b border-[#CEC8B8] px-4 sm:px-8 h-20 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img
-            src={logoImg}
-            alt="EVENTRA"
+            src={brandLogo}
+            alt={brandName}
             className="w-10 h-10 rounded-xl bg-white p-1 border border-[#CEC8B8] object-contain shadow-sm"
           />
           <div>
             <div className="flex items-center gap-1.5">
               <span className="text-lg font-bold tracking-tight text-[#233D49]">
-                EVENTRA
+                {brandName}
               </span>
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#4D7182]/15 text-[#4D7182]">
                 Portal Cliente
               </span>
             </div>
             <span className="text-xs text-[#4D7182] font-medium hidden sm:block">
-              Seguimiento Exclusivo de Recepciones
+              {brandTagline}
             </span>
           </div>
         </div>

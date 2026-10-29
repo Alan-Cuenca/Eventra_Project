@@ -41,7 +41,9 @@ export const obtenerResumenReportes = async (req, res) => {
     ] = await Promise.all([
       // 1. Membrete de la Empresa
       pool.query(
-        `SELECT id, nombre_comercial, ruc, slug, plan_suscripcion, logo_url
+        `SELECT id, nombre_comercial, ruc, slug, plan_suscripcion, logo_url,
+                COALESCE(paleta_colores, 'sofisticacion_sutil') AS paleta_colores,
+                COALESCE(marca_agua_activa, true) AS marca_agua_activa
          FROM empresas
          WHERE id = $1`,
         [empresa_id]
@@ -205,6 +207,8 @@ export const obtenerResumenReportes = async (req, res) => {
         slug: empresaData.slug,
         plan_suscripcion: empresaData.plan_suscripcion,
         logo_url: empresaData.logo_url,
+        paleta_colores: empresaData.paleta_colores || 'sofisticacion_sutil',
+        marca_agua_activa: empresaData.marca_agua_activa !== false,
         fecha_emision: new Date().toISOString(),
         usuario_responsable: req.user.nombre_completo || req.user.email,
       },
@@ -236,3 +240,4 @@ export const obtenerResumenReportes = async (req, res) => {
     });
   }
 };
+

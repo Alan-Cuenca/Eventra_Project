@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
+import { supabase } from '../config/supabase.js';
 import { generarPasswordTemporal } from '../utils/passwordGenerator.js';
 import { sendWelcomeAdminEmail } from '../services/emailService.js';
 
@@ -382,7 +383,8 @@ export const obtenerEmpresaPublicaPorSlug = async (req, res) => {
     }
 
     const result = await pool.query(
-      `SELECT id, nombre_comercial, slug, plan_suscripcion, estado_activo
+      `SELECT id, nombre_comercial, slug, plan_suscripcion, estado_activo,
+              logo_url, paleta_colores, marca_agua_activa, portal_titulo, portal_descripcion
        FROM empresas
        WHERE LOWER(slug) = LOWER($1)`,
       [slug.trim()]
@@ -404,6 +406,224 @@ export const obtenerEmpresaPublicaPorSlug = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Error al consultar los datos del portal.',
+    });
+  }
+};
+
+export const PALETAS_VALIDAS = [
+  'sofisticacion_sutil',
+  'bosque_olivo',
+  'terracota_real',
+  'champagne_gala',
+  'lavanda_imperial',
+];
+
+/**
+ * Obtiene la configuración de marca blanca (Branding) de la empresa del usuario autenticado.
+ * Disponible para roles 1 (Admin), 2 (Gerente), 3 (Trabajador) y 4 (Cliente).
+ */
+export const obtenerMiBranding = async (req, res) => {
+  try {
+    const empresa_id = req.user?.empresa_id;
+
+    if (!empresa_id) {
+      // Si es un Super Admin sin empresa asignada, retorna branding institucional EVENTRA
+      return res.status(200).json({
+        success: true,
+        data: {
+          id: null,
+          nombre_comercial: 'EVENTRA',
+          ruc: '1799999999001',
+          slug: 'eventra',
+          logo_url: null,
+          paleta_colores: 'sofisticacion_sutil',
+          marca_agua_activa: false,
+          portal_titulo: 'Portal de Eventos EVENTRA',
+          portal_descripcion: 'Gestión inteligente y sofisticada de eventos sociales y corporativos.',
+        },
+      });
+    }
+
+    const result = await pool.query(
+      `SELECT 
+         id, 
+         nombre_comercial, 
+         ruc, 
+         slug, 
+         logo_url, 
+         COALESCE(paleta_colores, 'sofisticacion_sutil') AS paleta_colores, 
+         COALESCE(marca_agua_activa, true) AS marca_agua_activa, 
+         portal_titulo, 
+         portal_descripcion
+       FROM empresas
+       WHERE id = $1`,
+      [empresa_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Empresa no encontrada.',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error('[empresaController] Error en obtenerMiBranding:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno al consultar el branding de la empresa.',
+    });
+  }
+};
+
+/**
+ * Actualiza la configuración de marca blanca (Branding) de la empresa.
+ * Exclusivo para el Administrador de la empresa (Rol 1).
+ * Filtra estrictamente por req.user.empresa_id (Anti-IDOR).
+ */
+export const actualizarMiBranding = async (req, res) => {
+  try {
+    const empresa_id = req.user?.empresa_id;
+
+    if (!empresa_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'No se identificó la empresa del usuario autenticado.',
+      });
+    }
+
+    const {
+      paleta_colores,
+      marca_agua_activa,
+      portal_titulo,
+      portal_descripcion,
+      restablecer_logo,
+    } = req.body;
+
+    // Validar paleta si se envía
+    if (paleta_colores && !PALETAS_VALIDAS.includes(paleta_colores)) {
+      return res.status(400).json({
+        success: false,
+        message: `Paleta no válida. Opciones permitidas: ${PALETAS_VALIDAS.join(', ')}`,
+      });
+    }
+
+    // Manejo de carga de logotipo con multer y Supabase Storage
+    let nuevoLogoUrl = undefined;
+
+    if (req.file) {
+      const file = req.file;
+      if (supabase) {
+        const fileExt = file.originalname ? file.originalname.split('.').pop() : 'png';
+        const fileName = `logo_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `logos/${empresa_id}/${fileName}`;
+
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from('comprobantes')
+            .upload(filePath, file.buffer, {
+              contentType: file.mimetype,
+              upsert: true,
+            });
+
+          if (uploadError) {
+            console.warn('[empresaController] Falló subida a bucket comprobantes, usando Data URL:', uploadError.message);
+            nuevoLogoUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+          } else {
+            const { data: publicUrlData } = supabase.storage
+              .from('comprobantes')
+              .getPublicUrl(filePath);
+            nuevoLogoUrl = publicUrlData.publicUrl;
+          }
+        } catch (storageErr) {
+          console.warn('[empresaController] Excepción en Supabase Storage:', storageErr.message);
+          nuevoLogoUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+        }
+      } else {
+        nuevoLogoUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+      }
+    } else if (restablecer_logo === 'true' || restablecer_logo === true) {
+      nuevoLogoUrl = null;
+    }
+
+    // Construcción dinámica de campos a actualizar
+    const campos = [];
+    const valores = [];
+    let idx = 1;
+
+    if (paleta_colores !== undefined) {
+      campos.push(`paleta_colores = $${idx++}`);
+      valores.push(paleta_colores);
+    }
+
+    if (marca_agua_activa !== undefined) {
+      const boolMarca = String(marca_agua_activa) === 'true';
+      campos.push(`marca_agua_activa = $${idx++}`);
+      valores.push(boolMarca);
+    }
+
+    if (portal_titulo !== undefined) {
+      campos.push(`portal_titulo = $${idx++}`);
+      valores.push(portal_titulo ? String(portal_titulo).trim() : null);
+    }
+
+    if (portal_descripcion !== undefined) {
+      campos.push(`portal_descripcion = $${idx++}`);
+      valores.push(portal_descripcion ? String(portal_descripcion).trim() : null);
+    }
+
+    if (nuevoLogoUrl !== undefined) {
+      campos.push(`logo_url = $${idx++}`);
+      valores.push(nuevoLogoUrl);
+    }
+
+    if (campos.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No se enviaron datos para actualizar.',
+      });
+    }
+
+    valores.push(empresa_id);
+    const updateSql = `
+      UPDATE empresas
+      SET ${campos.join(', ')}
+      WHERE id = $${idx}
+      RETURNING 
+        id, 
+        nombre_comercial, 
+        ruc, 
+        slug, 
+        logo_url, 
+        COALESCE(paleta_colores, 'sofisticacion_sutil') AS paleta_colores, 
+        COALESCE(marca_agua_activa, true) AS marca_agua_activa, 
+        portal_titulo, 
+        portal_descripcion
+    `;
+
+    const result = await pool.query(updateSql, valores);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Empresa no encontrada.',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Configuración de marca actualizada exitosamente.',
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error('[empresaController] Error en actualizarMiBranding:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno al actualizar el branding de la empresa.',
     });
   }
 };

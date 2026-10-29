@@ -1,13 +1,81 @@
 import express from 'express';
+import multer from 'multer';
 import {
   obtenerEmpresas,
   crearEmpresa,
   actualizarPlanEmpresa,
   suspenderEmpresa,
+  obtenerMiBranding,
+  actualizarMiBranding,
 } from '../controllers/empresaController.js';
-import { verifyToken, authorizeSuperAdmin } from '../middlewares/authMiddleware.js';
+import {
+  verifyToken,
+  authorizeRoles,
+  authorizeSuperAdmin,
+  ROL_SUPER_ADMIN,
+  ROL_ADMINISTRADOR,
+  ROL_GERENTE,
+  ROL_TRABAJADOR,
+  ROL_CLIENTE,
+} from '../middlewares/authMiddleware.js';
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max
+});
 
 const router = express.Router();
+
+/**
+ * =============================================================================
+ * RUTAS DE MARCA BLANCA / BRANDING DEL TENANT
+ * =============================================================================
+ * Accesible para usuarios autenticados de la empresa inquilina.
+ * =============================================================================
+ */
+
+/**
+ * @openapi
+ * /api/empresas/mi-branding:
+ *   get:
+ *     summary: Retorna la identidad y configuración de marca blanca de la empresa del usuario
+ *     tags: [Branding Empresa]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Configuración de marca obtenida exitosamente
+ *       401:
+ *         description: No autenticado
+ */
+router.get(
+  '/mi-branding',
+  verifyToken,
+  authorizeRoles([ROL_ADMINISTRADOR, ROL_GERENTE, ROL_TRABAJADOR, ROL_CLIENTE, ROL_SUPER_ADMIN]),
+  obtenerMiBranding
+);
+
+/**
+ * @openapi
+ * /api/empresas/mi-branding:
+ *   put:
+ *     summary: Actualiza logotipo, paleta, marca de agua y textos del portal de la empresa
+ *     tags: [Branding Empresa]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Marca actualizada exitosamente
+ *       403:
+ *         description: Exclusivo para Administrador de la empresa
+ */
+router.put(
+  '/mi-branding',
+  verifyToken,
+  authorizeRoles([ROL_ADMINISTRADOR]),
+  upload.single('logo'),
+  actualizarMiBranding
+);
 
 /**
  * =============================================================================
@@ -18,7 +86,7 @@ const router = express.Router();
  * =============================================================================
  */
 
-// Todas las rutas en este router requieren autenticación y rol Super_Admin
+// Las siguientes rutas administrativas requieren autenticación y rol Super_Admin
 router.use(verifyToken, authorizeSuperAdmin);
 
 /**

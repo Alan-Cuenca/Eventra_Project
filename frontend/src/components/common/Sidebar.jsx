@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useBranding } from '../../context/ThemeBrandingContext';
 import {
   CalendarDays,
   Users,
@@ -17,11 +18,17 @@ import {
   ShieldCheck,
   FileEdit,
   BarChart3,
+  Palette,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
 export const Sidebar = () => {
-  const { roleId, isAdmin, isGerente, isTrabajador, isCliente } = useAuth();
+  const { roleId, isAdmin, isGerente, isTrabajador, isCliente, isSuperAdmin } = useAuth();
+  const { branding } = useBranding();
+
+  const brandLogo = (!isSuperAdmin && branding?.logo_url) ? branding.logo_url : logoImg;
+  const brandName = (!isSuperAdmin && branding?.nombre_comercial) ? branding.nombre_comercial : 'EVENTRA';
+  const brandTagline = (!isSuperAdmin && branding?.portal_titulo) ? branding.portal_titulo : 'Gestión Inteligente de Eventos';
 
   const navGroups = [
     {
@@ -138,6 +145,12 @@ export const Sidebar = () => {
           icon: <ShieldCheck size={18} />,
           visible: isAdmin,
         },
+        {
+          to: '/configuracion-marca',
+          label: 'Identidad y Portal',
+          icon: <Palette size={18} />,
+          visible: isAdmin,
+        },
       ],
     },
   ];
@@ -146,10 +159,10 @@ export const Sidebar = () => {
     <aside className="sidebar">
       {/* Brand */}
       <div className="sidebar-brand">
-        <img src={logoImg} alt="EVENTRA Logo" className="sidebar-logo" />
-        <div>
-          <div className="sidebar-brand-name">EVENTRA</div>
-          <div className="sidebar-brand-tagline">Gestión Inteligente de Eventos</div>
+        <img src={brandLogo} alt={`${brandName} Logo`} className="sidebar-logo object-contain" />
+        <div className="overflow-hidden">
+          <div className="sidebar-brand-name truncate" title={brandName}>{brandName}</div>
+          <div className="sidebar-brand-tagline truncate" title={brandTagline}>{brandTagline}</div>
         </div>
       </div>
 
@@ -188,10 +201,10 @@ export const Sidebar = () => {
             marginBottom: '0.15rem',
           }}
         >
-          EVENTRA
+          {brandName}
         </div>
         <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-          Sistema de Gestión de Eventos
+          Operado con tecnología EVENTRA
         </div>
         <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
           Plataforma Protegida

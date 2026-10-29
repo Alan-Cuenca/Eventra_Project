@@ -16,6 +16,7 @@ import { PortalRedirect } from '../pages/auth/PortalRedirect';
 import { CompletarRegistro } from '../pages/auth/CompletarRegistro';
 import { PrimerLoginCambioPassword } from '../pages/auth/PrimerLoginCambioPassword';
 import { ColaboradoresPage } from '../pages/admin/ColaboradoresPage';
+import { ConfiguracionMarca } from '../pages/admin/ConfiguracionMarca';
 
 // ── Sitio Web Público SaaS EVENTRA (Multi-página) ─────────────────────────
 import { PublicLayout } from '../pages/public/PublicLayout';
@@ -184,10 +185,11 @@ export const AppRoutes = () => {
             <Route path="/reportes" element={<ReportesPage />} />
           </Route>
 
-          {/* Admin únicamente (Gestión de Equipo, Colaboradores y Suscripción SaaS) */}
+          {/* Admin únicamente (Gestión de Equipo, Colaboradores, Suscripción SaaS y Marca Blanca) */}
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
             <Route path="/colaboradores" element={<ColaboradoresPage />} />
             <Route path="/mi-suscripcion" element={<MiSuscripcion />} />
+            <Route path="/configuracion-marca" element={<ConfiguracionMarca />} />
           </Route>
         </Route>
       </Route>

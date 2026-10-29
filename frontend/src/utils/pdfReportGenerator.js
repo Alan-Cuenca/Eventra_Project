@@ -2,9 +2,10 @@
  * pdfReportGenerator.js
  * =============================================================================
  * Generador Modular de Reportes Corporativos en PDF para EVENTRA SaaS.
- * Diseñado bajo la identidad visual "Sofisticación Sutil":
+ * Diseñado bajo la identidad visual "Sofisticación Sutil" y soporte White-Label:
  *  - Membrete Corporativo Minimalista con datos y logo de la empresa.
- *  - Paleta: #EEEBDD (Crema), #233D49 (Azul Oscuro), #526F7D (Azul Grisáceo), #CBC6B6 (Borde Beige).
+ *  - Paletas Dinámicas Curadas (Sofisticación Sutil, Bosque Olivo, Terracota Real, Champagne Gala, Lavanda Imperial).
+ *  - Marca de Agua Corporativa no intrusiva opcional por página.
  *  - Tablas limpias con jsPDF y jspdf-autotable.
  * =============================================================================
  */
@@ -12,14 +13,50 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+export const PALETAS_RGB = {
+  sofisticacion_sutil: {
+    primary: [82, 111, 125],    // #526F7D
+    bg: [238, 235, 221],         // #EEEBDD Crema
+    border: [203, 198, 182],     // #CBC6B6 Beige
+    text: [35, 61, 73],          // #233D49 Azul Oscuro
+  },
+  bosque_olivo: {
+    primary: [86, 107, 89],     // #566B59
+    bg: [244, 243, 238],        // #F4F3EE
+    border: [213, 211, 200],    // #D5D3C8
+    text: [36, 48, 38],         // #243026
+  },
+  terracota_real: {
+    primary: [140, 90, 75],     // #8C5A4B
+    bg: [246, 241, 235],        // #F6F1EB
+    border: [222, 207, 194],    // #DECFC2
+    text: [56, 38, 32],         // #382620
+  },
+  champagne_gala: {
+    primary: [125, 107, 77],    // #7D6B4D
+    bg: [247, 245, 240],        // #F7F5F0
+    border: [223, 216, 200],    // #DFD8C8
+    text: [46, 41, 34],         // #2E2922
+  },
+  lavanda_imperial: {
+    primary: [104, 90, 124],    // #685A7C
+    bg: [244, 242, 247],        // #F4F2F7
+    border: [211, 205, 217],    // #D3CDD9
+    text: [43, 35, 56],         // #2B2338
+  },
+};
+
 /**
  * Convierte una URL de imagen a Base64 / DataURL para ser incrustada en jsPDF.
- * @param {string} url - Ruta de la imagen (ej. /logo_Helados_Catedral.jpg)
+ * @param {string} url - Ruta de la imagen (ej. /logo_Helados_Catedral.jpg o data URL)
  * @returns {Promise<string|null>}
  */
 const cargarImagenBase64 = (url) => {
   return new Promise((resolve) => {
     if (!url) return resolve(null);
+    if (typeof url === 'string' && url.startsWith('data:image')) {
+      return resolve(url);
+    }
     const img = new Image();
     img.crossOrigin = 'Anonymous';
     img.onload = () => {
@@ -45,6 +82,26 @@ const cargarImagenBase64 = (url) => {
 };
 
 /**
+ * Dibuja un monograma tipográfico minimalista cuando la empresa no cuenta con logo imagen.
+ */
+const dibujarMonograma = (doc, nombre = 'EV', x, y, paleta = PALETAS_RGB.sofisticacion_sutil) => {
+  const iniciales = nombre
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join('') || 'EV';
+
+  doc.setFillColor(...paleta.primary);
+  doc.roundedRect(x, y, 20, 20, 3, 3, 'F');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(255, 255, 255);
+  doc.text(iniciales, x + 10, y + 12.5, { align: 'center' });
+};
+
+/**
  * Genera el membrete corporativo minimalista en la parte superior del documento.
  * @param {jsPDF} doc - Instancia del documento jsPDF
  * @param {object} membrete - Datos de la empresa emisora
@@ -52,6 +109,9 @@ const cargarImagenBase64 = (url) => {
  * @param {string|null} logoBase64 - Imagen en formato DataURL
  */
 const dibujarMembrete = (doc, membrete = {}, tituloReporte = 'Reporte Corporativo', logoBase64 = null) => {
+  const paletaKey = membrete.paleta_colores || 'sofisticacion_sutil';
+  const paleta = PALETAS_RGB[paletaKey] || PALETAS_RGB.sofisticacion_sutil;
+
   const pageWidth = doc.internal.pageSize.getWidth();
   const startX = 14;
   const startY = 12;
@@ -61,29 +121,29 @@ const dibujarMembrete = (doc, membrete = {}, tituloReporte = 'Reporte Corporativ
     try {
       doc.addImage(logoBase64, 'PNG', startX, startY, 20, 20);
     } catch {
-      dibujarMonograma(doc, membrete.nombre_comercial, startX, startY);
+      dibujarMonograma(doc, membrete.nombre_comercial, startX, startY, paleta);
     }
   } else {
-    dibujarMonograma(doc, membrete.nombre_comercial, startX, startY);
+    dibujarMonograma(doc, membrete.nombre_comercial, startX, startY, paleta);
   }
 
   // 2. Datos de la Empresa (Lado izquierdo, junto al logo)
   const textX = startX + 24;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
-  doc.setTextColor(35, 61, 73); // #233D49
+  doc.setTextColor(...paleta.text);
   doc.text(membrete.nombre_comercial || 'EVENTRA SaaS Partner', textX, startY + 6);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
-  doc.setTextColor(82, 111, 125); // #526F7D
+  doc.setTextColor(...paleta.primary);
   doc.text(`RUC: ${membrete.ruc || '9999999999001'}  •  Plan ${membrete.plan_suscripcion || 'Empresarial'}`, textX, startY + 12);
   doc.text(`EVENTRA SaaS  •  Gestión Integral de Recepciones`, textX, startY + 17);
 
   // 3. Título del Reporte y Metadatos (Lado derecho)
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  doc.setTextColor(35, 61, 73); // #233D49
+  doc.setTextColor(...paleta.text);
   doc.text(tituloReporte, pageWidth - startX, startY + 6, { align: 'right' });
 
   const fechaStr = new Date().toLocaleDateString('es-ES', {
@@ -102,31 +162,11 @@ const dibujarMembrete = (doc, membrete = {}, tituloReporte = 'Reporte Corporativ
     doc.text(`Generado por: ${membrete.usuario_responsable}`, pageWidth - startX, startY + 17, { align: 'right' });
   }
 
-  // 4. Línea divisoria minimalista en color Beige (#CBC6B6)
+  // 4. Línea divisoria minimalista en color de borde de la paleta
   const lineY = startY + 24;
-  doc.setDrawColor(203, 198, 182); // #CBC6B6
+  doc.setDrawColor(...paleta.border);
   doc.setLineWidth(0.6);
   doc.line(startX, lineY, pageWidth - startX, lineY);
-};
-
-/**
- * Dibuja un monograma tipográfico minimalista cuando la empresa no cuenta con logo imagen.
- */
-const dibujarMonograma = (doc, nombre = 'EV', x, y) => {
-  const iniciales = nombre
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0].toUpperCase())
-    .join('') || 'EV';
-
-  doc.setFillColor(35, 61, 73); // #233D49
-  doc.roundedRect(x, y, 20, 20, 3, 3, 'F');
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(255, 255, 255);
-  doc.text(iniciales, x + 10, y + 12.5, { align: 'center' });
 };
 
 /**
@@ -141,14 +181,14 @@ const aplicarPieDePagina = (doc) => {
     doc.setPage(i);
 
     // Línea sutil en pie
-    doc.setDrawColor(238, 235, 221); // #EEEBDD
+    doc.setDrawColor(220, 218, 210);
     doc.setLineWidth(0.5);
     doc.line(14, pageHeight - 12, pageWidth - 14, pageHeight - 12);
 
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(7.5);
     doc.setTextColor(138, 152, 160);
-    doc.text('Documento confidencial generado mediante EVENTRA SaaS', 14, pageHeight - 7);
+    doc.text('Documento corporativo confidencial generado mediante EVENTRA SaaS', 14, pageHeight - 7);
 
     const paginacion = `Página ${i} de ${pageCount}`;
     doc.text(paginacion, pageWidth - 14, pageHeight - 7, { align: 'right' });
@@ -156,28 +196,71 @@ const aplicarPieDePagina = (doc) => {
 };
 
 /**
- * Estilos canónicos de autoTable bajo "Sofisticación Sutil".
+ * Dibuja una marca de agua diagonal translúcida en cada página si está activa en el membrete.
  */
-const ESTILOS_AUTOTABLE = {
-  theme: 'plain',
-  styles: {
-    font: 'helvetica',
-    fontSize: 8.5,
-    textColor: [35, 61, 73], // #233D49
-    cellPadding: { top: 4, right: 5, bottom: 4, left: 5 },
-    lineWidth: 0,
-    valign: 'middle',
-  },
-  headStyles: {
-    fillColor: [238, 235, 221], // #EEEBDD Crema
-    textColor: [35, 61, 73],    // #233D49
-    fontStyle: 'bold',
-    lineWidth: { bottom: 1 },
-    lineColor: [82, 111, 125],  // #526F7D
-  },
-  alternateRowStyles: {
-    fillColor: [249, 248, 244], // #F9F8F4 sutil
-  },
+const aplicarMarcaAguaDoc = (doc, membrete = {}) => {
+  if (membrete?.marca_agua_activa === false) return;
+
+  const pageCount = doc.internal.getNumberOfPages();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const textoMarca = (membrete?.nombre_comercial || 'EVENTRA').toUpperCase();
+
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    try {
+      if (doc.saveGraphicsState) doc.saveGraphicsState();
+      if (doc.setGState && typeof doc.GState === 'function') {
+        doc.setGState(new doc.GState({ opacity: 0.035 }));
+      }
+    } catch {
+      // Continuar con fallback
+    }
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(40);
+    doc.setTextColor(190, 195, 200);
+
+    // Texto en ángulo diagonal centrado
+    doc.text(textoMarca, pageWidth / 2, pageHeight / 2, {
+      align: 'center',
+      angle: 35,
+    });
+
+    try {
+      if (doc.restoreGraphicsState) doc.restoreGraphicsState();
+    } catch {
+      // Ignorar fallo de estado gráfico
+    }
+  }
+};
+
+/**
+ * Obtiene los estilos de autoTable parametrizados según la paleta armónica del Tenant.
+ */
+const obtenerEstilosAutoTable = (paletaKey = 'sofisticacion_sutil') => {
+  const p = PALETAS_RGB[paletaKey] || PALETAS_RGB.sofisticacion_sutil;
+  return {
+    theme: 'plain',
+    styles: {
+      font: 'helvetica',
+      fontSize: 8.5,
+      textColor: p.text,
+      cellPadding: { top: 4, right: 5, bottom: 4, left: 5 },
+      lineWidth: 0,
+      valign: 'middle',
+    },
+    headStyles: {
+      fillColor: p.bg,
+      textColor: p.text,
+      fontStyle: 'bold',
+      lineWidth: { bottom: 1 },
+      lineColor: p.primary,
+    },
+    alternateRowStyles: {
+      fillColor: [250, 249, 247],
+    },
+  };
 };
 
 // =============================================================================
@@ -190,6 +273,7 @@ const ESTILOS_AUTOTABLE = {
 export const exportarReporteIngresosPDF = async ({ membrete, transacciones = [], kpis = {} }) => {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const logoBase64 = await cargarImagenBase64(membrete?.logo_url || '/logo_Helados_Catedral.jpg');
+  const estilos = obtenerEstilosAutoTable(membrete?.paleta_colores);
 
   dibujarMembrete(doc, membrete, 'Reporte Financiero de Ingresos', logoBase64);
 
@@ -210,7 +294,7 @@ export const exportarReporteIngresosPDF = async ({ membrete, transacciones = [],
   ]);
 
   autoTable(doc, {
-    ...ESTILOS_AUTOTABLE,
+    ...estilos,
     startY: 47,
     head: [['Fecha', 'Cliente', 'Evento', 'Concepto', 'Método', 'Monto', 'Estado']],
     body: tableRows.length > 0 ? tableRows : [['-', 'Sin transacciones aprobadas registradas', '-', '-', '-', '$0.00', '-']],
@@ -223,6 +307,7 @@ export const exportarReporteIngresosPDF = async ({ membrete, transacciones = [],
     },
   });
 
+  aplicarMarcaAguaDoc(doc, membrete);
   aplicarPieDePagina(doc);
   doc.save(`Reporte_Ingresos_${membrete?.slug || 'eventra'}_${Date.now()}.pdf`);
 };
@@ -233,6 +318,7 @@ export const exportarReporteIngresosPDF = async ({ membrete, transacciones = [],
 export const exportarReporteEventosPDF = async ({ membrete, eventos = [], kpis = {} }) => {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
   const logoBase64 = await cargarImagenBase64(membrete?.logo_url || '/logo_Helados_Catedral.jpg');
+  const estilos = obtenerEstilosAutoTable(membrete?.paleta_colores);
 
   dibujarMembrete(doc, membrete, 'Reporte Operativo de Eventos', logoBase64);
 
@@ -252,7 +338,7 @@ export const exportarReporteEventosPDF = async ({ membrete, eventos = [], kpis =
   ]);
 
   autoTable(doc, {
-    ...ESTILOS_AUTOTABLE,
+    ...estilos,
     startY: 47,
     head: [['Evento', 'Cliente', 'Contacto', 'Fecha', 'Espacio/Salón', 'Estado', 'Presupuesto']],
     body: tableRows.length > 0 ? tableRows : [['Sin eventos registrados', '-', '-', '-', '-', '-', '$0.00']],
@@ -262,6 +348,7 @@ export const exportarReporteEventosPDF = async ({ membrete, eventos = [], kpis =
     },
   });
 
+  aplicarMarcaAguaDoc(doc, membrete);
   aplicarPieDePagina(doc);
   doc.save(`Reporte_Eventos_${membrete?.slug || 'eventra'}_${Date.now()}.pdf`);
 };
@@ -272,6 +359,7 @@ export const exportarReporteEventosPDF = async ({ membrete, eventos = [], kpis =
 export const exportarReporteSaldosPDF = async ({ membrete, saldos = [], kpis = {} }) => {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
   const logoBase64 = await cargarImagenBase64(membrete?.logo_url || '/logo_Helados_Catedral.jpg');
+  const estilos = obtenerEstilosAutoTable(membrete?.paleta_colores);
 
   dibujarMembrete(doc, membrete, 'Estado de Saldos Pendientes (Cuentas por Cobrar)', logoBase64);
 
@@ -292,7 +380,7 @@ export const exportarReporteSaldosPDF = async ({ membrete, saldos = [], kpis = {
   ]);
 
   autoTable(doc, {
-    ...ESTILOS_AUTOTABLE,
+    ...estilos,
     startY: 47,
     head: [['Evento', 'Cliente', 'Teléfono / Contacto', 'Fecha Evento', 'Costo Total', 'Abonado', 'Saldo Pendiente', 'Estado']],
     body: tableRows.length > 0 ? tableRows : [['Sin saldos pendientes', '-', '-', '-', '$0.00', '$0.00', '$0.00', 'Al día']],
@@ -304,6 +392,7 @@ export const exportarReporteSaldosPDF = async ({ membrete, saldos = [], kpis = {
     },
   });
 
+  aplicarMarcaAguaDoc(doc, membrete);
   aplicarPieDePagina(doc);
   doc.save(`Reporte_Saldos_Pendientes_${membrete?.slug || 'eventra'}_${Date.now()}.pdf`);
 };

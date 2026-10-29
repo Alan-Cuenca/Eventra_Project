@@ -12,3 +12,4 @@ const router = express.Router();
 router.get('/resumen', verifyToken, authorizeRoles([1, 2]), obtenerResumenReportes);
 
 export default router;
+

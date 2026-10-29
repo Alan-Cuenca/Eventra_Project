@@ -8,6 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../../services/api';
+import { PALETAS } from '../../context/ThemeBrandingContext';
 import {
   Lock,
   Mail,
@@ -294,18 +295,47 @@ export const RegistroClientePortal = () => {
   }
 
   /* ── Formulario de Registro en el Portal de la Empresa ─────────────────── */
+  const paleta = (empresa?.paleta_colores && PALETAS[empresa.paleta_colores])
+    ? PALETAS[empresa.paleta_colores]
+    : PALETAS.sofisticacion_sutil;
+
   return (
     <div
       style={{
         minHeight: '100vh',
-        backgroundColor: '#F3F0E4',
+        backgroundColor: paleta.bg,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '32px 16px',
         fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
+      {/* Marca de agua translúcida sutil si está activa */}
+      {empresa.marca_agua_activa !== false && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            userSelect: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: 0.035,
+            transform: 'rotate(-12deg)',
+            zIndex: 0,
+          }}
+        >
+          <span style={{ fontSize: '5rem', fontWeight: 900, textTransform: 'uppercase', color: paleta.text }}>
+            {empresa.nombre_comercial}
+          </span>
+        </div>
+      )}
+
       <div
         style={{
           maxWidth: '500px',
@@ -314,11 +344,18 @@ export const RegistroClientePortal = () => {
           borderRadius: '16px',
           padding: '36px 32px',
           boxShadow: '0 4px 24px rgba(35, 61, 73, 0.08)',
+          border: `1px solid ${paleta.border}`,
+          position: 'relative',
+          zIndex: 1,
         }}
       >
         {/* Cabecera del Portal */}
         <div style={{ textAlign: 'center', marginBottom: '26px' }}>
-          <img src={logoImg} alt="EVENTRA" style={{ height: '32px', margin: '0 auto 12px' }} />
+          <img
+            src={empresa.logo_url || logoImg}
+            alt={empresa.nombre_comercial}
+            style={{ maxHeight: '42px', maxWidth: '200px', objectFit: 'contain', margin: '0 auto 12px' }}
+          />
 
           <div
             style={{
@@ -327,8 +364,8 @@ export const RegistroClientePortal = () => {
               gap: '6px',
               padding: '4px 14px',
               borderRadius: '20px',
-              backgroundColor: '#EBF2F5',
-              color: '#4D7182',
+              backgroundColor: paleta.primaryLight || '#EBF2F5',
+              color: paleta.primary,
               fontSize: '12px',
               fontWeight: '700',
               marginBottom: '10px',
@@ -337,11 +374,11 @@ export const RegistroClientePortal = () => {
             <Sparkles size={14} /> Portal Oficial: {empresa.nombre_comercial}
           </div>
 
-          <h1 style={{ color: '#233D49', fontSize: '22px', fontWeight: '700', margin: '0 0 6px' }}>
-            Registro de Cliente
+          <h1 style={{ color: paleta.text, fontSize: '22px', fontWeight: '700', margin: '0 0 6px' }}>
+            {empresa.portal_titulo || 'Registro de Cliente'}
           </h1>
-          <p style={{ color: '#4D7182', fontSize: '13px', margin: 0 }}>
-            Crea tu cuenta para cotizar, contratar y seguir tus eventos con {empresa.nombre_comercial}.
+          <p style={{ color: paleta.primary, fontSize: '13px', margin: 0 }}>
+            {empresa.portal_descripcion || `Crea tu cuenta para cotizar, contratar y seguir tus eventos con ${empresa.nombre_comercial}.`}
           </p>
         </div>
 
@@ -575,7 +612,7 @@ export const RegistroClientePortal = () => {
             style={{
               marginTop: '10px',
               width: '100%',
-              backgroundColor: '#4D7182',
+              backgroundColor: paleta.primary,
               color: '#FFFFFF',
               border: 'none',
               padding: '12px',

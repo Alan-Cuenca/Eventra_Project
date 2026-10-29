@@ -526,4 +526,39 @@ export const eventraService = {
       throw err;
     }
   },
+
+  // ==========================================
+  // BRANDING Y PERSONALIZACIÓN (/api/empresas/mi-branding)
+  // ==========================================
+  async getMiBranding() {
+    try {
+      const response = await api.get('/empresas/mi-branding');
+      return response?.data || response;
+    } catch (err) {
+      console.warn('[eventraService] getMiBranding error:', err.message);
+      throw err;
+    }
+  },
+
+  async actualizarMiBranding(formDataOrPayload) {
+    try {
+      const isFormData = typeof FormData !== 'undefined' && formDataOrPayload instanceof FormData;
+      const headers = isFormData ? { 'Content-Type': 'multipart/form-data' } : undefined;
+      const response = await api.put('/empresas/mi-branding', formDataOrPayload, { headers });
+      return response?.data || response;
+    } catch (err) {
+      console.warn('[eventraService] actualizarMiBranding error:', err.message);
+      throw err;
+    }
+  },
+
+  async getPortalInfo(slug) {
+    try {
+      const response = await api.get(`/auth/portal/${slug}`);
+      return response?.data || response;
+    } catch (err) {
+      console.warn('[eventraService] getPortalInfo error:', err.message);
+      throw err;
+    }
+  },
 };
