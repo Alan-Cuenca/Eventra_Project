@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS empresas (
     plan_suscripcion     VARCHAR(50)  DEFAULT 'Basico',
     estado_activo        BOOLEAN      DEFAULT true,
     mensajes_chatbot_mes INTEGER      DEFAULT 0,
-    logo_url             VARCHAR(255),
+    logo_url             TEXT,
     paleta_colores       VARCHAR(50)  DEFAULT 'sofisticacion_sutil',
     marca_agua_activa    BOOLEAN      DEFAULT true,
     portal_titulo        VARCHAR(150),
@@ -45,7 +45,10 @@ ALTER TABLE empresas
     ADD COLUMN IF NOT EXISTS mensajes_chatbot_mes INTEGER DEFAULT 0;
 
 ALTER TABLE empresas
-    ADD COLUMN IF NOT EXISTS logo_url VARCHAR(255);
+    ADD COLUMN IF NOT EXISTS logo_url TEXT;
+
+ALTER TABLE empresas
+    ALTER COLUMN logo_url TYPE TEXT;
 
 ALTER TABLE empresas
     ADD COLUMN IF NOT EXISTS paleta_colores VARCHAR(50) DEFAULT 'sofisticacion_sutil';
@@ -62,7 +65,7 @@ ALTER TABLE empresas
 -- Asignar logotipo por defecto a empresas históricas (ej. Helados La Catedral)
 UPDATE empresas
     SET logo_url = '/logo_Helados_Catedral.jpg'
-    WHERE (nombre_comercial ILIKE '%Catedral%' OR slug ILIKE '%catedral%')
+    WHERE (nombre_comercial ILIKE '%Catedral%' OR slug ILIKE '%catedral%' OR portal_titulo ILIKE '%Catedral%' OR id = 1)
       AND (logo_url IS NULL OR logo_url = '');
 
 -- Si existen empresas sin slug, genera un slug base normalizado a partir del nombre_comercial

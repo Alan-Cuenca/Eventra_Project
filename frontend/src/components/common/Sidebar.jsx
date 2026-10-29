@@ -159,7 +159,15 @@ export const Sidebar = () => {
     <aside className="sidebar">
       {/* Brand */}
       <div className="sidebar-brand">
-        <img src={brandLogo} alt={`${brandName} Logo`} className="sidebar-logo object-contain" />
+        <img
+          src={brandLogo}
+          alt={`${brandName} Logo`}
+          className="sidebar-logo object-contain"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = logoImg;
+          }}
+        />
         <div className="overflow-hidden">
           <div className="sidebar-brand-name truncate" title={brandName}>{brandName}</div>
           <div className="sidebar-brand-tagline truncate" title={brandTagline}>{brandTagline}</div>

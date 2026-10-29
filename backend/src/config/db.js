@@ -28,25 +28,16 @@ if (process.env.NODE_ENV !== 'test') {
   pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS mensajes_chatbot_mes INTEGER DEFAULT 0;').catch((err) => {
     console.warn('[db] Auto-verificación de columna mensajes_chatbot_mes en Supabase:', err.message);
   });
-  pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS logo_url VARCHAR(255);').catch((err) => {
-    console.warn('[db] Auto-verificación de columna logo_url en Supabase:', err.message);
-  });
-  pool.query("ALTER TABLE empresas ADD COLUMN IF NOT EXISTS paleta_colores VARCHAR(50) DEFAULT 'sofisticacion_sutil';").catch((err) => {
-    console.warn('[db] Auto-verificación de columna paleta_colores en Supabase:', err.message);
-  });
-  pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS marca_agua_activa BOOLEAN DEFAULT true;').catch((err) => {
-    console.warn('[db] Auto-verificación de columna marca_agua_activa en Supabase:', err.message);
-  });
-  pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS portal_titulo VARCHAR(150);').catch((err) => {
-    console.warn('[db] Auto-verificación de columna portal_titulo en Supabase:', err.message);
-  });
-  pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS portal_descripcion TEXT;').catch((err) => {
-    console.warn('[db] Auto-verificación de columna portal_descripcion en Supabase:', err.message);
-  });
+  pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS logo_url TEXT;').catch(() => {});
+  pool.query('ALTER TABLE empresas ALTER COLUMN logo_url TYPE TEXT;').catch(() => {});
+  pool.query("ALTER TABLE empresas ADD COLUMN IF NOT EXISTS paleta_colores VARCHAR(50) DEFAULT 'sofisticacion_sutil';").catch(() => {});
+  pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS marca_agua_activa BOOLEAN DEFAULT true;').catch(() => {});
+  pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS portal_titulo VARCHAR(150);').catch(() => {});
+  pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS portal_descripcion TEXT;').catch(() => {});
   pool.query(`
     UPDATE empresas
     SET logo_url = '/logo_Helados_Catedral.jpg'
-    WHERE (nombre_comercial ILIKE '%Catedral%' OR slug ILIKE '%catedral%')
+    WHERE (nombre_comercial ILIKE '%Catedral%' OR slug ILIKE '%catedral%' OR portal_titulo ILIKE '%Catedral%' OR id = 1)
       AND (logo_url IS NULL OR logo_url = '');
   `).catch(() => {});
   pool.query(`
