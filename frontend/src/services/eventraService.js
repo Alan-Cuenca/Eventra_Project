@@ -513,4 +513,17 @@ export const eventraService = {
       throw err;
     }
   },
+
+  // ==========================================
+  // REPORTES Y ANALÍTICA (/api/reportes)
+  // ==========================================
+  async getReportesResumen() {
+    try {
+      const response = await api.get('/reportes/resumen');
+      return response?.data || response;
+    } catch (err) {
+      console.warn('[eventraService] getReportesResumen error:', err.message);
+      throw err;
+    }
+  },
 };

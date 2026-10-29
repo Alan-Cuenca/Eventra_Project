@@ -16,6 +16,7 @@ import {
   UserCheck,
   ShieldCheck,
   FileEdit,
+  BarChart3,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
@@ -119,6 +120,12 @@ export const Sidebar = () => {
     {
       label: 'Administración',
       items: [
+        {
+          to: '/reportes',
+          label: 'Reportes y Analítica',
+          icon: <BarChart3 size={18} />,
+          visible: isAdmin || isGerente,
+        },
         {
           to: '/colaboradores',
           label: 'Equipo y Colaboradores',

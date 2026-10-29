@@ -39,6 +39,15 @@ ALTER TABLE empresas
 ALTER TABLE empresas
     ADD COLUMN IF NOT EXISTS mensajes_chatbot_mes INTEGER DEFAULT 0;
 
+ALTER TABLE empresas
+    ADD COLUMN IF NOT EXISTS logo_url VARCHAR(255);
+
+-- Asignar logotipo por defecto a empresas históricas (ej. Helados La Catedral)
+UPDATE empresas
+    SET logo_url = '/logo_Helados_Catedral.jpg'
+    WHERE (nombre_comercial ILIKE '%Catedral%' OR slug ILIKE '%catedral%')
+      AND (logo_url IS NULL OR logo_url = '');
+
 -- Si existen empresas sin slug, genera un slug base normalizado a partir del nombre_comercial
 UPDATE empresas
     SET slug = LOWER(REGEXP_REPLACE(REGEXP_REPLACE(nombre_comercial, '[^a-zA-Z0-9]+', '-', 'g'), '^-|-$', '', 'g')) || '-' || id

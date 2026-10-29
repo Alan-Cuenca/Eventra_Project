@@ -29,6 +29,7 @@ import { Pricing }      from '../pages/public/Pricing';
 import { PortalClientePage } from '../pages/clients/PortalClientePage';
 import { SolicitudesCliente } from '../pages/portal/SolicitudesCliente';
 import { GestorSolicitudes } from '../pages/admin/GestorSolicitudes';
+import { ReportesPage } from '../pages/admin/ReportesPage';
 
 // ── Panel de Gestión Interna ─────────────────────────────────────────────────
 import { DashboardPage }  from '../pages/dashboard/DashboardPage';
@@ -178,6 +179,9 @@ export const AppRoutes = () => {
             <Route path="/proveedores"           element={<ProveedoresList />} />
             <Route path="/proveedores/nuevo"     element={<ProveedorForm />} />
             <Route path="/proveedores/editar/:id" element={<ProveedorForm />} />
+
+            {/* Dashboards Analíticos y Reportes Corporativos */}
+            <Route path="/reportes" element={<ReportesPage />} />
           </Route>
 
           {/* Admin únicamente (Gestión de Equipo, Colaboradores y Suscripción SaaS) */}

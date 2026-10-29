@@ -19,7 +19,7 @@ import {
   CalendarDays, DollarSign, Users, CheckCircle2, Clock,
   AlertCircle, Sparkles, ArrowUpRight, TrendingUp, Activity,
   ListTodo, RefreshCw, WifiOff, Check, X, ChevronRight,
-  CalendarCheck, Layers, Building2, MessageSquare,
+  CalendarCheck, Layers, Building2, MessageSquare, BarChart2,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -246,6 +246,11 @@ export const DashboardPage = () => {
             {apiOnline ? 'API en línea' : 'Modo demo'}
           </div>
 
+          {(isAdmin || isGerente) && (
+            <Link to="/reportes" className="btn btn-secondary btn-sm">
+              <BarChart2 size={15} /> Reportes PDF
+            </Link>
+          )}
           {(isAdmin || isGerente || isCliente) && (
             <Link to="/cotizador" className="btn btn-primary btn-sm">
               <Sparkles size={15} /> Nueva Cotización
