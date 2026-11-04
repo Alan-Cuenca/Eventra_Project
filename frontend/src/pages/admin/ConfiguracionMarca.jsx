@@ -13,18 +13,15 @@ import {
   Eye,
   CheckCircle2,
   AlertCircle,
-  Building2,
   FileImage,
 } from 'lucide-react';
 
 export const ConfiguracionMarca = () => {
   const {
     branding,
-    palette,
     paletaKey,
     guardarBranding,
     previsualizarPaleta,
-    recargarBranding,
   } = useBranding();
 
   const [selectedPaleta, setSelectedPaleta] = useState(paletaKey);
@@ -47,13 +44,13 @@ export const ConfiguracionMarca = () => {
   // Sincronizar estado cuando se carga branding
   useEffect(() => {
     if (branding) {
-      setSelectedPaleta(branding.paleta_colores || 'sofisticacion_sutil');
+      setSelectedPaleta(branding.paleta_colores || paletaKey || 'sofisticacion_sutil');
       setMarcaAgua(Boolean(branding.marca_agua_activa));
       setPortalTitulo(branding.portal_titulo || '');
       setPortalDescripcion(branding.portal_descripcion || '');
       setLogoPreview(branding.logo_url || null);
     }
-  }, [branding]);
+  }, [branding, paletaKey]);
 
   const handlePaletaChange = (key) => {
     setSelectedPaleta(key);
@@ -116,7 +113,7 @@ export const ConfiguracionMarca = () => {
       }
 
       await guardarBranding(formData);
-      setMensajeExito('¡Identidad visual y configuración de portal guardadas exitosamente!');
+      setMensajeExito('¡Identidad visual y paleta completa del sistema guardadas exitosamente!');
       setRestablecerLogo(false);
       setLogoFile(null);
       setTimeout(() => setMensajeExito(''), 4500);
@@ -135,6 +132,7 @@ export const ConfiguracionMarca = () => {
 
   const slugEmpresa = branding?.slug || 'empresa';
   const urlPortalRegistro = `${window.location.origin}/portal/${slugEmpresa}/registro`;
+  const activePaletteObj = PALETAS[selectedPaleta] || PALETAS.sofisticacion_sutil;
 
   const copiarEnlacePortal = () => {
     navigator.clipboard.writeText(urlPortalRegistro);
@@ -144,7 +142,7 @@ export const ConfiguracionMarca = () => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pt-2 pb-12 animate-fade-in font-sans">
-      {/* Encabezado en Card Protectora "Sofisticación Sutil" */}
+      {/* Encabezado en Card Protectora */}
       <div className="bg-white rounded-2xl border border-[#CBC6B6]/60 p-6 sm:p-8 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -159,7 +157,7 @@ export const ConfiguracionMarca = () => {
             Identidad Corporativa y Portal de Empresa
           </h1>
           <p className="text-sm text-[#233D49]/70 mt-1.5 max-w-2xl">
-            Personaliza el logotipo, la paleta armónica y la bienvenida que tus clientes verán en su portal exclusivo.
+            Personaliza el logotipo, la paleta cromática completa de tu interfaz y la bienvenida que tus clientes verán en su portal exclusivo.
           </p>
         </div>
 
@@ -201,7 +199,7 @@ export const ConfiguracionMarca = () => {
         </div>
       )}
 
-      {/* Grid Principal de 3 Secciones */}
+      {/* Grid Principal */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Columna Izquierda: Logotipo y Paletas (7 columnas) */}
         <div className="lg:col-span-7 space-y-8">
@@ -308,16 +306,27 @@ export const ConfiguracionMarca = () => {
             </div>
           </section>
 
-          {/* SECCIÓN 2: Selector de Paleta Armónica */}
+          {/* SECCIÓN 2: Selector de Paleta Armónica Completa */}
           <section className="bg-white rounded-2xl p-6 border border-[#CBC6B6]/60 shadow-sm space-y-5">
-            <div className="border-b border-[#CBC6B6]/30 pb-4">
-              <h2 className="text-lg font-bold text-[#233D49] flex items-center gap-2">
-                <Sliders size={18} className="text-[#526F7D]" />
-                Paletas Armónicas Curadas
-              </h2>
-              <p className="text-xs text-[#233D49]/70 mt-0.5">
-                Selecciona una combinación balanceada. Se aplicará instantáneamente a botones, cabeceras y tarjetas.
-              </p>
+            <div className="border-b border-[#CBC6B6]/30 pb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-[#233D49] flex items-center gap-2">
+                  <Sliders size={18} className="text-[#526F7D]" />
+                  Paletas Armónicas del Sistema Completo
+                </h2>
+                <p className="text-xs text-[#233D49]/70 mt-0.5">
+                  Al seleccionar una paleta se transforma en vivo el color completo del sistema (fondos, barra lateral, botones, bordes y textos).
+                </p>
+              </div>
+              <span
+                className="text-[11px] font-bold px-3 py-1 rounded-full shrink-0"
+                style={{
+                  backgroundColor: activePaletteObj.primaryLight,
+                  color: activePaletteObj.primary,
+                }}
+              >
+                Activa: {activePaletteObj.name}
+              </span>
             </div>
 
             <div className="space-y-3">
@@ -327,55 +336,71 @@ export const ConfiguracionMarca = () => {
                   <div
                     key={item.key}
                     onClick={() => handlePaletaChange(item.key)}
-                    className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between gap-4 ${
-                      isSelected
-                        ? 'border-[#526F7D] bg-[#EEEBDD]/40 shadow-sm'
-                        : 'border-[#CBC6B6]/50 hover:border-[#526F7D]/40 bg-white'
-                    }`}
+                    style={{
+                      borderColor: isSelected ? item.primary : item.border,
+                      backgroundColor: isSelected ? item.bg : '#FFFFFF',
+                    }}
+                    className="p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between gap-4 shadow-xs hover:shadow-sm"
                   >
                     <div className="flex items-center gap-4">
                       {/* Muestra de 4 Círculos de Color */}
-                      <div className="flex items-center -space-x-1.5">
+                      <div className="flex items-center -space-x-1.5 shrink-0">
                         <div
-                          className="w-6 h-6 rounded-full border border-black/10 shadow-sm"
+                          className="w-7 h-7 rounded-full border border-black/15 shadow-sm"
                           style={{ backgroundColor: item.bg }}
-                          title={`Fondo: ${item.bg}`}
+                          title={`Fondo Principal: ${item.bg}`}
                         />
                         <div
-                          className="w-6 h-6 rounded-full border border-black/10 shadow-sm"
+                          className="w-7 h-7 rounded-full border border-black/15 shadow-sm"
                           style={{ backgroundColor: item.border }}
-                          title={`Borde: ${item.border}`}
+                          title={`Borde y Superficie: ${item.border}`}
                         />
                         <div
-                          className="w-6 h-6 rounded-full border border-black/10 shadow-sm"
+                          className="w-7 h-7 rounded-full border border-black/15 shadow-sm"
                           style={{ backgroundColor: item.primary }}
-                          title={`Primario: ${item.primary}`}
+                          title={`Color Primario: ${item.primary}`}
                         />
                         <div
-                          className="w-6 h-6 rounded-full border border-black/10 shadow-sm"
+                          className="w-7 h-7 rounded-full border border-black/15 shadow-sm"
                           style={{ backgroundColor: item.text }}
-                          title={`Texto: ${item.text}`}
+                          title={`Texto Principal: ${item.text}`}
                         />
                       </div>
 
                       <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-[#233D49]">{item.name}</span>
-                          <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-[#EEEBDD] text-[#526F7D]">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-bold" style={{ color: item.text }}>
+                            {item.name}
+                          </span>
+                          <span
+                            className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full"
+                            style={{
+                              backgroundColor: item.primaryLight,
+                              color: item.primary,
+                            }}
+                          >
                             {item.category}
                           </span>
                         </div>
-                        <p className="text-xs text-[#233D49]/70 mt-0.5 line-clamp-1">{item.desc}</p>
+                        <p className="text-xs mt-0.5 line-clamp-1" style={{ color: item.text, opacity: 0.78 }}>
+                          {item.desc}
+                        </p>
                       </div>
                     </div>
 
                     <div className="flex-shrink-0">
                       {isSelected ? (
-                        <div className="w-6 h-6 rounded-full bg-[#526F7D] text-white flex items-center justify-center">
+                        <div
+                          className="w-6 h-6 rounded-full text-white flex items-center justify-center shadow-xs"
+                          style={{ backgroundColor: item.primary }}
+                        >
                           <Check size={14} />
                         </div>
                       ) : (
-                        <div className="w-6 h-6 rounded-full border border-[#CBC6B6]" />
+                        <div
+                          className="w-6 h-6 rounded-full border-2"
+                          style={{ borderColor: item.border }}
+                        />
                       )}
                     </div>
                   </div>
@@ -471,42 +496,54 @@ export const ConfiguracionMarca = () => {
             <div className="pt-4 border-t border-[#CBC6B6]/30 space-y-3">
               <div className="flex items-center gap-1.5 text-xs font-bold text-[#526F7D] uppercase tracking-wider">
                 <Eye size={14} />
-                <span>Vista Previa en Vivo para el Cliente</span>
+                <span>Vista Previa en Vivo ({activePaletteObj.name})</span>
               </div>
 
               {/* Mock Card del Portal usando la paleta elegida */}
               <div
-                className="rounded-2xl p-5 border shadow-sm transition-all relative overflow-hidden"
+                className="rounded-2xl p-5 border-2 shadow-sm transition-all relative overflow-hidden"
                 style={{
-                  backgroundColor: PALETAS[selectedPaleta]?.bg || '#EEEBDD',
-                  borderColor: PALETAS[selectedPaleta]?.border || '#CBC6B6',
+                  backgroundColor: activePaletteObj.bg,
+                  borderColor: activePaletteObj.border,
                 }}
               >
                 {/* Mini watermark preview */}
                 {marcaAgua && (
-                  <div className="absolute inset-0 flex items-center justify-center opacity-[0.05] pointer-events-none -rotate-12 select-none">
-                    <span className="text-4xl font-extrabold uppercase font-serif tracking-widest text-[#233D49]">
+                  <div className="absolute inset-0 flex items-center justify-center opacity-[0.06] pointer-events-none -rotate-12 select-none">
+                    <span
+                      className="text-4xl font-extrabold uppercase font-serif tracking-widest"
+                      style={{ color: activePaletteObj.text }}
+                    >
                       {branding?.nombre_comercial || 'EVENTRA'}
                     </span>
                   </div>
                 )}
 
-                <div className="relative z-10 bg-white rounded-xl p-4 border border-[#CBC6B6]/40 shadow-xs space-y-3 text-center">
+                <div
+                  className="relative z-10 bg-white rounded-xl p-4 border shadow-xs space-y-3 text-center"
+                  style={{ borderColor: activePaletteObj.border }}
+                >
                   <div className="flex justify-center">
                     {logoPreview ? (
                       <img src={logoPreview} alt="Logo" className="h-10 object-contain" />
                     ) : (
-                      <div className="h-9 px-3 rounded-lg bg-[#EEEBDD] flex items-center justify-center text-xs font-bold text-[#526F7D]">
+                      <div
+                        className="h-9 px-3 rounded-lg flex items-center justify-center text-xs font-bold"
+                        style={{
+                          backgroundColor: activePaletteObj.primaryLight,
+                          color: activePaletteObj.primary,
+                        }}
+                      >
                         {branding?.nombre_comercial || 'EVENTRA'}
                       </div>
                     )}
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-bold text-[#233D49]">
+                    <h3 className="text-sm font-bold" style={{ color: activePaletteObj.text }}>
                       {portalTitulo || `Bienvenido a ${branding?.nombre_comercial || 'EVENTRA'}`}
                     </h3>
-                    <p className="text-[11px] text-[#233D49]/70 mt-1 line-clamp-2">
+                    <p className="text-[11px] mt-1 line-clamp-2" style={{ color: activePaletteObj.text, opacity: 0.75 }}>
                       {portalDescripcion ||
                         'Ingresa con tus credenciales o solicita tu presupuesto en línea con nuestros asesores.'}
                     </p>
@@ -514,13 +551,16 @@ export const ConfiguracionMarca = () => {
 
                   <button
                     type="button"
-                    className="w-full py-1.5 px-3 rounded-lg text-xs font-semibold text-white shadow-xs"
-                    style={{ backgroundColor: PALETAS[selectedPaleta]?.primary || '#526F7D' }}
+                    className="w-full py-2 px-3 rounded-lg text-xs font-semibold text-white shadow-xs transition-colors"
+                    style={{ backgroundColor: activePaletteObj.primary }}
                   >
                     Registrarme en el Portal
                   </button>
 
-                  <div className="text-[9px] text-[#233D49]/50 tracking-wider uppercase font-medium">
+                  <div
+                    className="text-[9px] tracking-wider uppercase font-medium"
+                    style={{ color: activePaletteObj.text, opacity: 0.55 }}
+                  >
                     Operado con tecnología EVENTRA
                   </div>
                 </div>
