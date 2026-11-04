@@ -5,21 +5,21 @@ import { Badge } from '../common/Badge';
 import {
   Menu,
   LogOut,
-  ShieldAlert,
   ShieldCheck,
   Server,
   ChevronDown,
   Moon,
   Sun,
 } from 'lucide-react';
+import logoImg from '../../assets/logo.png';
 
 /**
  * =============================================================================
  * SuperAdminHeader
  * =============================================================================
  * Barra superior unificada para la consola del Super Administrador.
- * Implementa la estética "Sofisticación Sutil", indicador de API y menú
- * desplegable de perfil con switch de Modo Oscuro y cierre de sesión.
+ * Implementa la estética "Sofisticación Sutil", logotipo oficial de EVENTRA,
+ * indicador de API y menú desplegable de perfil con switch de Modo Oscuro.
  * =============================================================================
  */
 export const SuperAdminHeader = ({ onToggleSidebar }) => {
@@ -59,7 +59,7 @@ export const SuperAdminHeader = ({ onToggleSidebar }) => {
 
   return (
     <header className="app-header">
-      {/* Lado Izquierdo: Botón móvil + Contexto de Consola */}
+      {/* Lado Izquierdo: Botón móvil + Logotipo Oficial de EVENTRA */}
       <div className="header-left flex items-center gap-3">
         <button
           onClick={onToggleSidebar}
@@ -72,18 +72,29 @@ export const SuperAdminHeader = ({ onToggleSidebar }) => {
         <div className="flex items-center gap-2.5">
           <div
             style={{
-              width: 34,
-              height: 34,
-              borderRadius: '10px',
-              background: 'rgba(77,113,130,0.12)',
-              color: 'var(--primary)',
+              width: 38,
+              height: 38,
+              borderRadius: '11px',
+              background: '#FFFFFF',
+              border: '1px solid var(--border-subtle)',
+              boxShadow: 'var(--shadow-xs)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              padding: '3px',
               flexShrink: 0,
+              overflow: 'hidden',
             }}
           >
-            <ShieldAlert size={18} />
+            <img
+              src={logoImg}
+              alt="EVENTRA"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+              }}
+            />
           </div>
           <div>
             <div

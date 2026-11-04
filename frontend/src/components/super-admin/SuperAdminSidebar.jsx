@@ -7,8 +7,6 @@ import {
   Users2,
   FileText,
   Settings,
-  ShieldCheck,
-  Clock,
   CreditCard,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
@@ -105,13 +103,34 @@ export const SuperAdminSidebar = ({ isOpen, onClose }) => {
       )}
 
       <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`}>
-        {/* Brand Header */}
+        {/* Brand Header con Logotipo Oficial EVENTRA */}
         <div className="sidebar-brand">
-          <img
-            src={logoImg}
-            alt="EVENTRA Logo"
-            className="sidebar-logo"
-          />
+          <div
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '14px',
+              background: '#FFFFFF',
+              border: '1px solid var(--border-subtle)',
+              boxShadow: 'var(--shadow-xs)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '4px',
+              flexShrink: 0,
+              overflow: 'hidden',
+            }}
+          >
+            <img
+              src={logoImg}
+              alt="EVENTRA Logo Oficial"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+              }}
+            />
+          </div>
           <div className="min-w-0">
             <div className="sidebar-brand-name">
               EVENTRA
