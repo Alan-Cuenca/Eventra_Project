@@ -69,8 +69,7 @@ export const SuperAdminSidebar = ({ isOpen, onClose }) => {
           to: '/super-admin/auditoria',
           label: 'Auditoría y Logs',
           icon: <FileText size={18} />,
-          enabled: false,
-          badge: 'Próximamente',
+          enabled: true,
         },
         {
           to: '/super-admin/configuracion',
