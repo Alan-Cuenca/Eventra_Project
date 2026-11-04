@@ -261,30 +261,31 @@ export const ConfiguracionSaasPage = () => {
           title="Estado Backend Express"
           value={healthStatus.apiOnline ? 'Operativo' : 'Degradado'}
           subtitle={`Latencia: ${healthStatus.latencyMs} ms`}
-          icon={Server}
-          variant={healthStatus.apiOnline ? 'success' : 'danger'}
-          trend={healthStatus.apiOnline ? 'TLS 1.3 Activo' : 'Revisar'}
+          icon={<Server size={20} />}
+          accentColor={healthStatus.apiOnline ? '#4D9A72' : '#C95C5C'}
+          badgeText={healthStatus.apiOnline ? 'TLS 1.3 Activo' : 'Revisar'}
+          badgeColor={healthStatus.apiOnline ? '#4D9A72' : '#C95C5C'}
         />
         <GlobalStatCard
           title="Motor PostgreSQL"
           value="Supabase URI"
           subtitle={`${healthStatus.tenantsCount} tenants (${healthStatus.activeTenants} activos)`}
-          icon={Database}
-          variant="primary"
+          icon={<Database size={20} />}
+          accentColor="#4D7182"
         />
         <GlobalStatCard
           title="Planes Comerciales"
-          value={`$${config.planes.basico_precio} / $${config.planes.premium_precio}`}
+          value={`${config.planes.basico_precio} / ${config.planes.premium_precio}`}
           subtitle="Básico vs Premium (USD/mes)"
-          icon={CreditCard}
-          variant="warning"
+          icon={<CreditCard size={20} />}
+          accentColor="#C49A3A"
         />
         <GlobalStatCard
           title="Política RBAC & JWT"
           value={`${config.seguridad.expiracion_jwt_horas} Horas`}
           subtitle="5 roles con aislamiento estricto"
-          icon={ShieldCheck}
-          variant="success"
+          icon={<ShieldCheck size={20} />}
+          accentColor="#4D9A72"
         />
       </div>
 

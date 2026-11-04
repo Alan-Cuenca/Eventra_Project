@@ -84,7 +84,11 @@ export const GlobalStatCard = ({
             border: `1px solid ${accentColor}25`,
           }}
         >
-          {icon}
+          {React.isValidElement(icon)
+            ? icon
+            : typeof icon === 'function' || (typeof icon === 'object' && icon !== null)
+            ? React.createElement(icon, { size: 20 })
+            : null}
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { SuperAdminSidebar } from '../components/super-admin/SuperAdminSidebar';
 import { SuperAdminHeader } from '../components/super-admin/SuperAdminHeader';
+import { ErrorBoundary } from '../components/common/ErrorBoundary';
 
 /**
  * =============================================================================
@@ -32,7 +33,9 @@ export const SuperAdminLayout = () => {
 
         {/* Cuerpo de página con espaciado y ancho estándar */}
         <main className="page-body animate-fade-in">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>
