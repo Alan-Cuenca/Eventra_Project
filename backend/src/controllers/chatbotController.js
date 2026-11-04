@@ -116,7 +116,14 @@ export const consultarEvara = async (req, res) => {
     };
 
     // 4. System Prompt Dinámico Estricto
-    const systemPrompt = `Eres EVARA, el asistente de ventas experto de esta empresa. Tu objetivo es orientar al cliente respondiendo sus dudas basándote ÚNICAMENTE en el siguiente catálogo de servicios y precios: ${JSON.stringify(catalogoEmpresa)}. Prohibido inventar precios, paquetes o servicios que no estén en este catálogo. Sé persuasivo, amable y conciso.`;
+    const systemPrompt = `Eres EVARA, el asistente de ventas experto de esta empresa de eventos.
+Tu alcance y funciones son:
+1. Orientar amablemente a los clientes respondiendo dudas basándote ÚNICAMENTE en este catálogo oficial: ${JSON.stringify(catalogoEmpresa)}. Prohibido inventar precios o servicios no incluidos.
+2. Si el cliente te indica una fecha, te pide cotizar o desea agendar/reservar:
+   - Confirma con entusiasmo su fecha o solicitud.
+   - Explícale con claridad que para garantizar la disponibilidad estricta de salones (evitando colisiones en el calendario) y generar el contrato legal, la cotización formal y reserva se completan a través de los módulos del sistema: "Cotizador" (/cotizador) o "Reservas" (/reservas).
+   - Ofrécele resolver dudas adicionales sobre qué incluye el paquete o servicios complementarios (catering, música, fotografía, etc.).
+Sé persuasivo, amable, conciso y profesional en todo momento.`;
 
     // 5. Inicialización y llamada a Google Gemini AI
     let textoIA = '';
@@ -175,14 +182,42 @@ export const consultarEvara = async (req, res) => {
  * cuando la clave de Gemini está en validación o modo offline/test.
  */
 function generarRespuestaContextual(mensaje, paquetes, servicios) {
-  const msgLower = mensaje.toLowerCase();
+  const msgLower = mensaje.trim().toLowerCase();
 
   if (paquetes.length === 0 && servicios.length === 0) {
     return '¡Hola! Soy EVARA, asistente de ventas de esta empresa. Actualmente nuestro equipo está actualizando el catálogo de servicios. ¿Deseas solicitar una cotización personalizada?';
   }
 
-  // Si pregunta por paquetes, bodas, precios o costos
-  if (msgLower.includes('paquete') || msgLower.includes('precio') || msgLower.includes('costo') || msgLower.includes('boda') || msgLower.includes('evento')) {
+  // 1. Si pregunta para qué sirve o qué capacidades tiene el bot
+  if (
+    msgLower.includes('para que sirve') ||
+    msgLower.includes('que haces') ||
+    msgLower.includes('puedes agendar') ||
+    msgLower.includes('puedes cotizar') ||
+    msgLower.includes('como funciona') ||
+    msgLower.includes('quien eres')
+  ) {
+    return '¡Hola! Soy EVARA, tu asistente de ventas y catálogo inteligente. Te sirvo para:\n1. Consultar en tiempo real paquetes, servicios, precios y detalles de catering/decoración.\n2. Recomendarte la mejor alternativa según el tipo de recepción que planeas.\n3. Orientarte para formalizar tu cotización y agendar tu salón.\n\nNota: Para asegurar que no existan colisiones de salón, el bloqueo oficial de fechas se gestiona en el módulo de Reservas (/reservas) y el desglose de contrato en el Cotizador (/cotizador). ¿Qué tipo de evento tienes en mente?';
+  }
+
+  // 2. Si el usuario confirma o dice "sí" / "deseo cotizar"
+  const afirmaciones = ['si', 'sí', 'claro', 'por favor', 'me gustaria', 'me gustaría', 'de acuerdo', 'quiero cotizar', 'dale', 'ok', 'deseo cotizar', 'preparar cotizacion'];
+  if (afirmaciones.some((a) => msgLower === a || msgLower.startsWith(a + ' ') || msgLower.endsWith(' ' + a))) {
+    const primerP = paquetes[0];
+    const recomendacion = primerP ? `nuestro paquete "${primerP.nombre}" ($${Number(primerP.precio).toFixed(2)})` : 'nuestro catálogo';
+    return `¡Excelente decisión! Podemos preparar una cotización detallada para ti. En EVENTRA dispones del módulo de **Cotizador Interactivo** (/cotizador) donde se calculan comensales, platillos y servicios adicionales con contrato formal. Si deseas, toma como base ${recomendacion}. ¿Qué fecha aproximada tienes pensada para tu evento?`;
+  }
+
+  // 3. Si el usuario indica una fecha o menciona agendar/disponibilidad
+  const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre', 'siguiente mes', 'proximo mes', 'próximo mes', '2025', '2026', '2027'];
+  const esFecha = meses.some((m) => msgLower.includes(m)) || /\b\d{1,2}\b/.test(msgLower) && (msgLower.includes('de') || msgLower.includes('/'));
+  
+  if (esFecha || msgLower.includes('agendar') || msgLower.includes('disponibilidad') || msgLower.includes('reservar')) {
+    return `¡Excelente fecha! Hemos tomado nota de tu fecha tentativa (${mensaje.trim()}). Para verificar la disponibilidad exacta del salón en nuestro calendario oficial y bloquear la fecha en el sistema (evitando que otro cliente reserve simultáneamente), te invitamos a registrar tu reserva formal en el módulo de **Reservas** (/reservas) o solicitar tu propuesta en el **Cotizador** (/cotizador). Nuestro equipo comercial revisará tu solicitud de inmediato. ¿Deseas conocer qué servicios incluye nuestro paquete recomendado?`;
+  }
+
+  // 4. Si pregunta por paquetes, bodas, precios o costos
+  if (msgLower.includes('paquete') || msgLower.includes('precio') || msgLower.includes('costo') || msgLower.includes('boda') || msgLower.includes('evento') || msgLower.includes('gala') || msgLower.includes('quince')) {
     if (paquetes.length > 0) {
       const lista = paquetes
         .slice(0, 3)
@@ -192,18 +227,18 @@ function generarRespuestaContextual(mensaje, paquetes, servicios) {
     }
   }
 
-  // Si pregunta por servicios específicos
-  if (msgLower.includes('servicio') || msgLower.includes('catering') || msgLower.includes('musica') || msgLower.includes('fotograf')) {
+  // 5. Si pregunta por servicios específicos (catering, música, etc.)
+  if (msgLower.includes('servicio') || msgLower.includes('catering') || msgLower.includes('musica') || msgLower.includes('música') || msgLower.includes('fotograf') || msgLower.includes('salon') || msgLower.includes('salón') || msgLower.includes('decorac')) {
     if (servicios.length > 0) {
       const listaS = servicios
         .slice(0, 4)
         .map((s) => `${s.nombre} ($${Number(s.precio_base).toFixed(2)})`)
         .join(', ');
-      return `¡Hola! Con mucho gusto. En nuestro catálogo actual ofrecemos: ${listaS}. Todos nuestros servicios pueden ser personalizados según tus necesidades.`;
+      return `¡Hola! Con mucho gusto. En nuestro catálogo actual ofrecemos: ${listaS}. Todos nuestros servicios pueden ser personalizados según tus necesidades. ¿Para cuántos invitados lo requieres?`;
     }
   }
 
-  // Respuesta general orientativa con el catálogo real
+  // 6. Respuesta general orientativa con el catálogo real
   const primerPaquete = paquetes[0];
   const nombrePaquete = primerPaquete ? `nuestro paquete "${primerPaquete.nombre}" ($${Number(primerPaquete.precio).toFixed(2)})` : 'nuestros servicios integrales';
   return `¡Hola! Soy EVARA, asistente de ventas de esta empresa. Para tu evento te recomiendo especialmente ${nombrePaquete}. ¿En qué fecha tienes planificada tu recepción para verificar disponibilidad?`;
