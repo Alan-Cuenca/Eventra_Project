@@ -44,6 +44,20 @@ export const Navbar = ({ onOpenCommandPalette }) => {
   const { isDark, toggleTheme } = useTheme();
 
   const [backendStatus, setBackendStatus] = useState('checking');
+  const [planActivo, setPlanActivo] = useState(() => {
+    return user?.plan_suscripcion || 'Basico';
+  });
+
+  useEffect(() => {
+    if (user?.empresa_id) {
+      api.get('/suscripciones/mi-consumo')
+        .then((res) => {
+          const plan = res?.data?.plan || res?.plan || user?.plan_suscripcion;
+          if (plan) setPlanActivo(plan);
+        })
+        .catch(() => {});
+    }
+  }, [user?.empresa_id, user?.plan_suscripcion]);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(2);
