@@ -11,6 +11,7 @@ import { EmpresasManagementPage } from '../pages/super-admin/EmpresasManagementP
 import { SolicitudesIngresoPage } from '../pages/super-admin/SolicitudesIngresoPage';
 import { AdministradoresTenantPage } from '../pages/super-admin/AdministradoresTenantPage';
 import { AuditoriaLogsPage } from '../pages/super-admin/AuditoriaLogsPage';
+import { ConfiguracionSaasPage } from '../pages/super-admin/ConfiguracionSaasPage';
 
 // ── Autenticación ──────────────────────────────────────────────────────────
 import { Login } from '../pages/auth/Login';
@@ -126,6 +127,7 @@ export const AppRoutes = () => {
           <Route path="/super-admin/solicitudes" element={<SolicitudesIngresoPage />} />
           <Route path="/super-admin/administradores" element={<AdministradoresTenantPage />} />
           <Route path="/super-admin/auditoria" element={<AuditoriaLogsPage />} />
+          <Route path="/super-admin/configuracion" element={<ConfiguracionSaasPage />} />
         </Route>
       </Route>
 
