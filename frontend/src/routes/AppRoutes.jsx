@@ -24,6 +24,7 @@ import { Home }         from '../pages/public/Home';
 import { Features }     from '../pages/public/Features';
 import { EvaraAI }      from '../pages/public/EvaraAI';
 import { Pricing }      from '../pages/public/Pricing';
+import { PagoPlanPage } from '../pages/public/PagoPlanPage';
 
 
 // ── Portal del Cliente (rol_id = 4) ─────────────────────────────────────────
@@ -96,6 +97,7 @@ export const AppRoutes = () => {
         <Route path="/funcionalidades"  element={<Features />} />
         <Route path="/evara-ai"         element={<EvaraAI />} />
         <Route path="/precios"          element={<Pricing />} />
+        <Route path="/planes/pago"      element={<PagoPlanPage />} />
       </Route>
 
       {/* ── Autenticación y Acceso (Aisladas, fuera de PublicLayout) ──────── */}

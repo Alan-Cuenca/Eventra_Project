@@ -1,14 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Check, Sparkles, ArrowRight, Star } from 'lucide-react';
-import { ModalPagoPlanTransferencia } from '../../components/public/ModalPagoPlanTransferencia';
 
 export const PreciosPublic = () => {
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [planElegido, setPlanElegido] = useState('Premium');
+  const navigate = useNavigate();
 
-  const abrirPagoPlan = (plan) => {
-    setPlanElegido(plan);
-    setModalAbierto(true);
+  const irAPagoPlan = (plan) => {
+    navigate(`/planes/pago?plan=${plan}&ciclo=monthly`);
   };
 
   return (
@@ -24,7 +22,7 @@ export const PreciosPublic = () => {
             Planes escalables para el crecimiento de tu empresa
           </h2>
           <p className="text-base sm:text-lg text-[#233D49]/75">
-            Selecciona un plan, realiza tu transferencia bancaria, sube el comprobante en PDF y recibe las credenciales de tu cuenta en tu correo corporativo.
+            Selecciona el plan ideal para tu negocio y continúa a la ventana de pago por transferencia bancaria para activar tu cuenta.
           </p>
         </div>
 
@@ -93,10 +91,10 @@ export const PreciosPublic = () => {
             <div className="pt-8 mt-6">
               <button
                 type="button"
-                onClick={() => abrirPagoPlan('Basico')}
+                onClick={() => irAPagoPlan('Basico')}
                 className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl border-2 border-[#526F7D] text-[#526F7D] hover:bg-[#526F7D] hover:text-white font-semibold text-sm transition-all duration-200 cursor-pointer"
               >
-                <span>Seleccionar Plan Básico y Pagar</span>
+                <span>Seleccionar Plan Básico</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -171,24 +169,16 @@ export const PreciosPublic = () => {
             <div className="pt-8 mt-6">
               <button
                 type="button"
-                onClick={() => abrirPagoPlan('Premium')}
+                onClick={() => irAPagoPlan('Premium')}
                 className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
               >
-                <span>Seleccionar Plan Premium y Pagar</span>
+                <span>Seleccionar Plan Premium</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Modal de Pago por Transferencia + Subida de PDF + Correo para Credenciales */}
-      <ModalPagoPlanTransferencia
-        isOpen={modalAbierto}
-        onClose={() => setModalAbierto(false)}
-        initialPlan={planElegido}
-        isAnnual={false}
-      />
     </section>
   );
 };
