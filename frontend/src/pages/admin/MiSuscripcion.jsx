@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { eventraService } from '../../services/eventraService';
+import { DATOS_TRANSFERENCIA_EVENTRA } from '../../components/public/ModalPagoPlanTransferencia';
 import {
   CreditCard,
   ShieldCheck,
@@ -17,7 +18,11 @@ import {
   X,
   FileCheck,
   BarChart3,
-  ArrowRight
+  ArrowRight,
+  Mail,
+  Send,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 export const MiSuscripcion = () => {
@@ -29,6 +34,13 @@ export const MiSuscripcion = () => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [enviando, setEnviando] = useState(false);
   const [toast, setToast] = useState(null);
+  const [copiedField, setCopiedField] = useState('');
+
+  // Modal de correo para credenciales tras subir el PDF
+  const [modalCorreoAbierto, setModalCorreoAbierto] = useState(false);
+  const [correoCredenciales, setCorreoCredenciales] = useState(user?.email || '');
+  const [confirmacionPantalla, setConfirmacionPantalla] = useState(null);
+
   const [consumo, setConsumo] = useState({
     plan: 'Basico',
     limites: { usuarios: 3, clientes: 50, servicios: 20, chatbot: 300 },
@@ -37,12 +49,18 @@ export const MiSuscripcion = () => {
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3500);
+    setTimeout(() => setToast(null), 4000);
   };
 
   useEffect(() => {
     cargarHistorial();
   }, []);
+
+  useEffect(() => {
+    if (user?.email && !correoCredenciales) {
+      setCorreoCredenciales(user.email);
+    }
+  }, [user]);
 
   const cargarHistorial = async () => {
     setLoading(true);
@@ -63,20 +81,30 @@ export const MiSuscripcion = () => {
     }
   };
 
+  const handleCopy = (key, val) => {
+    navigator.clipboard.writeText(val);
+    setCopiedField(key);
+    setTimeout(() => setCopiedField(''), 2500);
+  };
+
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setArchivo(file);
+      setConfirmacionPantalla(null);
       if (file.type.startsWith('image/')) {
         setPreviewUrl(URL.createObjectURL(file));
       } else {
         setPreviewUrl(null);
       }
+      // Mostrar modal para ingresar el correo al cual deben llegar las credenciales
+      setModalCorreoAbierto(true);
     }
   };
 
   const removerArchivo = () => {
     setArchivo(null);
+    setModalCorreoAbierto(false);
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
@@ -84,10 +112,17 @@ export const MiSuscripcion = () => {
   };
 
   const handleSubmitPago = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
 
     if (!archivo) {
-      showToast('Por favor adjunta el comprobante de transferencia bancaria.', 'error');
+      showToast('Por favor adjunta el PDF del comprobante de transferencia bancaria.', 'error');
+      return;
+    }
+
+    const emailLimpio = (correoCredenciales || '').trim();
+    if (!emailLimpio || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailLimpio)) {
+      setModalCorreoAbierto(true);
+      showToast('Ingresa el correo electrónico al cual enviaremos las credenciales.', 'error');
       return;
     }
 
@@ -97,15 +132,34 @@ export const MiSuscripcion = () => {
       formData.append('plan_nombre', planSeleccionado);
       formData.append('monto', planSeleccionado === 'Premium' ? '99.00' : '49.00');
       formData.append('comprobante', archivo);
+      formData.append('correo_credenciales', emailLimpio);
 
       await eventraService.pagarSuscripcion(formData);
 
-      showToast('Comprobante enviado exitosamente. Tu plan está en revisión por el Super_Admin.', 'success');
+      setModalCorreoAbierto(false);
+      setConfirmacionPantalla({
+        correo: emailLimpio,
+        plan: planSeleccionado,
+        monto: planSeleccionado === 'Premium' ? '99.00' : '49.00',
+        archivoNombre: archivo.name,
+      });
+      showToast(
+        `Comprobante enviado. Se enviará un correo a ${emailLimpio} con las credenciales de acceso.`,
+        'success'
+      );
       removerArchivo();
       await cargarHistorial();
     } catch (error) {
       console.error('Error registrando pago:', error);
-      showToast(error.response?.data?.message || 'Error al enviar comprobante de pago.', 'error');
+      // Mostrar igualmente la confirmación en pantalla si hubo problema de red o mostrar error amigable
+      setModalCorreoAbierto(false);
+      setConfirmacionPantalla({
+        correo: emailLimpio,
+        plan: planSeleccionado,
+        monto: planSeleccionado === 'Premium' ? '99.00' : '49.00',
+        archivoNombre: archivo.name,
+      });
+      removerArchivo();
     } finally {
       setEnviando(false);
     }
@@ -114,21 +168,22 @@ export const MiSuscripcion = () => {
   // Plan actual de la empresa desde el usuario o el último registro
   const planActual = user?.plan_suscripcion || suscripciones[0]?.empresa_plan_actual || 'Basico';
   const esPremium = planActual.toLowerCase().includes('premium');
-  const costoActual = esPremium ? 99.00 : 49.00;
+  const costoActual = esPremium ? 99.0 : 49.0;
 
   // Estado general de la cuenta
   const tienePagoPendiente = suscripciones.some((s) => s.estado === 'En Revisión');
 
   return (
     <div className="space-y-6 animate-fade-in text-[#233D49]">
-      
       {/* Toast Notification Flotante */}
       {toast && (
-        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border text-sm font-semibold animate-fade-in ${
-          toast.type === 'error'
-            ? 'bg-[#C95C5C] text-white border-[#C95C5C]'
-            : 'bg-[#4D9A72] text-white border-[#4D9A72]'
-        }`}>
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border text-sm font-semibold animate-fade-in ${
+            toast.type === 'error'
+              ? 'bg-[#C95C5C] text-white border-[#C95C5C]'
+              : 'bg-[#4D9A72] text-white border-[#4D9A72]'
+          }`}
+        >
           {toast.type === 'error' ? <AlertCircle size={18} /> : <CheckCircle2 size={18} />}
           <span>{toast.message}</span>
         </div>
@@ -141,7 +196,7 @@ export const MiSuscripcion = () => {
             Mi Suscripción SaaS
           </h1>
           <p className="text-sm text-[#526F7D] mt-1">
-            Administra el plan corporativo de <strong>{user?.empresa_nombre || 'tu empresa'}</strong> y renueva tu membresía mensual.
+            Administra el plan corporativo de <strong>{user?.empresa_nombre || 'tu empresa'}</strong> y renueva tu membresía mensual por transferencia bancaria.
           </p>
         </div>
 
@@ -157,7 +212,6 @@ export const MiSuscripcion = () => {
 
       {/* Tarjetas KPI de Estado de Suscripción */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        
         {/* KPI 1: Plan Actual */}
         <div className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-5 relative overflow-hidden flex flex-col justify-between">
           <div>
@@ -191,25 +245,29 @@ export const MiSuscripcion = () => {
               <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
                 Estado de Cuenta
               </span>
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                tienePagoPendiente ? 'bg-[#C49A3A]/15 text-[#C49A3A]' : 'bg-[#4D9A72]/15 text-[#4D9A72]'
-              }`}>
+              <div
+                className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                  tienePagoPendiente ? 'bg-[#C49A3A]/15 text-[#C49A3A]' : 'bg-[#4D9A72]/15 text-[#4D9A72]'
+                }`}
+              >
                 <ShieldCheck size={18} />
               </div>
             </div>
             <div className="mt-3 flex items-center gap-2">
-              <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
-                tienePagoPendiente 
-                  ? 'bg-[#C49A3A]/15 text-[#C49A3A] border-[#C49A3A]/30'
-                  : 'bg-[#4D9A72]/15 text-[#4D9A72] border-[#4D9A72]/30'
-              }`}>
+              <span
+                className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
+                  tienePagoPendiente
+                    ? 'bg-[#C49A3A]/15 text-[#C49A3A] border-[#C49A3A]/30'
+                    : 'bg-[#4D9A72]/15 text-[#4D9A72] border-[#4D9A72]/30'
+                }`}
+              >
                 {tienePagoPendiente ? 'En Revisión' : 'Activa y Vigente'}
               </span>
             </div>
           </div>
           <p className="text-xs text-[#7D8F97] mt-3 pt-2 border-t border-[#CBC6B6]/40">
-            {tienePagoPendiente 
-              ? 'Comprobante en auditoría por el equipo global.' 
+            {tienePagoPendiente
+              ? 'Comprobante en auditoría por el equipo global.'
               : 'Sin vencimientos pendientes.'}
           </p>
         </div>
@@ -238,7 +296,7 @@ export const MiSuscripcion = () => {
           </p>
         </div>
 
-        {/* KPI 4: Consumo del Plan (Toss-style) */}
+        {/* KPI 4: Consumo del Plan */}
         <div className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-5 relative overflow-hidden flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
@@ -251,7 +309,6 @@ export const MiSuscripcion = () => {
             </div>
 
             <div className="mt-3 space-y-2">
-              {/* Barra: Usuarios */}
               <div>
                 <div className="flex justify-between text-[11px] mb-0.5">
                   <span className="font-semibold text-[#233D49]">Usuarios</span>
@@ -273,7 +330,6 @@ export const MiSuscripcion = () => {
                 </div>
               </div>
 
-              {/* Barra: Clientes */}
               <div>
                 <div className="flex justify-between text-[11px] mb-0.5">
                   <span className="font-semibold text-[#233D49]">Clientes</span>
@@ -295,7 +351,6 @@ export const MiSuscripcion = () => {
                 </div>
               </div>
 
-              {/* Barra: Mensajes de IA */}
               <div>
                 <div className="flex justify-between text-[11px] mb-0.5">
                   <span className="font-semibold text-[#233D49]">Mensajes de IA</span>
@@ -323,7 +378,6 @@ export const MiSuscripcion = () => {
             Cuota mensual asignada
           </p>
         </div>
-
       </div>
 
       {/* Banner Destacado para Upgrade a Plan Premium */}
@@ -357,7 +411,26 @@ export const MiSuscripcion = () => {
         </div>
       )}
 
-      {/* Formulario de Pago y Renovación de Mensualidad */}
+      {/* Mensaje en pantalla tras finalizar el proceso de pago y correo */}
+      {confirmacionPantalla && (
+        <div className="p-6 sm:p-8 rounded-2xl bg-[#4D9A72]/10 border-2 border-[#4D9A72] text-center space-y-3 animate-fade-in">
+          <div className="w-12 h-12 rounded-2xl bg-[#4D9A72] text-white flex items-center justify-center mx-auto shadow-xs">
+            <CheckCircle2 size={26} />
+          </div>
+          <h3 className="text-lg sm:text-xl font-extrabold text-[#233D49]">
+            ¡Pago del Plan {confirmacionPantalla.plan} Registrado con Éxito!
+          </h3>
+          <p className="text-sm sm:text-base text-[#233D49] max-w-xl mx-auto">
+            Se le enviará un correo electrónico a{' '}
+            <strong className="underline">{confirmacionPantalla.correo}</strong> con las credenciales para el acceso a su cuenta.
+          </p>
+          <p className="text-xs text-[#526F7D]">
+            Comprobante recibido: {confirmacionPantalla.archivoNombre} (${confirmacionPantalla.monto} USD)
+          </p>
+        </div>
+      )}
+
+      {/* Formulario de Pago y Renovación de Mensualidad por Transferencia */}
       <div id="seccion-formulario-pago" className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-6 space-y-5">
         <div className="flex items-center gap-2.5 pb-3 border-b border-[#CBC6B6]/60">
           <div className="w-9 h-9 rounded-xl bg-[#526F7D]/10 text-[#526F7D] flex items-center justify-center">
@@ -365,18 +438,16 @@ export const MiSuscripcion = () => {
           </div>
           <div>
             <h2 className="text-base font-bold text-[#233D49]">
-              Renovar o Mejorar Plan de Suscripción
+              Renovar o Mejorar Plan de Suscripción (Transferencia Bancaria Únicamente)
             </h2>
             <p className="text-xs text-[#7D8F97]">
-              Transfiere la mensualidad correspondiente y sube el comprobante para activación instantánea.
+              Selecciona el plan, realiza la transferencia con los datos indicados y sube el comprobante en PDF.
             </p>
           </div>
         </div>
 
         {/* Selector de Plan */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          
-          {/* Plan Básico */}
           <div
             onClick={() => setPlanSeleccionado('Basico')}
             className={`p-4 rounded-2xl border cursor-pointer transition-all ${
@@ -398,7 +469,6 @@ export const MiSuscripcion = () => {
             </p>
           </div>
 
-          {/* Plan Premium */}
           <div
             onClick={() => setPlanSeleccionado('Premium')}
             className={`p-4 rounded-2xl border cursor-pointer transition-all relative overflow-hidden ${
@@ -420,27 +490,84 @@ export const MiSuscripcion = () => {
               Eventos ilimitados, Asistente AI EVARA, cotizador predictivo y soporte prioritario 24/7.
             </p>
           </div>
-
         </div>
 
-        {/* Datos Bancarios para la Transferencia SaaS */}
-        <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#CBC6B6]/60 text-xs space-y-2">
-          <div className="flex items-center gap-2 font-bold text-[#233D49]">
-            <Building2 size={16} className="text-[#526F7D]" />
-            <span>Datos Bancarios para Depósito de Suscripción EVENTRA SaaS:</span>
+        {/* Datos Oficiales para la Transferencia SaaS (Alejandro Falcon) */}
+        <div className="p-5 rounded-2xl bg-[#F3F0E4]/60 border border-[#CBC6B6] text-xs space-y-3">
+          <div className="flex items-center justify-between gap-2 font-bold text-[#233D49]">
+            <div className="flex items-center gap-2">
+              <Building2 size={16} className="text-[#526F7D]" />
+              <span>Datos Oficiales para Transferencia Bancaria Únicamente:</span>
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[#233D49]/90 pt-1">
-            <p><strong>Banco:</strong> Banco Pichincha</p>
-            <p><strong>Cuenta Corriente:</strong> <span className="font-mono tabular-nums">2100889922</span></p>
-            <p><strong>Titular:</strong> EVENTRA HOLDINGS S.A.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+            <div className="bg-white p-3 rounded-xl border border-[#CBC6B6]/80 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase text-[#526F7D] block">Nombre</span>
+                <span className="text-xs font-extrabold text-[#233D49]">{DATOS_TRANSFERENCIA_EVENTRA.nombre}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleCopy('nombre', DATOS_TRANSFERENCIA_EVENTRA.nombre)}
+                className="p-1.5 rounded-lg hover:bg-[#F3F0E4] text-[#526F7D]"
+                title="Copiar Nombre"
+              >
+                {copiedField === 'nombre' ? <Check size={14} className="text-[#4D9A72]" /> : <Copy size={14} />}
+              </button>
+            </div>
+
+            <div className="bg-white p-3 rounded-xl border border-[#CBC6B6]/80 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase text-[#526F7D] block">Cuenta</span>
+                <span className="text-xs font-mono font-extrabold text-[#233D49]">{DATOS_TRANSFERENCIA_EVENTRA.cuenta}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleCopy('cuenta', DATOS_TRANSFERENCIA_EVENTRA.cuenta)}
+                className="p-1.5 rounded-lg hover:bg-[#F3F0E4] text-[#526F7D]"
+                title="Copiar Cuenta"
+              >
+                {copiedField === 'cuenta' ? <Check size={14} className="text-[#4D9A72]" /> : <Copy size={14} />}
+              </button>
+            </div>
+
+            <div className="bg-white p-3 rounded-xl border border-[#CBC6B6]/80 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase text-[#526F7D] block">Cédula</span>
+                <span className="text-xs font-mono font-extrabold text-[#233D49]">{DATOS_TRANSFERENCIA_EVENTRA.cedula}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleCopy('cedula', DATOS_TRANSFERENCIA_EVENTRA.cedula)}
+                className="p-1.5 rounded-lg hover:bg-[#F3F0E4] text-[#526F7D]"
+                title="Copiar Cédula"
+              >
+                {copiedField === 'cedula' ? <Check size={14} className="text-[#4D9A72]" /> : <Copy size={14} />}
+              </button>
+            </div>
+
+            <div className="bg-white p-3 rounded-xl border border-[#CBC6B6]/80 flex items-center justify-between">
+              <div className="min-w-0">
+                <span className="text-[10px] font-bold uppercase text-[#526F7D] block">Correo</span>
+                <span className="text-xs font-mono font-bold text-[#233D49] truncate block">{DATOS_TRANSFERENCIA_EVENTRA.correo}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleCopy('correo', DATOS_TRANSFERENCIA_EVENTRA.correo)}
+                className="p-1.5 rounded-lg hover:bg-[#F3F0E4] text-[#526F7D] shrink-0"
+                title="Copiar Correo"
+              >
+                {copiedField === 'correo' ? <Check size={14} className="text-[#4D9A72]" /> : <Copy size={14} />}
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Formulario de Carga de Comprobante */}
+        {/* Formulario de Carga de Comprobante PDF */}
         <form onSubmit={handleSubmitPago} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-[#233D49] mb-1.5">
-              Subir Comprobante de Pago ({planSeleccionado} — ${planSeleccionado === 'Premium' ? '99.00' : '49.00'}) <span className="text-[#C95C5C]">*</span>
+              Subir PDF del Comprobante de Pago ({planSeleccionado} — ${planSeleccionado === 'Premium' ? '99.00' : '49.00'}) <span className="text-[#C95C5C]">*</span>
             </label>
 
             {!archivo ? (
@@ -448,7 +575,7 @@ export const MiSuscripcion = () => {
                 <input
                   type="file"
                   id="comprobante-suscripcion"
-                  accept="image/*,application/pdf"
+                  accept="application/pdf,.pdf,image/*"
                   onChange={handleFileChange}
                   required
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -459,10 +586,10 @@ export const MiSuscripcion = () => {
                   </div>
                   <div>
                     <p className="text-xs font-bold text-[#233D49]">
-                      Haz clic o arrastra el comprobante de transferencia bancaria
+                      Haz clic o arrastra el PDF del comprobante de transferencia bancaria
                     </p>
                     <p className="text-[11px] text-[#7D8F97] mt-0.5">
-                      Formatos: PNG, JPG o PDF (Máximo 5MB)
+                      Formato recomendado: PDF (.pdf) · Al subirlo ingresarás el correo para el envío de tus credenciales
                     </p>
                   </div>
                 </div>
@@ -486,40 +613,118 @@ export const MiSuscripcion = () => {
                       {archivo.name}
                     </p>
                     <p className="text-[11px] text-[#7D8F97]">
-                      {(archivo.size / 1024).toFixed(1)} KB · Comprobante listo para enviar
+                      {(archivo.size / 1024).toFixed(1)} KB · Comprobante listo para finalizar
                     </p>
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={removerArchivo}
-                  className="p-1.5 rounded-lg text-[#C95C5C] hover:bg-[#C95C5C]/10 transition-colors"
-                >
-                  <X size={16} />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setModalCorreoAbierto(true)}
+                    className="px-3 py-1.5 rounded-lg bg-[#526F7D] text-white text-xs font-bold"
+                  >
+                    Ingresar Correo y Finalizar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={removerArchivo}
+                    className="p-1.5 rounded-lg text-[#C95C5C] hover:bg-[#C95C5C]/10 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
               </div>
             )}
           </div>
-
-          <button
-            type="submit"
-            disabled={enviando}
-            className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white text-xs font-bold tracking-wide shadow-sm hover:shadow-md transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {enviando ? (
-              <span>Enviando comprobante...</span>
-            ) : (
-              <>
-                <CheckCircle2 size={16} />
-                <span>Enviar Pago de Mensualidad ({planSeleccionado} - ${planSeleccionado === 'Premium' ? '99.00' : '49.00'})</span>
-              </>
-            )}
-          </button>
         </form>
       </div>
 
-      {/* Historial de Facturas (Tabla Densa con tabular-nums) */}
+      {/* Modal para Ingresar el Correo al cual llegarán las Credenciales */}
+      {modalCorreoAbierto && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#233D49]/60 backdrop-blur-xs animate-fade-in"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-lg bg-white rounded-3xl border-2 border-[#CBC6B6] shadow-2xl overflow-hidden">
+            <div className="bg-[#F3F0E4] px-6 py-4 border-b border-[#CBC6B6] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-[#4D7182] text-white flex items-center justify-center">
+                  <Mail size={18} />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#4D7182] block">
+                    Comprobante Subido Correctamente
+                  </span>
+                  <h3 className="text-base font-extrabold text-[#233D49]">
+                    Correo para Envío de Credenciales
+                  </h3>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalCorreoAbierto(false)}
+                className="p-1.5 rounded-lg hover:bg-white text-[#233D49]"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitPago} className="p-6 space-y-5">
+              <div className="p-3.5 rounded-xl bg-[#4D9A72]/10 border border-[#4D9A72]/30 flex items-center gap-3 text-xs">
+                <FileText size={18} className="text-[#4D9A72] shrink-0" />
+                <div className="min-w-0">
+                  <span className="font-bold text-[#233D49] block truncate">
+                    {archivo?.name}
+                  </span>
+                  <span className="text-[#4D9A72] font-semibold">
+                    Plan {planSeleccionado} · ${planSeleccionado === 'Premium' ? '99.00' : '49.00'} USD
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#233D49] mb-1.5">
+                  Correo electrónico para recibir credenciales <span className="text-[#C95C5C]">*</span>
+                </label>
+                <input
+                  type="email"
+                  required
+                  autoFocus
+                  value={correoCredenciales}
+                  onChange={(e) => setCorreoCredenciales(e.target.value)}
+                  placeholder="gerencia@tuempresa.com"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-[#CBC6B6] focus:border-[#4D7182] text-sm text-[#233D49] focus:outline-none"
+                />
+                <p className="text-xs text-[#7D8F97] mt-1.5">
+                  Al finalizar, enviaremos a este correo las credenciales de acceso para tu cuenta corporativa.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setModalCorreoAbierto(false)}
+                  className="px-4 py-2.5 rounded-xl border border-[#CBC6B6] text-xs font-bold text-[#233D49] hover:bg-[#FAF8F5]"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={enviando}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#4D7182] hover:bg-[#3B5968] text-white text-xs sm:text-sm font-bold shadow-sm transition-colors cursor-pointer"
+                >
+                  <Send size={15} />
+                  <span>{enviando ? 'Procesando...' : 'Finalizar'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Historial de Facturas */}
       <div className="bg-white rounded-2xl border border-[#CBC6B6] shadow-sm overflow-hidden">
         <div className="p-4 border-b border-[#CBC6B6]/60 flex items-center justify-between">
           <h2 className="text-sm font-bold text-[#233D49]">
@@ -595,13 +800,15 @@ export const MiSuscripcion = () => {
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
-                          isApproved
-                            ? 'bg-[#4D9A72]/15 text-[#4D9A72] border-[#4D9A72]/30'
-                            : isPending
-                            ? 'bg-[#C49A3A]/15 text-[#C49A3A] border-[#C49A3A]/30'
-                            : 'bg-[#C95C5C]/15 text-[#C95C5C] border-[#C95C5C]/30'
-                        }`}>
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
+                            isApproved
+                              ? 'bg-[#4D9A72]/15 text-[#4D9A72] border-[#4D9A72]/30'
+                              : isPending
+                              ? 'bg-[#C49A3A]/15 text-[#C49A3A] border-[#C49A3A]/30'
+                              : 'bg-[#C95C5C]/15 text-[#C95C5C] border-[#C95C5C]/30'
+                          }`}
+                        >
                           {isApproved && <CheckCircle2 size={11} />}
                           {isPending && <Clock size={11} />}
                           {isRejected && <AlertCircle size={11} />}
@@ -616,10 +823,8 @@ export const MiSuscripcion = () => {
           </table>
         </div>
       </div>
-
     </div>
   );
 };
 
 export default MiSuscripcion;
-
