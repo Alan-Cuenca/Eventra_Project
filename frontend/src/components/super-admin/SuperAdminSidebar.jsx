@@ -52,8 +52,7 @@ export const SuperAdminSidebar = ({ isOpen, onClose }) => {
           to: '/super-admin/solicitudes',
           label: 'Solicitudes de Ingreso',
           icon: <UserCheck size={18} />,
-          enabled: false,
-          badge: 'Próximamente',
+          enabled: true,
         },
         {
           to: '/super-admin/administradores',
