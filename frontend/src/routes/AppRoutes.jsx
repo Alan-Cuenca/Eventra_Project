@@ -9,6 +9,7 @@ import { SuperAdminLayout } from '../layouts/SuperAdminLayout';
 import { GlobalDashboardPage } from '../pages/super-admin/GlobalDashboardPage';
 import { EmpresasManagementPage } from '../pages/super-admin/EmpresasManagementPage';
 import { SolicitudesIngresoPage } from '../pages/super-admin/SolicitudesIngresoPage';
+import { AdministradoresTenantPage } from '../pages/super-admin/AdministradoresTenantPage';
 
 // ── Autenticación ──────────────────────────────────────────────────────────
 import { Login } from '../pages/auth/Login';
@@ -122,6 +123,7 @@ export const AppRoutes = () => {
           <Route path="/super-admin/empresas" element={<EmpresasManagementPage />} />
           <Route path="/super-admin/facturacion" element={<FacturacionSuperAdmin />} />
           <Route path="/super-admin/solicitudes" element={<SolicitudesIngresoPage />} />
+          <Route path="/super-admin/administradores" element={<AdministradoresTenantPage />} />
         </Route>
       </Route>
 
