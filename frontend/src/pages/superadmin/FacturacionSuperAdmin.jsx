@@ -3,7 +3,6 @@ import { eventraService } from '../../services/eventraService';
 import {
   DollarSign,
   Building2,
-  AlertTriangle,
   CheckCircle2,
   XCircle,
   Clock,
@@ -13,9 +12,10 @@ import {
   X,
   CreditCard,
   FileCheck,
+  FileText,
   TrendingUp,
   ShieldCheck,
-  ArrowRight
+  ArrowRight,
 } from 'lucide-react';
 
 export const FacturacionSuperAdmin = () => {
@@ -102,16 +102,23 @@ export const FacturacionSuperAdmin = () => {
     return coincideEstado && (empresa.includes(termino) || plan.includes(termino) || ruc.includes(termino));
   });
 
+  const esComprobantePdf = (url) => {
+    if (!url || typeof url !== 'string') return false;
+    const lower = url.toLowerCase();
+    return lower.includes('.pdf') || lower.startsWith('data:application/pdf');
+  };
+
   return (
     <div className="space-y-6 animate-fade-in text-[#233D49]">
-      
       {/* Toast Flotante */}
       {toast && (
-        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border text-sm font-semibold animate-fade-in ${
-          toast.type === 'error'
-            ? 'bg-[#C95C5C] text-white border-[#C95C5C]'
-            : 'bg-[#4D9A72] text-white border-[#4D9A72]'
-        }`}>
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border text-sm font-semibold animate-fade-in ${
+            toast.type === 'error'
+              ? 'bg-[#C95C5C] text-white border-[#C95C5C]'
+              : 'bg-[#4D9A72] text-white border-[#4D9A72]'
+          }`}
+        >
           {toast.type === 'error' ? <XCircle size={18} /> : <CheckCircle2 size={18} />}
           <span>{toast.message}</span>
         </div>
@@ -140,7 +147,6 @@ export const FacturacionSuperAdmin = () => {
 
       {/* Tarjetas KPI Globales */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        
         {/* KPI 1: Ingresos Recurrentes Mensuales (MRR) */}
         <div className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-5 relative overflow-hidden transition-all hover:shadow-md">
           <div className="flex items-center justify-between">
@@ -197,13 +203,10 @@ export const FacturacionSuperAdmin = () => {
             <span>Comprobantes de empresas en revisión</span>
           </p>
         </div>
-
       </div>
 
       {/* Barra de Filtros y Búsqueda */}
       <div className="bg-white rounded-2xl border border-[#CBC6B6] p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-        
-        {/* Input de Búsqueda */}
         <div className="relative w-full sm:w-80">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7D8F97]" />
           <input
@@ -215,7 +218,6 @@ export const FacturacionSuperAdmin = () => {
           />
         </div>
 
-        {/* Filtros de Estado */}
         <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
           {['TODOS', 'En Revisión', 'Aprobado', 'Rechazado'].map((estado) => {
             const activo = filtroEstado === estado;
@@ -234,7 +236,6 @@ export const FacturacionSuperAdmin = () => {
             );
           })}
         </div>
-
       </div>
 
       {/* Tabla Global de Suscripciones */}
@@ -284,7 +285,6 @@ export const FacturacionSuperAdmin = () => {
                         isPending ? 'bg-[#C49A3A]/5 font-medium' : ''
                       }`}
                     >
-                      {/* Empresa */}
                       <td className="py-3.5 px-5">
                         <div className="flex items-center gap-2.5">
                           <div className="w-8 h-8 rounded-xl bg-[#526F7D]/10 text-[#526F7D] flex items-center justify-center font-bold text-xs shrink-0">
@@ -303,19 +303,16 @@ export const FacturacionSuperAdmin = () => {
                         </div>
                       </td>
 
-                      {/* Plan */}
                       <td className="py-3.5 px-5">
                         <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-[#526F7D]/10 text-[#526F7D]">
                           Plan {susc.plan_nombre}
                         </span>
                       </td>
 
-                      {/* Monto */}
                       <td className="py-3.5 px-5 font-bold font-mono text-sm tabular-nums text-[#233D49]">
                         ${Number(susc.monto).toFixed(2)}
                       </td>
 
-                      {/* Fecha */}
                       <td className="py-3.5 px-5 text-[#7D8F97] tabular-nums font-medium">
                         {new Date(susc.fecha_pago || susc.fecha_registro).toLocaleDateString('es-ES', {
                           day: '2-digit',
@@ -324,15 +321,16 @@ export const FacturacionSuperAdmin = () => {
                         })}
                       </td>
 
-                      {/* Estado */}
                       <td className="py-3.5 px-5">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                          isApproved
-                            ? 'bg-[#4D9A72]/15 text-[#4D9A72] border-[#4D9A72]/30'
-                            : isPending
-                            ? 'bg-[#C49A3A]/15 text-[#C49A3A] border-[#C49A3A]/30'
-                            : 'bg-[#C95C5C]/15 text-[#C95C5C] border-[#C95C5C]/30'
-                        }`}>
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+                            isApproved
+                              ? 'bg-[#4D9A72]/15 text-[#4D9A72] border-[#4D9A72]/30'
+                              : isPending
+                              ? 'bg-[#C49A3A]/15 text-[#C49A3A] border-[#C49A3A]/30'
+                              : 'bg-[#C95C5C]/15 text-[#C95C5C] border-[#C95C5C]/30'
+                          }`}
+                        >
                           {isApproved && <CheckCircle2 size={12} />}
                           {isPending && <Clock size={12} />}
                           {isRejected && <XCircle size={12} />}
@@ -340,7 +338,6 @@ export const FacturacionSuperAdmin = () => {
                         </span>
                       </td>
 
-                      {/* Acción */}
                       <td className="py-3.5 px-5 text-right">
                         {isPending ? (
                           <button
@@ -369,11 +366,10 @@ export const FacturacionSuperAdmin = () => {
         </div>
       </div>
 
-      {/* Modal de Revisión y Aprobación de Suscripción */}
+      {/* Modal de Revisión y Aprobación de Suscripción (Soporta PDF e Imágenes) */}
       {isModalOpen && pagoSeleccionado && (
         <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/40 backdrop-blur-sm flex items-center justify-center animate-fade-in">
           <div className="bg-white shadow-xl rounded-2xl sm:rounded-3xl border border-[#CBC6B6] p-5 sm:p-7 max-w-lg w-full space-y-4 my-auto max-h-[calc(100vh-3.5rem)] overflow-y-auto animate-scale-up">
-            
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-[#CBC6B6]/60 sticky top-0 bg-white z-10">
               <div className="flex items-center gap-2.5">
@@ -385,7 +381,7 @@ export const FacturacionSuperAdmin = () => {
                     Auditoría de Suscripción SaaS
                   </h3>
                   <p className="text-xs text-[#7D8F97]">
-                    Verifica el pago recibido antes de activar la membresía del tenant.
+                    Verifica el comprobante recibido antes de activar la membresía del tenant.
                   </p>
                 </div>
               </div>
@@ -427,19 +423,33 @@ export const FacturacionSuperAdmin = () => {
               </div>
             </div>
 
-            {/* Visualizador del Comprobante (URL de Supabase) */}
+            {/* Visualizador del Comprobante (Soporta PDF o Imagen de Supabase) */}
             <div className="space-y-2">
               <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
                 Comprobante Digital de Supabase
               </span>
               {pagoSeleccionado.comprobante_url ? (
-                <div className="rounded-xl border border-[#CBC6B6] overflow-hidden bg-[#FAF8F5] p-3 text-center">
-                  <img
-                    src={pagoSeleccionado.comprobante_url}
-                    alt="Comprobante de Suscripción"
-                    className="max-h-48 sm:max-h-56 mx-auto rounded-lg object-contain border border-[#CBC6B6]/40 shadow-sm"
-                  />
-                  <div className="pt-2">
+                <div className="rounded-xl border border-[#CBC6B6] overflow-hidden bg-[#FAF8F5] p-3 text-center space-y-2">
+                  {esComprobantePdf(pagoSeleccionado.comprobante_url) ? (
+                    <div className="p-4 rounded-xl bg-white border border-[#CBC6B6]/70 flex flex-col items-center gap-2">
+                      <FileText size={32} className="text-[#526F7D]" />
+                      <span className="text-xs font-bold text-[#233D49]">
+                        Documento de Comprobante en Formato PDF
+                      </span>
+                      <iframe
+                        src={pagoSeleccionado.comprobante_url}
+                        title="Vista previa PDF"
+                        className="w-full h-48 rounded-lg border border-[#CBC6B6]/50"
+                      />
+                    </div>
+                  ) : (
+                    <img
+                      src={pagoSeleccionado.comprobante_url}
+                      alt="Comprobante de Suscripción"
+                      className="max-h-48 sm:max-h-56 mx-auto rounded-lg object-contain border border-[#CBC6B6]/40 shadow-sm"
+                    />
+                  )}
+                  <div className="pt-1">
                     <a
                       href={pagoSeleccionado.comprobante_url}
                       target="_blank"
@@ -447,7 +457,7 @@ export const FacturacionSuperAdmin = () => {
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-[#526F7D] hover:text-[#233D49] underline"
                     >
                       <ExternalLink size={13} />
-                      <span>Abrir comprobante en resolución completa</span>
+                      <span>Abrir comprobante completo en nueva pestaña</span>
                     </a>
                   </div>
                 </div>
@@ -460,7 +470,7 @@ export const FacturacionSuperAdmin = () => {
               )}
             </div>
 
-            {/* Botones de Acción: Aprobar Suscripción (Verde #4D9A72) y Rechazar (Rojo #C95C5C) */}
+            {/* Botones de Acción */}
             <div className="pt-3 border-t border-[#CBC6B6]/60 flex items-center gap-3">
               <button
                 disabled={procesando}
@@ -480,11 +490,9 @@ export const FacturacionSuperAdmin = () => {
                 <span>Rechazar</span>
               </button>
             </div>
-
           </div>
         </div>
       )}
-
     </div>
   );
 };

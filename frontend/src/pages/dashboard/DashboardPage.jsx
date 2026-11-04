@@ -3,10 +3,11 @@
  * Admin: KPIs SaaS + tabla de eventos
  * Gerente: KPIs + Aprobaciones interactivas (Aprobar/Rechazar)
  * Trabajador: Eventos asignados + Checklist operativo interactivo
- * Cliente: Vista de su evento principal (XV Años Valentina) + KPIs financieros
+ * Cliente: Vista de su evento principal + KPIs financieros
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useBranding } from '../../context/ThemeBrandingContext';
 import { api } from '../../services/api';
 import { eventraService } from '../../services/eventraService';
 import { Badge } from '../../components/common/Badge';
@@ -18,7 +19,7 @@ import {
 import {
   CalendarDays, DollarSign, Users, CheckCircle2, Clock,
   AlertCircle, Sparkles, ArrowUpRight, TrendingUp, Activity,
-  ListTodo, RefreshCw, WifiOff, Check, X, ChevronRight,
+  RefreshCw, WifiOff, Check, X, ChevronRight,
   CalendarCheck, Layers, Building2, MessageSquare, BarChart2,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -92,7 +93,8 @@ const OfflineBanner = ({ onRetry }) => (
 
 // ── SaaS Metric Bar ───────────────────────────────────────────────────────────
 const SaasBar = ({ label, current, limit }) => {
-  const pct = Math.round((current / limit) * 100);
+  const safeLimit = limit > 0 ? limit : 1;
+  const pct = Math.min(100, Math.round((current / safeLimit) * 100));
   const color = pct >= 90 ? 'var(--danger)' : pct >= 70 ? 'var(--warning)' : 'var(--success)';
   return (
     <div>
@@ -112,17 +114,28 @@ const SaasBar = ({ label, current, limit }) => {
 // ══════════════════════════════════════════════════════════════════════════════
 export const DashboardPage = () => {
   const { user, isAdmin, isGerente, isTrabajador, isCliente } = useAuth();
+  const { branding } = useBranding();
 
   const [kpis, setKpis] = useState(null);
   const [kpiLoading, setKpiLoading] = useState(true);
   const [apiOnline, setApiOnline] = useState(true);
   const [toast, setToast] = useState(null);
 
-  // Estado mutable de eventos y solicitudes
+  // Estado mutable de eventos, solicitudes y consumo SaaS
   const [eventos, setEventos] = useState([]);
   const [solicitudes, setSolicitudes] = useState(() =>
     MOCK_SOLICITUDES_CAMBIO.map(s => ({ ...s }))
   );
+  const [consumoSaas, setConsumoSaas] = useState(null);
+
+  // Checklist interactivo para trabajador (sincronizado con actividades reales si existen)
+  const [checklist, setChecklist] = useState([
+    { id: 1, done: true,  text: 'Verificación de climatización e iluminación — Salón Imperial' },
+    { id: 2, done: true,  text: 'Confirmación con chef: menú gourmet (120 raciones)' },
+    { id: 3, done: false, text: 'Prueba de sonido y cabina de DJ profesional (16:00 hs)' },
+    { id: 4, done: false, text: 'Montaje de backing floral y letras gigantes iluminadas' },
+    { id: 5, done: false, text: 'Revisión de lista de invitados y protocolo de bienvenida' },
+  ]);
 
   useEffect(() => {
     eventraService.getEventos()
@@ -131,18 +144,30 @@ export const DashboardPage = () => {
     eventraService.getSolicitudes()
       .then(data => { if (data && data.length > 0) setSolicitudes(data); })
       .catch(() => {});
-  }, []);
+    if (isAdmin) {
+      eventraService.getConsumoSuscripcion()
+        .then(data => { if (data && data.limites && data.uso) setConsumoSaas(data); })
+        .catch(() => {});
+    }
+    if (isTrabajador) {
+      eventraService.getActividades()
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setChecklist(
+              data.slice(0, 8).map(act => ({
+                id: act.id,
+                done: act.estado === 'Completada' || act.completada === true,
+                text: act.titulo || act.descripcion || 'Actividad operativa asignada',
+                isReal: true,
+              }))
+            );
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isAdmin, isTrabajador]);
 
   const eventosList = eventos.length > 0 ? eventos : MOCK_EVENTOS;
-
-  // Checklist interactivo para trabajador
-  const [checklist, setChecklist] = useState([
-    { id: 1, done: true,  text: 'Verificación de climatización e iluminación — Salón Imperial' },
-    { id: 2, done: true,  text: 'Confirmación con chef: menú gourmet (120 raciones)' },
-    { id: 3, done: false, text: 'Prueba de sonido y cabina de DJ profesional (16:00 hs)' },
-    { id: 4, done: false, text: 'Montaje de backing floral y letras gigantes iluminadas' },
-    { id: 5, done: false, text: 'Revisión de lista de invitados y protocolo de bienvenida' },
-  ]);
 
   const fetchKpis = useCallback(async () => {
     setKpiLoading(true);
@@ -161,42 +186,62 @@ export const DashboardPage = () => {
     else { setKpiLoading(false); }
   }, [isAdmin, isGerente, isTrabajador, fetchKpis]);
 
+  const metricasSaas = {
+    empresa: branding?.nombre_comercial || user?.empresa_nombre || MOCK_METRICAS_SAAS.empresa,
+    plan: consumoSaas?.plan || user?.plan_suscripcion || 'Premium',
+    clientes_activos: consumoSaas?.uso?.clientes ?? kpis?.total_clientes ?? MOCK_METRICAS_SAAS.clientes_activos,
+    limite_clientes: consumoSaas?.limites?.clientes ?? MOCK_METRICAS_SAAS.limite_clientes,
+    servicios_activos: consumoSaas?.uso?.servicios ?? MOCK_METRICAS_SAAS.servicios_activos,
+    limite_servicios: consumoSaas?.limites?.servicios ?? MOCK_METRICAS_SAAS.limite_servicios,
+    usuarios_internos: consumoSaas?.uso?.usuarios ?? MOCK_METRICAS_SAAS.usuarios_internos,
+    limite_usuarios: consumoSaas?.limites?.usuarios ?? MOCK_METRICAS_SAAS.limite_usuarios,
+    mensajes_chatbot_mes: consumoSaas?.uso?.chatbot ?? MOCK_METRICAS_SAAS.mensajes_chatbot_mes,
+    limite_chatbot: consumoSaas?.limites?.chatbot ?? MOCK_METRICAS_SAAS.limite_chatbot,
+  };
+
   const kd = {
     total_eventos_activos: kpis?.total_eventos_activos ?? eventosList.length,
-    total_clientes:        kpis?.total_clientes        ?? MOCK_METRICAS_SAAS.clientes_activos,
+    total_clientes:        kpis?.total_clientes        ?? metricasSaas.clientes_activos,
     ingresos_totales:      kpis?.ingresos_totales      ?? MOCK_METRICAS_SAAS.ingresos_mes,
     tareas_pendientes:     kpis?.tareas_pendientes     ?? 4,
   };
 
   const fmt = (n) =>
-    new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n);
+    new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(Number(n) || 0);
 
-  // ── Handlers de aprobación ─────────────────────────────────────────────────
+  // ── Handlers de aprobación sincronizados con eventraService.actualizarEstadoSolicitud ──
   const handleAprobar = async (id) => {
     try {
-      await eventraService.updateEstadoSolicitud(id, 'Aprobada');
+      await eventraService.actualizarEstadoSolicitud(id, 'Aprobado');
     } catch (_) {}
     setSolicitudes(prev =>
-      prev.map(s => s.id === id ? { ...s, estado: 'Aprobada' } : s)
+      prev.map(s => s.id === id ? { ...s, estado: 'Aprobado' } : s)
     );
     setToast({ msg: '✓ Solicitud aprobada exitosamente.', type: 'success' });
   };
 
   const handleRechazar = async (id) => {
     try {
-      await eventraService.updateEstadoSolicitud(id, 'Rechazada');
+      await eventraService.actualizarEstadoSolicitud(id, 'Rechazado');
     } catch (_) {}
     setSolicitudes(prev =>
-      prev.map(s => s.id === id ? { ...s, estado: 'Rechazada' } : s)
+      prev.map(s => s.id === id ? { ...s, estado: 'Rechazado' } : s)
     );
     setToast({ msg: '✗ Solicitud rechazada.', type: 'danger' });
   };
 
-  // ── Toggle checklist ───────────────────────────────────────────────────────
-  const toggleCheck = (id) => {
+  // ── Toggle checklist sincronizado con el backend cuando la actividad es real ──
+  const toggleCheck = async (id) => {
+    const target = checklist.find(item => item.id === id);
+    const nextDone = target ? !target.done : true;
     setChecklist(prev =>
-      prev.map(item => item.id === id ? { ...item, done: !item.done } : item)
+      prev.map(item => item.id === id ? { ...item, done: nextDone } : item)
     );
+    if (target?.isReal) {
+      try {
+        await eventraService.updateEstadoActividad(id, nextDone ? 'Completada' : 'Pendiente');
+      } catch (_) {}
+    }
   };
 
   const completedCount = checklist.filter(c => c.done).length;
@@ -280,10 +325,10 @@ export const DashboardPage = () => {
               icon={CalendarDays} iconColor="var(--primary)"
               subtext={<><TrendingUp size={12} /> En planificación o en progreso</>}
               loading={kpiLoading} />
-            <KpiCard label="Clientes Activos" value={`${kd.total_clientes} / ${MOCK_METRICAS_SAAS.limite_clientes}`}
+            <KpiCard label="Clientes Activos" value={`${kd.total_clientes} / ${metricasSaas.limite_clientes}`}
               icon={Users} iconColor="var(--warning)"
               subtext="Uso del plan actual" loading={kpiLoading} />
-            <KpiCard label="Servicios" value={`${MOCK_METRICAS_SAAS.servicios_activos} / ${MOCK_METRICAS_SAAS.limite_servicios}`}
+            <KpiCard label="Servicios" value={`${metricasSaas.servicios_activos} / ${metricasSaas.limite_servicios}`}
               icon={Layers} iconColor="var(--success)"
               subtext="Catálogo activo" loading={kpiLoading} />
             <KpiCard label="Ingresos del Mes" value={kpiLoading ? null : fmt(kd.ingresos_totales)}
@@ -297,15 +342,15 @@ export const DashboardPage = () => {
             <div className="card-header">
               <div className="card-title">
                 <Building2 size={18} color="var(--primary)" />
-                Estado de Suscripción SaaS — {MOCK_METRICAS_SAAS.empresa}
+                Estado de Suscripción SaaS — {metricasSaas.empresa}
               </div>
-              <Badge variant="primary">Plan Premium</Badge>
+              <Badge variant="primary">Plan {metricasSaas.plan}</Badge>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <SaasBar label="Clientes activos" current={MOCK_METRICAS_SAAS.clientes_activos} limit={MOCK_METRICAS_SAAS.limite_clientes} />
-              <SaasBar label="Servicios en catálogo" current={MOCK_METRICAS_SAAS.servicios_activos} limit={MOCK_METRICAS_SAAS.limite_servicios} />
-              <SaasBar label="Usuarios internos" current={MOCK_METRICAS_SAAS.usuarios_internos} limit={MOCK_METRICAS_SAAS.limite_usuarios} />
-              <SaasBar label="Mensajes chatbot / mes" current={MOCK_METRICAS_SAAS.mensajes_chatbot_mes} limit={MOCK_METRICAS_SAAS.limite_chatbot} />
+              <SaasBar label="Clientes activos" current={metricasSaas.clientes_activos} limit={metricasSaas.limite_clientes} />
+              <SaasBar label="Servicios en catálogo" current={metricasSaas.servicios_activos} limit={metricasSaas.limite_servicios} />
+              <SaasBar label="Usuarios internos" current={metricasSaas.usuarios_internos} limit={metricasSaas.limite_usuarios} />
+              <SaasBar label="Mensajes chatbot / mes" current={metricasSaas.mensajes_chatbot_mes} limit={metricasSaas.limite_chatbot} />
             </div>
           </div>
 
@@ -337,15 +382,15 @@ export const DashboardPage = () => {
                   {eventosList.map((evt) => (
                     <tr key={evt.id}>
                       <td>
-                        <div style={{ fontWeight: 700, fontSize: '0.875rem' }}>{evt.titulo}</div>
+                        <div style={{ fontWeight: 700, fontSize: '0.875rem' }}>{evt.titulo || evt.nombre_evento}</div>
                         <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{String(evt.id).substring(0, 8).toUpperCase()}</div>
                       </td>
-                      <td style={{ fontSize: '0.875rem' }}>{evt.cliente_nombre}</td>
-                      <td style={{ fontSize: '0.875rem', whiteSpace: 'nowrap' }}>{evt.fecha}</td>
-                      <td style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>{evt.paquete}</td>
-                      <td style={{ fontWeight: 700 }}>{fmt(evt.monto_total)}</td>
-                      <td style={{ color: evt.saldo_pendiente > 0 ? 'var(--warning)' : 'var(--success)', fontWeight: 600 }}>
-                        {fmt(evt.saldo_pendiente)}
+                      <td style={{ fontSize: '0.875rem' }}>{evt.cliente_nombre || 'Cliente'}</td>
+                      <td style={{ fontSize: '0.875rem', whiteSpace: 'nowrap' }}>{evt.fecha || evt.fecha_evento}</td>
+                      <td style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>{evt.paquete || evt.salon_o_lugar || 'Estándar'}</td>
+                      <td style={{ fontWeight: 700 }}>{fmt(evt.monto_total ?? evt.total_calculado ?? evt.presupuesto_estimado)}</td>
+                      <td style={{ color: (evt.saldo_pendiente ?? 0) > 0 ? 'var(--warning)' : 'var(--success)', fontWeight: 600 }}>
+                        {fmt(evt.saldo_pendiente ?? 0)}
                       </td>
                       <td><Badge variant={estadoBadge(evt.estado)}>{evt.estado}</Badge></td>
                     </tr>
@@ -384,74 +429,85 @@ export const DashboardPage = () => {
                 <AlertCircle size={18} color="var(--warning)" />
                 Solicitudes de Modificación — Sujetas a Aprobación
               </div>
-              <Badge variant="warning">{solicitudes.filter(s => s.estado.includes('Pendiente')).length} pendientes</Badge>
+              <Badge variant="warning">{solicitudes.filter(s => String(s.estado || '').includes('Pendiente')).length} pendientes</Badge>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {solicitudes.map((sol) => (
-                <div
-                  key={sol.id}
-                  style={{
-                    padding: '1.125rem',
-                    background: sol.estado.includes('Pendiente') ? 'rgba(196,154,58,0.04)' : sol.estado === 'Aprobado' ? 'rgba(77,154,114,0.04)' : 'rgba(201,92,92,0.04)',
-                    border: `1px solid ${sol.estado.includes('Pendiente') ? 'rgba(196,154,58,0.2)' : sol.estado === 'Aprobado' ? 'rgba(77,154,114,0.2)' : 'rgba(201,92,92,0.2)'}`,
-                    borderRadius: 'var(--radius-md)',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: '0.875rem',
-                    transition: 'all 0.25s ease',
-                  }}
-                >
-                  <div style={{ flex: 1, minWidth: '250px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
-                      <strong style={{ fontSize: '0.9rem', color: 'var(--primary-dark)' }}>{sol.evento_titulo}</strong>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>({sol.cliente})</span>
-                      <Badge variant={sol.estado.includes('Pendiente') ? 'warning' : sol.estado === 'Aprobado' ? 'success' : 'danger'}>
-                        {sol.estado}
-                      </Badge>
-                    </div>
-                    <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', margin: 0 }}>
-                      {sol.descripcion}
-                    </p>
-                    <div style={{ fontSize: '0.73rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
-                      Solicitud #{sol.id} · {sol.fecha_solicitud}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                    <div style={{
-                      fontWeight: 800, fontSize: '1.05rem',
-                      color: 'var(--warning)',
-                      background: 'var(--warning-light)',
-                      padding: '0.3rem 0.75rem',
+              {solicitudes.map((sol) => {
+                const estadoSol = String(sol.estado || 'Pendiente');
+                const isPendiente = estadoSol.includes('Pendiente');
+                const isAprobada = estadoSol.includes('Aprobad');
+                return (
+                  <div
+                    key={sol.id}
+                    style={{
+                      padding: '1.125rem',
+                      background: isPendiente ? 'rgba(196,154,58,0.04)' : isAprobada ? 'rgba(77,154,114,0.04)' : 'rgba(201,92,92,0.04)',
+                      border: `1px solid ${isPendiente ? 'rgba(196,154,58,0.2)' : isAprobada ? 'rgba(77,154,114,0.2)' : 'rgba(201,92,92,0.2)'}`,
                       borderRadius: 'var(--radius-md)',
-                      border: '1px solid rgba(196,154,58,0.2)',
-                    }}>
-                      {sol.impacto_costo}
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: '0.875rem',
+                      transition: 'all 0.25s ease',
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: '250px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
+                        <strong style={{ fontSize: '0.9rem', color: 'var(--primary-dark)' }}>
+                          {sol.evento_titulo || sol.nombre_evento || 'Solicitud de Evento'}
+                        </strong>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                          ({sol.cliente || sol.cliente_nombre || 'Cliente'})
+                        </span>
+                        <Badge variant={isPendiente ? 'warning' : isAprobada ? 'success' : 'danger'}>
+                          {estadoSol}
+                        </Badge>
+                      </div>
+                      <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', margin: 0 }}>
+                        {sol.descripcion || sol.detalle_solicitud}
+                      </p>
+                      <div style={{ fontSize: '0.73rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                        Solicitud #{String(sol.id).substring(0, 8)} · {sol.fecha_solicitud || 'Reciente'}
+                      </div>
                     </div>
 
-                    {sol.estado.includes('Pendiente') && (
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button
-                          id={`aprobar-sol-${sol.id}`}
-                          className="btn btn-success btn-sm"
-                          onClick={() => handleAprobar(sol.id)}
-                        >
-                          <Check size={14} /> Aprobar
-                        </button>
-                        <button
-                          id={`rechazar-sol-${sol.id}`}
-                          className="btn btn-danger btn-sm"
-                          onClick={() => handleRechazar(sol.id)}
-                        >
-                          <X size={14} /> Rechazar
-                        </button>
-                      </div>
-                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                      {sol.impacto_costo && (
+                        <div style={{
+                          fontWeight: 800, fontSize: '1.05rem',
+                          color: 'var(--warning)',
+                          background: 'var(--warning-light)',
+                          padding: '0.3rem 0.75rem',
+                          borderRadius: 'var(--radius-md)',
+                          border: '1px solid rgba(196,154,58,0.2)',
+                        }}>
+                          {sol.impacto_costo}
+                        </div>
+                      )}
+
+                      {isPendiente && (
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button
+                            id={`aprobar-sol-${sol.id}`}
+                            className="btn btn-success btn-sm"
+                            onClick={() => handleAprobar(sol.id)}
+                          >
+                            <Check size={14} /> Aprobar
+                          </button>
+                          <button
+                            id={`rechazar-sol-${sol.id}`}
+                            className="btn btn-danger btn-sm"
+                            onClick={() => handleRechazar(sol.id)}
+                          >
+                            <X size={14} /> Rechazar
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -472,14 +528,14 @@ export const DashboardPage = () => {
                   {eventosList.map((evt) => (
                     <tr key={evt.id}>
                       <td>
-                        <div style={{ fontWeight: 700 }}>{evt.titulo}</div>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{evt.paquete}</div>
+                        <div style={{ fontWeight: 700 }}>{evt.titulo || evt.nombre_evento}</div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{evt.paquete || evt.salon_o_lugar}</div>
                       </td>
-                      <td>{evt.cliente_nombre}</td>
-                      <td style={{ whiteSpace: 'nowrap' }}>{evt.fecha}</td>
-                      <td style={{ fontWeight: 700 }}>{fmt(evt.monto_total)}</td>
-                      <td style={{ color: evt.saldo_pendiente > 0 ? 'var(--warning)' : 'var(--success)', fontWeight: 600 }}>
-                        {fmt(evt.saldo_pendiente)}
+                      <td>{evt.cliente_nombre || 'Cliente'}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>{evt.fecha || evt.fecha_evento}</td>
+                      <td style={{ fontWeight: 700 }}>{fmt(evt.monto_total ?? evt.total_calculado ?? evt.presupuesto_estimado)}</td>
+                      <td style={{ color: (evt.saldo_pendiente ?? 0) > 0 ? 'var(--warning)' : 'var(--success)', fontWeight: 600 }}>
+                        {fmt(evt.saldo_pendiente ?? 0)}
                       </td>
                       <td><Badge variant={estadoBadge(evt.estado)}>{evt.estado}</Badge></td>
                     </tr>
@@ -504,7 +560,7 @@ export const DashboardPage = () => {
               label="Tareas Completadas"
               value={`${completedCount} / ${checklist.length}`}
               icon={CheckCircle2} iconColor="var(--success)"
-              subtext={`${Math.round((completedCount / checklist.length) * 100)}% del checklist`}
+              subtext={`${checklist.length ? Math.round((completedCount / checklist.length) * 100) : 0}% del checklist`}
               loading={false}
             />
           </div>
@@ -529,25 +585,25 @@ export const DashboardPage = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                       <div>
                         <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--primary-dark)' }}>
-                          {evt.titulo}
+                          {evt.titulo || evt.nombre_evento}
                         </div>
                         <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                          {evt.paquete}
+                          {evt.paquete || evt.salon_o_lugar}
                         </div>
                       </div>
                       <Badge variant={estadoBadge(evt.estado)}>{evt.estado}</Badge>
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><CalendarDays size={14} /> {evt.fecha}</span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Users size={14} /> {evt.invitados} invitados</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><CalendarDays size={14} /> {evt.fecha || evt.fecha_evento}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Users size={14} /> {evt.invitados || evt.num_invitados || 100} invitados</span>
                     </div>
                     <div style={{ marginTop: '0.75rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
                         <span>Progreso</span>
-                        <span style={{ fontWeight: 700 }}>{evt.progreso_porcentaje}%</span>
+                        <span style={{ fontWeight: 700 }}>{evt.progreso_porcentaje ?? 60}%</span>
                       </div>
                       <div className="progress-bar-container">
-                        <div className="progress-bar-fill" style={{ width: `${evt.progreso_porcentaje}%` }} />
+                        <div className="progress-bar-fill" style={{ width: `${evt.progreso_porcentaje ?? 60}%` }} />
                       </div>
                     </div>
                   </div>
@@ -573,7 +629,7 @@ export const DashboardPage = () => {
                   <div
                     className="progress-bar-fill"
                     style={{
-                      width: `${Math.round((completedCount / checklist.length) * 100)}%`,
+                      width: `${checklist.length ? Math.round((completedCount / checklist.length) * 100) : 0}%`,
                       background: 'linear-gradient(90deg, var(--success), #6dbb96)',
                     }}
                   />
@@ -615,6 +671,9 @@ export const DashboardPage = () => {
          ══════════════════════════════════════════════════════════════════════ */}
       {isCliente && (() => {
         const evt = eventosList.find(e => e.cliente_email === user?.email || e.cliente_nombre?.toLowerCase().includes('pablo')) || eventosList[0] || MOCK_EVENTOS[1];
+        const totalEvt = Number(evt.monto_total ?? evt.total_calculado ?? evt.presupuesto_estimado ?? 8500);
+        const anticipoEvt = Number(evt.anticipo_pagado ?? 4250);
+        const saldoEvt = Number(evt.saldo_pendiente ?? Math.max(0, totalEvt - anticipoEvt));
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {/* Card principal del evento */}
@@ -631,14 +690,14 @@ export const DashboardPage = () => {
                     <Badge variant="primary">Evento en Progreso</Badge>
                   </div>
                   <h2 style={{ fontSize: '1.5rem', marginBottom: '0.3rem' }}>
-                    {evt.titulo}
+                    {evt.titulo || evt.nombre_evento}
                   </h2>
                   <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><CalendarDays size={15} /> {evt.fecha}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><CalendarDays size={15} /> {evt.fecha || evt.fecha_evento}</span>
                     <span style={{ color: 'var(--border-subtle)' }}>|</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Building2 size={15} /> Salón Imperial Platinum</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Building2 size={15} /> {evt.salon_o_lugar || evt.salon_nombre || 'Salón Imperial Platinum'}</span>
                     <span style={{ color: 'var(--border-subtle)' }}>|</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Users size={15} /> {evt.invitados} invitados</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Users size={15} /> {evt.invitados || evt.num_invitados || 150} invitados</span>
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -646,22 +705,22 @@ export const DashboardPage = () => {
                     Progreso de Organización
                   </div>
                   <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--primary)', fontFamily: 'Outfit, sans-serif', lineHeight: 1 }}>
-                    {evt.progreso_porcentaje}%
+                    {evt.progreso_porcentaje ?? 75}%
                   </div>
                 </div>
               </div>
 
               {/* Barra de progreso */}
               <div className="progress-bar-container" style={{ height: '12px', marginBottom: '1.5rem' }}>
-                <div className="progress-bar-fill" style={{ width: `${evt.progreso_porcentaje}%` }} />
+                <div className="progress-bar-fill" style={{ width: `${evt.progreso_porcentaje ?? 75}%` }} />
               </div>
 
               {/* KPIs financieros */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
                 {[
-                  { label: 'COSTO TOTAL', value: fmt(evt.monto_total), color: 'var(--primary-dark)', bg: 'var(--cream)', icon: <DollarSign size={16} /> },
-                  { label: 'ANTICIPO PAGADO', value: `${fmt(evt.anticipo_pagado)} (50%)`, color: 'var(--success)', bg: 'var(--success-light)', icon: <CheckCircle2 size={16} /> },
-                  { label: 'SALDO PENDIENTE', value: fmt(evt.saldo_pendiente), color: 'var(--warning)', bg: 'var(--warning-light)', icon: <Clock size={16} /> },
+                  { label: 'COSTO TOTAL', value: fmt(totalEvt), color: 'var(--primary-dark)', bg: 'var(--cream)', icon: <DollarSign size={16} /> },
+                  { label: 'ANTICIPO PAGADO', value: fmt(anticipoEvt), color: 'var(--success)', bg: 'var(--success-light)', icon: <CheckCircle2 size={16} /> },
+                  { label: 'SALDO PENDIENTE', value: fmt(saldoEvt), color: 'var(--warning)', bg: 'var(--warning-light)', icon: <Clock size={16} /> },
                 ].map((item) => (
                   <div
                     key={item.label}
@@ -688,7 +747,7 @@ export const DashboardPage = () => {
             <div className="grid-cols-3">
               {[
                 { icon: <CalendarCheck size={22} />, label: 'Ver detalle completo', sub: 'Actividades, pagos y archivos', to: '/eventos', color: 'var(--primary)' },
-                { icon: <MessageSquare size={22} />, label: 'Solicitar modificación', sub: 'Cambia detalles de tu evento', to: '/cotizaciones', color: 'var(--warning)' },
+                { icon: <MessageSquare size={22} />, label: 'Solicitar modificación', sub: 'Cambia detalles de tu evento', to: '/portal-cliente/solicitudes', color: 'var(--warning)' },
                 { icon: <CalendarDays size={22} />, label: 'Mis reservas', sub: 'Salones y servicios reservados', to: '/reservas', color: 'var(--success)' },
               ].map((card) => (
                 <Link

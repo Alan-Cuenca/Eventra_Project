@@ -9,22 +9,16 @@ import {
   CalendarDays,
   FileText,
   CreditCard,
-  MessageSquare,
   LogOut,
   ChevronRight,
   Sparkles,
-  CheckCircle2,
-  Clock,
-  MapPin,
   Users,
-  DollarSign,
-  ArrowUpRight,
   ShieldCheck,
   Building2,
   CalendarCheck,
   Moon,
   Sun,
-  FileEdit
+  FileEdit,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
@@ -45,7 +39,11 @@ export const PortalClientePage = () => {
     const fetchClientData = async () => {
       try {
         const data = await eventraService.getEventos();
-        const list = Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []);
+        const list = Array.isArray(data)
+          ? data
+          : data?.data && Array.isArray(data.data)
+          ? data.data
+          : [];
         setEventos(list);
       } catch (err) {
         console.error('Error al cargar datos del cliente', err);
@@ -64,11 +62,35 @@ export const PortalClientePage = () => {
   const nombre = user?.nombre_completo ?? 'Cliente';
   const mainEvent = eventos.length > 0 ? eventos[0] : null;
 
-  // Cálculos financieros de ejemplo o reales basados en el evento principal
-  const totalEvento = mainEvent?.total || mainEvent?.presupuesto_estimado || 8500;
-  const pagado = mainEvent?.pagado || 5500;
-  const saldoPendiente = Math.max(0, totalEvento - pagado);
-  const porcentajePagado = Math.min(100, Math.round((pagado / totalEvento) * 100));
+  // Cálculos financieros sincronizados con las columnas reales del backend
+  const totalEvento = Number(
+    mainEvent?.monto_total ??
+      mainEvent?.total_calculado ??
+      mainEvent?.total ??
+      mainEvent?.presupuesto_estimado ??
+      8500
+  );
+  const pagado = Number(
+    mainEvent?.anticipo_pagado ??
+      mainEvent?.pagado ??
+      (mainEvent?.saldo_pendiente !== undefined
+        ? Math.max(0, totalEvento - Number(mainEvent.saldo_pendiente))
+        : 5500)
+  );
+  const saldoPendiente = Number(
+    mainEvent?.saldo_pendiente ?? Math.max(0, totalEvento - pagado)
+  );
+  const porcentajePagado =
+    totalEvento > 0 ? Math.min(100, Math.round((pagado / totalEvento) * 100)) : 0;
+
+  const fechaRaw = mainEvent?.fecha_evento || mainEvent?.fecha;
+  const salonDisplay =
+    mainEvent?.salon_o_lugar ||
+    mainEvent?.salon_nombre ||
+    mainEvent?.salon ||
+    'Salón Cristal Imperial';
+  const invitadosDisplay =
+    mainEvent?.num_invitados || mainEvent?.invitados || 150;
 
   const ACCESOS_RAPIDOS = [
     {
@@ -77,7 +99,7 @@ export const PortalClientePage = () => {
       icon: CreditCard,
       titulo: 'Realizar Abono / Pago',
       desc: 'Registra tus comprobantes de depósito o transferencia de forma segura.',
-      badge: 'Finanzas'
+      badge: 'Finanzas',
     },
     {
       id: 'mis-eventos',
@@ -85,7 +107,7 @@ export const PortalClientePage = () => {
       icon: CalendarDays,
       titulo: 'Detalle de Mis Eventos',
       desc: 'Consulta la fecha, salón, menú contratado y cronograma operativo.',
-      badge: 'Agenda'
+      badge: 'Agenda',
     },
     {
       id: 'cotizaciones',
@@ -93,7 +115,7 @@ export const PortalClientePage = () => {
       icon: FileText,
       titulo: 'Mis Cotizaciones',
       desc: 'Revisa presupuestos detallados y aprueba nuevas opciones de paquetes.',
-      badge: 'Propuestas'
+      badge: 'Propuestas',
     },
     {
       id: 'solicitudes',
@@ -101,7 +123,7 @@ export const PortalClientePage = () => {
       icon: FileEdit,
       titulo: 'Solicitar Cambios',
       desc: 'Pide ajustes a tus eventos agendados (horarios, comensales, menú o decoración).',
-      badge: 'Requerimientos'
+      badge: 'Requerimientos',
     },
     {
       id: 'reservas',
@@ -109,14 +131,14 @@ export const PortalClientePage = () => {
       icon: CalendarCheck,
       titulo: 'Espacios y Salones',
       desc: 'Verifica la reserva de salones sin riesgo de colisiones de agenda.',
-      badge: 'Disponibilidad'
+      badge: 'Disponibilidad',
     },
   ];
 
   return (
     <div className="min-h-screen bg-[#F3F0E4] text-[#233D49] flex flex-col font-sans selection:bg-[#4D7182] selection:text-white relative">
       <WatermarkOverlay />
-      
+
       {/* ── Top Bar Oficial "Sofisticación Sutil" ─────────────────────── */}
       <header className="sticky top-0 z-50 bg-[#F3F0E4]/95 backdrop-blur-md border-b border-[#CEC8B8] px-4 sm:px-8 h-20 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -174,7 +196,6 @@ export const PortalClientePage = () => {
 
       {/* ── Cuerpo Principal ────────────────────────────────────────── */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-8 sm:py-12 space-y-8 animate-fade-in">
-        
         {/* Saludo y Bienvenida */}
         <div className="space-y-1">
           <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#4D7182]">
@@ -198,24 +219,26 @@ export const PortalClientePage = () => {
                   {mainEvent?.estado || 'Confirmado'}
                 </span>
                 <span className="text-xs text-[#4D7182] font-semibold">
-                  Evento Principal
+                  {loading ? 'Cargando recepción...' : 'Evento Principal'}
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-[#233D49]">
-                {mainEvent?.titulo || mainEvent?.nombre || 'Recepción Familiar San Andrés'}
+                {mainEvent?.titulo || mainEvent?.nombre_evento || mainEvent?.nombre || 'Recepción Familiar San Andrés'}
               </h2>
               <div className="flex flex-wrap items-center gap-4 text-xs text-[#233D49]/80 font-medium">
                 <span className="flex items-center gap-1">
                   <CalendarDays size={14} className="text-[#4D7182]" />
-                  {mainEvent?.fecha ? new Date(mainEvent.fecha).toLocaleDateString('es-ES', { dateStyle: 'long' }) : '28 de Noviembre de 2026'}
+                  {fechaRaw
+                    ? new Date(fechaRaw).toLocaleDateString('es-ES', { dateStyle: 'long' })
+                    : '28 de Noviembre de 2026'}
                 </span>
                 <span className="flex items-center gap-1">
                   <Building2 size={14} className="text-[#4D7182]" />
-                  {mainEvent?.salon_nombre || mainEvent?.salon || 'Salón Cristal Imperial'}
+                  {salonDisplay}
                 </span>
                 <span className="flex items-center gap-1">
                   <Users size={14} className="text-[#4D7182]" />
-                  {mainEvent?.num_invitados || 150} Comensales
+                  {invitadosDisplay} Comensales
                 </span>
               </div>
             </div>
@@ -263,7 +286,7 @@ export const PortalClientePage = () => {
               <span>{porcentajePagado}% Completado</span>
             </div>
             <div className="w-full h-3 rounded-full bg-[#CEC8B8]/40 overflow-hidden">
-              <div 
+              <div
                 className="h-full rounded-full bg-[#4D9A72] transition-all duration-500 ease-out"
                 style={{ width: `${porcentajePagado}%` }}
               />
@@ -325,7 +348,6 @@ export const PortalClientePage = () => {
             ¿Necesitas ayuda? Contacta a tu coordinador asignado
           </div>
         </div>
-
       </main>
     </div>
   );
