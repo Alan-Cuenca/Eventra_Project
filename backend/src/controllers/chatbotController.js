@@ -194,37 +194,29 @@ Sé persuasivo, amable, conciso y profesional en todo momento.`;
 
 /**
  * Generador de respuesta inteligente basado estrictamente en el catálogo SQL real
- * y en el historial conversacional previo.
+ * y diseñado para concluir la asesoría comercial con una recomendación clara.
  */
 function generarRespuestaContextual(mensaje, paquetes, servicios, historial = []) {
   const msgLower = mensaje.trim().toLowerCase();
+
+  const pRecomendado = paquetes[0] || null;
+  const nombreP = pRecomendado ? pRecomendado.nombre : 'Convención & Gala Corporativa';
+  const precioP = pRecomendado ? Number(pRecomendado.precio).toFixed(2) : '2200.00';
+  const serviciosP = pRecomendado && pRecomendado.servicios_incluidos
+    ? pRecomendado.servicios_incluidos
+    : 'Salón Imperial Platinum climatizado, servicio de catering gourmet, amplificación e iluminación profesional y mantelería de gala';
 
   if (paquetes.length === 0 && servicios.length === 0) {
     return '¡Hola! Soy EVARA, asistente de ventas de esta empresa. Actualmente nuestro equipo está actualizando el catálogo de servicios. ¿Deseas solicitar una cotización personalizada?';
   }
 
-  // Análisis del historial conversacional previo
-  const msgsArray = Array.isArray(historial) ? historial : [];
-  const ultimosMensajesBot = msgsArray
-    .filter((m) => m.sender === 'evara' || m.role === 'model')
-    .map((m) => String(m.text || '').toLowerCase());
-  const ultimoBotMsg = ultimosMensajesBot[ultimosMensajesBot.length - 1] || '';
+  // 1. Despedidas y agradecimientos: Cierre definitivo de cortesía
+  const despedidas = ['gracias', 'muchas gracias', 'adios', 'adiós', 'chao', 'hasta luego', 'nos vemos', 'perfecto gracias', 'listo gracias'];
+  if (despedidas.some((d) => msgLower === d || msgLower.startsWith(d + ' ') || msgLower.endsWith(' ' + d))) {
+    return '¡Con muchísimo gusto! Fue un placer asesorarte. Toda tu información y paquetes están disponibles en el sistema. Puedes volver a consultar en cualquier momento o avanzar en el Cotizador (/cotizador). ¡Que tengas un excelente día y muchos éxitos con tu evento!';
+  }
 
-  // Ver si ya se mencionó una fecha en cualquier momento de la conversación
-  const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre', 'siguiente mes', 'proximo mes', 'próximo mes', '2025', '2026', '2027'];
-  const esFechaMensaje = meses.some((m) => msgLower.includes(m)) || (/\b\d{1,2}\b/.test(msgLower) && (msgLower.includes('de') || msgLower.includes('/')));
-  const fechaYaMencionada = esFechaMensaje || msgsArray.some((m) => {
-    const t = String(m.text || '').toLowerCase();
-    return meses.some((mes) => t.includes(mes)) || (/\b\d{1,2}\b/.test(t) && (t.includes('nov') || t.includes('dic') || t.includes('2026') || t.includes('2025')));
-  });
-
-  // Ver si el bot acaba de preguntar por ver los servicios del paquete recomendado
-  const botPreguntoPorServicios = ultimoBotMsg.includes('servicios incluye') || ultimoBotMsg.includes('qué servicios') || ultimoBotMsg.includes('conocer qué servicios');
-
-  // Ver si el bot ya listó los servicios
-  const botYaListoServicios = ultimosMensajesBot.some((t) => t.includes('incluye exactamente') || t.includes('incluye los siguientes'));
-
-  // 1. Si pregunta para qué sirve o qué capacidades tiene el bot
+  // 2. Si pregunta para qué sirve o qué capacidades tiene el bot
   if (
     msgLower.includes('para que sirve') ||
     msgLower.includes('que haces') ||
@@ -233,47 +225,46 @@ function generarRespuestaContextual(mensaje, paquetes, servicios, historial = []
     msgLower.includes('como funciona') ||
     msgLower.includes('quien eres')
   ) {
-    return '¡Hola! Soy EVARA, tu asistente de ventas y catálogo inteligente. Te sirvo para:\n1. Consultar en tiempo real paquetes, servicios, precios y detalles de catering/decoración.\n2. Recomendarte la mejor alternativa según el tipo de recepción que planeas.\n3. Guiarte para formalizar tu cotización y agendar tu salón.\n\nNota: Para asegurar que no existan colisiones de salón, el bloqueo oficial de fechas se gestiona en el módulo de Reservas (/reservas) y el desglose de contrato en el Cotizador (/cotizador). ¿Qué tipo de evento tienes en mente?';
+    return `¡Hola! Soy EVARA, tu asistente de ventas y catálogo inteligente. Te sirvo para:\n1. Recomendarte el paquete ideal según tu evento y presupuesto (ej. "${nombreP}" por $${precioP}).\n2. Detallarte los servicios de banquete, salón y música incluidos.\n3. Guiarte para que cierres tu cotización formal y asegures tu fecha.\n\nEl bloqueo oficial de salón se gestiona en Reservas (/reservas) y el desglose de contrato en el Cotizador (/cotizador). ¿Para qué fecha o tipo de evento deseas que te recomiende?`;
   }
 
-  // 2. Si el usuario envía una fecha o mes
+  // 3. Detección de fechas o períodos (ej. "4 de noviembre de 2026", "el próximo mes", etc.)
+  const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre', 'siguiente mes', 'proximo mes', 'próximo mes', '2025', '2026', '2027'];
+  const esFechaMensaje = meses.some((m) => msgLower.includes(m)) || (/\b\d{1,2}\b/.test(msgLower) && (msgLower.includes('de') || msgLower.includes('/')));
+
   if (esFechaMensaje) {
-    const p = paquetes[0];
-    const nombreP = p ? `nuestro paquete "${p.nombre}"` : 'nuestro paquete recomendado';
-    return `¡Excelente fecha! Hemos tomado nota de tu fecha tentativa (${mensaje.trim()}). Para verificar la disponibilidad exacta del salón en nuestro calendario oficial y bloquear la fecha en el sistema (evitando que otro cliente reserve simultáneamente), te invitamos a registrar tu reserva formal en el módulo de **Reservas** (/reservas) o solicitar tu propuesta en el **Cotizador** (/cotizador). Nuestro equipo comercial revisará tu solicitud de inmediato. ¿Deseas conocer qué servicios incluye ${nombreP}?`;
+    return `¡Excelente fecha! Hemos tomado nota de tu fecha tentativa (${mensaje.trim()}).\n\n` +
+      `Para tu celebración te recomendamos especialmente nuestro paquete estrella:\n` +
+      `✨ "${nombreP}" — Inversión base: $${precioP}\n\n` +
+      `📦 Servicios incluidos en esta propuesta:\n` +
+      `• ${serviciosP}\n\n` +
+      `Para garantizar la disponibilidad del salón en esa fecha y generar tu cotización formal con contrato legal, te invitamos a dar el siguiente paso en:\n` +
+      `• Cotizador Interactivo (/cotizador)\n` +
+      `• Ver Disponibilidad en Reservas (/reservas)\n\n` +
+      `¿Deseas formalizar esta recomendación en el Cotizador o requieres consultar algún servicio adicional?`;
   }
 
-  // 3. Si el usuario dice "sí" o confirma
-  const afirmaciones = ['si', 'sí', 'claro', 'por favor', 'me gustaria', 'me gustaría', 'de acuerdo', 'quiero cotizar', 'dale', 'ok', 'deseo cotizar', 'preparar cotizacion'];
+  // 4. Confirmación del usuario ("sí", "de acuerdo", "me gusta", "dale", "ok", etc.) -> CONCLUSIÓN Y CIERRE DE LA ASESORÍA
+  const afirmaciones = ['si', 'sí', 'claro', 'por favor', 'me gustaria', 'me gustaría', 'de acuerdo', 'quiero cotizar', 'dale', 'ok', 'deseo cotizar', 'preparar cotizacion', 'me gusta', 'perfecto', 'listo', 'avanzar', 'continuar'];
   const esAfirmacion = afirmaciones.some((a) => msgLower === a || msgLower.startsWith(a + ' ') || msgLower.endsWith(' ' + a));
 
   if (esAfirmacion) {
-    // Si el bot preguntó "¿Deseas conocer qué servicios incluye...?"
-    if (botPreguntoPorServicios) {
-      const p = paquetes[0];
-      const srv = p && p.servicios_incluidos ? p.servicios_incluidos : 'Salón climatizado, mantelería de gala, sonido profesional y banquete gourmet';
-      return `¡Con mucho gusto! Nuestro paquete "${p ? p.nombre : 'Convención & Gala Corporativa'}" ($${p ? Number(p.precio).toFixed(2) : '2200.00'}) incluye exactamente los siguientes servicios:\n• ${srv}.\n\nAdemás, podemos personalizarlo con cualquier servicio extra de nuestro catálogo. ¿Te gustaría calcular el total en el Cotizador (/cotizador) o deseas consultar algún servicio adicional?`;
-    }
-
-    // Si ya se mencionó la fecha anteriormente o ya se listaron los servicios
-    if (fechaYaMencionada || botYaListoServicios) {
-      return `¡Excelente decisión! Ya tenemos tu fecha y preferencias registradas. Para formalizar tu propuesta con cálculo de comensales, platillos y contrato oficial, puedes abrir directamente nuestro **Cotizador Interactivo** (/cotizador) o asegurar tu salón en **Reservas** (/reservas). ¿Hay algún requerimiento extra que te gustaría añadir?`;
-    }
-
-    // Si aún no se mencionó fecha
-    const primerP = paquetes[0];
-    const recomendacion = primerP ? `nuestro paquete "${primerP.nombre}" ($${Number(primerP.precio).toFixed(2)})` : 'nuestro catálogo';
-    return `¡Excelente! Podemos preparar una propuesta a tu medida tomando como base ${recomendacion}. ¿En qué fecha aproximada tienes pensada tu recepción?`;
+    return `¡Excelente elección! Damos por concluida tu asesoría comercial con éxito. 🎉\n\n` +
+      `Tu propuesta recomendada queda definida con el paquete "${nombreP}" ($${precioP}), que incluye:\n` +
+      `• ${serviciosP}\n\n` +
+      `Todo está listo para que formalices tu evento y asegures tu fecha en el calendario oficial antes de que otro cliente la reserve:\n` +
+      `👉 Haz clic en Ir al Cotizador (/cotizador) para calcular comensales, platillos y contrato formal.\n` +
+      `👉 O ingresa a Reservas (/reservas) para apartar el salón.\n\n` +
+      `¡Ha sido un verdadero placer atenderte! Nuestro equipo estará listo para recibirte y hacer de tu evento una experiencia inolvidable.`;
   }
 
-  // 4. Si el usuario pide ir al cotizador o cotizar
+  // 5. Si el usuario pide ir directo al cotizador o a reservas
   if (msgLower.includes('cotizador') || msgLower.includes('cotizar') || msgLower.includes('presupuesto')) {
-    return '¡Perfecto! Puedes acceder directamente al **Cotizador Interactivo** (/cotizador) para seleccionar tu paquete, ajustar el número de comensales y generar tu cotización formal con contrato legal.';
+    return `¡Perfecto! Puedes acceder directamente al **Cotizador Interactivo** (/cotizador) para seleccionar tu paquete "${nombreP}" ($${precioP}), ajustar el número de comensales y generar tu cotización formal con contrato legal. ¡Todo está listo para ti!`;
   }
 
-  // 5. Si el usuario pide ir a reservas o agendar
   if (msgLower.includes('reservar') || msgLower.includes('agendar') || msgLower.includes('reserva')) {
-    return '¡Excelente! En el módulo de **Reservas** (/reservas) puedes consultar los salones disponibles por fecha y registrar tu evento para bloquear el espacio sin riesgo de colisiones con otros clientes.';
+    return `¡Excelente! En el módulo de **Reservas** (/reservas) puedes consultar los salones disponibles por fecha y registrar tu evento para bloquear el espacio sin riesgo de colisiones con otros clientes.`;
   }
 
   // 6. Si pregunta por paquetes, bodas, precios o costos
@@ -283,7 +274,7 @@ function generarRespuestaContextual(mensaje, paquetes, servicios, historial = []
         .slice(0, 3)
         .map((p) => `"${p.nombre}" ($${Number(p.precio).toFixed(2)}) con ${p.servicios_incluidos}`)
         .join('; ');
-      return `¡Hola! Basado en nuestro catálogo oficial, disponemos de los siguientes paquetes: ${lista}. ¿Te gustaría que revisemos los servicios incluidos o prefieres verificar disponibilidad para tu fecha?`;
+      return `¡Hola! Basado en nuestro catálogo oficial, disponemos de los siguientes paquetes destacados: ${lista}.\n\nPara eventos sociales y galas te recomendamos especialmente "${nombreP}" ($${precioP}). ¿Para qué fecha estás planificando tu recepción para verificar disponibilidad?`;
     }
   }
 
@@ -294,19 +285,12 @@ function generarRespuestaContextual(mensaje, paquetes, servicios, historial = []
         .slice(0, 4)
         .map((s) => `${s.nombre} ($${Number(s.precio_base).toFixed(2)})`)
         .join(', ');
-      return `¡Hola! Con mucho gusto. En nuestro catálogo actual ofrecemos: ${listaS}. Todos nuestros servicios pueden ser personalizados según tus necesidades. ¿Te gustaría incluirlos en una cotización?`;
+      return `¡Hola! Con mucho gusto. En nuestro catálogo actual ofrecemos: ${listaS}. Todos estos servicios se pueden integrar al paquete "${nombreP}" en el Cotizador (/cotizador). ¿Te gustaría avanzar con la cotización?`;
     }
   }
 
   // 8. Respuesta de cortesía general orientativa
-  const primerPaquete = paquetes[0];
-  const nombrePaquete = primerPaquete ? `nuestro paquete "${primerPaquete.nombre}" ($${Number(primerPaquete.precio).toFixed(2)})` : 'nuestros servicios integrales';
-  
-  if (fechaYaMencionada) {
-    return `¡Con gusto te asisto! Para tu fecha planificada te recomendamos ${nombrePaquete}. ¿Deseas que te detalle los servicios incluidos o prefieres pasar al Cotizador (/cotizador)?`;
-  }
-  
-  return `¡Hola! Soy EVARA, asistente de ventas de esta empresa. Para tu evento te recomiendo especialmente ${nombrePaquete}. ¿En qué fecha tienes planificada tu recepción para verificar disponibilidad?`;
+  return `¡Hola! Soy EVARA, asistente de ventas de esta empresa. Te recomiendo especialmente nuestro paquete "${nombreP}" ($${precioP}) con ${serviciosP}.\n\nPuedes indicarme tu fecha estimada para recomendarte disponibilidad o ingresar directamente al Cotizador (/cotizador) para ver el contrato legal. ¿En qué fecha tienes planificado tu evento?`;
 }
 
 // Alias para compatibilidad con código existente

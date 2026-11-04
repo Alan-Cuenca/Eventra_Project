@@ -21,6 +21,16 @@ export const EvaraChatWidget = () => {
     },
   ]);
   const [loading, setLoading] = useState(false);
+
+  const handleResetChat = () => {
+    setMessages([
+      {
+        sender: 'evara',
+        text: '¡Hola! Soy EVARA, tu asistente de ventas de eventos. ¿Para qué fecha o tipo de evento deseas que te recomiende nuestro mejor paquete?',
+        timestamp: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+      },
+    ]);
+  };
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -111,7 +121,7 @@ export const EvaraChatWidget = () => {
 
       {/* Ventana de Chat Flotante ("Sofisticación Sutil") */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 sm:right-6 z-40 w-[350px] sm:w-[380px] max-w-[calc(100vw-2rem)] h-[440px] sm:h-[470px] max-h-[calc(100vh-6.5rem)] flex flex-col rounded-[24px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-xl overflow-hidden animate-scale-up">
+        <div className="fixed bottom-20 right-4 sm:right-6 z-40 w-[350px] sm:w-[380px] max-w-[calc(100vw-2rem)] h-[440px] sm:h-[470px] max-h-[calc(100vh-6.5rem)] flex flex-col rounded-[24px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-xl overflow-hidden whitespace-pre-line animate-scale-up">
           
           {/* Cabecera Azul Grisáceo #526F7D - Siempre visible en la parte superior del widget */}
           <div className="bg-[var(--ev-primary)] text-white px-4 py-3 flex items-center justify-between shrink-0">
@@ -162,13 +172,43 @@ export const EvaraChatWidget = () => {
 
                     {/* Burbujas: Usuario en Beige #CEC8B8, EVARA en Blanco con borde */}
                     <div
-                      className={`px-3.5 py-2 rounded-2xl text-xs leading-relaxed shadow-xs break-words overflow-hidden ${
+                      className={`px-3.5 py-2 rounded-2xl text-xs leading-relaxed shadow-xs break-words overflow-hidden whitespace-pre-line ${
                         isUser
                           ? 'bg-[#CEC8B8] text-[#233D49] rounded-tr-xs font-medium'
                           : 'bg-white text-[#233D49] border border-[#CBC6B6] rounded-tl-xs font-normal'
                       }`}
                     >
                       {msg.text}
+                      {!isUser && (msg.text.includes('/cotizador') || msg.text.includes('/reservas')) && (
+                        <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2 border-t border-[#CBC6B6]/50">
+                          {msg.text.includes('/cotizador') && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsOpen(false);
+                                navigate('/cotizador');
+                              }}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#526F7D] hover:bg-[#3E5763] text-white text-[11px] font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
+                            >
+                              <FileText size={12} />
+                              <span>Ir al Cotizador</span>
+                            </button>
+                          )}
+                          {msg.text.includes('/reservas') && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsOpen(false);
+                                navigate('/reservas');
+                              }}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#233D49] hover:bg-[#16272F] text-white text-[11px] font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
+                            >
+                              <Calendar size={12} />
+                              <span>Ver Reservas</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 
