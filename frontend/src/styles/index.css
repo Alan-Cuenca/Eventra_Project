@@ -1590,14 +1590,13 @@ html.dark .profile-trigger-btn.active {
 
 
 /* ==========================================================================
-   EVENTRA — Transformación Global Dinámica por Paleta (Marca Blanca)
-   Garantiza que al elegir cualquier paleta en Configuración de Marca se
-   transforme de forma inmediata y notoria todo el color del sistema
-   (fondos, Sidebar, cabeceras, botones, bordes y tipografía).
+   EVENTRA — Transformación Dinámica por Paleta (Exclusivo Portal Interno)
+   Aisla la Landing Page pública con sus colores originales de alto contraste
+   y aplica la paleta elegida únicamente dentro del portal con alto contraste.
    ========================================================================== */
-html:not(.dark)[data-palette] body,
 html:not(.dark)[data-palette] .app-container,
-html:not(.dark)[data-palette] .main-content {
+html:not(.dark)[data-palette] .main-content,
+html:not(.dark)[data-palette] .portal-cliente-root {
   background-color: var(--bg-main) !important;
   color: var(--text-primary);
   transition: background-color 0.25s ease, color 0.25s ease;
@@ -1626,53 +1625,54 @@ html:not(.dark)[data-palette] .nav-item.active {
 
 html:not(.dark)[data-palette] .nav-item:hover:not(.active) {
   background-color: var(--primary-light) !important;
-  color: var(--primary) !important;
+  color: var(--primary-dark) !important;
 }
 
-/* Adaptación de clases utilitarias Tailwind codificadas en hexadecimal */
-html:not(.dark)[data-palette] [class*="bg-[#F3F0E4]"],
-html:not(.dark)[data-palette] [class*="bg-[#EEEBDD]"] {
+/* Clases exactas de Tailwind dentro del portal interno (sin afectar opacidades ni selección) */
+html:not(.dark)[data-palette] .app-container .bg-\[\#F3F0E4\],
+html:not(.dark)[data-palette] .app-container .bg-\[\#EEEBDD\],
+html:not(.dark)[data-palette] .portal-cliente-root .bg-\[\#F3F0E4\],
+html:not(.dark)[data-palette] .portal-cliente-root .bg-\[\#EEEBDD\] {
   background-color: var(--bg-main) !important;
 }
 
-html:not(.dark)[data-palette] [class*="bg-[#FAF8F5]"],
-html:not(.dark)[data-palette] [class*="bg-[#FAF8F2]"] {
+html:not(.dark)[data-palette] .app-container .bg-\[\#FAF8F5\],
+html:not(.dark)[data-palette] .app-container .bg-\[\#FAF8F2\],
+html:not(.dark)[data-palette] .portal-cliente-root .bg-\[\#FAF8F5\],
+html:not(.dark)[data-palette] .portal-cliente-root .bg-\[\#FAF8F2\] {
   background-color: var(--bg-surface) !important;
 }
 
-html:not(.dark)[data-palette] [class*="bg-[#526F7D]"],
-html:not(.dark)[data-palette] [class*="bg-[#4D7182]"] {
+html:not(.dark)[data-palette] .app-container .bg-\[\#526F7D\],
+html:not(.dark)[data-palette] .app-container .bg-\[\#4D7182\],
+html:not(.dark)[data-palette] .portal-cliente-root .bg-\[\#526F7D\],
+html:not(.dark)[data-palette] .portal-cliente-root .bg-\[\#4D7182\] {
   background-color: var(--primary) !important;
+  color: #FFFFFF !important;
 }
 
-html:not(.dark)[data-palette] [class*="bg-[#526F7D]/10"],
-html:not(.dark)[data-palette] [class*="bg-[#4D7182]/10"],
-html:not(.dark)[data-palette] [class*="bg-[#4D7182]/15"] {
-  background-color: var(--primary-light) !important;
-}
-
-html:not(.dark)[data-palette] [class*="hover:bg-[#3E5763]"]:hover,
-html:not(.dark)[data-palette] [class*="hover:bg-[#3E5764]"]:hover,
-html:not(.dark)[data-palette] [class*="hover:bg-[#3d5f6e]"]:hover,
-html:not(.dark)[data-palette] [class*="hover:bg-[#3B5967]"]:hover {
+html:not(.dark)[data-palette] .app-container .hover\:bg-\[\#3E5763\]:hover,
+html:not(.dark)[data-palette] .app-container .hover\:bg-\[\#3E5764\]:hover,
+html:not(.dark)[data-palette] .app-container .hover\:bg-\[\#3d5f6e\]:hover,
+html:not(.dark)[data-palette] .app-container .hover\:bg-\[\#3B5968\]:hover {
   background-color: var(--primary-hover) !important;
 }
 
-html:not(.dark)[data-palette] [class*="text-[#233D49]"] {
+html:not(.dark)[data-palette] .app-container .text-\[\#233D49\],
+html:not(.dark)[data-palette] .portal-cliente-root .text-\[\#233D49\] {
   color: var(--text-primary) !important;
 }
 
-html:not(.dark)[data-palette] [class*="text-[#526F7D]"],
-html:not(.dark)[data-palette] [class*="text-[#4D7182]"] {
+html:not(.dark)[data-palette] .app-container .text-\[\#526F7D\],
+html:not(.dark)[data-palette] .app-container .text-\[\#4D7182\],
+html:not(.dark)[data-palette] .portal-cliente-root .text-\[\#526F7D\],
+html:not(.dark)[data-palette] .portal-cliente-root .text-\[\#4D7182\] {
   color: var(--primary) !important;
 }
 
-html:not(.dark)[data-palette] [class*="border-[#CBC6B6]"],
-html:not(.dark)[data-palette] [class*="border-[#CEC8B8]"] {
+html:not(.dark)[data-palette] .app-container .border-\[\#CBC6B6\],
+html:not(.dark)[data-palette] .app-container .border-\[\#CEC8B8\],
+html:not(.dark)[data-palette] .portal-cliente-root .border-\[\#CBC6B6\],
+html:not(.dark)[data-palette] .portal-cliente-root .border-\[\#CEC8B8\] {
   border-color: var(--border-subtle) !important;
-}
-
-html:not(.dark)[data-palette] [class*="ring-[#526F7D]"],
-html:not(.dark)[data-palette] [class*="ring-[#4D7182]"] {
-  --tw-ring-color: var(--primary) !important;
 }

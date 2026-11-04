@@ -136,7 +136,7 @@ export const PortalClientePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F3F0E4] text-[#233D49] flex flex-col font-sans selection:bg-[#4D7182] selection:text-white relative">
+    <div className="portal-cliente-root min-h-screen bg-[#F3F0E4] text-[#233D49] flex flex-col font-sans selection:bg-[#4D7182] selection:text-white relative">
       <WatermarkOverlay />
 
       {/* ── Top Bar Oficial "Sofisticación Sutil" ─────────────────────── */}
