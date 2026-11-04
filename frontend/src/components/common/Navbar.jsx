@@ -203,10 +203,18 @@ export const Navbar = ({ onOpenCommandPalette }) => {
         </button>
 
         {/* Badge de Plan Activo */}
-        <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--ev-primary)]/12 text-[var(--ev-primary)] border-0 text-[11px] font-bold">
-          <Sparkles size={11} />
-          <span>Plan Premium</span>
-        </div>
+        <Link
+          to="/mi-suscripcion"
+          title="Ver consumo y detalles de mi suscripción"
+          className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border-0 transition-all hover:opacity-90 active:scale-95 no-underline ${
+            String(planActivo).toLowerCase().includes('premium')
+              ? 'bg-[var(--ev-primary)]/12 text-[var(--ev-primary)]'
+              : 'bg-[#CEC8B8]/30 text-[#233D49]'
+          }`}
+        >
+          <Sparkles size={11} className={String(planActivo).toLowerCase().includes('premium') ? 'text-[var(--ev-primary)]' : 'text-[#8C6D32]'} />
+          <span>Plan {String(planActivo).toLowerCase().includes('premium') ? 'Premium' : 'Básico'}</span>
+        </Link>
 
         {/* Estado API Sutil */}
         <div
