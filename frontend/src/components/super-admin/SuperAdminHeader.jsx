@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Badge } from '../common/Badge';
@@ -26,12 +27,28 @@ export const SuperAdminHeader = ({ onToggleSidebar }) => {
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [profileCoords, setProfileCoords] = useState(null);
   const profileRef = useRef(null);
+  const profileMenuRef = useRef(null);
+
+  const toggleProfileMenu = () => {
+    if (!profileOpen && profileRef.current) {
+      const rect = profileRef.current.getBoundingClientRect();
+      setProfileCoords({
+        top: rect.bottom + 8,
+        right: Math.max(16, window.innerWidth - rect.right),
+      });
+    }
+    setProfileOpen((prev) => !prev);
+  };
 
   // Cerrar menú de perfil al click fuera o tecla Escape
   useEffect(() => {
     const handler = (e) => {
-      if (profileRef.current && !profileRef.current.contains(e.target)) {
+      if (
+        profileRef.current && !profileRef.current.contains(e.target) &&
+        (!profileMenuRef.current || !profileMenuRef.current.contains(e.target))
+      ) {
         setProfileOpen(false);
       }
     };
@@ -48,6 +65,26 @@ export const SuperAdminHeader = ({ onToggleSidebar }) => {
     };
   }, [profileOpen]);
 
+  // Sincronizar coordenadas en viewport resize y scroll
+  useEffect(() => {
+    if (!profileOpen) return;
+    const updatePositions = () => {
+      if (profileRef.current) {
+        const rect = profileRef.current.getBoundingClientRect();
+        setProfileCoords({
+          top: rect.bottom + 8,
+          right: Math.max(16, window.innerWidth - rect.right),
+        });
+      }
+    };
+    window.addEventListener('resize', updatePositions);
+    window.addEventListener('scroll', updatePositions, true);
+    return () => {
+      window.removeEventListener('resize', updatePositions);
+      window.removeEventListener('scroll', updatePositions, true);
+    };
+  }, [profileOpen]);
+
   const iniciales = user?.nombre_completo
     ? user.nombre_completo
         .split(' ')
@@ -58,7 +95,7 @@ export const SuperAdminHeader = ({ onToggleSidebar }) => {
     : 'SA';
 
   return (
-    <header className="app-header">
+    <header className="app-header h-16 sticky top-0 z-50 px-4 sm:px-6 backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] flex items-center justify-between transition-colors duration-300">
       {/* Lado Izquierdo: Botón móvil + Logotipo Oficial de EVENTRA */}
       <div className="header-left flex items-center gap-3">
         <button
@@ -130,7 +167,7 @@ export const SuperAdminHeader = ({ onToggleSidebar }) => {
             id="superadmin-profile-menu-btn"
             type="button"
             className={`profile-trigger-btn ${profileOpen ? 'active' : ''}`}
-            onClick={() => setProfileOpen((prev) => !prev)}
+            onClick={toggleProfileMenu}
             aria-expanded={profileOpen}
             aria-haspopup="true"
             aria-label="Menú de perfil del Super Administrador"
@@ -168,17 +205,29 @@ export const SuperAdminHeader = ({ onToggleSidebar }) => {
           </button>
 
           {/* Menú Desplegable del Perfil */}
-          {profileOpen && (
-            <div className="profile-dropdown-panel" id="superadmin-profile-dropdown">
+          {profileOpen && profileCoords && createPortal(
+            <div
+              ref={profileMenuRef}
+              id="superadmin-profile-dropdown"
+              style={{
+                position: 'fixed',
+                top: `${profileCoords.top}px`,
+                right: `${profileCoords.right}px`,
+                zIndex: 9999,
+              }}
+              className="liquid-glass-dropdown w-72 rounded-2xl p-2 animate-fade-in"
+            >
               {/* Encabezado con datos del usuario */}
-              <div className="profile-dropdown-header">
-                <div style={{ fontSize: '0.875rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.15rem' }}>
-                  {user?.nombre_completo || 'Super Administrador'}
+              <div className="profile-dropdown-header flex flex-col gap-y-3">
+                <div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.15rem' }}>
+                    {user?.nombre_completo || 'Super Administrador'}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', wordBreak: 'break-all' }}>
+                    {user?.email || 'superadmin@eventra.com'}
+                  </div>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem', wordBreak: 'break-all' }}>
-                  {user?.email || 'superadmin@eventra.com'}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.4rem' }}>
                   <Badge variant="primary" style={{ fontSize: '0.62rem', padding: '0.12rem 0.45rem' }}>
                     Super_Admin (Rol 5)
                   </Badge>
@@ -207,8 +256,8 @@ export const SuperAdminHeader = ({ onToggleSidebar }) => {
                   </div>
 
                   {/* Switch iOS/SaaS estilizado */}
-                  <div className={`theme-switch-track ${isDark ? 'active' : ''}`} aria-hidden="true">
-                    <div className={`theme-switch-thumb ${isDark ? 'active' : ''}`}>
+                  <div className={"theme-switch-track " + (isDark ? 'active' : '')} aria-hidden="true">
+                    <div className={"theme-switch-thumb " + (isDark ? 'active' : '')}>
                       {isDark ? (
                         <Moon size={11} color="#6594AA" />
                       ) : (
@@ -239,7 +288,8 @@ export const SuperAdminHeader = ({ onToggleSidebar }) => {
                   </div>
                 </button>
               </div>
-            </div>
+            </div>,
+            document.body
           )}
         </div>
       </div>

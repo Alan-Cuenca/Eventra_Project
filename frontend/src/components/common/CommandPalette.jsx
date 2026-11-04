@@ -113,10 +113,10 @@ export const CommandPalette = ({ isOpen, onClose }) => {
       />
 
       {/* Modal Omnibar en Liquid Glass con Radios Concéntricos (R_ext 20px - p-2 = R_int 12px) */}
-      <div className="relative mx-auto max-w-xl rounded-[20px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/70 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.7),_0_20px_50px_-10px_rgba(0,0,0,0.25)] overflow-hidden animate-fade-in">
+      <div className="relative mx-auto max-w-xl rounded-[20px] backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] overflow-hidden animate-fade-in z-50">
         
         {/* Input de Búsqueda */}
-        <div className="flex items-center px-4 py-3.5 border-b border-[var(--ev-border)]/50 backdrop-blur-xl bg-[var(--ev-surface)]/80">
+        <div className="flex items-center px-4 py-3.5 border-b border-[var(--ev-border)]/20 backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80">
           <Search size={18} className="text-[var(--ev-primary)] shrink-0 mr-3" />
           <input
             ref={inputRef}

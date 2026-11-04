@@ -313,10 +313,12 @@ export const ReportesPage = () => {
                     cursor={{ fill: '#EEEBDD', opacity: 0.4 }}
                     formatter={(val) => [`$${Number(val).toLocaleString('en-US')}`, 'Ingresos']}
                     contentStyle={{
-                      backgroundColor: '#FFFFFF',
+                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(24px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(24px) saturate(180%)',
                       borderRadius: '12px',
-                      border: '1px solid #CBC6B6',
-                      boxShadow: '0 4px 12px rgba(35, 61, 73, 0.08)',
+                      border: 'none',
+                      boxShadow: 'inset 0 1px 0 0 rgba(255, 255, 255, 0.6), 0 10px 25px -5px rgba(35, 61, 73, 0.1)',
                       color: '#233D49',
                       fontSize: '12px',
                     }}
@@ -359,9 +361,12 @@ export const ReportesPage = () => {
                   </Pie>
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#FFFFFF',
+                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(24px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(24px) saturate(180%)',
                       borderRadius: '12px',
-                      border: '1px solid #CBC6B6',
+                      border: 'none',
+                      boxShadow: 'inset 0 1px 0 0 rgba(255, 255, 255, 0.6), 0 10px 25px -5px rgba(35, 61, 73, 0.1)',
                       color: '#233D49',
                       fontSize: '12px',
                     }}

@@ -121,7 +121,7 @@ export const EvaraChatWidget = () => {
 
       {/* Ventana de Chat Flotante ("Sofisticación Sutil") */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 sm:right-6 z-40 w-[350px] sm:w-[380px] max-w-[calc(100vw-2rem)] h-[440px] sm:h-[470px] max-h-[calc(100vh-6.5rem)] flex flex-col rounded-[24px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-xl overflow-hidden whitespace-pre-line animate-scale-up">
+        <div className="fixed bottom-20 right-4 sm:right-6 z-50 w-[350px] sm:w-[380px] max-w-[calc(100vw-2rem)] h-[440px] sm:h-[470px] max-h-[calc(100vh-6.5rem)] flex flex-col rounded-[24px] backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] overflow-hidden whitespace-pre-line animate-scale-up">
           
           {/* Cabecera Azul Grisáceo #526F7D - Siempre visible en la parte superior del widget */}
           <div className="bg-[var(--ev-primary)] text-white px-4 py-3 flex items-center justify-between shrink-0">

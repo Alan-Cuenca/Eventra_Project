@@ -647,8 +647,8 @@ export const MiSuscripcion = () => {
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-lg bg-white rounded-3xl border-2 border-[#CBC6B6] shadow-2xl overflow-hidden">
-            <div className="bg-[#F3F0E4] px-6 py-4 border-b border-[#CBC6B6] flex items-center justify-between">
+          <div className="w-full max-w-lg backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 rounded-3xl border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] overflow-hidden">
+            <div className="bg-[var(--ev-surface)]/40 px-6 py-4 border-b border-[var(--ev-border)]/20 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-[#4D7182] text-white flex items-center justify-center">
                   <Mail size={18} />

@@ -383,7 +383,7 @@ export const ProveedoresList = () => {
       {/* Modal de Confirmación de Eliminación */}
       {deletingProv && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full border border-[#CEC8B8] shadow-2xl space-y-4 my-auto max-h-[calc(100vh-3.5rem)] overflow-y-auto">
+          <div className="backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 rounded-3xl p-6 sm:p-7 max-w-md w-full border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] space-y-4 my-auto max-h-[calc(100vh-3.5rem)] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-[#CEC8B8]/50">
               <div className="flex items-center gap-2 text-[#C95C5C]">
                 <AlertCircle size={20} />

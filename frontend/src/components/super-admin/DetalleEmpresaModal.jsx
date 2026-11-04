@@ -66,8 +66,8 @@ export const DetalleEmpresaModal = ({
         <div
           style={{
             padding: '1.25rem 1.5rem',
-            borderBottom: '1px solid var(--border-subtle)',
-            background: 'var(--bg-primary)',
+            borderBottom: '1px solid rgba(var(--ev-border-rgb, 203 198 182), 0.25)',
+            background: 'rgba(var(--ev-border-rgb, 203 198 182), 0.1)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',

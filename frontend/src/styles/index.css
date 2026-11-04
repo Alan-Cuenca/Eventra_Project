@@ -95,6 +95,21 @@
    ========================================================================== */
 :root.dark,
 html.dark {
+  /* ── EVENTRA Token-Driven Semantic Variables (Dark Mode) ────────────────── */
+  --ev-bg-base:        #10171D;
+  --ev-bg-base-rgb:    16 23 29;
+  --ev-surface:        #162128;
+  --ev-surface-rgb:    22 33 40;
+  --ev-surface-glass:  rgb(var(--ev-surface-rgb) / 0.72);
+  --ev-border:         #263640;
+  --ev-border-rgb:     38 54 64;
+  --ev-primary:        #6594AA;
+  --ev-primary-rgb:    101 148 170;
+  --ev-primary-hover:  #7BA8BE;
+  --ev-text-main:      #EAF1F4;
+  --ev-text-main-rgb:  234 241 244;
+  --ev-text-muted:     #728996;
+
   /* ── Paleta Modo Oscuro — Sofisticada y elegante ───────────────────────── */
   --cream:          #141E24;   /* Reemplazo de crema cálido en oscuro         */
   --beige:          #24343F;   /* Reemplazo de beige / bordes secundarios     */
@@ -314,12 +329,12 @@ img { max-width: 100%; display: block; }
 }
 
 .btn-outline {
-  background: rgba(var(--ev-primary-rgb, 82 111 125), 0.12) !important;
+  background: rgb(var(--ev-primary-rgb, 82 111 125) / 0.12) !important;
   color: var(--ev-primary, var(--primary)) !important;
   border: none !important;
 }
 .btn-outline:hover:not(:disabled) {
-  background: rgba(var(--ev-primary-rgb, 82 111 125), 0.2) !important;
+  background: rgb(var(--ev-primary-rgb, 82 111 125) / 0.12) !important;
 }
 
 .btn-danger {
@@ -350,7 +365,7 @@ img { max-width: 100%; display: block; }
   border: none !important;
 }
 .btn-ghost:hover:not(:disabled) {
-  background: rgba(var(--ev-border-rgb, 203 198 182), 0.2) !important;
+  background: rgb(var(--ev-border-rgb, 203 198 182) / 0.2) !important;
   color: var(--ev-text-main, var(--text-primary)) !important;
 }
 
@@ -534,7 +549,7 @@ img { max-width: 100%; display: block; }
 .progress-bar-container {
   width: 100%;
   height: 6px;
-  background: rgba(var(--ev-border-rgb, 203 198 182), 0.3);
+  background: rgb(var(--ev-border-rgb, 203 198 182) / 0.3);
   border-radius: 9999px;
   overflow: hidden;
   border: none;
@@ -733,9 +748,11 @@ img { max-width: 100%; display: block; }
 }
 
 .modal-box {
-  background: var(--bg-card);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  background-color: rgb(var(--ev-surface-rgb, 255 255 255) / 0.8) !important;
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6), 0 10px 25px -5px rgba(35, 61, 73, 0.1) !important;
   width: 100%;
   max-width: 520px;
   max-height: calc(100vh - 3.5rem);
@@ -743,7 +760,7 @@ img { max-width: 100%; display: block; }
   margin: auto;
   padding: 2rem;
   animation: slideUp 0.25s ease;
-  border: 1px solid var(--border-subtle);
+  border: none !important;
 }
 
 .modal-header {
@@ -899,16 +916,18 @@ img { max-width: 100%; display: block; }
 /* ── Header / Navbar ──────────────────────────────────────────────────────── */
 .app-header {
   height: var(--header-height);
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border-subtle);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  background-color: rgb(var(--ev-surface-rgb, 255 255 255) / 0.8) !important;
+  border: none !important;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6), 0 10px 25px -5px rgba(35, 61, 73, 0.1);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 1.75rem;
   position: sticky;
   top: 0;
-  z-index: 100;
-  box-shadow: var(--shadow-xs);
+  z-index: 50;
 }
 
 .header-search {
@@ -1531,22 +1550,24 @@ html.dark .profile-trigger-btn.active {
 
 .profile-dropdown-panel {
   position: absolute;
-  top: calc(100% + 0.65rem);
+  top: calc(100% + 0.5rem);
   right: 0;
-  width: 280px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  z-index: 300;
+  width: 288px;
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  background-color: rgb(var(--ev-surface-rgb, 255 255 255) / 0.8) !important;
+  border: 1px solid rgb(var(--ev-border-rgb, 203 198 182) / 0.45) !important;
+  border-radius: 1rem;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6), 0 20px 40px -8px rgba(35, 61, 73, 0.15) !important;
+  z-index: 50;
   overflow: hidden;
   animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .profile-dropdown-header {
   padding: 1rem 1.15rem;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--bg-surface);
+  border-bottom: 1px solid rgb(var(--ev-border-rgb, 203 198 182) / 0.3);
+  background: transparent;
 }
 
 .profile-dropdown-section {
@@ -1573,17 +1594,17 @@ html.dark .profile-trigger-btn.active {
 }
 
 .profile-dropdown-item:hover {
-  background: var(--cream);
-  color: var(--primary);
+  background: rgb(var(--ev-bg-base-rgb, 238 235 221) / 0.5);
+  color: var(--text-primary);
 }
 
 .profile-dropdown-item.danger {
-  color: var(--danger);
+  color: #9E3B3B;
 }
 
 .profile-dropdown-item.danger:hover {
-  background: var(--danger-light);
-  color: var(--danger);
+  background: rgba(201, 92, 92, 0.1);
+  color: #9E3B3B;
 }
 
 /* Switch de Modo Oscuro */
@@ -1647,8 +1668,8 @@ html:not(.dark)[data-palette] .sidebar-footer {
 }
 
 html:not(.dark)[data-palette] .app-header {
-  background-color: var(--bg-surface) !important;
-  border-bottom-color: var(--border-subtle) !important;
+  background-color: rgb(var(--ev-surface-rgb, 255 255 255) / 0.85) !important;
+  border: none !important;
 }
 
 html:not(.dark)[data-palette] .nav-item.active {
@@ -1743,3 +1764,45 @@ html:not(.dark)[data-palette] [class*="ring-[#4D7182]"] {
               color 0.2s ease;
 }
 
+
+
+/* ── Soporte Global Liquid Glass Estilo Apple HIG ──────────────────────────── */
+.bg-\[var\(--ev-surface\)\]\/80,
+[class*="bg-[var(--ev-surface)]/80"] {
+  background-color: rgb(var(--ev-surface-rgb, 255 255 255) / 0.8) !important;
+}
+
+/* Tooltips y Recharts Tooltip en Liquid Glass */
+.recharts-default-tooltip,
+.tooltip,
+[data-tooltip]::after {
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  background-color: rgb(var(--ev-surface-rgb, 255 255 255) / 0.8) !important;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6), 0 10px 25px -5px rgba(35, 61, 73, 0.1) !important;
+  border: none !important;
+  border-radius: 12px !important;
+}
+
+/* ── EVENTRA Liquid Glass Popovers & Menús (Apple HIG Spec) ───────────────── */
+.liquid-glass-dropdown,
+.profile-dropdown-panel {
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  background-color: var(--ev-surface) !important;
+  background-color: rgb(var(--ev-surface-rgb, 255 255 255) / 0.94) !important;
+  border: 1px solid rgb(var(--ev-border-rgb, 203 198 182) / 0.45) !important;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.7), 0 20px 45px -10px rgba(35, 61, 73, 0.18) !important;
+  border-radius: 1rem !important;
+  z-index: 9999 !important;
+}
+
+:root.dark .liquid-glass-dropdown,
+html.dark .liquid-glass-dropdown,
+:root.dark .profile-dropdown-panel,
+html.dark .profile-dropdown-panel {
+  background-color: var(--ev-surface) !important;
+  background-color: rgb(var(--ev-surface-rgb, 22 33 40) / 0.94) !important;
+  border: 1px solid rgb(var(--ev-border-rgb, 38 54 64) / 0.5) !important;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 20px 45px -10px rgba(0, 0, 0, 0.45) !important;
+}

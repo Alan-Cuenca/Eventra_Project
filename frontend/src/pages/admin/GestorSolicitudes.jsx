@@ -436,7 +436,7 @@ export const GestorSolicitudes = () => {
       {/* ── Modal de Detalle Completo ────────────────────────── */}
       {solicitudSeleccionada && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-2xl border border-[#ECE7D5] max-w-lg w-full p-6 shadow-2xl space-y-6 animate-scaleIn">
+          <div className="backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 rounded-2xl border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] max-w-lg w-full p-6 space-y-6 animate-scaleIn">
             <div className="flex items-center justify-between pb-3 border-b border-[#ECE7D5]">
               <div className="flex items-center gap-2">
                 <FileEdit size={20} className="text-[#4D7182]" />

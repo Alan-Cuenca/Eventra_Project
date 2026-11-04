@@ -125,7 +125,7 @@ export const SolicitudesCliente = () => {
   return (
     <div className="min-h-screen bg-[#F3F0E4] text-[#233D49] flex flex-col font-sans selection:bg-[#4D7182] selection:text-white">
       {/* ── Top Bar ────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-[#F3F0E4]/95 backdrop-blur-md border-b border-[#CEC8B8] px-4 sm:px-8 h-20 flex items-center justify-between">
+      <header className="sticky top-0 z-50 backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] px-4 sm:px-8 h-20 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img
             src={logoImg}

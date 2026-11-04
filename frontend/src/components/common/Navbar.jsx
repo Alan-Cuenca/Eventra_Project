@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -60,9 +61,38 @@ export const Navbar = ({ onOpenCommandPalette }) => {
   }, [user?.empresa_id, user?.plan_suscripcion]);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [notifCoords, setNotifCoords] = useState(null);
+  const [profileCoords, setProfileCoords] = useState(null);
   const [unreadCount, setUnreadCount] = useState(2);
   const notifRef = useRef(null);
+  const notifMenuRef = useRef(null);
   const profileRef = useRef(null);
+  const profileMenuRef = useRef(null);
+
+  const toggleProfileMenu = () => {
+    if (!profileOpen && profileRef.current) {
+      const rect = profileRef.current.getBoundingClientRect();
+      setProfileCoords({
+        top: rect.bottom + 8,
+        right: Math.max(16, window.innerWidth - rect.right),
+      });
+      setNotifOpen(false);
+    }
+    setProfileOpen((prev) => !prev);
+  };
+
+  const toggleNotifMenu = () => {
+    if (!notifOpen && notifRef.current) {
+      const rect = notifRef.current.getBoundingClientRect();
+      setNotifCoords({
+        top: rect.bottom + 8,
+        right: Math.max(16, window.innerWidth - rect.right),
+      });
+      setProfileOpen(false);
+    }
+    setNotifOpen((v) => !v);
+    setUnreadCount(0);
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -72,21 +102,36 @@ export const Navbar = ({ onOpenCommandPalette }) => {
     return () => { isMounted = false; };
   }, []);
 
-  // Cerrar notificaciones al click fuera
+  // Cerrar notificaciones al click fuera o Escape
   useEffect(() => {
     const handler = (e) => {
-      if (notifRef.current && !notifRef.current.contains(e.target)) {
+      if (
+        notifRef.current && !notifRef.current.contains(e.target) &&
+        (!notifMenuRef.current || !notifMenuRef.current.contains(e.target))
+      ) {
         setNotifOpen(false);
       }
     };
-    if (notifOpen) document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    const escHandler = (e) => {
+      if (e.key === 'Escape') setNotifOpen(false);
+    };
+    if (notifOpen) {
+      document.addEventListener('mousedown', handler);
+      document.addEventListener('keydown', escHandler);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('keydown', escHandler);
+    };
   }, [notifOpen]);
 
   // Cerrar menú de perfil al click fuera o Escape
   useEffect(() => {
     const handler = (e) => {
-      if (profileRef.current && !profileRef.current.contains(e.target)) {
+      if (
+        profileRef.current && !profileRef.current.contains(e.target) &&
+        (!profileMenuRef.current || !profileMenuRef.current.contains(e.target))
+      ) {
         setProfileOpen(false);
       }
     };
@@ -102,6 +147,33 @@ export const Navbar = ({ onOpenCommandPalette }) => {
       document.removeEventListener('keydown', escHandler);
     };
   }, [profileOpen]);
+
+  // Sincronizar coordenadas en viewport resize y scroll
+  useEffect(() => {
+    if (!profileOpen && !notifOpen) return;
+    const updatePositions = () => {
+      if (profileOpen && profileRef.current) {
+        const rect = profileRef.current.getBoundingClientRect();
+        setProfileCoords({
+          top: rect.bottom + 8,
+          right: Math.max(16, window.innerWidth - rect.right),
+        });
+      }
+      if (notifOpen && notifRef.current) {
+        const rect = notifRef.current.getBoundingClientRect();
+        setNotifCoords({
+          top: rect.bottom + 8,
+          right: Math.max(16, window.innerWidth - rect.right),
+        });
+      }
+    };
+    window.addEventListener('resize', updatePositions);
+    window.addEventListener('scroll', updatePositions, true);
+    return () => {
+      window.removeEventListener('resize', updatePositions);
+      window.removeEventListener('scroll', updatePositions, true);
+    };
+  }, [profileOpen, notifOpen]);
 
   const initials = user?.nombre_completo
     ? user.nombre_completo.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
@@ -158,7 +230,7 @@ export const Navbar = ({ onOpenCommandPalette }) => {
   const breadcrumbs = getBreadcrumbs();
 
   return (
-    <header className="app-header h-16 sticky top-0 z-30 px-4 sm:px-6 backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-b border-[var(--ev-border)]/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.5)] flex items-center justify-between transition-colors duration-300">
+    <header className="app-header h-16 sticky top-0 z-50 px-4 sm:px-6 backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] flex items-center justify-between transition-colors duration-300">
       
       {/* ── Izquierda: Breadcrumbs Dinámicos Orientados a Ruta ──────────── */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
@@ -233,10 +305,7 @@ export const Navbar = ({ onOpenCommandPalette }) => {
             id="notif-bell-btn"
             type="button"
             className="w-9 h-9 rounded-full flex items-center justify-center text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] hover:bg-[var(--ev-surface)] active:scale-[0.98] transition-all duration-150 relative border-0 focus:outline-none"
-            onClick={() => {
-              setNotifOpen((v) => !v);
-              setUnreadCount(0);
-            }}
+            onClick={toggleNotifMenu}
             aria-label="Notificaciones"
             aria-expanded={notifOpen}
           >
@@ -246,9 +315,18 @@ export const Navbar = ({ onOpenCommandPalette }) => {
             )}
           </button>
 
-          {/* Panel Flotante en Liquid Glass con Radios Concéntricos */}
-          {notifOpen && (
-            <div className="absolute right-0 mt-2 w-80 rounded-[20px] backdrop-blur-2xl backdrop-saturate-[190%] bg-[var(--ev-surface)]/95 border border-[var(--ev-border)]/70 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.7),_0_16px_40px_-8px_rgba(0,0,0,0.15)] z-50 overflow-hidden animate-fade-in">
+          {/* Panel Flotante en Liquid Glass Portal (Apple HIG) */}
+          {notifOpen && notifCoords && createPortal(
+            <div
+              ref={notifMenuRef}
+              style={{
+                position: 'fixed',
+                top: `${notifCoords.top}px`,
+                right: `${notifCoords.right}px`,
+                zIndex: 9999,
+              }}
+              className="liquid-glass-dropdown w-80 rounded-[20px] overflow-hidden animate-fade-in"
+            >
               <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--ev-border)]/40 bg-[var(--ev-bg-base)]/40">
                 <span className="text-xs font-bold text-[var(--ev-text-main)]">
                   Notificaciones
@@ -290,17 +368,18 @@ export const Navbar = ({ onOpenCommandPalette }) => {
                   </div>
                 ))}
               </div>
-            </div>
+            </div>,
+            document.body
           )}
         </div>
 
-        {/* Perfil de Usuario con Dropdown */}
+        {/* Perfil de Usuario con Dropdown Portal */}
         <div className="relative" ref={profileRef}>
           <button
             id="user-profile-menu-btn"
             type="button"
             className="flex items-center gap-2.5 p-1 pl-1.5 pr-3 rounded-full hover:bg-[var(--ev-surface)] active:scale-[0.98] transition-all duration-150 border-0 focus:outline-none"
-            onClick={() => setProfileOpen((prev) => !prev)}
+            onClick={toggleProfileMenu}
             aria-expanded={profileOpen}
             aria-haspopup="true"
           >
@@ -318,32 +397,45 @@ export const Navbar = ({ onOpenCommandPalette }) => {
             <ChevronDown size={13} className="text-[var(--ev-text-muted)]" />
           </button>
 
-          {/* Menú Desplegable con Radios Concéntricos */}
-          {profileOpen && (
-            <div className="absolute right-0 mt-2 w-64 rounded-[20px] backdrop-blur-2xl backdrop-saturate-[190%] bg-[var(--ev-surface)]/95 border border-[var(--ev-border)]/70 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.7),_0_16px_40px_-8px_rgba(0,0,0,0.15)] p-2 z-50 animate-fade-in">
-              <div className="p-3 border-b border-[var(--ev-border)]/40 mb-1">
-                <p className="text-xs font-bold text-[var(--ev-text-main)] truncate">
-                  {user?.nombre_completo || 'Usuario'}
-                </p>
-                <p className="text-[11px] text-[var(--ev-text-muted)] truncate mt-0.5">
-                  {user?.email || 'usuario@eventra.com'}
-                </p>
-                <div className="mt-2 flex items-center justify-between">
+          {/* Menú Desplegable con Portal y Liquid Glass Verdadero (Apple HIG) */}
+          {profileOpen && profileCoords && createPortal(
+            <div
+              ref={profileMenuRef}
+              id="user-profile-dropdown"
+              style={{
+                position: 'fixed',
+                top: `${profileCoords.top}px`,
+                right: `${profileCoords.right}px`,
+                zIndex: 9999,
+              }}
+              className="liquid-glass-dropdown w-72 rounded-2xl p-2 animate-fade-in"
+            >
+              {/* Sección de Usuario & Empresa */}
+              <div className="p-3 border-b border-[var(--ev-border)]/40 mb-1 flex flex-col gap-y-3">
+                <div>
+                  <p className="text-xs font-bold text-[var(--ev-text-main)] truncate">
+                    {user?.nombre_completo || 'Usuario'}
+                  </p>
+                  <p className="text-[11px] text-[var(--ev-text-muted)] truncate mt-0.5">
+                    {user?.email || 'usuario@eventra.com'}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between gap-2">
                   <Badge variant={roleVariant} style={{ fontSize: '0.62rem', padding: '0.12rem 0.45rem' }}>
                     {roleConfig?.nombre || 'Rol'}
                   </Badge>
-                  <span className="text-[10px] text-[var(--ev-text-muted)] font-mono">
+                  <span className="text-[10px] text-[var(--ev-text-muted)] font-mono font-medium shrink-0">
                     Empresa #{user?.empresa_id || 1}
                   </span>
                 </div>
               </div>
 
               {/* Toggle de Modo Claro / Oscuro */}
-              <div className="px-1 py-1">
+              <div className="px-1 py-0.5">
                 <button
                   type="button"
                   onClick={toggleTheme}
-                  className="w-full flex items-center justify-between px-2.5 py-2 rounded-[12px] text-xs text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/20 active:scale-[0.98] transition-colors"
+                  className="w-full flex items-center justify-between p-2 rounded-xl text-xs text-[var(--ev-text-main)] hover:bg-[var(--ev-bg-base)]/50 active:scale-[0.98] transition-colors duration-150"
                 >
                   <div className="flex items-center gap-2">
                     {isDark ? <Moon size={15} className="text-[var(--ev-primary)]" /> : <Sun size={15} className="text-[#C49A3A]" />}
@@ -358,20 +450,21 @@ export const Navbar = ({ onOpenCommandPalette }) => {
               <div className="h-px bg-[var(--ev-border)]/40 my-1" />
 
               {/* Botón Logout */}
-              <div className="px-1 py-1">
+              <div className="px-1 py-0.5">
                 <button
                   type="button"
                   onClick={() => {
                     setProfileOpen(false);
                     logout();
                   }}
-                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-[12px] text-xs text-[#C95C5C] hover:bg-[#C95C5C]/10 active:scale-[0.98] font-semibold transition-colors"
+                  className="w-full flex items-center gap-2 p-2 rounded-xl text-xs text-[#9E3B3B] hover:bg-[#C95C5C]/10 active:scale-[0.98] font-semibold transition-colors duration-150"
                 >
                   <LogOut size={15} />
                   <span>Cerrar sesión</span>
                 </button>
               </div>
-            </div>
+            </div>,
+            document.body
           )}
         </div>
 

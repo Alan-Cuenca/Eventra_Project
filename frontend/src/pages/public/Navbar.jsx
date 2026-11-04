@@ -15,7 +15,7 @@ export const Navbar = () => {
   const closeMenu = () => setMobileMenuOpen(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/75 border-b border-[var(--ev-border)]/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_30px_-5px_rgba(var(--ev-text-main-rgb)/0.07)] transition-all duration-300">
+    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         
         {/* Logotipo de EVENTRA */}

@@ -56,7 +56,7 @@ export const Drawer = ({
           className={`w-screen ${width} bg-[var(--ev-surface)] border-l border-[var(--ev-border)]/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.7),_-10px_0_40px_-10px_rgba(0,0,0,0.15)] flex flex-col justify-between transform transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-0`}
         >
           {/* Header en Liquid Glass con Radios Concéntricos */}
-          <div className="px-6 py-4.5 backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-b border-[var(--ev-border)]/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.5)] flex items-center justify-between shrink-0">
+          <div className="px-6 py-4.5 backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] flex items-center justify-between shrink-0">
             <div>
               <h3 className="text-base font-bold text-[var(--ev-text-main)] tracking-tight">
                 {title}
@@ -85,7 +85,7 @@ export const Drawer = ({
 
           {/* Footer opcional fijo con acción primaria a la derecha */}
           {footer && (
-            <div className="px-6 py-4 backdrop-blur-md bg-[var(--ev-surface)]/90 border-t border-[var(--ev-border)]/50 flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] flex items-center justify-end gap-3 shrink-0">
               {footer}
             </div>
           )}

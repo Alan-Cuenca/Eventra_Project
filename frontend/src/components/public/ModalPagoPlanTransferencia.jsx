@@ -138,9 +138,9 @@ export const ModalPagoPlanTransferencia = ({
       role="dialog"
       aria-modal="true"
     >
-      <div className="relative w-full max-w-2xl bg-white rounded-3xl border-2 border-[#CBC6B6] shadow-2xl overflow-hidden my-8">
+      <div className="relative w-full max-w-2xl backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 rounded-3xl border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] overflow-hidden my-8">
         {/* Cabecera Superior */}
-        <div className="bg-[#F3F0E4] px-6 py-5 border-b border-[#CBC6B6] flex items-center justify-between gap-4">
+        <div className="bg-[var(--ev-surface)]/40 px-6 py-5 border-b border-[var(--ev-border)]/20 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-[#4D7182] text-white flex items-center justify-center shadow-xs shrink-0">
               {step === 'transferencia' && <Building2 size={20} />}

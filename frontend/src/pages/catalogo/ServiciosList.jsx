@@ -598,7 +598,7 @@ export const ServiciosList = () => {
       {/* Modal Desactivar */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="w-full max-w-sm rounded-[22px] bg-[var(--ev-surface)] border border-[#C95C5C]/40 p-6 text-center shadow-xl animate-fade-in">
+          <div className="w-full max-w-sm rounded-[22px] backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] p-6 text-center animate-fade-in">
             <div className="w-10 h-10 rounded-full bg-[#C95C5C]/15 text-[#C95C5C] flex items-center justify-center mx-auto mb-3">
               <AlertTriangle size={20} />
             </div>
