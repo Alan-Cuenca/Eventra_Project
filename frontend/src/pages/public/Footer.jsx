@@ -4,44 +4,44 @@ import { Calendar, ShieldCheck, Mail, Lock, CheckCircle2, ArrowRight } from 'luc
 
 export const Footer = () => {
   return (
-    <footer className="bg-[#CBC6B6]/30 border-t border-[#CBC6B6] pt-16 pb-12 text-[#233D49]">
+    <footer className="bg-[var(--ev-surface)]/70 border-t border-[var(--ev-border)] pt-16 pb-12 text-[var(--ev-text-main)] transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Grid de 4 columnas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#CBC6B6]/70">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[var(--ev-border)]/70">
           
           {/* Columna Marca (2 cols) */}
           <div className="lg:col-span-2 space-y-4">
             <Link to="/" className="inline-flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#526F7D] flex items-center justify-center text-white shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-[var(--ev-primary)] flex items-center justify-center text-white shadow-xs">
                 <Calendar className="w-5 h-5 text-white" />
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xl font-bold tracking-tight text-[#233D49]">
+                  <span className="text-xl font-bold tracking-tight text-[var(--ev-text-main)]">
                     EVENTRA
                   </span>
-                  <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-[#CBC6B6]/50 text-[#233D49]/80 border border-[#CBC6B6]/70">
+                  <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-[var(--ev-border)]/50 text-[var(--ev-text-main)]/80 border border-[var(--ev-border)]/70">
                     SaaS
                   </span>
                 </div>
-                <span className="text-xs text-[#526F7D] font-medium">
+                <span className="text-xs text-[var(--ev-primary)] font-medium">
                   Gestión Inteligente de Eventos
                 </span>
               </div>
             </Link>
 
-            <p className="text-sm text-[#233D49]/80 max-w-sm leading-relaxed">
+            <p className="text-sm text-[var(--ev-text-muted)] max-w-sm leading-relaxed">
               Plataforma SaaS integral para centros de recepciones y empresas de eventos. Centraliza cotizaciones dinámicas, reservas blindadas anti-colisión, pagos y cronogramas con diseño de alta gama.
             </p>
 
             <div className="space-y-1.5 pt-2">
-              <div className="flex items-center gap-2 text-xs text-[#233D49]/85 font-medium">
+              <div className="flex items-center gap-2 text-xs text-[var(--ev-text-main)]/85 font-medium">
                 <ShieldCheck className="w-4 h-4 text-[#4D9A72]" />
                 <span>Zero Double-Booking garantizado con PostgreSQL</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-[#233D49]/85 font-medium">
-                <Lock className="w-4 h-4 text-[#526F7D]" />
+              <div className="flex items-center gap-2 text-xs text-[var(--ev-text-main)]/85 font-medium">
+                <Lock className="w-4 h-4 text-[var(--ev-primary)]" />
                 <span>Seguridad RBAC y almacenamiento en Supabase</span>
               </div>
             </div>
@@ -49,32 +49,32 @@ export const Footer = () => {
 
           {/* Columna Módulos y Tour */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--ev-primary)]">
               Módulos del Sistema
             </h4>
-            <ul className="space-y-2 text-sm text-[#233D49]/80 font-medium">
+            <ul className="space-y-2 text-sm text-[var(--ev-text-muted)] font-medium">
               <li>
-                <Link to="/funcionalidades" className="hover:text-[#526F7D] transition-colors">
+                <Link to="/funcionalidades" className="hover:text-[var(--ev-primary)] transition-colors">
                   Cotizador Dinámico (4 Pasos)
                 </Link>
               </li>
               <li>
-                <Link to="/funcionalidades" className="hover:text-[#526F7D] transition-colors">
+                <Link to="/funcionalidades" className="hover:text-[var(--ev-primary)] transition-colors">
                   Agenda & Reservas Anti-Colisión
                 </Link>
               </li>
               <li>
-                <Link to="/funcionalidades" className="hover:text-[#526F7D] transition-colors">
+                <Link to="/funcionalidades" className="hover:text-[var(--ev-primary)] transition-colors">
                   Cronograma & Checklist Móvil
                 </Link>
               </li>
               <li>
-                <Link to="/funcionalidades" className="hover:text-[#526F7D] transition-colors">
+                <Link to="/funcionalidades" className="hover:text-[var(--ev-primary)] transition-colors">
                   Portal Exclusivo del Anfitrión
                 </Link>
               </li>
               <li>
-                <Link to="/evara-ai" className="hover:text-[#526F7D] transition-colors flex items-center gap-1">
+                <Link to="/evara-ai" className="hover:text-[var(--ev-primary)] transition-colors flex items-center gap-1">
                   <span>Asistente EVARA AI (24/7)</span>
                 </Link>
               </li>
@@ -83,10 +83,10 @@ export const Footer = () => {
 
           {/* Columna Legal y Seguridad */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--ev-primary)]">
               Seguridad & Legal
             </h4>
-            <ul className="space-y-2 text-sm text-[#233D49]/80 font-medium">
+            <ul className="space-y-2 text-sm text-[var(--ev-text-muted)] font-medium">
               <li className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-[#4D9A72]" />
                 <span>Control de Acceso RBAC</span>
@@ -100,12 +100,12 @@ export const Footer = () => {
                 <span>Aislamiento Multi-Tenant</span>
               </li>
               <li>
-                <a href="#terminos" onClick={(e) => { e.preventDefault(); alert('EVENTRA SaaS: Términos de Servicio disponibles bajo suscripción corporativa.'); }} className="hover:text-[#526F7D] transition-colors">
+                <a href="#terminos" onClick={(e) => { e.preventDefault(); alert('EVENTRA SaaS: Términos de Servicio disponibles bajo suscripción corporativa.'); }} className="hover:text-[var(--ev-primary)] transition-colors">
                   Términos del Servicio
                 </a>
               </li>
               <li>
-                <a href="#privacidad" onClick={(e) => { e.preventDefault(); alert('EVENTRA SaaS: Política de Privacidad conforme a estándares de protección de datos personales.'); }} className="hover:text-[#526F7D] transition-colors">
+                <a href="#privacidad" onClick={(e) => { e.preventDefault(); alert('EVENTRA SaaS: Política de Privacidad conforme a estándares de protección de datos personales.'); }} className="hover:text-[var(--ev-primary)] transition-colors">
                   Política de Privacidad
                 </a>
               </li>
@@ -114,16 +114,16 @@ export const Footer = () => {
 
           {/* Columna Portal & Precios */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--ev-primary)]">
               Planes & Acceso
             </h4>
-            <p className="text-xs text-[#233D49]/70 leading-relaxed">
+            <p className="text-xs text-[var(--ev-text-muted)] leading-relaxed">
               Descubre el plan que impulsará la rentabilidad de tu negocio o ingresa al portal.
             </p>
             <div className="space-y-2 pt-1">
               <Link
                 to="/precios"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#526F7D] hover:underline"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--ev-primary)] hover:underline"
               >
                 <span>Ver Planes y Precios</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -131,16 +131,16 @@ export const Footer = () => {
               <div>
                 <Link
                   to="/login"
-                  className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white text-xs font-bold shadow-sm transition-all duration-200"
+                  className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--ev-primary)] hover:bg-[var(--ev-primary-hover)] text-white text-xs font-bold shadow-xs active:scale-[0.98] apple-spring"
                 >
                   <span>Reservar / Ingresar</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
             </div>
-            <div className="pt-2 text-xs text-[#233D49]/70">
+            <div className="pt-2 text-xs text-[var(--ev-text-muted)]">
               <div className="flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-[#526F7D]" />
+                <Mail className="w-3.5 h-3.5 text-[var(--ev-primary)]" />
                 <span>contacto@eventra.app</span>
               </div>
             </div>
@@ -149,12 +149,12 @@ export const Footer = () => {
         </div>
 
         {/* Fila Inferior de Copyright */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#233D49]/70 text-center sm:text-left">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--ev-text-muted)] text-center sm:text-left">
           <p>
             &copy; 2026 EVENTRA SaaS. Todos los derechos reservados.
           </p>
           <div className="flex items-center gap-4">
-            <Link to="/login" className="hover:text-[#526F7D] transition-colors font-medium">
+            <Link to="/login" className="hover:text-[var(--ev-primary)] transition-colors font-medium">
               Portal del Personal & Anfitrión
             </Link>
             <span>·</span>

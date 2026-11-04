@@ -92,7 +92,7 @@ export const EvaraChatWidget = () => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full bg-[#526F7D] hover:bg-[#3E5763] text-white shadow-lg hover:shadow-xl flex items-center justify-center transition-all duration-200 hover:scale-105 focus:outline-none"
+        className="fixed bottom-5 right-5 z-40 w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-[var(--ev-primary)] hover:bg-[var(--ev-primary-hover)] text-white shadow-md flex items-center justify-center active:scale-[0.98] transition-transform duration-150 focus:outline-none"
         title="Consultar con EVARA AI"
       >
         {isOpen ? (
@@ -110,10 +110,10 @@ export const EvaraChatWidget = () => {
 
       {/* Ventana de Chat Flotante ("Sofisticación Sutil") */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 sm:right-6 z-40 w-[350px] sm:w-[380px] max-w-[calc(100vw-2rem)] h-[440px] sm:h-[470px] max-h-[calc(100vh-6.5rem)] flex flex-col rounded-2xl sm:rounded-3xl bg-white border border-[#CBC6B6] shadow-xl overflow-hidden animate-scale-up">
+        <div className="fixed bottom-20 right-4 sm:right-6 z-40 w-[350px] sm:w-[380px] max-w-[calc(100vw-2rem)] h-[440px] sm:h-[470px] max-h-[calc(100vh-6.5rem)] flex flex-col rounded-[24px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-xl overflow-hidden animate-scale-up">
           
           {/* Cabecera Azul Grisáceo #526F7D - Siempre visible en la parte superior del widget */}
-          <div className="bg-[#526F7D] text-white px-4 py-3 flex items-center justify-between shrink-0 shadow-xs">
+          <div className="bg-[var(--ev-primary)] text-white px-4 py-3 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-8 h-8 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center text-white shrink-0">
                 <Sparkles size={16} />
@@ -231,7 +231,7 @@ export const EvaraChatWidget = () => {
             <button
               type="submit"
               disabled={!inputMessage.trim() || loading}
-              className="p-2.5 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+              className="p-2.5 rounded-full bg-[var(--ev-primary)] hover:bg-[var(--ev-primary-hover)] text-white shadow-xs active:scale-[0.98] transition-transform duration-150 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
               title="Enviar mensaje"
             >
               <Send size={14} />

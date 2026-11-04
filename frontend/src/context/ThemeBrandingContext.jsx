@@ -114,6 +114,15 @@ const DEFAULT_BRANDING = {
 
 const PALETTE_CACHE_KEY = 'eventra_palette_cache';
 
+const hexToRgb = (hex, fallback = [82, 111, 125]) => {
+  if (!hex || typeof hex !== 'string') return fallback;
+  let clean = hex.replace('#', '');
+  if (clean.length === 3) clean = clean.split('').map((c) => c + c).join('');
+  if (clean.length !== 6) return fallback;
+  const num = parseInt(clean, 16);
+  return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+};
+
 const ThemeBrandingContext = createContext(null);
 
 export const ThemeBrandingProvider = ({ children }) => {
@@ -129,7 +138,26 @@ export const ThemeBrandingProvider = ({ children }) => {
   const aplicarVariablesCSS = useCallback((key, isAuthenticated = true) => {
     const paleta = PALETAS[key] || PALETAS.sofisticacion_sutil;
     const root = document.documentElement;
-    const [r, g, b] = paleta.rgbPrimary || [77, 113, 130];
+    const [r, g, b] = paleta.rgbPrimary || hexToRgb(paleta.primary, [82, 111, 125]);
+    const rgbBg = paleta.rgbBg || hexToRgb(paleta.bg, [238, 235, 221]);
+    const rgbText = hexToRgb(paleta.text, [35, 61, 73]);
+    const rgbBorder = hexToRgb(paleta.border, [203, 198, 182]);
+    const rgbSurface = hexToRgb(paleta.card || '#FFFFFF', [255, 255, 255]);
+
+    // ── EVENTRA Token-Driven Architecture (Semantic --ev-* CSS Variables) ──
+    root.style.setProperty('--ev-bg-base', paleta.bg);
+    root.style.setProperty('--ev-bg-base-rgb', rgbBg.join(' '));
+    root.style.setProperty('--ev-surface', paleta.card || '#FFFFFF');
+    root.style.setProperty('--ev-surface-rgb', rgbSurface.join(' '));
+    root.style.setProperty('--ev-surface-glass', `rgb(${rgbSurface.join(' ')} / 0.72)`);
+    root.style.setProperty('--ev-border', paleta.border);
+    root.style.setProperty('--ev-border-rgb', rgbBorder.join(' '));
+    root.style.setProperty('--ev-primary', paleta.primary);
+    root.style.setProperty('--ev-primary-rgb', `${r} ${g} ${b}`);
+    root.style.setProperty('--ev-primary-hover', paleta.primaryHover);
+    root.style.setProperty('--ev-text-main', paleta.text);
+    root.style.setProperty('--ev-text-main-rgb', rgbText.join(' '));
+    root.style.setProperty('--ev-text-muted', `rgb(${rgbText.join(' ')} / 0.68)`);
 
     if (isAuthenticated) {
       root.setAttribute('data-palette', paleta.key);

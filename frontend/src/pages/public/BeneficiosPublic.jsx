@@ -53,7 +53,7 @@ export const BeneficiosPublic = () => {
             return (
               <div
                 key={idx}
-                className="group bg-white rounded-2xl p-7 border border-[#CBC6B6]/70 shadow-sm hover:shadow-lg hover:-translate-y-1.5 transition-all duration-300 ease-out flex flex-col justify-between"
+                className="group bg-white rounded-2xl p-7 border border-[#CBC6B6]/70 shadow-sm hover:shadow-lg active:scale-[0.98] transition-all duration-300 ease-out flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-5">

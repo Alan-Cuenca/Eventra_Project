@@ -308,7 +308,7 @@ export const PortalClientePage = () => {
                   key={item.id}
                   id={`portal-card-${item.id}`}
                   onClick={() => item.to && navigate(item.to)}
-                  className="group bg-white rounded-2xl p-6 border border-[#CEC8B8] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer flex flex-col justify-between"
+                  className="group bg-white rounded-2xl p-6 border border-[#CEC8B8] shadow-sm hover:shadow-lg active:scale-[0.98] transition-all duration-200 cursor-pointer flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between mb-4">

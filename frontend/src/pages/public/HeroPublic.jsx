@@ -57,7 +57,7 @@ export const HeroPublic = () => {
               <a
                 href="#precios"
                 onClick={(e) => handleScrollTo(e, '#precios')}
-                className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white font-semibold text-base shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white font-semibold text-base shadow-sm hover:shadow-lg active:scale-[0.98] transition-all duration-300"
               >
                 <span>Explorar Planes SaaS</span>
                 <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-1.5 transition-transform duration-300" />
@@ -66,7 +66,7 @@ export const HeroPublic = () => {
               <a
                 href="#modulos"
                 onClick={(e) => handleScrollTo(e, '#modulos')}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white/80 hover:bg-white text-[#233D49] border border-[#CBC6B6] font-semibold text-base shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white/80 hover:bg-white text-[#233D49] border border-[#CBC6B6] font-semibold text-base shadow-sm hover:shadow-md active:scale-[0.98] transition-all duration-300"
               >
                 <span>Conocer Módulos</span>
               </a>

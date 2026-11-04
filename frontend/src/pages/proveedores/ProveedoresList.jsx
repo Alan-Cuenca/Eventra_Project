@@ -140,7 +140,7 @@ export const ProveedoresList = () => {
 
         <Link
           to="/proveedores/nuevo"
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#4D7182] hover:bg-[#3E5763] text-white text-sm font-semibold shadow-sm hover:shadow-md transition-all"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[var(--ev-primary)] hover:bg-[var(--ev-primary-hover)] text-white text-xs font-semibold shadow-xs hover:shadow-md active:scale-[0.98] transition-transform duration-150"
         >
           <Plus size={16} />
           <span>Añadir Proveedor</span>
@@ -248,7 +248,7 @@ export const ProveedoresList = () => {
             <div className="pt-2">
               <Link
                 to="/proveedores/nuevo"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#4D7182] text-white text-xs font-semibold hover:bg-[#3E5763] transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[var(--ev-primary)] hover:bg-[var(--ev-primary-hover)] text-white text-xs font-semibold shadow-xs active:scale-[0.98] transition-transform duration-150"
               >
                 <Plus size={14} />
                 <span>Registrar Primer Proveedor</span>
@@ -261,7 +261,7 @@ export const ProveedoresList = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#FAF8F5] border-b-2 border-[#CEC8B8] text-[11px] font-bold uppercase tracking-wider text-[#4D7182]">
+                <tr className="bg-[#FAF8F5] border-b border-[var(--ev-border)]/60 text-[11px] font-bold uppercase tracking-wider text-[#4D7182]">
                   <th className="py-4 px-6">Empresa / Contacto</th>
                   <th className="py-4 px-6">Especialidad</th>
                   <th className="py-4 px-6">Contacto Directo</th>
@@ -411,7 +411,7 @@ export const ProveedoresList = () => {
               <button
                 type="button"
                 onClick={() => setDeletingProv(null)}
-                className="px-4 py-2 rounded-xl border border-[#CEC8B8] text-xs font-semibold text-[#233D49] hover:bg-[#FAF8F2]"
+                className="px-4 py-2 rounded-full bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 text-xs font-semibold text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/20 active:scale-[0.98] transition-transform duration-150"
               >
                 Cancelar
               </button>
@@ -420,7 +420,7 @@ export const ProveedoresList = () => {
                 type="button"
                 onClick={confirmDelete}
                 disabled={isDeleting}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#C95C5C] hover:bg-[#AF4E4E] text-white text-xs font-bold shadow-sm transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#C95C5C] hover:bg-[#AF4E4E] text-white text-xs font-bold shadow-xs active:scale-[0.98] transition-transform duration-150"
               >
                 {isDeleting && <Loader2 size={13} className="animate-spin" />}
                 <span>Confirmar Eliminación</span>

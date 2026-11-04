@@ -292,7 +292,7 @@ export const Pricing = () => {
               <button
                 type="button"
                 onClick={() => handleSeleccionarPlan('Premium')}
-                className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white font-bold text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white font-bold text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer"
               >
                 <span>Seleccionar Plan Premium</span>
                 <ArrowRight className="w-4 h-4" />

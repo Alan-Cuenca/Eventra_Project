@@ -105,7 +105,7 @@ const SaasBar = ({ label, current, limit }) => {
         </span>
       </div>
       <div className="progress-bar-container" style={{ height: '7px' }}>
-        <div className="progress-bar-fill" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}, ${color}99)` }} />
+        <div className="progress-bar-fill" style={{ width: `${pct}%`, backgroundColor: color }} />
       </div>
     </div>
   );
@@ -630,7 +630,7 @@ export const DashboardPage = () => {
                     className="progress-bar-fill"
                     style={{
                       width: `${checklist.length ? Math.round((completedCount / checklist.length) * 100) : 0}%`,
-                      background: 'linear-gradient(90deg, var(--success), #6dbb96)',
+                      backgroundColor: 'var(--success)',
                     }}
                   />
                 </div>
@@ -681,7 +681,7 @@ export const DashboardPage = () => {
               className="card"
               style={{
                 border: '1px solid rgba(77,113,130,0.25)',
-                background: 'linear-gradient(145deg, rgba(77,113,130,0.05) 0%, var(--white) 100%)',
+                backgroundColor: 'var(--ev-surface, #FFFFFF)',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>

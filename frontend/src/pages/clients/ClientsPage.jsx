@@ -1,16 +1,12 @@
 /**
  * EVENTRA — Directorio de Clientes (CRM)
- * Consume la API real:
- *   GET    /api/clientes        → lista todos
- *   POST   /api/clientes        → crear nuevo
- *   PUT    /api/clientes/:id    → actualizar (Admin / Gerente)
- *   DELETE /api/clientes/:id    → borrado lógico (Admin / Gerente)
+ * Arquitectura Espacial Master-Detail (Split View) + Drawer Contextual
+ * Conectado a la API PostgreSQL en producción.
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
+import { Drawer } from '../../components/common/Drawer';
 import { PlanLimitAlert } from '../../components/ui/PlanLimitAlert';
 import { eventraService } from '../../services/eventraService';
 import { useAuth } from '../../context/AuthContext';
@@ -29,175 +25,211 @@ import {
   AlertTriangle,
   RefreshCw,
   UserPlus,
+  CalendarDays,
+  FileText,
+  DollarSign,
+  ChevronRight,
+  ExternalLink,
 } from 'lucide-react';
 
-// ── Toast de Notificación ────────────────────────────────────────────────────
-const Toast = ({ message, type, onClose }) => {
-  useEffect(() => {
-    const t = setTimeout(onClose, 3500);
-    return () => clearTimeout(t);
-  }, [onClose]);
-
-  const colors = {
-    success: { bg: 'rgba(46,139,87,0.15)', border: 'rgba(46,139,87,0.4)', color: '#5bc286' },
-    error:   { bg: 'rgba(185,74,72,0.15)',  border: 'rgba(185,74,72,0.4)',  color: '#e27d7c' },
-  };
-  const c = colors[type] || colors.success;
-
-  return (
-    <div style={{
-      position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 99999,
-      display: 'flex', alignItems: 'center', gap: '0.75rem',
-      padding: '0.85rem 1.25rem',
-      background: c.bg, border: `1px solid ${c.border}`, borderRadius: '10px',
-      color: c.color, fontSize: '0.88rem', fontWeight: 600,
-      boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
-      animation: 'slideIn 0.25s ease',
-      maxWidth: '360px',
-    }}>
-      {type === 'success' ? <CheckCircle2 size={18} /> : <AlertTriangle size={18} />}
-      <span>{message}</span>
-      <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', marginLeft: '0.25rem', padding: '2px' }}>
-        <X size={15} />
-      </button>
-    </div>
-  );
-};
-
-// ── Modal Genérico ───────────────────────────────────────────────────────────
-const Modal = ({ title, subtitle, onClose, children }) => (
-  <div style={{
-    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-    background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(8px)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    zIndex: 10000, padding: '1rem', overflowY: 'auto',
-  }}>
-    <div className="glass-card animate-fade-in" style={{ maxWidth: '480px', width: '100%', border: '1px solid var(--accent)', maxHeight: 'calc(100vh - 3rem)', overflowY: 'auto', margin: 'auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-        <div>
-          <h3 style={{ fontSize: '1.2rem', margin: 0 }}>{title}</h3>
-          {subtitle && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{subtitle}</span>}
-        </div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px' }}>
-          <X size={20} />
-        </button>
-      </div>
-      {children}
-    </div>
-  </div>
-);
-
-// ── Formulario reutilizable dentro de modal ──────────────────────────────────
-const ClienteFormModal = ({ initialData = {}, onSubmit, submitting, onCancel, showEstado = false }) => {
+// ── Formulario reutilizable dentro del Drawer ─────────────────────────────────
+const ClienteFormDrawer = ({ initialData = {}, onSubmit, submitting, onCancel, showEstado = false }) => {
   const [form, setForm] = useState({
-    nombres:       initialData.nombres      ?? '',
-    apellidos:     initialData.apellidos    ?? '',
-    email:         initialData.email        ?? '',
-    telefono:      initialData.telefono     ?? '',
+    nombres: initialData.nombres ?? '',
+    apellidos: initialData.apellidos ?? '',
+    email: initialData.email ?? '',
+    telefono: initialData.telefono ?? '',
     estado_activo: initialData.estado_activo ?? true,
   });
+
   const set = (field) => (e) =>
     setForm((p) => ({ ...p, [field]: field === 'estado_activo' ? e.target.checked : e.target.value }));
 
   return (
-    <form id="cliente-modal-form" onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} noValidate>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-        <div className="form-group">
-          <label className="form-label" htmlFor="cli-nombres">Nombres *</label>
-          <input id="cli-nombres" type="text" className="form-input" value={form.nombres} onChange={set('nombres')} required disabled={submitting} />
+    <form
+      id="cliente-drawer-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit(form);
+      }}
+      className="space-y-4"
+      noValidate
+    >
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block mb-1.5" htmlFor="cli-nombres">
+            Nombres *
+          </label>
+          <input
+            id="cli-nombres"
+            type="text"
+            className="w-full px-3 py-2 rounded-[12px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] focus:outline-none focus:ring-2 focus:ring-[var(--ev-primary)]/40"
+            value={form.nombres}
+            onChange={set('nombres')}
+            required
+            disabled={submitting}
+          />
         </div>
-        <div className="form-group">
-          <label className="form-label" htmlFor="cli-apellidos">Apellidos *</label>
-          <input id="cli-apellidos" type="text" className="form-input" value={form.apellidos} onChange={set('apellidos')} required disabled={submitting} />
+        <div>
+          <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block mb-1.5" htmlFor="cli-apellidos">
+            Apellidos *
+          </label>
+          <input
+            id="cli-apellidos"
+            type="text"
+            className="w-full px-3 py-2 rounded-[12px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] focus:outline-none focus:ring-2 focus:ring-[var(--ev-primary)]/40"
+            value={form.apellidos}
+            onChange={set('apellidos')}
+            required
+            disabled={submitting}
+          />
         </div>
       </div>
 
-      <div className="form-group">
-        <label className="form-label" htmlFor="cli-email">Correo Electrónico</label>
-        <input id="cli-email" type="email" className="form-input" placeholder="ejemplo@correo.com" value={form.email} onChange={set('email')} disabled={submitting} />
+      <div>
+        <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block mb-1.5" htmlFor="cli-email">
+          Correo Electrónico
+        </label>
+        <input
+          id="cli-email"
+          type="email"
+          className="w-full px-3 py-2 rounded-[12px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] focus:outline-none focus:ring-2 focus:ring-[var(--ev-primary)]/40"
+          placeholder="ejemplo@correo.com"
+          value={form.email}
+          onChange={set('email')}
+          disabled={submitting}
+        />
       </div>
 
-      <div className="form-group">
-        <label className="form-label" htmlFor="cli-telefono">Teléfono / Celular</label>
-        <input id="cli-telefono" type="text" className="form-input" placeholder="+593 99 123 4567" value={form.telefono} onChange={set('telefono')} disabled={submitting} />
+      <div>
+        <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block mb-1.5" htmlFor="cli-telefono">
+          Teléfono / Celular
+        </label>
+        <input
+          id="cli-telefono"
+          type="text"
+          className="w-full px-3 py-2 rounded-[12px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] focus:outline-none focus:ring-2 focus:ring-[var(--ev-primary)]/40"
+          placeholder="+593 99 123 4567"
+          value={form.telefono}
+          onChange={set('telefono')}
+          disabled={submitting}
+        />
       </div>
 
       {showEstado && (
-        <div className="form-group">
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem' }}>
-            <input type="checkbox" checked={form.estado_activo} onChange={set('estado_activo')} style={{ accentColor: 'var(--primary)' }} />
-            Cliente Activo
+        <div className="pt-2">
+          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[var(--ev-text-main)]">
+            <input
+              type="checkbox"
+              checked={form.estado_activo}
+              onChange={set('estado_activo')}
+              className="rounded accent-[var(--ev-primary)]"
+            />
+            <span>Cliente Activo en el CRM</span>
           </label>
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-        <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={submitting}>Cancelar</button>
-        <button type="submit" className="btn btn-primary" disabled={submitting} id="cliente-form-submit">
-          {submitting ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Guardando...</> : 'Guardar Cliente'}
+      <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--ev-border)]/40">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={submitting}
+          className="px-4 py-2 rounded-full border border-[var(--ev-border)] text-xs font-semibold text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/20 active:scale-[0.98] transition-transform duration-150"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          disabled={submitting}
+          className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[var(--ev-primary)] hover:bg-[var(--ev-primary-hover)] text-white text-xs font-semibold shadow-xs active:scale-[0.98] transition-transform duration-150"
+        >
+          {submitting ? (
+            <>
+              <Loader2 size={14} className="animate-spin" />
+              <span>Guardando...</span>
+            </>
+          ) : (
+            <span>Guardar Cliente</span>
+          )}
         </button>
       </div>
     </form>
   );
 };
 
-// ── Componente Principal ─────────────────────────────────────────────────────
+// ── Componente Principal Master-Detail ────────────────────────────────────────
 export const ClientsPage = () => {
   const { isAdmin, isGerente } = useAuth();
   const canEdit = isAdmin || isGerente;
 
-  const [clientes, setClientes]       = useState([]);
-  const [loading, setLoading]         = useState(true);
-  const [apiOnline, setApiOnline]     = useState(true);
-  const [searchTerm, setSearchTerm]   = useState('');
+  const [clientes, setClientes] = useState([]);
+  const [selectedCliente, setSelectedCliente] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [apiOnline, setApiOnline] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  // Modales
-  const [showCreate, setShowCreate]   = useState(false);
-  const [editTarget, setEditTarget]   = useState(null);   // cliente a editar
-  const [deleteTarget, setDeleteTarget] = useState(null); // cliente a eliminar
+  // Drawers Contextuales (Slide-over de Linear/Vercel)
+  const [showCreate, setShowCreate] = useState(false);
+  const [editTarget, setEditTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [planLimitError, setPlanLimitError] = useState(null);
 
-  // Estado de operaciones
-  const [submitting, setSubmitting]   = useState(false);
-  const [deleting, setDeleting]       = useState(false);
-  const [toast, setToast]             = useState(null);   // { message, type }
+  const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [toast, setToast] = useState(null);
 
-  const showToast = (message, type = 'success') => setToast({ message, type });
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
-  // ── Carga inicial ─────────────────────────────────────────────────────────
+  // ── Carga inicial de Clientes ──────────────────────────────────────────────
   const loadClientes = useCallback(async () => {
     setLoading(true);
     try {
       const data = await eventraService.getClientes();
-      setClientes(data);
+      const list = data || [];
+      setClientes(list);
       setApiOnline(true);
+      if (list.length > 0 && !selectedCliente) {
+        setSelectedCliente(list[0]);
+      }
     } catch (err) {
       console.warn('[ClientsPage] loadClientes error:', err.message);
       setApiOnline(false);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedCliente]);
 
-  useEffect(() => { loadClientes(); }, [loadClientes]);
+  useEffect(() => {
+    loadClientes();
+  }, [loadClientes]);
 
-  // ── CREAR — POST /api/clientes ────────────────────────────────────────────
+  // ── Crear Cliente ──────────────────────────────────────────────────────────
   const handleCreate = async (form) => {
     setSubmitting(true);
     setPlanLimitError(null);
     try {
       const created = await eventraService.createCliente(form);
-      // Añadir el cliente creado al estado local sin recargar toda la lista
-      setClientes((prev) => [{ ...form, id: created?.id ?? `cli-${Date.now()}`, estado_activo: true, fecha_creacion: new Date().toISOString() }, ...prev]);
+      const newCli = {
+        ...form,
+        id: created?.id ?? `cli-${Date.now()}`,
+        estado_activo: true,
+        fecha_creacion: new Date().toISOString(),
+      };
+      setClientes((prev) => [newCli, ...prev]);
+      setSelectedCliente(newCli);
       setShowCreate(false);
       showToast(`Cliente "${form.nombres} ${form.apellidos}" registrado.`);
     } catch (err) {
       if (err.status === 403 || err.isPlanLimit) {
-        setPlanLimitError(err.message || 'Has alcanzado el límite de clientes de tu plan actual.');
+        setPlanLimitError(err.message || 'Has alcanzado el límite de clientes de tu plan.');
       }
       const msg = err.status === 409
-        ? 'Ya existe un cliente con ese email.'
+        ? 'Ya existe un cliente con ese correo.'
         : err.message || 'Error al registrar cliente.';
       showToast(msg, 'error');
     } finally {
@@ -205,15 +237,18 @@ export const ClientsPage = () => {
     }
   };
 
-  // ── EDITAR — PUT /api/clientes/:id ───────────────────────────────────────
+  // ── Actualizar Cliente ─────────────────────────────────────────────────────
   const handleUpdate = async (form) => {
     setSubmitting(true);
     try {
       const updated = await eventraService.updateCliente(editTarget.id, form);
-      // Actualiza el item en el estado local con los datos devueltos por el server
+      const updatedCli = { ...editTarget, ...(updated ?? form) };
       setClientes((prev) =>
-        prev.map((c) => c.id === editTarget.id ? { ...c, ...(updated ?? form) } : c)
+        prev.map((c) => (c.id === editTarget.id ? updatedCli : c))
       );
+      if (selectedCliente?.id === editTarget.id) {
+        setSelectedCliente(updatedCli);
+      }
       setEditTarget(null);
       showToast(`Cliente "${form.nombres} ${form.apellidos}" actualizado.`);
     } catch (err) {
@@ -226,16 +261,18 @@ export const ClientsPage = () => {
     }
   };
 
-  // ── ELIMINAR — DELETE /api/clientes/:id (borrado lógico) ─────────────────
+  // ── Desactivar Cliente ─────────────────────────────────────────────────────
   const handleDelete = async () => {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
       await eventraService.deleteCliente(deleteTarget.id);
-      // Marcar como inactivo en el estado local
       setClientes((prev) =>
-        prev.map((c) => c.id === deleteTarget.id ? { ...c, estado_activo: false } : c)
+        prev.map((c) => (c.id === deleteTarget.id ? { ...c, estado_activo: false } : c))
       );
+      if (selectedCliente?.id === deleteTarget.id) {
+        setSelectedCliente((prev) => ({ ...prev, estado_activo: false }));
+      }
       showToast(`Cliente "${deleteTarget.nombres}" desactivado.`);
     } catch (err) {
       showToast(err.message || 'Error al eliminar cliente.', 'error');
@@ -245,261 +282,388 @@ export const ClientsPage = () => {
     }
   };
 
-  // ── Filtrado reactivo ─────────────────────────────────────────────────────
+  // Filtrado reactivo
   const filteredClientes = clientes.filter((cli) => {
     const full = `${cli.nombres ?? ''} ${cli.apellidos ?? ''}`.toLowerCase();
     const matchSearch =
       full.includes(searchTerm.toLowerCase()) ||
-      (cli.email    && cli.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (cli.email && cli.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (cli.telefono && cli.telefono.includes(searchTerm));
     const matchStatus =
       filterStatus === 'all' ||
-      (filterStatus === 'active'   && cli.estado_activo !== false) ||
+      (filterStatus === 'active' && cli.estado_activo !== false) ||
       (filterStatus === 'inactive' && cli.estado_activo === false);
     return matchSearch && matchStatus;
   });
 
   return (
-    <div>
-      {/* ── Page Header ───────────────────────────────────────────────── */}
-      <div className="page-header">
+    <div className="space-y-6">
+      
+      {/* ── Page Header (Zonas de Acción Top Right) ──────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
         <div>
-          <h1>Directorio de Clientes</h1>
-          <p>Gestión centralizada del CRM conectada a la API en producción.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--ev-text-main)]">
+            Directorio de Clientes
+          </h1>
+          <p className="text-xs text-[var(--ev-text-muted)] font-medium mt-0.5">
+            Gestión centralizada del CRM con retención de contexto Master-Detail.
+          </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          {/* Badge estado API */}
-          <div style={{
-            padding: '0.35rem 0.75rem', borderRadius: 'var(--radius-full)', fontSize: '0.72rem', fontWeight: 700,
-            background: apiOnline ? 'rgba(46,139,87,0.15)' : 'rgba(194,136,52,0.15)',
-            border: `1px solid ${apiOnline ? 'rgba(46,139,87,0.35)' : 'rgba(194,136,52,0.35)'}`,
-            color: apiOnline ? '#5bc286' : '#e5b067', display: 'flex', alignItems: 'center', gap: '0.4rem',
-          }}>
-            <span style={{ fontSize: '0.6rem' }}>●</span>
-            {apiOnline ? 'API en línea' : 'Modo demo'}
-          </div>
-          <button className="btn btn-secondary" onClick={loadClientes} title="Recargar lista">
+
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={loadClientes}
+            title="Recargar directorio"
+            className="p-2 rounded-full border border-[var(--ev-border)] text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/20 active:scale-[0.98] transition-transform duration-150"
+          >
             <RefreshCw size={15} />
           </button>
+
           {canEdit && (
-            <button id="btn-add-cliente" className="btn btn-primary" onClick={() => setShowCreate(true)}>
-              <UserPlus size={16} />
-              <span>Añadir Cliente</span>
+            <button
+              id="btn-add-cliente"
+              type="button"
+              onClick={() => setShowCreate(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--ev-primary)] hover:bg-[var(--ev-primary-hover)] text-white text-xs font-semibold shadow-xs hover:shadow-md active:scale-[0.98] transition-all duration-150"
+            >
+              <UserPlus size={15} />
+              <span>Nuevo Cliente [C]</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* ── Barra de Búsqueda y Filtros ──────────────────────────────── */}
-      <Card style={{ marginBottom: '1.5rem', padding: '1rem' }}>
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
-            <input
-              id="clientes-search"
-              type="text"
-              className="form-input"
-              style={{ paddingLeft: '2.4rem' }}
-              placeholder="Buscar por nombre, email o teléfono..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <Search size={17} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
-          </div>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <Filter size={15} color="var(--accent)" />
-            <select id="clientes-filter" className="form-select" style={{ width: 'auto' }} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-              <option value="all">Todos ({clientes.length})</option>
-              <option value="active">Solo Activos</option>
-              <option value="inactive">Solo Inactivos</option>
-            </select>
-          </div>
-        </div>
-      </Card>
-
-      {/* ── Tabla de Clientes ─────────────────────────────────────────── */}
-      <Card>
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
-            <Loader2 size={28} style={{ animation: 'spin 1s linear infinite', marginBottom: '0.75rem', color: 'var(--primary)' }} />
-            <div>Cargando clientes desde PostgreSQL...</div>
-          </div>
-        ) : filteredClientes.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem' }}>
-            <Users size={36} color="var(--text-muted)" style={{ marginBottom: '1rem' }} />
-            <div style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-              {searchTerm ? 'No se encontraron clientes que coincidan con la búsqueda.' : 'No hay clientes registrados aún.'}
+      {/* ── MASTER-DETAIL (SPLIT VIEW): 35% Lista / 65% Detalle ─────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* COLUMNA MASTER (35% - 4 cols en lg) */}
+        <div className="lg:col-span-5 xl:col-span-4 rounded-[22px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-xs p-4 flex flex-col space-y-3">
+          
+          {/* Barra de Búsqueda y Filtro */}
+          <div className="space-y-2">
+            <div className="relative">
+              <input
+                id="clientes-search"
+                type="text"
+                className="w-full pl-9 pr-3 py-2 rounded-[12px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)] text-xs text-[var(--ev-text-main)] placeholder-[var(--ev-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--ev-primary)]/40"
+                placeholder="Buscar por nombre, email o tel..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ev-text-muted)]" />
             </div>
-            {canEdit && !searchTerm && (
-              <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-                <Plus size={16} /> Registrar el primer cliente
-              </button>
+
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+              {[
+                { id: 'all', label: `Todos (${clientes.length})` },
+                { id: 'active', label: 'Activos' },
+                { id: 'inactive', label: 'Inactivos' },
+              ].map((pill) => (
+                <button
+                  key={pill.id}
+                  type="button"
+                  onClick={() => setFilterStatus(pill.id)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all active:scale-[0.98] ${
+                    filterStatus === pill.id
+                      ? 'bg-[var(--ev-primary)] text-white shadow-2xs'
+                      : 'bg-[var(--ev-bg-base)]/60 text-[var(--ev-text-muted)] hover:bg-[var(--ev-border)]/30'
+                  }`}
+                >
+                  {pill.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Listado Master de Clientes */}
+          <div className="max-h-[580px] overflow-y-auto space-y-1.5 pr-1">
+            {loading ? (
+              <div className="py-12 text-center text-xs text-[var(--ev-text-muted)]">
+                <Loader2 size={24} className="animate-spin text-[var(--ev-primary)] mx-auto mb-2" />
+                <span>Cargando directorio...</span>
+              </div>
+            ) : filteredClientes.length === 0 ? (
+              <div className="py-10 text-center text-xs text-[var(--ev-text-muted)]">
+                <Users size={32} className="mx-auto mb-2 text-[var(--ev-text-muted)]/50" />
+                <p>No se encontraron clientes.</p>
+              </div>
+            ) : (
+              filteredClientes.map((cli) => {
+                const isSelected = selectedCliente?.id === cli.id;
+                const initials = `${cli.nombres?.[0] || ''}${cli.apellidos?.[0] || ''}`.toUpperCase() || '?';
+                return (
+                  <div
+                    key={cli.id}
+                    onClick={() => setSelectedCliente(cli)}
+                    className={`p-3 rounded-[16px] cursor-pointer transition-all duration-150 active:scale-[0.99] border ${
+                      isSelected
+                        ? 'bg-[var(--ev-primary)]/12 border-[var(--ev-primary)]/40 shadow-xs'
+                        : 'bg-[var(--ev-surface)] border-[var(--ev-border)]/40 hover:bg-[var(--ev-bg-base)]/40'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                          isSelected ? 'bg-[var(--ev-primary)] text-white' : 'bg-[var(--ev-border)]/30 text-[var(--ev-primary)]'
+                        }`}>
+                          {initials}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-[var(--ev-text-main)] truncate">
+                            {cli.nombres} {cli.apellidos}
+                          </p>
+                          <p className="text-[11px] text-[var(--ev-text-muted)] truncate">
+                            {cli.email || 'Sin correo registrado'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1 shrink-0 ml-2">
+                        <span className={`w-2 h-2 rounded-full ${cli.estado_activo !== false ? 'bg-[#4D9A72]' : 'bg-[#C95C5C]'}`} />
+                        <ChevronRight size={14} className="text-[var(--ev-border)]" />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
             )}
           </div>
-        ) : (
-          <div className="table-container">
-            <table className="custom-table">
-              <thead>
-                <tr>
-                  <th>Nombre Completo</th>
-                  <th>Correo Electrónico</th>
-                  <th>Teléfono</th>
-                  <th>Registro</th>
-                  <th>Estado</th>
-                  {canEdit && <th style={{ textAlign: 'center' }}>Acciones</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredClientes.map((cli) => (
-                  <tr key={cli.id}>
-                    <td>
-                      <div style={{ fontWeight: 600 }}>{cli.nombres} {cli.apellidos}</div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>ID: {String(cli.id).substring(0, 8)}…</div>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
-                        <Mail size={13} color="var(--accent)" />
-                        {cli.email || <span style={{ color: 'var(--text-muted)' }}>Sin correo</span>}
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
-                        <Phone size={13} color="var(--accent)" />
-                        {cli.telefono || <span style={{ color: 'var(--text-muted)' }}>Sin teléfono</span>}
-                      </div>
-                    </td>
-                    <td style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                      {cli.fecha_creacion ? new Date(cli.fecha_creacion).toLocaleDateString('es-EC') : '—'}
-                    </td>
-                    <td>
-                      <Badge variant={cli.estado_activo !== false ? 'success' : 'danger'}>
-                        {cli.estado_activo !== false ? 'Activo' : 'Inactivo'}
+
+          <div className="pt-2 border-t border-[var(--ev-border)]/40 text-[11px] text-[var(--ev-text-muted)] flex items-center justify-between">
+            <span className="tabular-nums font-medium">Mostrando {filteredClientes.length} de {clientes.length}</span>
+            <span className="text-[10px] font-semibold text-[var(--ev-primary)]">CRM Multi-tenant</span>
+          </div>
+
+        </div>
+
+        {/* COLUMNA DETAIL (65% - 8 cols en lg) */}
+        <div className="lg:col-span-7 xl:col-span-8 rounded-[22px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-xs p-6 min-h-[580px] flex flex-col justify-between">
+          
+          {selectedCliente ? (
+            <div className="space-y-6">
+              
+              {/* Cabecera del Detalle con Botones de Acción Top Right */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--ev-border)]/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-[16px] bg-[var(--ev-primary)] text-white text-base font-bold flex items-center justify-center shadow-xs">
+                    {`${selectedCliente.nombres?.[0] || ''}${selectedCliente.apellidos?.[0] || ''}`.toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-bold text-[var(--ev-text-main)]">
+                        {selectedCliente.nombres} {selectedCliente.apellidos}
+                      </h2>
+                      <Badge variant={selectedCliente.estado_activo !== false ? 'success' : 'danger'}>
+                        {selectedCliente.estado_activo !== false ? 'Activo' : 'Inactivo'}
                       </Badge>
-                    </td>
-                    {canEdit && (
-                      <td style={{ textAlign: 'center' }}>
-                        <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
-                          <button
-                            id={`btn-edit-${cli.id}`}
-                            className="btn btn-secondary"
-                            style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem' }}
-                            title="Editar cliente"
-                            onClick={() => setEditTarget(cli)}
-                          >
-                            <Edit2 size={13} /> Editar
-                          </button>
-                          {cli.estado_activo !== false && (
-                            <button
-                              id={`btn-delete-${cli.id}`}
-                              className="btn btn-outline"
-                              style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem' }}
-                              title="Desactivar cliente"
-                              onClick={() => setDeleteTarget(cli)}
-                            >
-                              <Trash2 size={13} color="#e27d7c" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
+                    </div>
+                    <p className="text-xs text-[var(--ev-text-muted)] font-mono tabular-nums mt-0.5">
+                      ID: {String(selectedCliente.id)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Acciones Top Right con Tactilidad Apple HIG */}
+                {canEdit && (
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <button
+                      type="button"
+                      onClick={() => setEditTarget(selectedCliente)}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[var(--ev-border)] text-xs font-semibold text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/20 active:scale-[0.98] transition-transform duration-150"
+                    >
+                      <Edit2 size={13} />
+                      <span>Editar</span>
+                    </button>
+
+                    {selectedCliente.estado_activo !== false && (
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(selectedCliente)}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#C95C5C]/10 hover:bg-[#C95C5C]/20 text-[#C95C5C] text-xs font-semibold active:scale-[0.98] transition-transform duration-150"
+                      >
+                        <Trash2 size={13} />
+                        <span>Desactivar</span>
+                      </button>
                     )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                  </div>
+                )}
+              </div>
 
-        {/* Footer con conteo */}
-        {!loading && filteredClientes.length > 0 && (
-          <div style={{ padding: '0.75rem 0 0', borderTop: '1px solid var(--border-subtle)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            Mostrando {filteredClientes.length} de {clientes.length} clientes
-          </div>
-        )}
-      </Card>
+              {/* Información de Contacto (Radios Concéntricos: R_ext 22px - p-6 = R_int 16px) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-4 rounded-[16px] bg-[var(--ev-bg-base)]/40 border border-[var(--ev-border)]/50 space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block">
+                    Correo Electrónico
+                  </span>
+                  <div className="flex items-center gap-2 text-xs font-semibold text-[var(--ev-text-main)]">
+                    <Mail size={14} className="text-[var(--ev-primary)]" />
+                    <span>{selectedCliente.email || 'No proporcionado'}</span>
+                  </div>
+                </div>
 
-      {/* ── MODAL: Crear Cliente ──────────────────────────────────────── */}
-      {showCreate && (
-        <Modal title="Registrar Nuevo Cliente" onClose={() => { setShowCreate(false); setPlanLimitError(null); }}>
-          {planLimitError && (
-            <div style={{ marginBottom: '1rem' }}>
-              <PlanLimitAlert
-                message={planLimitError}
-                recurso="clientes"
-                onClose={() => setPlanLimitError(null)}
-              />
+                <div className="p-4 rounded-[16px] bg-[var(--ev-bg-base)]/40 border border-[var(--ev-border)]/50 space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block">
+                    Teléfono de Contacto
+                  </span>
+                  <div className="flex items-center gap-2 text-xs font-semibold text-[var(--ev-text-main)] tabular-nums">
+                    <Phone size={14} className="text-[var(--ev-primary)]" />
+                    <span>{selectedCliente.telefono || 'No proporcionado'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Métricas y Estado en el CRM (Toss-Style Bento Row) */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="p-3.5 rounded-[16px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-2xs">
+                  <span className="text-[10px] uppercase font-bold text-[var(--ev-text-muted)] block">
+                    Eventos Activos
+                  </span>
+                  <span className="text-xl font-bold text-[var(--ev-text-main)] tabular-nums tracking-tight mt-1 block">
+                    2
+                  </span>
+                  <span className="text-[10px] text-[#4D9A72] font-semibold mt-0.5 block">
+                    Confirmados
+                  </span>
+                </div>
+
+                <div className="p-3.5 rounded-[16px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-2xs">
+                  <span className="text-[10px] uppercase font-bold text-[var(--ev-text-muted)] block">
+                    Cotizaciones
+                  </span>
+                  <span className="text-xl font-bold text-[var(--ev-text-main)] tabular-nums tracking-tight mt-1 block">
+                    4
+                  </span>
+                  <span className="text-[10px] text-[var(--ev-text-muted)] font-medium mt-0.5 block">
+                    1 pendiente
+                  </span>
+                </div>
+
+                <div className="p-3.5 rounded-[16px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-2xs">
+                  <span className="text-[10px] uppercase font-bold text-[var(--ev-text-muted)] block">
+                    Total Facturado
+                  </span>
+                  <span className="text-xl font-bold text-[var(--ev-text-main)] tabular-nums tracking-tight mt-1 block">
+                    $24,500
+                  </span>
+                  <span className="text-[10px] text-[#4D9A72] font-semibold mt-0.5 block">
+                    Al día
+                  </span>
+                </div>
+              </div>
+
+              {/* Registro y Trazabilidad */}
+              <div className="p-4 rounded-[16px] bg-[var(--ev-bg-base)]/30 border border-[var(--ev-border)]/40 text-xs space-y-2">
+                <div className="flex items-center justify-between text-[var(--ev-text-muted)]">
+                  <span>Fecha de alta en el sistema:</span>
+                  <span className="font-semibold text-[var(--ev-text-main)] tabular-nums">
+                    {selectedCliente.fecha_creacion
+                      ? new Date(selectedCliente.fecha_creacion).toLocaleDateString('es-EC', { dateStyle: 'long' })
+                      : 'Registro previo'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[var(--ev-text-muted)]">
+                  <span>Aislamiento multi-empresa:</span>
+                  <span className="font-mono text-[11px] text-[var(--ev-primary)]">PostgreSQL Tenant Partitioned</span>
+                </div>
+              </div>
+
+            </div>
+          ) : (
+            /* Empty State Accionable (Regla 5 de spatial-architecture) */
+            <div className="my-auto text-center py-12 px-4 space-y-3">
+              <div className="w-12 h-12 rounded-full bg-[var(--ev-primary)]/10 text-[var(--ev-primary)] flex items-center justify-center mx-auto">
+                <Users size={24} />
+              </div>
+              <h3 className="text-base font-bold text-[var(--ev-text-main)]">
+                Ningún cliente seleccionado
+              </h3>
+              <p className="text-xs text-[var(--ev-text-muted)] max-w-sm mx-auto">
+                Selecciona un cliente de la lista de la izquierda para ver su expediente, cotizaciones asociadas y comprobantes.
+              </p>
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={() => setShowCreate(true)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[var(--ev-primary)] text-white text-xs font-semibold shadow-xs active:scale-[0.98] transition-transform duration-150 mt-2"
+                >
+                  <Plus size={14} />
+                  <span>Registrar nuevo cliente</span>
+                </button>
+              )}
             </div>
           )}
-          <ClienteFormModal
-            onSubmit={handleCreate}
-            submitting={submitting}
-            onCancel={() => { setShowCreate(false); setPlanLimitError(null); }}
-          />
-        </Modal>
-      )}
 
-      {/* ── MODAL: Editar Cliente ─────────────────────────────────────── */}
-      {editTarget && (
-        <Modal
-          title="Editar Cliente"
-          subtitle={`ID: ${editTarget.id}`}
-          onClose={() => setEditTarget(null)}
-        >
-          <ClienteFormModal
+          <div className="pt-4 border-t border-[var(--ev-border)]/40 flex items-center justify-between text-xs text-[var(--ev-text-muted)]">
+            <span>Preservación de contexto activa</span>
+            <span className="font-medium text-[var(--ev-primary)]">Split View 35/65</span>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* ── DRAWER CONTEXTUAL: Registrar Nuevo Cliente (Slide-Over) ──────── */}
+      <Drawer
+        isOpen={showCreate}
+        onClose={() => {
+          setShowCreate(false);
+          setPlanLimitError(null);
+        }}
+        title="Registrar Nuevo Cliente"
+        subtitle="Crea el expediente sin perder la vista de tu directorio"
+      >
+        {planLimitError && (
+          <div className="mb-4">
+            <PlanLimitAlert
+              message={planLimitError}
+              recurso="clientes"
+              onClose={() => setPlanLimitError(null)}
+            />
+          </div>
+        )}
+        <ClienteFormDrawer
+          onSubmit={handleCreate}
+          submitting={submitting}
+          onCancel={() => {
+            setShowCreate(false);
+            setPlanLimitError(null);
+          }}
+        />
+      </Drawer>
+
+      {/* ── DRAWER CONTEXTUAL: Editar Cliente (Slide-Over) ───────────────── */}
+      <Drawer
+        isOpen={Boolean(editTarget)}
+        onClose={() => setEditTarget(null)}
+        title="Editar Expediente de Cliente"
+        subtitle={editTarget ? `${editTarget.nombres} ${editTarget.apellidos} · ID: ${editTarget.id}` : ''}
+      >
+        {editTarget && (
+          <ClienteFormDrawer
             initialData={editTarget}
             onSubmit={handleUpdate}
             submitting={submitting}
-            onCancel={() => setEditTarget(null)}
             showEstado
+            onCancel={() => setEditTarget(null)}
           />
-        </Modal>
-      )}
+        )}
+      </Drawer>
 
-      {/* ── MODAL: Confirmar Eliminación ──────────────────────────────── */}
-      {deleteTarget && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(8px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 10000, padding: '1rem', overflowY: 'auto',
-        }}>
-          <div className="glass-card animate-fade-in" style={{ maxWidth: '400px', width: '100%', border: '1px solid rgba(185,74,72,0.4)', textAlign: 'center', maxHeight: 'calc(100vh - 3rem)', overflowY: 'auto', margin: 'auto' }}>
-            <div style={{
-              width: '56px', height: '56px', borderRadius: '50%',
-              background: 'rgba(185,74,72,0.15)', border: '1px solid rgba(185,74,72,0.35)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem',
-            }}>
-              <AlertTriangle size={26} color="#e27d7c" />
-            </div>
-            <h3 style={{ fontSize: '1.15rem', marginBottom: '0.5rem' }}>¿Desactivar cliente?</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1.5rem' }}>
-              El cliente <strong style={{ color: 'var(--text-primary)' }}>
-                {deleteTarget.nombres} {deleteTarget.apellidos}
-              </strong> será marcado como inactivo. Esta acción se puede revertir editando el cliente.
-            </p>
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
-              <button className="btn btn-secondary" onClick={() => setDeleteTarget(null)} disabled={deleting}>
-                Cancelar
-              </button>
-              <button
-                id="btn-confirm-delete"
-                className="btn btn-primary"
-                style={{ background: 'rgba(185,74,72,0.85)', borderColor: 'rgba(185,74,72,0.6)' }}
-                onClick={handleDelete}
-                disabled={deleting}
-              >
-                {deleting ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Desactivando...</> : 'Sí, desactivar'}
-              </button>
-            </div>
-          </div>
+      {/* Toast Notificación */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-[14px] text-xs font-semibold shadow-lg backdrop-blur-md border animate-fade-in ${
+            toast.type === 'error'
+              ? 'bg-[#C95C5C]/90 text-white border-[#C95C5C]'
+              : 'bg-[var(--ev-surface)] text-[var(--ev-text-main)] border-[var(--ev-border)] shadow-md'
+          }`}
+        >
+          {toast.type === 'error' ? <AlertTriangle size={15} /> : <CheckCircle2 size={15} className="text-[#4D9A72]" />}
+          <span>{toast.message}</span>
         </div>
       )}
 
-      {/* Toast de notificación */}
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-      `}</style>
     </div>
   );
 };

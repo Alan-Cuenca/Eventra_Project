@@ -141,7 +141,7 @@ export const PagosList = () => {
         <button
           onClick={cargarPagos}
           disabled={loading}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#CBC6B6] text-xs font-bold text-[#526F7D] shadow-sm transition-all"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--ev-surface)] hover:bg-[var(--ev-surface-elevated)] border border-[var(--ev-border)]/60 text-xs font-semibold text-[var(--ev-text-main)] shadow-xs active:scale-[0.98] transition-transform duration-150"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           <span>Actualizar Datos</span>
@@ -296,7 +296,7 @@ export const PagosList = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#FAF8F5] border-b-2 border-[#CBC6B6] text-[11px] font-bold uppercase tracking-wider text-[#526F7D]">
+              <tr className="bg-[#FAF8F5] border-b border-[var(--ev-border)]/60 text-[11px] font-bold uppercase tracking-wider text-[#526F7D]">
                 <th className="py-3.5 px-5">Cliente</th>
                 <th className="py-3.5 px-5">Evento</th>
                 <th className="py-3.5 px-5">Monto</th>
@@ -418,7 +418,7 @@ export const PagosList = () => {
                         {pago.estado === 'En Revisión' ? (
                           <button
                             onClick={() => handleVerDetalle(pago)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white font-bold text-xs shadow-sm transition-all"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--ev-primary)] hover:bg-[var(--ev-primary-hover)] text-white font-semibold text-xs shadow-xs active:scale-[0.98] transition-transform duration-150"
                           >
                             <span>Ver</span>
                             <ArrowRight size={13} />
@@ -426,7 +426,7 @@ export const PagosList = () => {
                         ) : (
                           <button
                             onClick={() => handleVerDetalle(pago)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[#526F7D] hover:bg-[#F3F0E4] font-semibold text-xs transition-colors"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--ev-surface)] border border-[var(--ev-border)]/50 text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/20 font-semibold text-xs shadow-xs active:scale-[0.98] transition-transform duration-150"
                           >
                             <span>Detalle</span>
                             <ArrowRight size={12} />
@@ -543,7 +543,7 @@ export const PagosList = () => {
               <button
                 disabled={procesandoAccion}
                 onClick={() => handleCambiarEstado(pagoSeleccionado.id, 'Aprobado')}
-                className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-[#4D9A72] hover:bg-[#3D825E] text-white text-xs font-bold shadow-sm transition-colors disabled:opacity-50"
+                className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-full bg-[#4D9A72] hover:bg-[#3D825E] text-white text-xs font-bold shadow-xs active:scale-[0.98] transition-transform duration-150 disabled:opacity-50"
               >
                 <CheckCircle size={16} />
                 <span>Aprobar Pago</span>
@@ -552,7 +552,7 @@ export const PagosList = () => {
               <button
                 disabled={procesandoAccion}
                 onClick={() => handleCambiarEstado(pagoSeleccionado.id, 'Rechazado')}
-                className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-[#C95C5C] hover:bg-[#AF4E4E] text-white text-xs font-bold shadow-sm transition-colors disabled:opacity-50"
+                className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-full bg-[#C95C5C] hover:bg-[#AF4E4E] text-white text-xs font-bold shadow-xs active:scale-[0.98] transition-transform duration-150 disabled:opacity-50"
               >
                 <XCircle size={16} />
                 <span>Rechazar Pago</span>

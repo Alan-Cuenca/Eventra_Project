@@ -65,7 +65,7 @@ export const NavbarPublic = () => {
         <div className="hidden md:flex items-center gap-3">
           <Link
             to="/login"
-            className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#526F7D]/50"
+            className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white text-sm font-semibold shadow-sm hover:shadow-md active:scale-[0.98] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#526F7D]/50"
           >
             <span>Reservar / Ingresar</span>
             <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform duration-200" />

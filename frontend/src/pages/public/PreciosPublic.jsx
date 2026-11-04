@@ -29,7 +29,7 @@ export const PreciosPublic = () => {
         {/* Grid de Precios: Básico vs Premium Destacado */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
           {/* ── Plan Básico ──────────────────────────────────────────────── */}
-          <div className="bg-white rounded-3xl p-8 sm:p-10 border border-[#CBC6B6]/80 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
+          <div className="bg-white rounded-3xl p-8 sm:p-10 border border-[#CBC6B6]/80 shadow-sm hover:shadow-md active:scale-[0.98] transition-all duration-300 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D] bg-[#CBC6B6]/30 px-3 py-1 rounded-full">
@@ -101,7 +101,7 @@ export const PreciosPublic = () => {
           </div>
 
           {/* ── Plan Premium (Destacado Visualmente) ──────────────────────── */}
-          <div className="relative bg-white rounded-3xl p-8 sm:p-10 border-2 border-[#526F7D] shadow-xl hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between">
+          <div className="relative bg-white rounded-3xl p-8 sm:p-10 border-2 border-[#526F7D] shadow-xl hover:shadow-2xl active:scale-[0.98] transition-all duration-300 flex flex-col justify-between">
             {/* Badge de Recomendado */}
             <div className="absolute -top-4 right-8 bg-[#C49A3A] text-white text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full shadow-md flex items-center gap-1.5">
               <Star className="w-3.5 h-3.5 fill-white" />
