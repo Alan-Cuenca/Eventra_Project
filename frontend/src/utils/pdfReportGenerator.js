@@ -15,41 +15,39 @@ import autoTable from 'jspdf-autotable';
 
 export const PALETAS_RGB = {
   sofisticacion_sutil: {
-    primary: [82, 111, 125],    // #526F7D
-    bg: [238, 235, 221],         // #EEEBDD Crema
-    border: [203, 198, 182],     // #CBC6B6 Beige
-    text: [35, 61, 73],          // #233D49 Azul Oscuro
+    primary: [77, 113, 130],    // #4D7182
+    bg: [243, 240, 228],        // #F3F0E4 Crema
+    border: [206, 200, 184],    // #CEC8B8 Beige
+    text: [29, 51, 62],         // #1D333E Azul Oscuro Alto Contraste
   },
   bosque_olivo: {
-    primary: [86, 107, 89],     // #566B59
-    bg: [244, 243, 238],        // #F4F3EE
-    border: [213, 211, 200],    // #D5D3C8
-    text: [36, 48, 38],         // #243026
+    primary: [42, 98, 64],      // #2A6240
+    bg: [232, 240, 232],        // #E8F0E8
+    border: [181, 203, 182],    // #B5CBB6
+    text: [20, 43, 29],         // #142B1D
   },
   terracota_real: {
-    primary: [140, 90, 75],     // #8C5A4B
-    bg: [246, 241, 235],        // #F6F1EB
-    border: [222, 207, 194],    // #DECFC2
-    text: [56, 38, 32],         // #382620
+    primary: [158, 66, 43],     // #9E422B
+    bg: [246, 234, 228],        // #F6EAE4
+    border: [221, 188, 176],    // #DDBCB0
+    text: [51, 22, 14],         // #33160E
   },
   champagne_gala: {
-    primary: [125, 107, 77],    // #7D6B4D
-    bg: [247, 245, 240],        // #F7F5F0
-    border: [223, 216, 200],    // #DFD8C8
-    text: [46, 41, 34],         // #2E2922
+    primary: [130, 93, 31],     // #825D1F
+    bg: [246, 239, 224],        // #F6EFE0
+    border: [220, 200, 162],    // #DCC8A2
+    text: [43, 30, 8],          // #2B1E08
   },
   lavanda_imperial: {
-    primary: [104, 90, 124],    // #685A7C
-    bg: [244, 242, 247],        // #F4F2F7
-    border: [211, 205, 217],    // #D3CDD9
-    text: [43, 35, 56],         // #2B2338
+    primary: [90, 59, 133],      // #5A3B85
+    bg: [238, 233, 246],        // #EEE9F6
+    border: [198, 183, 222],    // #C6B7DE
+    text: [33, 19, 54],         // #211336
   },
 };
 
 /**
  * Convierte una URL de imagen a Base64 / DataURL para ser incrustada en jsPDF.
- * @param {string} url - Ruta de la imagen (ej. /logo_Helados_Catedral.jpg o data URL)
- * @returns {Promise<string|null>}
  */
 const cargarImagenBase64 = (url) => {
   return new Promise((resolve) => {
@@ -102,11 +100,7 @@ const dibujarMonograma = (doc, nombre = 'EV', x, y, paleta = PALETAS_RGB.sofisti
 };
 
 /**
- * Genera el membrete corporativo minimalista en la parte superior del documento.
- * @param {jsPDF} doc - Instancia del documento jsPDF
- * @param {object} membrete - Datos de la empresa emisora
- * @param {string} tituloReporte - Título específico del reporte
- * @param {string|null} logoBase64 - Imagen en formato DataURL
+ * Genera el membrete corporativo minimalista con RUC en alto contraste.
  */
 const dibujarMembrete = (doc, membrete = {}, tituloReporte = 'Reporte Corporativo', logoBase64 = null) => {
   const paletaKey = membrete.paleta_colores || 'sofisticacion_sutil';
@@ -127,17 +121,21 @@ const dibujarMembrete = (doc, membrete = {}, tituloReporte = 'Reporte Corporativ
     dibujarMonograma(doc, membrete.nombre_comercial, startX, startY, paleta);
   }
 
-  // 2. Datos de la Empresa (Lado izquierdo, junto al logo)
+  // 2. Datos de la Empresa (Lado izquierdo, junto al logo) con RUC en alto contraste
   const textX = startX + 24;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
   doc.setTextColor(...paleta.text);
   doc.text(membrete.nombre_comercial || 'EVENTRA SaaS Partner', textX, startY + 6);
 
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(...paleta.text);
+  doc.text(`RUC: ${membrete.ruc || '1799999999001'}  •  Plan ${membrete.plan_suscripcion || 'Empresarial'}`, textX, startY + 12);
+
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   doc.setTextColor(...paleta.primary);
-  doc.text(`RUC: ${membrete.ruc || '9999999999001'}  •  Plan ${membrete.plan_suscripcion || 'Empresarial'}`, textX, startY + 12);
   doc.text(`EVENTRA SaaS  •  Gestión Integral de Recepciones`, textX, startY + 17);
 
   // 3. Título del Reporte y Metadatos (Lado derecho)
@@ -156,13 +154,13 @@ const dibujarMembrete = (doc, membrete = {}, tituloReporte = 'Reporte Corporativ
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  doc.setTextColor(138, 152, 160);
+  doc.setTextColor(...paleta.text);
   doc.text(`Emisión: ${fechaStr}`, pageWidth - startX, startY + 12, { align: 'right' });
   if (membrete.usuario_responsable) {
     doc.text(`Generado por: ${membrete.usuario_responsable}`, pageWidth - startX, startY + 17, { align: 'right' });
   }
 
-  // 4. Línea divisoria minimalista en color de borde de la paleta
+  // 4. Línea divisoria minimalista
   const lineY = startY + 24;
   doc.setDrawColor(...paleta.border);
   doc.setLineWidth(0.6);
@@ -180,14 +178,13 @@ const aplicarPieDePagina = (doc) => {
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
 
-    // Línea sutil en pie
     doc.setDrawColor(220, 218, 210);
     doc.setLineWidth(0.5);
     doc.line(14, pageHeight - 12, pageWidth - 14, pageHeight - 12);
 
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(7.5);
-    doc.setTextColor(138, 152, 160);
+    doc.setTextColor(90, 105, 115);
     doc.text('Documento corporativo confidencial generado mediante EVENTRA SaaS', 14, pageHeight - 7);
 
     const paginacion = `Página ${i} de ${pageCount}`;
@@ -221,7 +218,6 @@ const aplicarMarcaAguaDoc = (doc, membrete = {}) => {
     doc.setFontSize(40);
     doc.setTextColor(190, 195, 200);
 
-    // Texto en ángulo diagonal centrado
     doc.text(textoMarca, pageWidth / 2, pageHeight / 2, {
       align: 'center',
       angle: 35,
@@ -263,10 +259,6 @@ const obtenerEstilosAutoTable = (paletaKey = 'sofisticacion_sutil') => {
   };
 };
 
-// =============================================================================
-// REPORTES INDIVIDUALES EXPORTABLES
-// =============================================================================
-
 /**
  * 1. Exporta el Reporte de Ingresos y Cobranzas en PDF.
  */
@@ -277,10 +269,9 @@ export const exportarReporteIngresosPDF = async ({ membrete, transacciones = [],
 
   dibujarMembrete(doc, membrete, 'Reporte Financiero de Ingresos', logoBase64);
 
-  // Resumen ejecutivo rápido en texto
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
-  doc.setTextColor(35, 61, 73);
+  doc.setTextColor(29, 51, 62);
   doc.text(`Total Recaudado (Pagos Aprobados): $${Number(kpis.total_recaudado || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} USD`, 14, 43);
 
   const tableRows = transacciones.map((t) => [
@@ -324,7 +315,7 @@ export const exportarReporteEventosPDF = async ({ membrete, eventos = [], kpis =
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
-  doc.setTextColor(35, 61, 73);
+  doc.setTextColor(29, 51, 62);
   doc.text(`Total de Eventos: ${kpis.total_eventos || eventos.length}  |  Eventos Activos: ${kpis.eventos_activos || 0}`, 14, 43);
 
   const tableRows = eventos.map((e) => [
@@ -365,7 +356,7 @@ export const exportarReporteSaldosPDF = async ({ membrete, saldos = [], kpis = {
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
-  doc.setTextColor(35, 61, 73);
+  doc.setTextColor(29, 51, 62);
   doc.text(`Total Cartera por Cobrar: $${Number(kpis.total_saldos_pendientes || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} USD`, 14, 43);
 
   const tableRows = saldos.map((s) => [

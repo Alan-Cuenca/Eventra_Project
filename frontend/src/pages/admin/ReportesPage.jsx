@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { eventraService } from '../../services/eventraService';
+import { useBranding } from '../../context/ThemeBrandingContext';
 import {
   exportarReporteIngresosPDF,
   exportarReporteEventosPDF,
@@ -19,26 +20,18 @@ import {
   Legend,
 } from 'recharts';
 import {
-  FileText,
   Download,
   DollarSign,
   Calendar,
   AlertTriangle,
   RefreshCw,
-  Building2,
-  CheckCircle2,
-  Clock,
-  Layers,
-  ArrowUpRight,
-  TrendingUp,
-  CreditCard,
   Loader2,
-  ShieldCheck,
 } from 'lucide-react';
 
 const COLORES_DONUT = ['#526F7D', '#233D49', '#4D9A72', '#C49A3A'];
 
 export const ReportesPage = () => {
+  const { branding } = useBranding();
   const [reporteData, setReporteData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [exportingType, setExportingType] = useState(null);
@@ -68,22 +61,29 @@ export const ReportesPage = () => {
     try {
       setExportingType(tipo);
       const { membrete, kpis, reporte_ingresos, reporte_eventos, reporte_saldos } = reporteData;
+      const membreteCompleto = {
+        ...membrete,
+        nombre_comercial: membrete?.nombre_comercial || branding?.nombre_comercial || 'EVENTRA',
+        ruc: membrete?.ruc || branding?.ruc || '1799999999001',
+        logo_url: membrete?.logo_url || branding?.logo_url || null,
+        paleta_colores: membrete?.paleta_colores || branding?.paleta_colores || 'sofisticacion_sutil',
+      };
 
       if (tipo === 'ingresos') {
         await exportarReporteIngresosPDF({
-          membrete,
+          membrete: membreteCompleto,
           transacciones: reporte_ingresos?.transacciones || [],
           kpis,
         });
       } else if (tipo === 'eventos') {
         await exportarReporteEventosPDF({
-          membrete,
+          membrete: membreteCompleto,
           eventos: reporte_eventos?.listado || [],
           kpis,
         });
       } else if (tipo === 'saldos') {
         await exportarReporteSaldosPDF({
-          membrete,
+          membrete: membreteCompleto,
           saldos: reporte_saldos?.listado || [],
           kpis,
         });
@@ -103,29 +103,41 @@ export const ReportesPage = () => {
   const eventosListado = reporteData?.reporte_eventos?.listado || [];
   const saldosListado = reporteData?.reporte_saldos?.listado || [];
 
+  const rucVisible = membrete.ruc || branding?.ruc || '1799999999001';
+  const nombreVisible = membrete.nombre_comercial || branding?.nombre_comercial || 'Reportes Corporativos';
+  const logoVisible = membrete.logo_url || branding?.logo_url || '/logo_Helados_Catedral.jpg';
+
   return (
     <div className="space-y-8 font-sans text-[#233D49]">
       {/* ── Header del Módulo con Membrete y Botones de Exportación ── */}
-      <div className="bg-white rounded-2xl border border-[#CBC6B6]/50 p-6 sm:p-8 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="bg-white rounded-2xl border border-[#CBC6B6]/70 p-6 sm:p-8 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="flex items-start sm:items-center gap-4">
           <img
-            src={membrete.logo_url || '/logo_Helados_Catedral.jpg'}
+            src={logoVisible}
             alt="Logo Empresa"
-            className="w-14 h-14 rounded-2xl bg-[#EEEBDD] p-1.5 border border-[#CBC6B6] object-contain shadow-xs shrink-0"
+            className="w-14 h-14 rounded-2xl bg-[#F3F0E4] p-1.5 border border-[#CBC6B6] object-contain shadow-xs shrink-0"
             onError={(e) => {
               e.currentTarget.src = '/logo_Helados_Catedral.jpg';
             }}
           />
           <div>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="text-xl sm:text-2xl font-bold tracking-tight text-[#233D49]">
-                {membrete.nombre_comercial || 'Reportes Corporativos'}
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#233D49]">
+                {nombreVisible}
               </span>
-              <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#526F7D]/15 text-[#526F7D] border border-[#526F7D]/30">
-                RUC: {membrete.ruc || '9999999999001'}
+              {/* Badge de RUC con Alto Contraste garantizado en cualquier paleta y modo */}
+              <span
+                style={{
+                  backgroundColor: '#233D49',
+                  color: '#FFFFFF',
+                  borderColor: '#233D49',
+                }}
+                className="inline-flex items-center gap-1.5 text-xs font-extrabold font-mono uppercase tracking-wider px-3.5 py-1 rounded-full border shadow-xs"
+              >
+                <span>RUC: {rucVisible}</span>
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-[#526F7D] mt-1">
+            <p className="text-xs sm:text-sm text-[#233D49]/80 mt-1.5 font-medium">
               Dashboards analíticos de ingresos, eventos y cartera de saldos por cobrar con exportación formal en PDF.
             </p>
           </div>
@@ -137,7 +149,7 @@ export const ReportesPage = () => {
             type="button"
             onClick={() => handleExportPDF('ingresos')}
             disabled={loading || exportingType !== null}
-            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#526F7D] hover:bg-[#233D49] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#526F7D] hover:bg-[#385563] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer disabled:opacity-50"
             title="Exportar Reporte de Ingresos a PDF"
           >
             {exportingType === 'ingresos' ? (
@@ -152,7 +164,7 @@ export const ReportesPage = () => {
             type="button"
             onClick={() => handleExportPDF('eventos')}
             disabled={loading || exportingType !== null}
-            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#526F7D] hover:bg-[#233D49] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#526F7D] hover:bg-[#385563] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer disabled:opacity-50"
             title="Exportar Reporte de Eventos a PDF"
           >
             {exportingType === 'eventos' ? (
@@ -167,7 +179,7 @@ export const ReportesPage = () => {
             type="button"
             onClick={() => handleExportPDF('saldos')}
             disabled={loading || exportingType !== null}
-            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#526F7D] hover:bg-[#233D49] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#526F7D] hover:bg-[#385563] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer disabled:opacity-50"
             title="Exportar Reporte de Saldos por Cobrar a PDF"
           >
             {exportingType === 'saldos' ? (
@@ -182,7 +194,7 @@ export const ReportesPage = () => {
             type="button"
             onClick={cargarReportes}
             disabled={loading}
-            className="p-2.5 rounded-xl bg-[#EEEBDD] hover:bg-[#CBC6B6]/50 text-[#233D49] border border-[#CBC6B6] transition-colors cursor-pointer"
+            className="p-2.5 rounded-xl bg-[#F3F0E4] hover:bg-[#CBC6B6]/50 text-[#233D49] border border-[#CBC6B6] transition-colors cursor-pointer"
             title="Recargar datos"
           >
             <RefreshCw size={15} className={loading ? 'animate-spin text-[#526F7D]' : ''} />
@@ -206,7 +218,7 @@ export const ReportesPage = () => {
       {/* ── KPI Cards (Toss-Style con tabular-nums) ─────────── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Card 1: Total Recaudado */}
-        <div className="bg-white rounded-2xl border border-[#CBC6B6]/40 shadow-sm p-6 hover:shadow-md transition-all space-y-3">
+        <div className="bg-white rounded-2xl border border-[#CBC6B6]/60 shadow-sm p-6 hover:shadow-md transition-all space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
               Total Recaudado
@@ -219,14 +231,14 @@ export const ReportesPage = () => {
             <div className="text-3xl font-extrabold tracking-tight text-[#233D49] tabular-nums">
               ${Number(kpis.total_recaudado || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-[#8A98A0]">
+            <p className="text-xs text-[#233D49]/70">
               Ingresos de pagos validados y aprobados contablemente
             </p>
           </div>
         </div>
 
         {/* Card 2: Saldos por Cobrar */}
-        <div className="bg-white rounded-2xl border border-[#CBC6B6]/40 shadow-sm p-6 hover:shadow-md transition-all space-y-3">
+        <div className="bg-white rounded-2xl border border-[#CBC6B6]/60 shadow-sm p-6 hover:shadow-md transition-all space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-[#C49A3A]">
               Saldos por Cobrar
@@ -239,14 +251,14 @@ export const ReportesPage = () => {
             <div className="text-3xl font-extrabold tracking-tight text-[#233D49] tabular-nums">
               ${Number(kpis.total_saldos_pendientes || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-[#8A98A0]">
+            <p className="text-xs text-[#233D49]/70">
               Cartera pendiente de abono en cotizaciones y reservas
             </p>
           </div>
         </div>
 
         {/* Card 3: Eventos Registrados */}
-        <div className="bg-white rounded-2xl border border-[#CBC6B6]/40 shadow-sm p-6 hover:shadow-md transition-all space-y-3">
+        <div className="bg-white rounded-2xl border border-[#CBC6B6]/60 shadow-sm p-6 hover:shadow-md transition-all space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
               Eventos Registrados
@@ -259,7 +271,7 @@ export const ReportesPage = () => {
             <div className="text-3xl font-extrabold tracking-tight text-[#233D49] tabular-nums">
               {kpis.total_eventos || 0}
             </div>
-            <p className="text-xs text-[#8A98A0]">
+            <p className="text-xs text-[#233D49]/70">
               {kpis.eventos_activos || 0} eventos actualmente en planificación o progreso
             </p>
           </div>
@@ -269,13 +281,13 @@ export const ReportesPage = () => {
       {/* ── Gráficos Minimalistas (Recharts) ─────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Gráfico 1: BarChart de Ingresos */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-[#CBC6B6]/40 shadow-sm p-6 space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-[#EEEBDD]">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-[#CBC6B6]/60 shadow-sm p-6 space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-[#CBC6B6]/40">
             <div>
               <h2 className="text-base font-bold text-[#233D49]">Evolución Mensual de Ingresos</h2>
               <p className="text-xs text-[#526F7D]">Recaudación consolidada por mes contable</p>
             </div>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#EEEBDD] text-[#526F7D]">
+            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#F3F0E4] text-[#233D49] border border-[#CBC6B6]">
               Moneda: USD
             </span>
           </div>
@@ -289,12 +301,12 @@ export const ReportesPage = () => {
                     dataKey="mes_etiqueta"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: '#526F7D', fontSize: 12 }}
+                    tick={{ fill: '#233D49', fontSize: 12 }}
                   />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: '#526F7D', fontSize: 12 }}
+                    tick={{ fill: '#233D49', fontSize: 12 }}
                     tickFormatter={(val) => `$${val}`}
                   />
                   <Tooltip
@@ -313,7 +325,7 @@ export const ReportesPage = () => {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-xs text-[#8A98A0]">
+              <div className="h-full flex flex-col items-center justify-center text-xs text-[#233D49]/70">
                 <span>No hay datos suficientes para graficar ingresos este periodo.</span>
               </div>
             )}
@@ -321,8 +333,8 @@ export const ReportesPage = () => {
         </div>
 
         {/* Gráfico 2: PieChart Donut de Eventos por Estado */}
-        <div className="bg-white rounded-2xl border border-[#CBC6B6]/40 shadow-sm p-6 space-y-4">
-          <div className="pb-2 border-b border-[#EEEBDD]">
+        <div className="bg-white rounded-2xl border border-[#CBC6B6]/60 shadow-sm p-6 space-y-4">
+          <div className="pb-2 border-b border-[#CBC6B6]/40">
             <h2 className="text-base font-bold text-[#233D49]">Eventos por Estado</h2>
             <p className="text-xs text-[#526F7D]">Distribución del estado operativo</p>
           </div>
@@ -362,7 +374,7 @@ export const ReportesPage = () => {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="text-xs text-[#8A98A0] text-center">
+              <div className="text-xs text-[#233D49]/70 text-center">
                 Sin eventos registrados para la distribución.
               </div>
             )}
@@ -371,9 +383,9 @@ export const ReportesPage = () => {
       </div>
 
       {/* ── Tablas con Pestañas (Tabs) ───────────────────────── */}
-      <div className="bg-white rounded-2xl border border-[#CBC6B6]/40 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#CBC6B6]/60 shadow-sm overflow-hidden">
         {/* Barra de Pestañas */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border-b border-[#EEEBDD] bg-[#EEEBDD]/30 gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border-b border-[#CBC6B6]/50 bg-[#F3F0E4]/40 gap-3">
           <div className="flex items-center gap-1.5 overflow-x-auto">
             <button
               type="button"
@@ -381,7 +393,7 @@ export const ReportesPage = () => {
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'saldos'
                   ? 'bg-[#526F7D] text-white shadow-xs'
-                  : 'bg-white text-[#526F7D] hover:bg-[#EEEBDD]'
+                  : 'bg-white text-[#233D49] border border-[#CBC6B6] hover:bg-[#FAF8F5]'
               }`}
             >
               Saldos Pendientes ({saldosListado.length})
@@ -393,7 +405,7 @@ export const ReportesPage = () => {
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'ingresos'
                   ? 'bg-[#526F7D] text-white shadow-xs'
-                  : 'bg-white text-[#526F7D] hover:bg-[#EEEBDD]'
+                  : 'bg-white text-[#233D49] border border-[#CBC6B6] hover:bg-[#FAF8F5]'
               }`}
             >
               Historial de Ingresos ({transacciones.length})
@@ -405,7 +417,7 @@ export const ReportesPage = () => {
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'eventos'
                   ? 'bg-[#526F7D] text-white shadow-xs'
-                  : 'bg-white text-[#526F7D] hover:bg-[#EEEBDD]'
+                  : 'bg-white text-[#233D49] border border-[#CBC6B6] hover:bg-[#FAF8F5]'
               }`}
             >
               Resumen de Eventos ({eventosListado.length})
@@ -416,7 +428,7 @@ export const ReportesPage = () => {
             type="button"
             onClick={() => handleExportPDF(activeTab)}
             disabled={exportingType !== null}
-            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#CBC6B6] text-[#233D49] hover:bg-[#EEEBDD] text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#CBC6B6] text-[#233D49] hover:bg-[#FAF8F5] text-xs font-bold shadow-xs transition-colors cursor-pointer"
           >
             <Download size={13} className="text-[#526F7D]" />
             <span>Descargar PDF de esta vista</span>
@@ -428,7 +440,7 @@ export const ReportesPage = () => {
           {activeTab === 'saldos' && (
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="border-b border-[#EEEBDD] bg-[#F9F8F4] text-[#526F7D] text-[11px] font-bold uppercase tracking-wider">
+                <tr className="border-b border-[#CBC6B6]/50 bg-[#FAF8F5] text-[#233D49] text-[11px] font-bold uppercase tracking-wider">
                   <th className="py-3.5 px-5">Evento</th>
                   <th className="py-3.5 px-5">Cliente</th>
                   <th className="py-3.5 px-5">Fecha Evento</th>
@@ -438,9 +450,9 @@ export const ReportesPage = () => {
                   <th className="py-3.5 px-5 text-center">Estado de Pago</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#EEEBDD]">
+              <tbody className="divide-y divide-[#CBC6B6]/40">
                 {saldosListado.map((row) => (
-                  <tr key={row.evento_id} className="hover:bg-[#F9F8F4] transition-colors">
+                  <tr key={row.evento_id} className="hover:bg-[#FAF8F5] transition-colors">
                     <td className="py-3.5 px-5 font-semibold text-[#233D49] text-xs">
                       {row.evento_titulo || 'Evento'}
                     </td>
@@ -450,7 +462,7 @@ export const ReportesPage = () => {
                     <td className="py-3.5 px-5 text-xs text-[#526F7D]">
                       {row.fecha_evento ? new Date(row.fecha_evento).toLocaleDateString('es-ES') : 'Sin fecha'}
                     </td>
-                    <td className="py-3.5 px-5 text-xs text-right tabular-nums">
+                    <td className="py-3.5 px-5 text-xs text-right tabular-nums font-medium">
                       ${Number(row.costo_total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </td>
                     <td className="py-3.5 px-5 text-xs text-right tabular-nums text-[#4D9A72] font-semibold">
@@ -481,7 +493,7 @@ export const ReportesPage = () => {
           {activeTab === 'ingresos' && (
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="border-b border-[#EEEBDD] bg-[#F9F8F4] text-[#526F7D] text-[11px] font-bold uppercase tracking-wider">
+                <tr className="border-b border-[#CBC6B6]/50 bg-[#FAF8F5] text-[#233D49] text-[11px] font-bold uppercase tracking-wider">
                   <th className="py-3.5 px-5">Fecha</th>
                   <th className="py-3.5 px-5">Cliente</th>
                   <th className="py-3.5 px-5">Evento Asociado</th>
@@ -490,9 +502,9 @@ export const ReportesPage = () => {
                   <th className="py-3.5 px-5 text-right">Monto Aprobado</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#EEEBDD]">
+              <tbody className="divide-y divide-[#CBC6B6]/40">
                 {transacciones.map((p) => (
-                  <tr key={p.id} className="hover:bg-[#F9F8F4] transition-colors">
+                  <tr key={p.id} className="hover:bg-[#FAF8F5] transition-colors">
                     <td className="py-3.5 px-5 text-xs text-[#526F7D]">
                       {p.fecha ? new Date(p.fecha).toLocaleDateString('es-ES') : 'N/A'}
                     </td>
@@ -506,7 +518,7 @@ export const ReportesPage = () => {
                       {p.concepto || 'Abono'}
                     </td>
                     <td className="py-3.5 px-5 text-xs">
-                      <span className="px-2 py-0.5 rounded-md bg-[#EEEBDD] text-[#526F7D] font-medium text-[11px]">
+                      <span className="px-2.5 py-0.5 rounded-md bg-[#F3F0E4] text-[#233D49] border border-[#CBC6B6] font-semibold text-[11px]">
                         {p.metodo_pago || 'Efectivo'}
                       </span>
                     </td>
@@ -522,7 +534,7 @@ export const ReportesPage = () => {
           {activeTab === 'eventos' && (
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="border-b border-[#EEEBDD] bg-[#F9F8F4] text-[#526F7D] text-[11px] font-bold uppercase tracking-wider">
+                <tr className="border-b border-[#CBC6B6]/50 bg-[#FAF8F5] text-[#233D49] text-[11px] font-bold uppercase tracking-wider">
                   <th className="py-3.5 px-5">Evento</th>
                   <th className="py-3.5 px-5">Cliente</th>
                   <th className="py-3.5 px-5">Fecha</th>
@@ -531,9 +543,9 @@ export const ReportesPage = () => {
                   <th className="py-3.5 px-5 text-right">Presupuesto</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#EEEBDD]">
+              <tbody className="divide-y divide-[#CBC6B6]/40">
                 {eventosListado.map((evt) => (
-                  <tr key={evt.id} className="hover:bg-[#F9F8F4] transition-colors">
+                  <tr key={evt.id} className="hover:bg-[#FAF8F5] transition-colors">
                     <td className="py-3.5 px-5 font-semibold text-[#233D49] text-xs">
                       {evt.titulo || 'Evento'}
                     </td>
@@ -547,7 +559,7 @@ export const ReportesPage = () => {
                       {evt.salon_o_lugar || 'Salón Principal'}
                     </td>
                     <td className="py-3.5 px-5 text-xs text-center">
-                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#526F7D]/15 text-[#526F7D]">
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#F3F0E4] text-[#233D49] border border-[#CBC6B6]">
                         {evt.estado_progreso || 'En Planificación'}
                       </span>
                     </td>
@@ -566,4 +578,3 @@ export const ReportesPage = () => {
 };
 
 export default ReportesPage;
-
