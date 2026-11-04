@@ -4,7 +4,7 @@
 **Rol:** Arquitecto de Software & Tech Lead  
 **Fecha de Actualización:** 04 de Noviembre, 2026  
 **Estado del Sistema:** **100% IMPLEMENTADO, VALIDADO Y OPERATIVO EN PRODUCCIÓN (Render + Supabase)**  
-**Versión de Auditoría:** v2.0 (Post-Implementación Integral de Marca Blanca, Límites SaaS y Chatbot AI)
+**Versión de Auditoría:** v3.0 (Post-Optimización Contextual de EVARA AI, Respaldo de Gobernanza Super-Admin y Telemetría SaaS)
 
 ---
 
@@ -43,7 +43,7 @@ Todas las vulnerabilidades preliminares identificadas (B-01 a B-06) fueron **sub
   2. Crea el usuario `Administrador` inicial (rol 1) con contraseña temporal autogenerada encriptada con bcrypt (`debe_cambiar_password = true`).
   3. Despacha el correo de bienvenida e inicio de sesión mediante `emailService.js` (usando Brevo HTTP API o Nodemailer).
 * **Control Operativo de Inquilinos:**  
-  ✅ **CUMPLE.** Endpoints dedicados para suspender/reactivar inquilinos (`PATCH /api/empresas/:id/estado`), cambiar planes de suscripción (`PATCH /api/empresas/:id/plan`) y auditar facturación global.
+  ✅ **CUMPLE.** Endpoints dedicados para suspender/reactivar inquilinos (`PATCH /api/empresas/:id/suspender`), cambiar planes de suscripción (`PATCH /api/empresas/:id/plan`) y auditar facturación global.
 
 ---
 
@@ -99,16 +99,16 @@ Se implementó un middleware centralizado que restringe los recursos consumidos 
     "upgrade_url": "/mi-suscripcion"
   }
   ```
-* **Endpoint de Consulta de Cuotas:** `GET /api/suscripciones/mi-consumo` (`suscripcionController.js`), que consolida el uso real de cada métrica contra los topes del plan para alimentar las barras de progreso del panel del Administrador.
+* **Endpoint de Consulta de Cuotas:** `GET /api/suscripciones/consumo` (`suscripcionController.js`), que consolida el uso real de cada métrica contra los topes del plan para alimentar las barras de progreso del panel del Administrador.
 
 ---
 
 ### 3.2. Asistente Conversacional Inteligente: EVARA AI (`chatbotController.js`)
 * **Motor de IA:** Desarrollado con el SDK oficial `@google/genai` utilizando el modelo **Google Gemini 1.5 Flash**.
 * **Arquitectura Contextual Multi-tenant:**
-  * Al recibir una consulta en `POST /api/chatbot/mensaje`, el controlador recupera en tiempo real el contexto de la empresa del inquilino (nombre comercial, eslogan, catálogo de servicios, paquetes vigentes con precios e información de contacto).
+  * Al recibir una consulta en `POST /api/chatbot`, el controlador recupera en tiempo real el contexto de la empresa del inquilino (nombre comercial, eslogan, catálogo de servicios, paquetes vigentes con precios e información de contacto).
   * Inyecta este contexto en el `systemInstruction` de Gemini para responder de manera hiper-personalizada a clientes y prospectos sobre la oferta de la empresa.
-  * Mantiene y valida el conteo de mensajes mensuales en la tabla `empresas` (`chatbot_mensajes_mes`), reseteándose al inicio de cada ciclo de facturación.
+  * Mantiene y valida el conteo de mensajes mensuales en la tabla `empresas` (`mensajes_chatbot_mes`), reseteándose al inicio de cada ciclo de facturación.
 
 ---
 
@@ -135,15 +135,12 @@ Dado que las plataformas Cloud Serverless/PaaS (como Render) bloquean los puerto
 
 ### 3.5. Módulo de Analítica y Reportes Financieros (`reporteController.js`)
 * Endpoints analíticos dedicados:
-  - `GET /api/reportes/kpis`: Margen de ganancia, ingreso promedio por evento, tasa de conversión de cotizaciones a eventos y balance financiero.
-  - `GET /api/reportes/tendencias`: Ingresos mensuales comparativos del año en curso.
-  - `GET /api/reportes/rentabilidad`: Desglose de ingresos vs costos de proveedores por evento.
-  - `GET /api/reportes/pdf-data`: Payload estructurado para la generación e impresión de reportes ejecutivos con membrete corporativo.
+  - `GET /api/reportes/resumen`: Consolida métricas financieras reales (`ingresos_totales_recaudados`, `eventos_totales`, `tasa_conversion_cotizaciones`), series mensuales de ingresos, distribución por estado y metadatos fiscales de la empresa (`nombre_comercial`, `ruc`, `plan_suscripcion`) para exportación PDF con membrete corporativo.
 
 ---
 
 ### 3.6. Marca Blanca / White-Label y Theming Dinámico (`empresaController.js`)
-* `GET /api/empresas/mi-branding`: **Accesible para todos los roles autenticados de la empresa (roles 1, 2, 3 y 4)**. Devuelve nombre comercial, logo, eslogan, marca de agua y clave de paleta de colores activa (`paleta_color`).
+* `GET /api/empresas/mi-branding`: **Accesible para todos los roles autenticados de la empresa (roles 1, 2, 3 y 4)**. Devuelve nombre comercial, RUC, logo, eslogan, marca de agua y clave de paleta de colores activa (`paleta_colores`).
 * `PUT /api/empresas/mi-branding`: **Exclusivo para el Administrador (rol 1)**. Permite actualizar eslogan, marca de agua, seleccionar entre las 5 paletas de color y subir el logotipo oficial mediante `multer` hacia Supabase Storage (`logo_url TEXT`).
 
 ---
@@ -176,23 +173,23 @@ Dado que las plataformas Cloud Serverless/PaaS (como Render) bloquean los puerto
 ├── /empresas                             # Gestión de inquilinos (Super Admin & Admin)
 │   ├── GET    /                          # Directorio global de empresas (Super Admin)
 │   ├── POST   /                          # Creación transaccional de tenant y admin (Super Admin)
-│   ├── PATCH  /:id/estado                # Suspender / Reactivar empresa (Super Admin)
+│   ├── PATCH  /:id/suspender             # Suspender / Reactivar empresa (Super Admin)
 │   ├── PATCH  /:id/plan                  # Upgrade / Downgrade de plan (Super Admin)
-│   ├── GET    /mi-branding               # Lectura de paleta, logo y marca (Roles 1..4)
+│   ├── GET    /mi-branding               # Lectura de paleta, RUC, logo y marca (Roles 1..4)
 │   └── PUT    /mi-branding               # Actualización de marca blanca (Admin)
 ├── /suscripciones
-│   ├── GET    /mi-consumo                # Consumo de cuotas vs límites del plan
-│   └── GET    /planes                    # Catálogo de planes y características
+│   ├── GET    /                          # Listado global (Super Admin) o por tenant (Admin)
+│   ├── POST   /pagar                     # Subida de comprobante PDF/imagen en Supabase Storage
+│   ├── PUT    /:id/estado                # Aprobación / Rechazo y activación automática de plan
+│   └── GET    /consumo                   # Consumo de cuotas vs límites del plan
 ├── /chatbot
-│   └── POST   /mensaje                   # Asistente EVARA AI con Gemini 1.5 Flash
+│   └── POST   /                          # Asistente EVARA AI con Gemini 1.5 Flash + Fallback SQL
 ├── /solicitudes                          # Solicitudes de cambio de eventos
 │   ├── GET    /                          # Listado filtrado por tenant / cliente
 │   ├── POST   /                          # Creación de solicitud por el cliente
-│   └── PATCH  /:id/estado                # Aprobación / Rechazo con envío de correo
+│   └── PUT    /:id/estado                # Aprobación / Rechazo con envío de correo
 ├── /reportes
-│   ├── GET    /kpis                      # Métricas clave de rendimiento y margen
-│   ├── GET    /tendencias                # Gráfica histórica de ingresos
-│   └── GET    /rentabilidad              # Rentabilidad detallada por evento
+│   └── GET    /resumen                   # KPIs financieros, series mensuales y metadatos RUC
 └── /eventos, /cotizaciones, /reservas, /pagos, /servicios, /paquetes, /proveedores, /actividades
     └── Endpoints CRUD estándar filtrados por empresa_id con validación anti-IDOR
 ```
@@ -218,7 +215,35 @@ El backend cuenta con 12 suites de pruebas unitarias y de integración que valid
 
 ---
 
-## 7. Dictamen Final de la Auditoría Backend
+## 7. Nueva Sección de Cambios Realizados en el Backend (Auditoría v3.0 — Noviembre 2026)
 
-> **DICTAMEN: APROBADO CON EXCELENCIA TÉCNICA.**  
-> El backend de EVENTRA SaaS cumple rigurosamente con los estándares de arquitectura de software para soluciones multi-tenant empresariales. Garantiza el aislamiento estricto de datos entre inquilinos, mitiga vulnerabilidades IDOR, soporta un esquema RBAC de 5 roles bien diferenciados, ofrece control de consumo por tiers de suscripción y provee una integración desacoplada y robusta con servicios de IA (Google Gemini 1.5 Flash), correo transaccional (Brevo API) y almacenamiento en la nube (Supabase Storage).
+Durante las últimas iteraciones de Noviembre de 2026 se incorporaron y auditaron las siguientes mejoras en la capa de servicios y controladores del backend:
+
+### 7.1. Optimización de Respuestas Contextuales en EVARA AI (`chatbotController.js` — Commit `930fbaf`)
+* **Archivo intervenido:** `backend/src/controllers/chatbotController.js`.
+* **Mejoras implementadas:**
+  1. **Refinamiento del `systemPrompt` de Gemini 1.5 Flash:** Se instruyó explícitamente al modelo para que, cuando un cliente indique una fecha o solicite reservar un salón, confirme con entusiasmo la fecha y explique que el bloqueo anti-colisión y el contrato legal se formalizan en los módulos `/cotizador` y `/reservas`.
+  2. **Motor Contextual SQL Determinista (`generarRespuestaContextual`):** Se amplió el clasificador de intenciones basado en el catálogo real de PostgreSQL (`paquetes` y `servicios` del `empresa_id`) para responder con precisión a:
+     * Consultas de alcance y capacidades (`"para qué sirve"`, `"qué haces"`, `"puedes agendar"`, `"quién eres"`).
+     * Afirmaciones de compra o cotización (`"sí"`, `"claro"`, `"quiero cotizar"`, `"de acuerdo"`), recomendando automáticamente el paquete base de la empresa con su precio real.
+     * Expresiones temporales y fechas (`enero`..`diciembre`, `2025`..`2027`, formatos `dd/mm` o `"agendar"`/`"disponibilidad"`), guiando al usuario hacia la reserva libre de colisiones.
+
+### 7.2. Soporte Backend para los Nuevos Módulos de Gobernanza del Super Administrador (`rol_id = 5`)
+Se verificó e integró la cobertura de endpoints del backend que alimentan los 4 módulos recién habilitados en la consola global:
+1. **Bandeja de Solicitudes de Ingreso y Facturación (`suscripcionController.js`):**
+   * `GET /api/suscripciones`: Cuando `rol_id === 5`, ejecuta un `INNER JOIN` entre `suscripciones_pagos` y `empresas` devolviendo el historial completo de transferencias, RUC, plan solicitado y URL del comprobante PDF alojado en Supabase Storage (`bucket: comprobantes`) o en URI Base64 resiliente.
+   * `PUT /api/suscripciones/:id/estado`: Al aprobarse una solicitud (`estado = 'Aprobado'`), ejecuta la actualización automática `UPDATE empresas SET plan_suscripcion = $1, estado_activo = true, mensajes_chatbot_mes = 0 WHERE id = $2`.
+2. **Gestión de Administradores Tenant y Aprovisionamiento (`empresaController.js`):**
+   * `GET /api/empresas` y `POST /api/empresas`: Aprovisiona en transacción SQL atómica (`BEGIN ... COMMIT`) tanto el registro en `empresas` como su usuario Administrador principal (`rol_id = 1`) con contraseña temporal segura (`generarPasswordTemporal(12)`) y disparo de bienvenida por `sendWelcomeAdminEmail`.
+   * `PATCH /api/empresas/:id/suspender`: Permite habilitar o suspender de forma inmediata el acceso operativo de cualquier inquilino y su administrador.
+3. **Metadatos Tributarios (RUC) para Reportes y Marca Blanca (`reporteController.js` y `empresaController.js`):**
+   * `GET /api/reportes/resumen` y `GET /api/empresas/mi-branding` exponen el campo `ruc` junto con `nombre_comercial` y `paleta_colores`, garantizando que tanto la vista `/reportes` como el generador PDF muestren siempre la identificación tributaria real del tenant.
+4. **Diagnóstico y Telemetría de Infraestructura (`/api/health`):**
+   * Permite que el módulo de Configuración Global SaaS (`/super-admin/configuracion`) mida en vivo la latencia y disponibilidad de Express, PostgreSQL en Supabase y el servicio de almacenamiento.
+
+---
+
+## 8. Dictamen Final de la Auditoría Backend
+
+> **DICTAMEN: APROBADO CON EXCELENCIA TÉCNICA (v3.0).**  
+> El backend de EVENTRA SaaS cumple rigurosamente con los estándares de arquitectura de software para soluciones multi-tenant empresariales. Garantiza el aislamiento estricto de datos entre inquilinos, mitiga vulnerabilidades IDOR, soporta un esquema RBAC de 5 roles bien diferenciados, ofrece control de consumo por tiers de suscripción, respalda la totalidad de los módulos de gobernanza del Super Administrador y provee una integración desacoplada y robusta con servicios de IA (Google Gemini 1.5 Flash), correo transaccional (Brevo API) y almacenamiento en la nube (Supabase Storage).
