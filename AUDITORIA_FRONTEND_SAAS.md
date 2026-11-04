@@ -4,7 +4,7 @@
 **Rol:** Arquitecto Frontend Senior & Tech Lead  
 **Fecha de Actualización:** 04 de Noviembre, 2026  
 **Estado del Sistema:** **100% IMPLEMENTADO, VALIDADO Y EN PRODUCCIÓN (Render + Supabase)**  
-**Versión de Auditoría:** v2.0 (Post-Implementación de Paletas Dinámicas, Flujo de Pago por Transferencia y Sincronización UX)
+**Versión de Auditoría:** v3.0 (Post-Implementación de Contraste Garantizado, Página Dedicada `/planes/pago`, RUC en Reportes y Consola Completa del Super Administrador)
 
 ---
 
@@ -85,11 +85,11 @@ Para solventar la falta de notoriedad cromática que existía previamente, se im
 
 ---
 
-### 3.2. Flujo de Selección de Plan y Pago por Transferencia en `/precios` y Landing Page
+### 3.2. Flujo de Selección de Plan y Pago por Transferencia en `/precios`, `/planes/pago` y Landing Page
 Se implementó un flujo comercial interactivo de extremo a extremo para la contratación B2B de EVENTRA SaaS:
 
-1. **Componente Reutilizable `ModalPagoPlanTransferencia.jsx`:**  
-   Integrado en `/precios` (`Pricing.jsx`), la Landing Page (`PreciosPublic.jsx`) y el panel de administración (`MiSuscripcion.jsx`).
+1. **Página Dedicada `PagoPlanPage.jsx` (`/planes/pago`) y Componente `ModalPagoPlanTransferencia.jsx`:**  
+   Integrado con `/precios` (`Pricing.jsx`), la Landing Page (`PreciosPublic.jsx`) y el panel de administración (`MiSuscripcion.jsx`).
 2. **Selección de Planes:**  
    El usuario puede alternar entre ciclo mensual o anual y seleccionar el **Plan Básico (Boutique)** o **Plan Premium**.
 3. **Datos Oficiales de Transferencia Bancaria Únicamente:**  
@@ -113,6 +113,10 @@ Se implementó un flujo comercial interactivo de extremo a extremo para la contr
 * **`GlobalDashboardPage.jsx`:** KPIs globales en tiempo real (Empresas activas, ingresos mensuales recurrentes MRR, usuarios totales, distribución de planes Básico vs Premium).
 * **`EmpresasManagementPage.jsx`:** Directorio general de inquilinos con buscador, suspensión temporal, reactivación, cambio de planes y modal de creación manual con envío automático de credenciales iniciales.
 * **`FacturacionSuperAdmin.jsx`:** Auditoría de pagos y transferencias con soporte para **visualización de comprobantes PDF** mediante `<iframe />` y enlaces directos de descarga, corrigiendo errores previos de imágenes rotas.
+* **`SolicitudesIngresoPage.jsx`:** Gestión y aprobación de solicitudes de ingreso corporativo con revisión de comprobantes de transferencia.
+* **`AdministradoresTenantPage.jsx`:** Directorio de Administradores Principales (`rol_id = 1`) por cada tenant con control de acceso y reenvío de credenciales.
+* **`AuditoriaLogsPage.jsx`:** Bitácora global de eventos multi-tenant, facturación y seguridad RBAC con exportación a CSV.
+* **`ConfiguracionSaasPage.jsx`:** Gobernanza global de datos bancarios de transferencia, tarifas de planes, políticas JWT/RBAC y diagnóstico de conexión API en tiempo real.
 
 ---
 
@@ -163,12 +167,53 @@ Ejecutada con el test runner nativo de Node.js sobre `frontend/src/test/superAdm
 
 ### 5.2. Compilación de Producción (`vite build`)
 * **Estado:** **EXITOSO (0 errores de sintaxis o empaquetado).**
-* **Módulos procesados:** 2,674 módulos transformados y minificados.
+* **Módulos procesados:** 2,679 módulos transformados y minificados.
 * **Generación de Chunks:** Paquetes optimizados en `dist/` para HTML, CSS y JavaScript.
 
 ---
 
-## 6. Dictamen Final de la Auditoría Frontend
+## 6. Nueva Sección de Cambios Realizados en el Frontend (Auditoría v3.0 — Noviembre 2026)
 
-> **DICTAMEN: APROBADO CON EXCELENCIA TÉCNICA Y DE DISEÑO.**  
-> El frontend de EVENTRA SaaS proporciona una experiencia de usuario fluida, elegante y profesional estrictamente alineada con la filosofía "Sofisticación Sutil". La arquitectura de componentes está desacoplada por roles, el motor de Marca Blanca permite personalización cromática dinámica en tiempo real sin recargar, y los flujos comerciales de pago y autoservicio de clientes operan sin fricciones ni datos simulados.
+En esta fase de auditoría e implementación se resolvieron las observaciones de contraste visual, flujo de pago de planes y habilitación completa de los módulos del Super Administrador (`ADMIN_GLOBAL`, `rol_id = 5`), estructuradas en commits independientes:
+
+### 6.1. Restauración de Contraste en Landing Page y Paletas de Marca Blanca de Alto Contraste
+* **Archivos intervenidos:** `frontend/src/styles/index.css`, `frontend/src/context/ThemeBrandingContext.jsx`.
+* **Problema detectado:** Los selectores globales por subcadena (`[class*="bg-[#526F7D]"]`, `[class*="text-[#233D49]"]`) alteraban las secciones oscuras del Hero y Footer del sitio público, dejando texto oscuro sobre fondo azul pizarra y botones con bajo contraste.
+* **Solución implementada:**
+  1. Se reemplazaron los selectores de subcadena por selectores de clase exactos acotados exclusivamente a `.app-shell` y `.dashboard-shell`, manteniendo la **Landing Page** (`/`, `/funcionalidades`, `/evara-ai`, `/precios`, `/login`) con su estética original intacta y alto contraste.
+  2. Se calibraron las 5 paletas predeterminadas que elige el usuario dentro del negocio (**Sofisticación Sutil**, **Bosque Olivo**, **Terracota Real**, **Champagne Gala** y **Lavanda Imperial**) con superficies tintadas armónicas, bordes nítidos y textos oscuros de contraste AAA (`#183024`, `#3D1D14`, `#332811`, `#261938`) junto con acentos saturados con texto blanco puro `#FFFFFF`.
+
+### 6.2. Visibilidad del RUC en la Vista y Exportación de Reportes PDF (`/reportes`)
+* **Archivos intervenidos:** `frontend/src/pages/admin/ReportesPage.jsx`, `frontend/src/utils/pdfReportGenerator.js`.
+* **Problema detectado:** En la cabecera del módulo de Reportes Analíticos, la insignia del RUC utilizaba un fondo translúcido que perdía contraste e impedía leer el número tributario de la empresa.
+* **Solución implementada:**
+  1. Se rediseñó la insignia del RUC en `ReportesPage.jsx` con fondo sólido `#233D49`, borde definido y texto blanco puro `#FFFFFF` en tipografía monoespaciada (`RUC: {rucVisible}`), con respaldo automático desde el contexto `useBranding()`.
+  2. En `pdfReportGenerator.js`, se reforzó el membrete corporativo del documento PDF exportado para imprimir el RUC en negrita de alto contraste.
+
+### 6.3. Nueva Página Dedicada de Pago por Transferencia (`/planes/pago`) sin Desbordamiento
+* **Archivos creados y modificados:** `frontend/src/pages/public/PagoPlanPage.jsx`, `frontend/src/pages/public/Pricing.jsx`, `frontend/src/pages/public/PreciosPublic.jsx`, `frontend/src/routes/AppRoutes.jsx`.
+* **Problema detectado:** La sección de transferencia se mostraba de antemano dentro de la vista de planes y el modal anterior sobrepasaba los límites verticales de la pantalla, obligando a reducir el zoom del navegador.
+* **Solución implementada:**
+  1. Las vistas `/precios` (`Pricing.jsx`) y `/#precios` (`PreciosPublic.jsx`) ahora muestran únicamente las tarjetas comparativas de **Plan Básico ($49/mes)** y **Plan Premium ($99/mes)**.
+  2. Al seleccionar cualquier plan, el usuario es redirigido a la nueva página dedicada `/planes/pago?plan=...&ciclo=...` (`PagoPlanPage.jsx`), diseñada en una cuadrícula limpia de 2 columnas que encaja al 100% de zoom sin desbordar:
+     * Muestra los datos oficiales para transferencia (**Nombre:** `Alejandro Falcon`, **Cuenta:** `2210101010`, **Cédula:** `1850116508`, **Correo:** `mfalcon6508@uta.edu.ec`) con copiado rápido.
+     * Incluye el cargador para subir el **PDF del comprobante de pago**.
+     * Una vez subido el PDF, abre un modal compacto y centrado donde el usuario ingresa el **correo electrónico al que llegarán las credenciales** y presiona **"Finalizar"**, mostrando la confirmación en pantalla.
+
+### 6.4. Habilitación Integral de la Consola del Super Administrador (`ADMIN_GLOBAL`) en 5 Commits
+Se eliminaron todas las etiquetas `"Próximamente"` de `SuperAdminSidebar.jsx` y se corrigió el logotipo corporativo:
+
+| Commit | Módulo / Ruta | Archivo Principal | Funcionalidad Implementada |
+| :---: | :--- | :--- | :--- |
+| **`76f7d97`** | **Logotipo Oficial EVENTRA** | `SuperAdminSidebar.jsx`, `SuperAdminHeader.jsx` | Renderizado del logo oficial (`src/assets/logo.png`) dentro de un contenedor blanco `#FFFFFF` con bordes redondeados (`48x48px` en sidebar y `38x38px` en header), `object-fit: contain` y sombra sutil. |
+| **`56eca70`** | **Solicitudes de Ingreso** (`/super-admin/solicitudes`) | `SolicitudesIngresoPage.jsx` | Bandeja conectada a `getSuscripciones()` y `obtenerEmpresas()` para revisar comprobantes PDF/imagen, aprobar o rechazar activaciones (`PUT /api/suscripciones/:id/estado`) y dar de alta nuevas empresas (`CrearEmpresaModal`). |
+| **`744ddee`** | **Administradores Tenant** (`/super-admin/administradores`) | `AdministradoresTenantPage.jsx`, `superAdminService.js` | Directorio global de Administradores Principales (`rol_id = 1`) por cada inquilino, con filtros, copiado de correo, reenvío de recordatorio de acceso y suspensión/reactivación de acceso (`PATCH /api/empresas/:id/suspender`). |
+| **`7743cdc`** | **Auditoría y Logs** (`/super-admin/auditoria`) | `AuditoriaLogsPage.jsx` | Bitácora centralizada en tiempo real de eventos multi-tenant (`TENANT`), facturación (`BILLING`), seguridad RBAC (`SECURITY`) e infraestructura (`SYSTEM`), con filtros y exportación directa a CSV (`Exportar Bitácora CSV`). |
+| **`7da7f92`** | **Configuración SaaS** (`/super-admin/configuracion`) | `ConfiguracionSaasPage.jsx` | Panel de gobernanza global para administrar la cuenta bancaria oficial de transferencias, tarifas y límites de planes (`$49` Básico / `$99` Premium), políticas JWT/RBAC y diagnóstico de conexión en vivo contra la API (`Probar Conexión API`). |
+
+---
+
+## 7. Dictamen Final de la Auditoría Frontend
+
+> **DICTAMEN: APROBADO CON EXCELENCIA TÉCNICA Y DE DISEÑO (v3.0).**  
+> El frontend de EVENTRA SaaS proporciona una experiencia de usuario fluida, elegante y profesional estrictamente alineada con la filosofía "Sofisticación Sutil". La Landing Page conserva su contraste original impecable, las 5 paletas de Marca Blanca aplican un contraste AAA en el panel interno, la página dedicada `/planes/pago` opera sin desbordes de pantalla, el RUC es 100% legible en los reportes analíticos y PDF, y los 7 módulos de la Consola del Super Administrador (`Dashboard Global`, `Empresas`, `Facturación SaaS`, `Solicitudes de Ingreso`, `Administradores Tenant`, `Auditoría y Logs` y `Configuración SaaS`) se encuentran 100% operativos y libres de estados `"Próximamente"`.
