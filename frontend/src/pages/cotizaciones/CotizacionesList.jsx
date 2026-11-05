@@ -8,7 +8,7 @@ import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { eventraService } from '../../services/eventraService';
 import { useAuth } from '../../context/AuthContext';
-import { Plus, Search, Loader2, Calculator, FileText, CalendarDays } from 'lucide-react';
+import { Plus, Search, Loader2, Calculator, CalendarDays } from 'lucide-react';
 
 export const CotizacionesList = () => {
   const { isAdmin, isGerente, isCliente, isTrabajador } = useAuth();
@@ -84,7 +84,6 @@ export const CotizacionesList = () => {
                   <th>Fecha Evento</th>
                   <th>Monto Total</th>
                   <th>Estado</th>
-                  <th style={{ textAlign: 'center' }}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -115,11 +114,6 @@ export const CotizacionesList = () => {
                       }>
                         {cot.estado || 'Pendiente'}
                       </Badge>
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <button className="btn btn-secondary" style={{ padding: '0.35rem 0.65rem' }} title="Ver Detalle" onClick={() => alert('Visualización de detalle en construcción.')}>
-                        <FileText size={14} /> Detalle
-                      </button>
                     </td>
                   </tr>
                 ))}

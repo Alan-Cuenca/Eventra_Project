@@ -99,16 +99,6 @@ export const Footer = () => {
                 <CheckCircle2 className="w-3.5 h-3.5 text-[#4D9A72]" />
                 <span>Aislamiento Multi-Tenant</span>
               </li>
-              <li>
-                <a href="#terminos" onClick={(e) => { e.preventDefault(); alert('EVENTRA SaaS: Términos de Servicio disponibles bajo suscripción corporativa.'); }} className="hover:text-[var(--ev-primary)] transition-colors">
-                  Términos del Servicio
-                </a>
-              </li>
-              <li>
-                <a href="#privacidad" onClick={(e) => { e.preventDefault(); alert('EVENTRA SaaS: Política de Privacidad conforme a estándares de protección de datos personales.'); }} className="hover:text-[var(--ev-primary)] transition-colors">
-                  Política de Privacidad
-                </a>
-              </li>
             </ul>
           </div>
 

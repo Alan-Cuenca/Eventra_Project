@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { eventraService } from '../../services/eventraService';
 import { Calendar, Search, Filter, Plus, User, Phone, Eye, Loader2, Sparkles, AlertCircle, RefreshCw } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 export const EventsPage = () => {
   const navigate = useNavigate();
+  const { isAdmin, isGerente } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [eventos, setEventos] = useState([]);
@@ -70,13 +72,15 @@ export const EventsPage = () => {
             Supervisión del progreso, reservas, pagos y coordinación operativa.
           </p>
         </div>
-        <Link
-          to="/cotizador"
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[var(--ev-primary)] hover:bg-[var(--ev-primary-hover)] text-white text-xs font-semibold shadow-xs hover:shadow-sm active:scale-[0.98] transition-transform duration-150 shrink-0 border-0 focus:outline-none"
-        >
-          <Plus size={15} />
-          <span>Nuevo Evento</span>
-        </Link>
+        {(isAdmin || isGerente) && (
+          <Link
+            to="/cotizador"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[var(--ev-primary)] hover:bg-[var(--ev-primary-hover)] text-white text-xs font-semibold shadow-xs hover:shadow-sm active:scale-[0.98] transition-transform duration-150 shrink-0 border-0 focus:outline-none"
+          >
+            <Plus size={15} />
+            <span>Nuevo Evento</span>
+          </Link>
+        )}
       </div>
 
       {error && (

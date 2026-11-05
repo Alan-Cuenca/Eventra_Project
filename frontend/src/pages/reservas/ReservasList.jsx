@@ -12,7 +12,7 @@ import { Plus, Search, Loader2, CalendarDays, MapPin, Clock, CalendarCheck } fro
 
 export const ReservasList = () => {
   const { isAdmin, isGerente, isCliente, isTrabajador } = useAuth();
-  const canCreate = isAdmin || isGerente || isTrabajador || isCliente;
+  const canCreate = isAdmin || isGerente || isTrabajador;
 
   const [reservas, setReservas] = useState([]);
   const [loading, setLoading] = useState(true);

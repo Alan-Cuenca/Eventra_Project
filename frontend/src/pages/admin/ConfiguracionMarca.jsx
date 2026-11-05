@@ -549,13 +549,13 @@ export const ConfiguracionMarca = () => {
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    className="w-full py-2 px-3 rounded-lg text-xs font-semibold text-white shadow-xs transition-colors"
+                  <div
+                    role="presentation"
+                    className="w-full py-2 px-3 rounded-lg text-xs font-semibold text-white shadow-xs text-center select-none"
                     style={{ backgroundColor: activePaletteObj.primary }}
                   >
                     Registrarme en el Portal
-                  </button>
+                  </div>
 
                   <div
                     className="text-[9px] tracking-wider uppercase font-medium"

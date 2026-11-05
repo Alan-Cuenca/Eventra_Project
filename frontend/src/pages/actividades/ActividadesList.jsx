@@ -106,7 +106,7 @@ export const ActividadesList = () => {
       await eventraService.deleteActividad(id);
       setActividades((prev) => prev.filter((a) => a.id !== id));
     } catch (err) {
-      alert('Error al eliminar la actividad: ' + err.message);
+      setError('Error al eliminar la actividad: ' + err.message);
     } finally {
       setDeletingId(null);
     }
@@ -127,7 +127,7 @@ export const ActividadesList = () => {
         prev.map((item) => (item.id === act.id ? { ...item, estado: nuevoEstado } : item))
       );
     } catch (err) {
-      alert('Error al actualizar el estado: ' + err.message);
+      setError('Error al actualizar el estado: ' + err.message);
     } finally {
       setTogglingId(null);
     }

@@ -7,9 +7,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Badge } from '../../components/common/Badge';
 import { eventraService } from '../../services/eventraService';
 import {
-  CalendarDays, Users, DollarSign, Check, X, Upload, Download,
+  CalendarDays, Users, DollarSign, Check, X,
   Clock, AlertCircle, CheckCircle2, FileText, History, ChevronLeft,
-  Plus, Trash2, Eye, User, Loader2
+  Eye, User, Loader2
 } from 'lucide-react';
 
 // ── Tabs config ────────────────────────────────────────────────────────────
@@ -145,9 +145,6 @@ export const EventDetailPage = ({ eventoId: propId }) => {
           <button className="btn btn-secondary btn-sm" onClick={() => setShowModal(true)}>
             <AlertCircle size={15} /> Solicitar cambio
           </button>
-          <button className="btn btn-primary btn-sm">
-            <FileText size={15} /> Ver contrato
-          </button>
         </div>
       </div>
 
@@ -250,9 +247,6 @@ export const EventDetailPage = ({ eventoId: propId }) => {
               <CheckCircle2 size={17} color="var(--primary)" />
               Actividades del Evento
             </div>
-            <button className="btn btn-primary btn-sm" onClick={() => setToast({ msg: 'Nueva actividad añadida (demo).', type: 'success' })}>
-              <Plus size={15} /> Añadir actividad
-            </button>
           </div>
           <div className="table-container">
             <table className="custom-table">
@@ -295,9 +289,6 @@ export const EventDetailPage = ({ eventoId: propId }) => {
           <div className="card">
             <div className="card-header">
               <div className="card-title"><DollarSign size={17} color="var(--primary)" />Registro de Pagos</div>
-              <button className="btn btn-primary btn-sm" onClick={() => setToast({ msg: 'Pago registrado (demo).', type: 'success' })}>
-                <Plus size={15} /> Registrar pago
-              </button>
             </div>
             <div className="table-container">
               <table className="custom-table">
@@ -349,9 +340,6 @@ export const EventDetailPage = ({ eventoId: propId }) => {
         <div className="card animate-fade-in">
           <div className="card-header">
             <div className="card-title"><FileText size={17} color="var(--primary)" />Archivos del Evento</div>
-            <button className="btn btn-primary btn-sm" onClick={() => setToast({ msg: 'Archivo subido exitosamente (demo).', type: 'success' })}>
-              <Upload size={15} /> Subir archivo
-            </button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
             {(evento.archivos || []).length === 0 && (
@@ -383,12 +371,6 @@ export const EventDetailPage = ({ eventoId: propId }) => {
                 <div style={{ display: 'flex', gap: '0.4rem' }}>
                   <button className="btn btn-secondary btn-sm btn-icon" title="Ver" onClick={() => setToast({ msg: `Abriendo ${f.nombre}...`, type: 'info' })}>
                     <Eye size={14} />
-                  </button>
-                  <button className="btn btn-secondary btn-sm btn-icon" title="Descargar">
-                    <Download size={14} />
-                  </button>
-                  <button className="btn btn-secondary btn-sm btn-icon" title="Eliminar" style={{ color: 'var(--danger)' }}>
-                    <Trash2 size={14} />
                   </button>
                 </div>
               </div>

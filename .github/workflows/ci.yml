@@ -56,3 +56,4 @@ jobs:
 
       - name: Compile Production Build
         run: npm --prefix frontend run build
+

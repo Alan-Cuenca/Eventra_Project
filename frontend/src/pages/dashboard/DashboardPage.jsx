@@ -288,7 +288,7 @@ export const DashboardPage = () => {
             }}
           >
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: apiOnline ? 'var(--success)' : 'var(--warning)', display: 'inline-block' }} />
-            {apiOnline ? 'API en línea' : 'Modo demo'}
+            {apiOnline ? 'API en línea' : 'Sin conexión'}
           </div>
 
           {(isAdmin || isGerente) && (

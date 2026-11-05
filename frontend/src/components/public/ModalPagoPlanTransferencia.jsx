@@ -373,7 +373,11 @@ export const ModalPagoPlanTransferencia = ({
                   </div>
                   <button
                     type="button"
-                    className="mt-1 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#4D7182] hover:bg-[#3B5968] text-white text-xs font-bold shadow-xs transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      fileInputRef.current?.click();
+                    }}
+                    className="mt-1 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#4D7182] hover:bg-[#3B5968] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
                   >
                     <FileText size={15} />
                     <span>Seleccionar PDF del Comprobante</span>

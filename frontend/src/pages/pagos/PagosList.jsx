@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { eventraService } from '../../services/eventraService';
+import { useAuth } from '../../context/AuthContext';
 import { 
   CheckCircle, 
   XCircle, 
@@ -25,6 +26,8 @@ import {
 } from 'lucide-react';
 
 export const PagosList = () => {
+  const { isAdmin, isGerente } = useAuth();
+  const canApprove = isAdmin || isGerente;
   const [pagos, setPagos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagoSeleccionado, setPagoSeleccionado] = useState(null);
@@ -538,26 +541,28 @@ export const PagosList = () => {
               )}
             </div>
 
-            {/* Acciones de Validación: Aprobar Pago / Rechazar Pago */}
-            <div className="pt-3 border-t border-[#CBC6B6]/60 flex items-center gap-3">
-              <button
-                disabled={procesandoAccion}
-                onClick={() => handleCambiarEstado(pagoSeleccionado.id, 'Aprobado')}
-                className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-full bg-[#4D9A72] hover:bg-[#3D825E] text-white text-xs font-bold shadow-xs active:scale-[0.98] transition-transform duration-150 disabled:opacity-50"
-              >
-                <CheckCircle size={16} />
-                <span>Aprobar Pago</span>
-              </button>
+            {/* Acciones de Validación: Aprobar Pago / Rechazar Pago (Solo Admin/Gerente) */}
+            {canApprove && (
+              <div className="pt-3 border-t border-[#CBC6B6]/60 flex items-center gap-3">
+                <button
+                  disabled={procesandoAccion}
+                  onClick={() => handleCambiarEstado(pagoSeleccionado.id, 'Aprobado')}
+                  className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-full bg-[#4D9A72] hover:bg-[#3D825E] text-white text-xs font-bold shadow-xs active:scale-[0.98] transition-transform duration-150 disabled:opacity-50"
+                >
+                  <CheckCircle size={16} />
+                  <span>Aprobar Pago</span>
+                </button>
 
-              <button
-                disabled={procesandoAccion}
-                onClick={() => handleCambiarEstado(pagoSeleccionado.id, 'Rechazado')}
-                className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-full bg-[#C95C5C] hover:bg-[#AF4E4E] text-white text-xs font-bold shadow-xs active:scale-[0.98] transition-transform duration-150 disabled:opacity-50"
-              >
-                <XCircle size={16} />
-                <span>Rechazar Pago</span>
-              </button>
-            </div>
+                <button
+                  disabled={procesandoAccion}
+                  onClick={() => handleCambiarEstado(pagoSeleccionado.id, 'Rechazado')}
+                  className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-full bg-[#C95C5C] hover:bg-[#AF4E4E] text-white text-xs font-bold shadow-xs active:scale-[0.98] transition-transform duration-150 disabled:opacity-50"
+                >
+                  <XCircle size={16} />
+                  <span>Rechazar Pago</span>
+                </button>
+              </div>
+            )}
 
           </div>
         </div>

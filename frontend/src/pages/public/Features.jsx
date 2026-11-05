@@ -248,9 +248,12 @@ export const Features = () => {
                         Total Estimado: $10,550
                       </span>
                     </div>
-                    <button className="px-4 py-2 rounded-lg bg-[#526F7D] text-white text-xs font-bold hover:bg-[#3E5763] transition-colors">
-                      Emitir Proforma
-                    </button>
+                    <Link
+                      to="/precios"
+                      className="px-4 py-2 rounded-lg bg-[#526F7D] text-white text-xs font-bold hover:bg-[#3E5763] transition-colors inline-block text-center"
+                    >
+                      Ver Planes
+                    </Link>
                   </div>
                 </div>
 
