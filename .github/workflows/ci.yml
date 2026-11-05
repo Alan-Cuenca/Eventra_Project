@@ -1,0 +1,58 @@
+name: EVENTRA CI/CD Pipeline — Integración y Pruebas Continuas
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-tests:
+    name: Backend Jest Suite & Security Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
+
+      - name: Install Backend Dependencies
+        run: npm --prefix backend install
+
+      - name: Run Backend Integration & Security Tests
+        env:
+          JWT_SECRET: test_secret_ci_eventra
+          NODE_ENV: test
+          PORT: 0
+          EMAIL_SIMULATION_MODE: "true"
+        run: npm --prefix backend test
+
+  frontend-tests-and-build:
+    name: Frontend Unit Tests & Build Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Install Frontend Dependencies
+        run: npm --prefix frontend install
+
+      - name: Run Frontend Unit Tests
+        run: npm --prefix frontend test
+
+      - name: Compile Production Build
+        run: npm --prefix frontend run build

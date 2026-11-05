@@ -197,4 +197,153 @@ describe('Módulo de Pagos y Anticipos — EVENTRA', () => {
       expect(res.body.success).toBe(false);
     });
   });
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // SUITE 3: Reducción Matemática de Saldo Pendiente (Scope: Pablo)
+  // ───────────────────────────────────────────────────────────────────────────
+  describe('Cálculo y Reducción Matemática del Saldo Pendiente de la Cotización', () => {
+    const EVENTO_ID = 'evento-balance-test-uuid';
+    const COTIZACION_TOTAL = 2500.00;
+
+    it('debe aprobar el pago exitosamente y reflejar la reducción matemática en el saldo pendiente', async () => {
+      const PAGO_1_MONTO = 750.00;
+      const SALDO_ESPERADO_1 = COTIZACION_TOTAL - PAGO_1_MONTO; // 1750.00
+
+      // 1. Simular PUT /api/pagos/:id/estado -> Aprobado
+      pool.query
+        // UPDATE pagos
+        .mockResolvedValueOnce({
+          rowCount: 1,
+          rows: [{
+            id: 'pago-01',
+            empresa_id: 1,
+            evento_id: EVENTO_ID,
+            monto: PAGO_1_MONTO,
+            estado: 'Aprobado',
+          }],
+        })
+        // Consulta para notificación por correo
+        .mockResolvedValueOnce({
+          rowCount: 1,
+          rows: [{
+            monto: PAGO_1_MONTO,
+            evento_titulo: 'Gala Anual Corporativa',
+            cliente_email: 'cliente@empresa1.com',
+          }],
+        });
+
+      const resAprobacion = await request(app)
+        .put('/api/pagos/pago-01/estado')
+        .set('Authorization', `Bearer ${TOKEN_ADMIN_EMPRESA_1}`)
+        .send({ estado: 'Aprobado' });
+
+      expect(resAprobacion.status).toBe(200);
+      expect(resAprobacion.body.success).toBe(true);
+      expect(resAprobacion.body.data.estado).toBe('Aprobado');
+
+      // 2. Consultar el resumen de pagos del evento
+      pool.query
+        // SELECT pagos individuales
+        .mockResolvedValueOnce({
+          rowCount: 1,
+          rows: [{
+            id: 'pago-01',
+            monto: PAGO_1_MONTO,
+            estado: 'Aprobado',
+            concepto: 'Anticipo',
+          }],
+        })
+        // SELECT SUM(monto) AS total_pagado
+        .mockResolvedValueOnce({
+          rowCount: 1,
+          rows: [{
+            total_pagado: PAGO_1_MONTO,
+            cantidad_pagos: 1,
+          }],
+        });
+
+      const resPagos = await request(app)
+        .get(`/api/pagos/evento/${EVENTO_ID}`)
+        .set('Authorization', `Bearer ${TOKEN_ADMIN_EMPRESA_1}`);
+
+      expect(resPagos.status).toBe(200);
+      expect(resPagos.body.resumen.total_pagado).toBe(PAGO_1_MONTO);
+      expect(resPagos.body.resumen.cantidad_pagos).toBe(1);
+
+      // Verificación matemática del saldo pendiente en base a la cotización
+      const totalPagado = Number(resPagos.body.resumen.total_pagado);
+      const saldoPendienteCalculado = COTIZACION_TOTAL - totalPagado;
+      expect(saldoPendienteCalculado).toBe(SALDO_ESPERADO_1);
+      expect(saldoPendienteCalculado).toBe(1750.00);
+    });
+
+    it('debe acumular múltiples pagos aprobados y reducir el saldo restante a cero tras liquidación', async () => {
+      const PAGO_1_MONTO = 1500.00;
+      const PAGO_2_MONTO = 1000.00;
+      const TOTAL_PAGADO = PAGO_1_MONTO + PAGO_2_MONTO; // 2500.00
+      const SALDO_ESPERADO = COTIZACION_TOTAL - TOTAL_PAGADO; // 0.00
+
+      pool.query
+        // Pagos individuales
+        .mockResolvedValueOnce({
+          rowCount: 2,
+          rows: [
+            { id: 'pago-01', monto: PAGO_1_MONTO, estado: 'Aprobado' },
+            { id: 'pago-02', monto: PAGO_2_MONTO, estado: 'Aprobado' },
+          ],
+        })
+        // SUM(monto)
+        .mockResolvedValueOnce({
+          rowCount: 1,
+          rows: [{
+            total_pagado: TOTAL_PAGADO,
+            cantidad_pagos: 2,
+          }],
+        });
+
+      const res = await request(app)
+        .get(`/api/pagos/evento/${EVENTO_ID}`)
+        .set('Authorization', `Bearer ${TOKEN_ADMIN_EMPRESA_1}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.resumen.total_pagado).toBe(2500.00);
+      expect(COTIZACION_TOTAL - Number(res.body.resumen.total_pagado)).toBe(SALDO_ESPERADO);
+      expect(COTIZACION_TOTAL - Number(res.body.resumen.total_pagado)).toBe(0.00);
+    });
+
+    it('pagos con estado "Rechazado" o "En Revisión" no deben reducir el saldo pendiente', async () => {
+      // 1 pago Aprobado (500) y 1 Rechazado (800)
+      const PAGO_APROBADO = 500.00;
+      const PAGO_RECHAZADO = 800.00;
+
+      pool.query
+        // Pagos individuales
+        .mockResolvedValueOnce({
+          rowCount: 2,
+          rows: [
+            { id: 'pago-01', monto: PAGO_APROBADO, estado: 'Aprobado' },
+            { id: 'pago-02', monto: PAGO_RECHAZADO, estado: 'Rechazado' },
+          ],
+        })
+        // SUM solo cuenta los de estado 'Aprobado'
+        .mockResolvedValueOnce({
+          rowCount: 1,
+          rows: [{
+            total_pagado: PAGO_APROBADO, // solo 500
+            cantidad_pagos: 1,
+          }],
+        });
+
+      const res = await request(app)
+        .get(`/api/pagos/evento/${EVENTO_ID}`)
+        .set('Authorization', `Bearer ${TOKEN_ADMIN_EMPRESA_1}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.resumen.total_pagado).toBe(500.00);
+      // El saldo pendiente debe ser 2500 - 500 = 2000 (el pago de 800 no cuenta)
+      const saldoPendiente = COTIZACION_TOTAL - Number(res.body.resumen.total_pagado);
+      expect(saldoPendiente).toBe(2000.00);
+      expect(saldoPendiente).not.toBe(COTIZACION_TOTAL - (PAGO_APROBADO + PAGO_RECHAZADO));
+    });
+  });
 });

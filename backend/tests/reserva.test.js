@@ -104,10 +104,11 @@ describe('POST /api/reservas — Creación exitosa', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('201 — crea la reserva correctamente cuando el salón está disponible', async () => {
-    // Mock 1: SELECT COUNT → salón disponible (0 conflictos)
+    // Mock 1: Cotización válida
+    pool.query.mockResolvedValueOnce({ rows: [{ id: RESERVA_VALIDA.cotizacion_id }], rowCount: 1 });
+    // Mock 2: SELECT COUNT → salón disponible (0 conflictos)
     pool.query.mockResolvedValueOnce({ rows: [{ total: '0' }], rowCount: 1 });
-
-    // Mock 2: INSERT → reserva creada
+    // Mock 3: INSERT → reserva creada
     pool.query.mockResolvedValueOnce({
       rows: [{
         id: 'uuid-reserva-nueva', empresa_id: 1,
@@ -144,6 +145,8 @@ describe('POST /api/reservas — Mitigación de Concurrencia (R-CONCURRENCIA)', 
   beforeEach(() => jest.clearAllMocks());
 
   it('409 — rechaza la reserva si el salón ya está ocupado (Capa Aplicación)', async () => {
+    // Cotización válida
+    pool.query.mockResolvedValueOnce({ rows: [{ id: RESERVA_VALIDA.cotizacion_id }], rowCount: 1 });
     // SELECT COUNT → salón ya reservado
     pool.query.mockResolvedValueOnce({ rows: [{ total: '1' }], rowCount: 1 });
 
@@ -159,6 +162,8 @@ describe('POST /api/reservas — Mitigación de Concurrencia (R-CONCURRENCIA)', 
 
   it('409 — rechaza duplicado simultáneo interceptado por la restricción UNIQUE de PostgreSQL (Capa BD)', async () => {
     // Escenario de condición de carrera:
+    // Cotización válida
+    pool.query.mockResolvedValueOnce({ rows: [{ id: RESERVA_VALIDA.cotizacion_id }], rowCount: 1 });
     // SELECT dice disponible, pero el INSERT falla por UNIQUE constraint
     pool.query.mockResolvedValueOnce({ rows: [{ total: '0' }], rowCount: 1 });
     pool.query.mockRejectedValueOnce({ code: '23505', message: 'unique_violation' });
@@ -174,8 +179,9 @@ describe('POST /api/reservas — Mitigación de Concurrencia (R-CONCURRENCIA)', 
   });
 
   it('409 — simula dos peticiones concurrentes al mismo salón y fecha', async () => {
-    // Petición A: SELECT dice libre pero INSERT falla (carrera perdida)
+    // Petición A: Cotización ok, SELECT libre, INSERT falla por UNIQUE
     pool.query
+      .mockResolvedValueOnce({ rows: [{ id: RESERVA_VALIDA.cotizacion_id }], rowCount: 1 })
       .mockResolvedValueOnce({ rows: [{ total: '0' }], rowCount: 1 })
       .mockRejectedValueOnce({ code: '23505', message: 'unique_violation' });
 

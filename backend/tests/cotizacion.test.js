@@ -154,6 +154,9 @@ describe('POST /api/cotizaciones — Creación exitosa', () => {
       fecha_creacion: new Date().toISOString(),
     };
 
+    // Mock 1: Cliente existe y pertenece a la empresa
+    pool.query.mockResolvedValueOnce({ rows: [{ id: COTIZACION_VALIDA.cliente_id }], rowCount: 1 });
+    // Mock 2: Insert cotización
     pool.query.mockResolvedValueOnce({ rows: [fakeCotizacion], rowCount: 1 });
 
     const res = await request(app)
@@ -169,6 +172,9 @@ describe('POST /api/cotizaciones — Creación exitosa', () => {
   });
 
   it('201 — crea cotización sin paquete_id (cotización sin paquete base)', async () => {
+    // Mock 1: Cliente existe y pertenece a la empresa
+    pool.query.mockResolvedValueOnce({ rows: [{ id: 'uuid-cliente-001' }], rowCount: 1 });
+    // Mock 2: Insert cotización
     pool.query.mockResolvedValueOnce({
       rows: [{
         id: 'uuid-cotizacion-002', empresa_id: 1,

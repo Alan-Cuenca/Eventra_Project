@@ -155,8 +155,8 @@ export const obtenerEventos = async (req, res) => {
          p.nombre        AS paquete,
          p.nombre        AS paquete_nombre,
          -- Métricas financieras y operativas
-         COALESCE((SELECT SUM(monto) FROM pagos WHERE evento_id = e.id AND estado = 'Completado'), 0) AS anticipo_pagado,
-         c.total_calculado - COALESCE((SELECT SUM(monto) FROM pagos WHERE evento_id = e.id AND estado = 'Completado'), 0) AS saldo_pendiente,
+         COALESCE((SELECT SUM(monto) FROM pagos WHERE evento_id = e.id AND estado IN ('Aprobado', 'Completado')), 0) AS anticipo_pagado,
+         c.total_calculado - COALESCE((SELECT SUM(monto) FROM pagos WHERE evento_id = e.id AND estado IN ('Aprobado', 'Completado')), 0) AS saldo_pendiente,
          COALESCE(ROUND((SELECT COUNT(*) FILTER (WHERE estado = 'Completada')::numeric / NULLIF(COUNT(*), 0) * 100 FROM actividades WHERE evento_id = e.id)), 0) AS progreso_porcentaje,
          COALESCE((SELECT u.nombre_completo FROM actividades a JOIN usuarios u ON a.responsable_id = u.id WHERE a.evento_id = e.id LIMIT 1), 'Jorge Sailema') AS responsable,
          CASE 
@@ -298,8 +298,8 @@ export const obtenerEventoPorId = async (req, res) => {
          p.nombre        AS paquete_nombre,
          c.id            AS cotizacion_id,
          c.total_calculado AS monto_total,
-         COALESCE((SELECT SUM(monto) FROM pagos WHERE evento_id = e.id AND estado = 'Completado'), 0) AS anticipo_pagado,
-         c.total_calculado - COALESCE((SELECT SUM(monto) FROM pagos WHERE evento_id = e.id AND estado = 'Completado'), 0) AS saldo_pendiente,
+         COALESCE((SELECT SUM(monto) FROM pagos WHERE evento_id = e.id AND estado IN ('Aprobado', 'Completado')), 0) AS anticipo_pagado,
+         c.total_calculado - COALESCE((SELECT SUM(monto) FROM pagos WHERE evento_id = e.id AND estado IN ('Aprobado', 'Completado')), 0) AS saldo_pendiente,
          COALESCE(ROUND((SELECT COUNT(*) FILTER (WHERE estado = 'Completada')::numeric / NULLIF(COUNT(*), 0) * 100 FROM actividades WHERE evento_id = e.id)), 0) AS progreso_porcentaje,
          COALESCE((SELECT u.nombre_completo FROM actividades a JOIN usuarios u ON a.responsable_id = u.id WHERE a.evento_id = e.id LIMIT 1), 'Jorge Sailema') AS responsable,
          CASE 

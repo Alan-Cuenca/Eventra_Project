@@ -107,6 +107,7 @@ export const AppRoutes = () => {
       {/* ── Autenticación y Acceso (Aisladas, fuera de PublicLayout) ──────── */}
       <Route path="/login"                  element={<Login />} />
       <Route path="/registro"               element={<PortalRedirect />} />
+      <Route path="/portal/:slug"           element={<Navigate to="registro" replace />} />
       <Route path="/portal/:slug/registro"  element={<RegistroClientePortal />} />
       <Route path="/completar-registro"     element={<CompletarRegistro />} />
       <Route path="/primer-acceso/cambiar-password" element={<PrimerLoginCambioPassword />} />

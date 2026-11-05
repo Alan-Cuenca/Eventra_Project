@@ -12,16 +12,6 @@
   "author": "",
   "license": "ISC",
   "type": "module",
-  "jest": {
-    "testEnvironment": "node",
-    "testMatch": [
-      "**/tests/**/*.test.js"
-    ],
-    "moduleFileExtensions": [
-      "js",
-      "json"
-    ]
-  },
   "dependencies": {
     "@google/genai": "^2.31.0",
     "@supabase/supabase-js": "^2.117.3",
