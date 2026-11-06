@@ -10,13 +10,48 @@ export const PLAN_LIMITS = {
     clientes: 50,
     servicios: 20,
     chatbot: 300,
+    eventos: 20,
   },
   Premium: {
     usuarios: 10,
     clientes: 200,
     servicios: 50,
     chatbot: 1500,
+    eventos: 100,
   },
+};
+
+let cachedConfigPlanes = {
+  Basico: { ...PLAN_LIMITS.Basico },
+  Premium: { ...PLAN_LIMITS.Premium },
+};
+
+export const actualizarLimitesEnMemoria = (nuevosPlanes) => {
+  if (!nuevosPlanes) return;
+  cachedConfigPlanes = {
+    Basico: {
+      usuarios: Number(nuevosPlanes.basico_max_usuarios) || PLAN_LIMITS.Basico.usuarios,
+      clientes: Number(nuevosPlanes.basico_max_clientes) || PLAN_LIMITS.Basico.clientes,
+      servicios: Number(nuevosPlanes.basico_max_servicios) || PLAN_LIMITS.Basico.servicios,
+      chatbot: Number(nuevosPlanes.basico_max_chatbot) || PLAN_LIMITS.Basico.chatbot,
+      eventos: Number(nuevosPlanes.basico_max_eventos) || PLAN_LIMITS.Basico.eventos,
+    },
+    Premium: {
+      usuarios: Number(nuevosPlanes.premium_max_usuarios) || PLAN_LIMITS.Premium.usuarios,
+      clientes: Number(nuevosPlanes.premium_max_clientes) || PLAN_LIMITS.Premium.clientes,
+      servicios: Number(nuevosPlanes.premium_max_servicios) || PLAN_LIMITS.Premium.servicios,
+      chatbot: Number(nuevosPlanes.premium_max_chatbot) || PLAN_LIMITS.Premium.chatbot,
+      eventos: Number(nuevosPlanes.premium_max_eventos) || PLAN_LIMITS.Premium.eventos,
+    },
+  };
+};
+
+export const getLimitesActivos = async (planNombre) => {
+  const planKey = String(planNombre || '').toLowerCase() === 'premium' ? 'Premium' : 'Basico';
+  if (cachedConfigPlanes && cachedConfigPlanes[planKey]) {
+    return cachedConfigPlanes[planKey];
+  }
+  return PLAN_LIMITS[planKey] || PLAN_LIMITS.Basico;
 };
 
 /**
@@ -106,7 +141,7 @@ export const verificarLimitePlan = (recurso) => {
       }
 
       const planNombre = empRes.rows[0].plan_suscripcion === 'Premium' ? 'Premium' : 'Basico';
-      const limitesPlan = PLAN_LIMITS[planNombre] || PLAN_LIMITS.Basico;
+      const limitesPlan = await getLimitesActivos(planNombre);
       const maximo = limitesPlan[recurso];
 
       if (maximo === undefined) {
@@ -192,7 +227,7 @@ export const obtenerConsumoPlanEmpresa = async (empresa_id) => {
   }
 
   const plan = empRes.rows[0].plan_suscripcion === 'Premium' ? 'Premium' : 'Basico';
-  const limites = PLAN_LIMITS[plan];
+  const limites = await getLimitesActivos(plan);
 
   return {
     plan,

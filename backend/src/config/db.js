@@ -53,6 +53,15 @@ if (process.env.NODE_ENV !== 'test') {
   `).catch((err) => {
     console.warn('[db] Auto-verificación de tabla solicitudes_modificacion en Supabase:', err.message);
   });
+  pool.query(`
+    CREATE TABLE IF NOT EXISTS configuracion_saas (
+      clave VARCHAR(100) PRIMARY KEY,
+      valor JSONB NOT NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `).catch((err) => {
+    console.warn('[db] Auto-verificación de tabla configuracion_saas en Supabase:', err.message);
+  });
 }
 
 export default pool;

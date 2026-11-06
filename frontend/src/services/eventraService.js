@@ -488,6 +488,16 @@ export const eventraService = {
     }
   },
 
+  async getConfiguracionGlobal() {
+    try {
+      const response = await api.get('/configuracion');
+      return response?.data?.data || response?.data || response;
+    } catch (err) {
+      console.warn('[eventraService] getConfiguracionGlobal error:', err.message);
+      return null;
+    }
+  },
+
   // ==========================================
   // SOLICITUDES DE MODIFICACIÓN (/api/solicitudes)
   // ==========================================

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { eventraService } from '../../services/eventraService';
 import {
   X,
   Building2,
@@ -41,8 +42,19 @@ export const ModalPagoPlanTransferencia = ({
   const [correoDestino, setCorreoDestino] = useState('');
   const [nombreEmpresa, setNombreEmpresa] = useState('');
   const [procesando, setProcesando] = useState(false);
+  const [saasConfig, setSaasConfig] = useState(null);
 
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    const cargarConfig = async () => {
+      try {
+        const conf = await eventraService.getConfiguracionGlobal();
+        if (conf) setSaasConfig(conf);
+      } catch (_) {}
+    };
+    cargarConfig();
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -58,8 +70,17 @@ export const ModalPagoPlanTransferencia = ({
 
   if (!isOpen) return null;
 
+  const datosTransferencia = {
+    nombre: saasConfig?.transferencia?.titular || DATOS_TRANSFERENCIA_EVENTRA.nombre,
+    cuenta: saasConfig?.transferencia?.numero_cuenta || DATOS_TRANSFERENCIA_EVENTRA.cuenta,
+    cedula: saasConfig?.transferencia?.cedula || DATOS_TRANSFERENCIA_EVENTRA.cedula,
+    correo: saasConfig?.transferencia?.correo_notificacion || DATOS_TRANSFERENCIA_EVENTRA.correo,
+  };
+
   const esPremium = selectedPlan.toLowerCase().includes('premium');
-  const precioMensual = esPremium ? (isAnnual ? 79 : 99) : (isAnnual ? 39 : 49);
+  const precioBasico = Number(saasConfig?.planes?.basico_precio) || 49;
+  const precioPremium = Number(saasConfig?.planes?.premium_precio) || 99;
+  const precioMensual = esPremium ? precioPremium : precioBasico;
   const nombrePlanDisplay = esPremium ? 'Plan Premium' : 'Plan Básico (Boutique)';
 
   const handleCopy = (label, value) => {
@@ -69,7 +90,7 @@ export const ModalPagoPlanTransferencia = ({
   };
 
   const handleCopyAll = () => {
-    const texto = `Nombre: ${DATOS_TRANSFERENCIA_EVENTRA.nombre}\nCuenta: ${DATOS_TRANSFERENCIA_EVENTRA.cuenta}\nCédula: ${DATOS_TRANSFERENCIA_EVENTRA.cedula}\nCorreo: ${DATOS_TRANSFERENCIA_EVENTRA.correo}`;
+    const texto = `Nombre: ${datosTransferencia.nombre}\nCuenta: ${datosTransferencia.cuenta}\nCédula: ${datosTransferencia.cedula}\nCorreo: ${datosTransferencia.correo}`;
     navigator.clipboard.writeText(texto);
     setCopiedField('all');
     setTimeout(() => setCopiedField(''), 2500);
@@ -266,12 +287,12 @@ export const ModalPagoPlanTransferencia = ({
                         Nombre del Titular
                       </span>
                       <span className="text-sm font-extrabold text-[#233D49]">
-                        {DATOS_TRANSFERENCIA_EVENTRA.nombre}
+                        {datosTransferencia.nombre}
                       </span>
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleCopy('nombre', DATOS_TRANSFERENCIA_EVENTRA.nombre)}
+                      onClick={() => handleCopy('nombre', datosTransferencia.nombre)}
                       className="p-1.5 rounded-lg hover:bg-[#F3F0E4] text-[#4D7182] transition-colors"
                       title="Copiar Nombre"
                     >
@@ -283,15 +304,15 @@ export const ModalPagoPlanTransferencia = ({
                   <div className="bg-white rounded-xl p-3 border border-[#CBC6B6]/80 flex items-center justify-between gap-2">
                     <div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-[#4D7182] block">
-                        Número de Cuenta
+                        Número de Cuenta ({saasConfig?.transferencia?.entidad_bancaria || 'Banco Pichincha'})
                       </span>
                       <span className="text-sm font-mono font-extrabold text-[#233D49] tabular-nums">
-                        {DATOS_TRANSFERENCIA_EVENTRA.cuenta}
+                        {datosTransferencia.cuenta}
                       </span>
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleCopy('cuenta', DATOS_TRANSFERENCIA_EVENTRA.cuenta)}
+                      onClick={() => handleCopy('cuenta', datosTransferencia.cuenta)}
                       className="p-1.5 rounded-lg hover:bg-[#F3F0E4] text-[#4D7182] transition-colors"
                       title="Copiar Cuenta"
                     >
@@ -303,15 +324,15 @@ export const ModalPagoPlanTransferencia = ({
                   <div className="bg-white rounded-xl p-3 border border-[#CBC6B6]/80 flex items-center justify-between gap-2">
                     <div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-[#4D7182] block">
-                        Cédula de Identidad
+                        Cédula / RUC
                       </span>
                       <span className="text-sm font-mono font-extrabold text-[#233D49] tabular-nums">
-                        {DATOS_TRANSFERENCIA_EVENTRA.cedula}
+                        {datosTransferencia.cedula}
                       </span>
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleCopy('cedula', DATOS_TRANSFERENCIA_EVENTRA.cedula)}
+                      onClick={() => handleCopy('cedula', datosTransferencia.cedula)}
                       className="p-1.5 rounded-lg hover:bg-[#F3F0E4] text-[#4D7182] transition-colors"
                       title="Copiar Cédula"
                     >
@@ -326,12 +347,12 @@ export const ModalPagoPlanTransferencia = ({
                         Correo de Notificación
                       </span>
                       <span className="text-sm font-mono font-bold text-[#233D49] truncate block">
-                        {DATOS_TRANSFERENCIA_EVENTRA.correo}
+                        {datosTransferencia.correo}
                       </span>
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleCopy('correo', DATOS_TRANSFERENCIA_EVENTRA.correo)}
+                      onClick={() => handleCopy('correo', datosTransferencia.correo)}
                       className="p-1.5 rounded-lg hover:bg-[#F3F0E4] text-[#4D7182] transition-colors shrink-0"
                       title="Copiar Correo"
                     >
@@ -514,7 +535,7 @@ export const ModalPagoPlanTransferencia = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="font-semibold">Titular de transferencia:</span>
-                  <span className="font-bold text-[#233D49]">{DATOS_TRANSFERENCIA_EVENTRA.nombre} ({DATOS_TRANSFERENCIA_EVENTRA.cuenta})</span>
+                  <span className="font-bold text-[#233D49]">{datosTransferencia.nombre} ({datosTransferencia.cuenta})</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-semibold">Comprobante PDF:</span>

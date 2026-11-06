@@ -40,6 +40,36 @@ export const CambiarPlanModal = ({ isOpen, onClose, empresa, onPlanActualizado }
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [planes, setPlanes] = useState(PLANES_DISPONIBLES);
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const config = await superAdminService.obtenerConfiguracion();
+        if (config?.planes) {
+          setPlanes([
+            {
+              id: 'Basico',
+              nombre: 'Básico',
+              color: '#4D7182',
+              precio: `$${config.planes.basico?.precio_mensual ?? 49}/mes`,
+              desc: 'Tier Boutique para organizadores en crecimiento',
+            },
+            {
+              id: 'Premium',
+              nombre: 'Premium',
+              color: '#C49A3A',
+              precio: `$${config.planes.premium?.precio_mensual ?? 99}/mes`,
+              desc: 'Tier Corporativo con Asistente EVARA AI y límites ampliados',
+            },
+          ]);
+        }
+      } catch (e) {
+        // Conserva planes por defecto si falla la petición
+      }
+    };
+    fetchConfig();
+  }, []);
 
   useEffect(() => {
     if (empresa) {
@@ -208,7 +238,7 @@ export const CambiarPlanModal = ({ isOpen, onClose, empresa, onPlanActualizado }
               Selecciona el Nuevo Plan de Suscripción:
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
-              {PLANES_DISPONIBLES.map((plan) => {
+              {planes.map((plan) => {
                 const seleccionado = nuevoPlan.toLowerCase() === plan.id.toLowerCase();
                 const esActual = planActual.toLowerCase() === plan.id.toLowerCase();
 

@@ -151,6 +151,23 @@ export const ConfiguracionSaasPage = () => {
 
   useEffect(() => {
     verificarEstadoSistema(false);
+    const cargarConfigRemota = async () => {
+      try {
+        const remota = await superAdminService.obtenerConfiguracion();
+        if (remota && remota.planes) {
+          setConfig({
+            plataforma: { ...DEFAULT_SAAS_CONFIG.plataforma, ...(remota.plataforma || {}) },
+            transferencia: { ...DEFAULT_SAAS_CONFIG.transferencia, ...(remota.transferencia || {}) },
+            planes: { ...DEFAULT_SAAS_CONFIG.planes, ...(remota.planes || {}) },
+            seguridad: { ...DEFAULT_SAAS_CONFIG.seguridad, ...(remota.seguridad || {}) },
+          });
+          localStorage.setItem(STORAGE_KEY_SAAS_CONFIG, JSON.stringify(remota));
+        }
+      } catch (err) {
+        console.warn('Error cargando config remota:', err);
+      }
+    };
+    cargarConfigRemota();
   }, [verificarEstadoSistema]);
 
   const handleFieldChange = (section, field, value) => {
@@ -163,27 +180,29 @@ export const ConfiguracionSaasPage = () => {
     }));
   };
 
-  const handleGuardarConfiguracion = (e) => {
+  const handleGuardarConfiguracion = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
       localStorage.setItem(STORAGE_KEY_SAAS_CONFIG, JSON.stringify(config));
-      setTimeout(() => {
-        setSaving(false);
-        mostrarToast(
-          'success',
-          'Configuración global de EVENTRA SaaS guardada y sincronizada correctamente.'
-        );
-      }, 250);
-    } catch {
+      await superAdminService.guardarConfiguracion(config);
       setSaving(false);
-      mostrarToast('error', 'Error al guardar la configuración en el almacenamiento local.');
+      mostrarToast(
+        'success',
+        'Configuración global guardada en la base de datos y sincronizada para todas las empresas.'
+      );
+    } catch (err) {
+      setSaving(false);
+      mostrarToast('error', 'Error al guardar la configuración: ' + (err.message || 'Error del servidor'));
     }
   };
 
-  const handleRestaurarValores = () => {
+  const handleRestaurarValores = async () => {
     setConfig(DEFAULT_SAAS_CONFIG);
     localStorage.setItem(STORAGE_KEY_SAAS_CONFIG, JSON.stringify(DEFAULT_SAAS_CONFIG));
+    try {
+      await superAdminService.guardarConfiguracion(DEFAULT_SAAS_CONFIG);
+    } catch (_) {}
     mostrarToast('success', 'Parámetros globales restaurados a los valores oficiales de EVENTRA.');
   };
 

@@ -108,6 +108,29 @@ export const superAdminService = {
   async suspenderEmpresa(id, estadoActivo) {
     return await api.put(`/empresas/${id}/suspender`, { estado_activo: Boolean(estadoActivo) });
   },
+
+  /**
+   * Obtiene la configuración global de EVENTRA SaaS (Planes, Límites, Datos Bancarios).
+   * Endpoint backend: GET /api/configuracion
+   */
+  async obtenerConfiguracion() {
+    try {
+      const res = await api.get('/configuracion');
+      return res?.data?.data || res?.data || res;
+    } catch (err) {
+      console.warn('[superAdminService] Error al obtener configuracion:', err);
+      return null;
+    }
+  },
+
+  /**
+   * Guarda y sincroniza la configuración global de EVENTRA SaaS en PostgreSQL.
+   * Endpoint backend: PUT /api/configuracion
+   */
+  async guardarConfiguracion(configData) {
+    const res = await api.put('/configuracion', configData);
+    return res?.data || res;
+  },
 };
 
 export default superAdminService;

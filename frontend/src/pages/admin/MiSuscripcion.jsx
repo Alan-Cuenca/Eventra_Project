@@ -40,6 +40,7 @@ export const MiSuscripcion = () => {
   const [modalCorreoAbierto, setModalCorreoAbierto] = useState(false);
   const [correoCredenciales, setCorreoCredenciales] = useState(user?.email || '');
   const [confirmacionPantalla, setConfirmacionPantalla] = useState(null);
+  const [saasConfig, setSaasConfig] = useState(null);
 
   const [consumo, setConsumo] = useState({
     plan: 'Basico',
@@ -65,13 +66,17 @@ export const MiSuscripcion = () => {
   const cargarHistorial = async () => {
     setLoading(true);
     try {
-      const [data, consumoData] = await Promise.all([
+      const [data, consumoData, configData] = await Promise.all([
         eventraService.getSuscripciones(),
         eventraService.getConsumoSuscripcion(),
+        eventraService.getConfiguracionGlobal(),
       ]);
       setSuscripciones(Array.isArray(data) ? data : []);
       if (consumoData && consumoData.limites && consumoData.uso) {
         setConsumo(consumoData);
+      }
+      if (configData) {
+        setSaasConfig(configData);
       }
     } catch (error) {
       console.error('Error cargando suscripciones:', error);
@@ -80,6 +85,17 @@ export const MiSuscripcion = () => {
       setLoading(false);
     }
   };
+
+  const datosTransferencia = {
+    nombre: saasConfig?.transferencia?.titular || DATOS_TRANSFERENCIA_EVENTRA.nombre,
+    cuenta: saasConfig?.transferencia?.numero_cuenta || DATOS_TRANSFERENCIA_EVENTRA.cuenta,
+    cedula: saasConfig?.transferencia?.cedula || DATOS_TRANSFERENCIA_EVENTRA.cedula,
+    correo: saasConfig?.transferencia?.correo_notificacion || DATOS_TRANSFERENCIA_EVENTRA.correo,
+  };
+
+  const precioBasico = Number(saasConfig?.planes?.basico_precio) || 49;
+  const precioPremium = Number(saasConfig?.planes?.premium_precio) || 99;
+  const montoPlan = planSeleccionado === 'Premium' ? precioPremium : precioBasico;
 
   const handleCopy = (key, val) => {
     navigator.clipboard.writeText(val);
@@ -389,10 +405,10 @@ export const MiSuscripcion = () => {
               Oportunidad de Crecimiento SaaS
             </span>
             <h3 className="text-lg sm:text-xl font-extrabold text-[#233D49]">
-              ¿Tu empresa necesita más capacidad? Pasa a Premium por $99/mes
+              ¿Tu empresa necesita más capacidad? Pasa a Premium por ${precioPremium}/mes
             </h3>
             <p className="text-xs sm:text-sm text-[#233D49]/80 leading-relaxed">
-              Desbloquea hasta <strong>200 clientes</strong> en tu directorio, <strong>10 colaboradores</strong> simultáneos, <strong>50 servicios</strong> en tu catálogo y hasta <strong>1,500 consultas mensuales</strong> con nuestro asistente inteligente <strong>EVARA AI 24/7</strong>.
+              Desbloquea hasta <strong>{saasConfig?.planes?.premium_max_clientes ?? 200} clientes</strong> en tu directorio, <strong>{saasConfig?.planes?.premium_max_usuarios ?? 10} colaboradores</strong> simultáneos, <strong>{saasConfig?.planes?.premium_max_servicios ?? 50} servicios</strong> en tu catálogo y hasta <strong>{saasConfig?.planes?.premium_max_chatbot ? Number(saasConfig.planes.premium_max_chatbot).toLocaleString() : '1,500'} consultas mensuales</strong> con nuestro asistente inteligente <strong>EVARA AI 24/7</strong>.
             </p>
           </div>
 
@@ -405,7 +421,7 @@ export const MiSuscripcion = () => {
             }}
             className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white text-xs sm:text-sm font-bold shadow-md transition-all shrink-0 hover:scale-[1.02] cursor-pointer"
           >
-            <span>Mejorar a Premium ($99)</span>
+            <span>Mejorar a Premium (${precioPremium})</span>
             <ArrowRight size={16} />
           </button>
         </div>
@@ -461,11 +477,11 @@ export const MiSuscripcion = () => {
                 Plan Básico
               </span>
               <span className="text-sm font-extrabold text-[#233D49] tabular-nums">
-                $49.00 <span className="text-xs font-normal text-[#7D8F97]">/mes</span>
+                ${precioBasico}.00 <span className="text-xs font-normal text-[#7D8F97]">/mes</span>
               </span>
             </div>
             <p className="text-xs text-[#7D8F97] mt-1">
-              Ideal para empresas con gestión de hasta 10 eventos simultáneos y catálogo esencial.
+              Gestión de hasta {saasConfig?.planes?.basico_max_eventos ?? 20} eventos al mes, {saasConfig?.planes?.basico_max_usuarios ?? 3} colaboradores y catálogo esencial.
             </p>
           </div>
 
@@ -483,34 +499,34 @@ export const MiSuscripcion = () => {
                 Plan Premium (Recomendado)
               </span>
               <span className="text-sm font-extrabold text-[#233D49] tabular-nums">
-                $99.00 <span className="text-xs font-normal text-[#7D8F97]">/mes</span>
+                ${precioPremium}.00 <span className="text-xs font-normal text-[#7D8F97]">/mes</span>
               </span>
             </div>
             <p className="text-xs text-[#7D8F97] mt-1">
-              Eventos ilimitados, Asistente AI EVARA, cotizador predictivo y soporte prioritario 24/7.
+              Eventos ampliados ({saasConfig?.planes?.premium_max_eventos ?? 100}/mes), Asistente AI EVARA ({saasConfig?.planes?.premium_max_chatbot ?? 1500} consultas) y soporte prioritario.
             </p>
           </div>
         </div>
 
-        {/* Datos Oficiales para la Transferencia SaaS (Alejandro Falcon) */}
+        {/* Datos Oficiales para la Transferencia SaaS */}
         <div className="p-5 rounded-2xl bg-[#F3F0E4]/60 border border-[#CBC6B6] text-xs space-y-3">
           <div className="flex items-center justify-between gap-2 font-bold text-[#233D49]">
             <div className="flex items-center gap-2">
               <Building2 size={16} className="text-[#526F7D]" />
-              <span>Datos Oficiales para Transferencia Bancaria Únicamente:</span>
+              <span>Datos Oficiales para Transferencia Bancaria Únicamente ({saasConfig?.transferencia?.entidad_bancaria || 'Banco Pichincha'}):</span>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
             <div className="bg-white p-3 rounded-xl border border-[#CBC6B6]/80 flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase text-[#526F7D] block">Nombre</span>
-                <span className="text-xs font-extrabold text-[#233D49]">{DATOS_TRANSFERENCIA_EVENTRA.nombre}</span>
+                <span className="text-[10px] font-bold uppercase text-[#526F7D] block">Titular</span>
+                <span className="text-xs font-extrabold text-[#233D49]">{datosTransferencia.nombre}</span>
               </div>
               <button
                 type="button"
-                onClick={() => handleCopy('nombre', DATOS_TRANSFERENCIA_EVENTRA.nombre)}
+                onClick={() => handleCopy('nombre', datosTransferencia.nombre)}
                 className="p-1.5 rounded-lg hover:bg-[#F3F0E4] text-[#526F7D]"
-                title="Copiar Nombre"
+                title="Copiar Titular"
               >
                 {copiedField === 'nombre' ? <Check size={14} className="text-[#4D9A72]" /> : <Copy size={14} />}
               </button>
@@ -519,11 +535,11 @@ export const MiSuscripcion = () => {
             <div className="bg-white p-3 rounded-xl border border-[#CBC6B6]/80 flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold uppercase text-[#526F7D] block">Cuenta</span>
-                <span className="text-xs font-mono font-extrabold text-[#233D49]">{DATOS_TRANSFERENCIA_EVENTRA.cuenta}</span>
+                <span className="text-xs font-mono font-extrabold text-[#233D49]">{datosTransferencia.cuenta}</span>
               </div>
               <button
                 type="button"
-                onClick={() => handleCopy('cuenta', DATOS_TRANSFERENCIA_EVENTRA.cuenta)}
+                onClick={() => handleCopy('cuenta', datosTransferencia.cuenta)}
                 className="p-1.5 rounded-lg hover:bg-[#F3F0E4] text-[#526F7D]"
                 title="Copiar Cuenta"
               >
@@ -533,14 +549,14 @@ export const MiSuscripcion = () => {
 
             <div className="bg-white p-3 rounded-xl border border-[#CBC6B6]/80 flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase text-[#526F7D] block">Cédula</span>
-                <span className="text-xs font-mono font-extrabold text-[#233D49]">{DATOS_TRANSFERENCIA_EVENTRA.cedula}</span>
+                <span className="text-[10px] font-bold uppercase text-[#526F7D] block">Cédula / RUC</span>
+                <span className="text-xs font-mono font-extrabold text-[#233D49]">{datosTransferencia.cedula}</span>
               </div>
               <button
                 type="button"
-                onClick={() => handleCopy('cedula', DATOS_TRANSFERENCIA_EVENTRA.cedula)}
+                onClick={() => handleCopy('cedula', datosTransferencia.cedula)}
                 className="p-1.5 rounded-lg hover:bg-[#F3F0E4] text-[#526F7D]"
-                title="Copiar Cédula"
+                title="Copiar Identificación"
               >
                 {copiedField === 'cedula' ? <Check size={14} className="text-[#4D9A72]" /> : <Copy size={14} />}
               </button>
@@ -549,11 +565,11 @@ export const MiSuscripcion = () => {
             <div className="bg-white p-3 rounded-xl border border-[#CBC6B6]/80 flex items-center justify-between">
               <div className="min-w-0">
                 <span className="text-[10px] font-bold uppercase text-[#526F7D] block">Correo</span>
-                <span className="text-xs font-mono font-bold text-[#233D49] truncate block">{DATOS_TRANSFERENCIA_EVENTRA.correo}</span>
+                <span className="text-xs font-mono font-bold text-[#233D49] truncate block">{datosTransferencia.correo}</span>
               </div>
               <button
                 type="button"
-                onClick={() => handleCopy('correo', DATOS_TRANSFERENCIA_EVENTRA.correo)}
+                onClick={() => handleCopy('correo', datosTransferencia.correo)}
                 className="p-1.5 rounded-lg hover:bg-[#F3F0E4] text-[#526F7D] shrink-0"
                 title="Copiar Correo"
               >
@@ -567,7 +583,7 @@ export const MiSuscripcion = () => {
         <form onSubmit={handleSubmitPago} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-[#233D49] mb-1.5">
-              Subir PDF del Comprobante de Pago ({planSeleccionado} — ${planSeleccionado === 'Premium' ? '99.00' : '49.00'}) <span className="text-[#C95C5C]">*</span>
+              Subir PDF del Comprobante de Pago ({planSeleccionado} — ${montoPlan}.00) <span className="text-[#C95C5C]">*</span>
             </label>
 
             {!archivo ? (
