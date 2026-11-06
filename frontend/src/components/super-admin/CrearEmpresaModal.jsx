@@ -15,9 +15,8 @@ import {
 import { superAdminService } from '../../services/superAdminService';
 
 const PLANES_DISPONIBLES = [
-  { id: 'Basico', nombre: 'Básico' },
-  { id: 'Premium', nombre: 'Premium' },
-  { id: 'Enterprise', nombre: 'Enterprise' },
+  { id: 'Basico', nombre: 'Básico ($49/mes)' },
+  { id: 'Premium', nombre: 'Premium ($99/mes)' },
 ];
 
 /**

@@ -44,7 +44,7 @@ export const EmpresasManagementPage = () => {
   // Filtros y búsqueda
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL' | 'ACTIVE' | 'SUSPENDED'
-  const [planFilter, setPlanFilter] = useState('ALL'); // 'ALL' | 'Basico' | 'Premium' | 'Enterprise' | 'Profesional'
+  const [planFilter, setPlanFilter] = useState('ALL'); // 'ALL' | 'Basico' | 'Premium'
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -451,8 +451,6 @@ export const EmpresasManagementPage = () => {
               <option value="ALL">Todos los Planes</option>
               <option value="Basico">Plan Básico</option>
               <option value="Premium">Plan Premium</option>
-              <option value="Enterprise">Plan Enterprise</option>
-              <option value="Profesional">Plan Profesional</option>
             </select>
           </div>
 

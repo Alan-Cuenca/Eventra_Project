@@ -39,10 +39,18 @@ const DEFAULT_SAAS_CONFIG = {
   planes: {
     basico_nombre: 'Plan Básico (Boutique)',
     basico_precio: 49,
-    basico_max_eventos: 10,
+    basico_max_eventos: 20,
     basico_max_usuarios: 3,
+    basico_max_clientes: 50,
+    basico_max_servicios: 20,
+    basico_max_chatbot: 300,
     premium_nombre: 'Plan Premium (Corporativo + IA)',
     premium_precio: 99,
+    premium_max_eventos: 100,
+    premium_max_usuarios: 10,
+    premium_max_clientes: 200,
+    premium_max_servicios: 50,
+    premium_max_chatbot: 1500,
     premium_evara_ai: true,
     dias_gracia_facturacion: 5,
   },
@@ -383,9 +391,9 @@ export const ConfiguracionSaasPage = () => {
             </div>
           </div>
 
-          {/* 2. Parámetros de Planes Comerciales */}
+          {/* 2. Parámetros de Planes Comerciales y Límites Operativos */}
           <div className="card" style={{ padding: '1.4rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1.25rem' }}>
               <div
                 style={{
                   width: 38,
@@ -405,79 +413,247 @@ export const ConfiguracionSaasPage = () => {
                   Planes Comerciales y Límites Operativos
                 </h2>
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>
-                  Tarifas mensuales y cuotas para inquilinos en Plan Básico y Premium
+                  Tarifas mensuales, cuotas de recursos y políticas de facturación para Plan Básico y Premium
                 </p>
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
-              <div className="form-group">
-                <label className="form-label">Precio Plan Básico (USD/mes)</label>
-                <input
-                  type="number"
-                  min="1"
-                  className="form-input"
-                  value={config.planes.basico_precio}
-                  onChange={(e) =>
-                    handleFieldChange('planes', 'basico_precio', Number(e.target.value) || 49)
-                  }
-                />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {/* ── Sub-tarjeta Plan Básico ─────────────────────── */}
+              <div
+                style={{
+                  padding: '1.1rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-subtle)',
+                  background: 'rgba(77, 113, 130, 0.04)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)', display: 'inline-block' }} />
+                    <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                      Configuración Plan Básico
+                    </h3>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      padding: '0.15rem 0.6rem',
+                      borderRadius: 'var(--radius-full)',
+                      background: 'var(--bg-card)',
+                      color: 'var(--primary)',
+                      border: '1px solid var(--border-subtle)',
+                    }}
+                  >
+                    Tier Boutique (${config.planes.basico_precio ?? 49}/mes)
+                  </span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.85rem' }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Precio (USD/mes)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-input"
+                      value={config.planes.basico_precio ?? 49}
+                      onChange={(e) => handleFieldChange('planes', 'basico_precio', Number(e.target.value) || 49)}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Máx. Eventos / Mes</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-input"
+                      value={config.planes.basico_max_eventos ?? 20}
+                      onChange={(e) => handleFieldChange('planes', 'basico_max_eventos', Number(e.target.value) || 20)}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Máx. Staff (Usuarios)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-input"
+                      value={config.planes.basico_max_usuarios ?? 3}
+                      onChange={(e) => handleFieldChange('planes', 'basico_max_usuarios', Number(e.target.value) || 3)}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Máx. Clientes CRM</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-input"
+                      value={config.planes.basico_max_clientes ?? 50}
+                      onChange={(e) => handleFieldChange('planes', 'basico_max_clientes', Number(e.target.value) || 50)}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Máx. Servicios Catálogo</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-input"
+                      value={config.planes.basico_max_servicios ?? 20}
+                      onChange={(e) => handleFieldChange('planes', 'basico_max_servicios', Number(e.target.value) || 20)}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Consultas IA / Mes</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="form-input"
+                      value={config.planes.basico_max_chatbot ?? 300}
+                      onChange={(e) => handleFieldChange('planes', 'basico_max_chatbot', Number(e.target.value) || 300)}
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Precio Plan Premium (USD/mes)</label>
-                <input
-                  type="number"
-                  min="1"
-                  className="form-input"
-                  value={config.planes.premium_precio}
-                  onChange={(e) =>
-                    handleFieldChange('planes', 'premium_precio', Number(e.target.value) || 99)
-                  }
-                />
-              </div>
-            </div>
+              {/* ── Sub-tarjeta Plan Premium ────────────────────── */}
+              <div
+                style={{
+                  padding: '1.1rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid rgba(196, 154, 58, 0.3)',
+                  background: 'rgba(196, 154, 58, 0.05)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--warning)', display: 'inline-block' }} />
+                    <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                      Configuración Plan Premium
+                    </h3>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      padding: '0.15rem 0.6rem',
+                      borderRadius: 'var(--radius-full)',
+                      background: 'var(--bg-card)',
+                      color: 'var(--warning)',
+                      border: '1px solid rgba(196, 154, 58, 0.3)',
+                    }}
+                  >
+                    Corporativo + IA (${config.planes.premium_precio ?? 99}/mes)
+                  </span>
+                </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
-              <div className="form-group">
-                <label className="form-label">Máx. Eventos/Mes (Plan Básico)</label>
-                <input
-                  type="number"
-                  min="1"
-                  className="form-input"
-                  value={config.planes.basico_max_eventos}
-                  onChange={(e) =>
-                    handleFieldChange('planes', 'basico_max_eventos', Number(e.target.value) || 10)
-                  }
-                />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.85rem' }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Precio (USD/mes)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-input"
+                      value={config.planes.premium_precio ?? 99}
+                      onChange={(e) => handleFieldChange('planes', 'premium_precio', Number(e.target.value) || 99)}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Máx. Eventos / Mes</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-input"
+                      value={config.planes.premium_max_eventos ?? 100}
+                      onChange={(e) => handleFieldChange('planes', 'premium_max_eventos', Number(e.target.value) || 100)}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Máx. Staff (Usuarios)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-input"
+                      value={config.planes.premium_max_usuarios ?? 10}
+                      onChange={(e) => handleFieldChange('planes', 'premium_max_usuarios', Number(e.target.value) || 10)}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Máx. Clientes CRM</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-input"
+                      value={config.planes.premium_max_clientes ?? 200}
+                      onChange={(e) => handleFieldChange('planes', 'premium_max_clientes', Number(e.target.value) || 200)}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Máx. Servicios Catálogo</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-input"
+                      value={config.planes.premium_max_servicios ?? 50}
+                      onChange={(e) => handleFieldChange('planes', 'premium_max_servicios', Number(e.target.value) || 50)}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Consultas IA / Mes</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="form-input"
+                      value={config.planes.premium_max_chatbot ?? 1500}
+                      onChange={(e) => handleFieldChange('planes', 'premium_max_chatbot', Number(e.target.value) || 1500)}
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Máx. Usuarios Staff (Plan Básico)</label>
-                <input
-                  type="number"
-                  min="1"
-                  className="form-input"
-                  value={config.planes.basico_max_usuarios}
-                  onChange={(e) =>
-                    handleFieldChange('planes', 'basico_max_usuarios', Number(e.target.value) || 3)
-                  }
-                />
+              {/* ── Política de Cobro y Suspensión ──────────────── */}
+              <div
+                style={{
+                  padding: '0.9rem 1.1rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '0.85rem',
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    Días de Gracia antes de Suspensión Automática
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                    Margen permitido tras vencer la factura antes del bloqueo de acceso al tenant
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input
+                    type="number"
+                    min="0"
+                    max="30"
+                    style={{ width: '80px', textAlign: 'center' }}
+                    className="form-input"
+                    value={config.planes.dias_gracia_facturacion ?? 5}
+                    onChange={(e) => handleFieldChange('planes', 'dias_gracia_facturacion', Number(e.target.value) || 5)}
+                  />
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>días</span>
+                </div>
               </div>
-            </div>
-
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label">Días de Gracia antes de Suspensión Automática</label>
-              <input
-                type="number"
-                min="0"
-                max="30"
-                className="form-input"
-                value={config.planes.dias_gracia_facturacion}
-                onChange={(e) =>
-                  handleFieldChange('planes', 'dias_gracia_facturacion', Number(e.target.value) || 5)
-                }
-              />
             </div>
           </div>
 

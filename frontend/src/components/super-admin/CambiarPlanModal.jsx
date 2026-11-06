@@ -11,10 +11,20 @@ import {
 } from 'lucide-react';
 
 const PLANES_DISPONIBLES = [
-  { id: 'Basico', nombre: 'Básico', color: '#4D7182' },
-  { id: 'Premium', nombre: 'Premium', color: '#C49A3A' },
-  { id: 'Enterprise', nombre: 'Enterprise', color: '#7059a6' },
-  { id: 'Profesional', nombre: 'Profesional', color: '#2b78a0' },
+  {
+    id: 'Basico',
+    nombre: 'Básico',
+    color: '#4D7182',
+    precio: '$49/mes',
+    desc: 'Tier Boutique para organizadores en crecimiento',
+  },
+  {
+    id: 'Premium',
+    nombre: 'Premium',
+    color: '#C49A3A',
+    precio: '$99/mes',
+    desc: 'Tier Corporativo con Asistente EVARA AI y límites ampliados',
+  },
 ];
 
 /**
@@ -33,7 +43,15 @@ export const CambiarPlanModal = ({ isOpen, onClose, empresa, onPlanActualizado }
 
   useEffect(() => {
     if (empresa) {
-      setNuevoPlan(empresa.plan_suscripcion || 'Basico');
+      const planActualNorm = String(empresa.plan_suscripcion || '').toLowerCase();
+      if (planActualNorm === 'basico') {
+        setNuevoPlan('Basico');
+      } else if (planActualNorm === 'premium') {
+        setNuevoPlan('Premium');
+      } else {
+        // Para planes heredados (ej. Enterprise/Profesional), sugerir Premium
+        setNuevoPlan('Premium');
+      }
       setErrorMsg('');
       setSuccessMsg('');
     }
@@ -235,9 +253,14 @@ export const CambiarPlanModal = ({ isOpen, onClose, empresa, onPlanActualizado }
                         </span>
                       )}
                     </div>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
-                      Tier SaaS oficial
-                    </span>
+                    <div style={{ marginTop: '0.35rem' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 800, color: plan.color, display: 'block' }}>
+                        {plan.precio}
+                      </span>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+                        {plan.desc}
+                      </span>
+                    </div>
                   </button>
                 );
               })}
