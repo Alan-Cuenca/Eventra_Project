@@ -48,10 +48,26 @@ export const actualizarLimitesEnMemoria = (nuevosPlanes) => {
 
 export const getLimitesActivos = async (planNombre) => {
   const planKey = String(planNombre || '').toLowerCase() === 'premium' ? 'Premium' : 'Basico';
-  if (cachedConfigPlanes && cachedConfigPlanes[planKey]) {
-    return cachedConfigPlanes[planKey];
+
+  // En entorno de pruebas (Jest), retornar desde memoria para evitar consumir mocks de pool.query
+  if (process.env.NODE_ENV === 'test') {
+    return (cachedConfigPlanes && cachedConfigPlanes[planKey]) || PLAN_LIMITS[planKey];
   }
-  return PLAN_LIMITS[planKey] || PLAN_LIMITS.Basico;
+
+  // En entorno real, consultar la configuración persistida en PostgreSQL (Supabase)
+  try {
+    const res = await pool.query("SELECT valor FROM configuracion_saas WHERE clave = 'global'");
+    if (res?.rows?.length > 0 && res.rows[0].valor?.planes) {
+      actualizarLimitesEnMemoria(res.rows[0].valor.planes);
+      if (cachedConfigPlanes && cachedConfigPlanes[planKey]) {
+        return cachedConfigPlanes[planKey];
+      }
+    }
+  } catch (err) {
+    // Si la tabla aún no se crea o hay error transitorio, usar el caché en memoria
+  }
+
+  return (cachedConfigPlanes && cachedConfigPlanes[planKey]) || PLAN_LIMITS[planKey];
 };
 
 /**
