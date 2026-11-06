@@ -113,6 +113,15 @@ export const eventraService = {
     return response?.data || response;
   },
 
+  async updateEstadoActividad(id, estado) {
+    const response = await api.patch(`/actividades/${id}/estado`, { estado });
+    return response?.data || response;
+  },
+
+  async actualizarEstadoActividad(id, estado) {
+    return this.updateEstadoActividad(id, estado);
+  },
+
   async deleteActividad(id) {
     await api.delete(`/actividades/${id}`);
     return true;

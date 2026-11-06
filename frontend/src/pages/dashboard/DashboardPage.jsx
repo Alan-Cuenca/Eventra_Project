@@ -212,22 +212,26 @@ export const DashboardPage = () => {
   // ── Handlers de aprobación sincronizados con eventraService.actualizarEstadoSolicitud ──
   const handleAprobar = async (id) => {
     try {
-      await eventraService.actualizarEstadoSolicitud(id, 'Aprobado');
-    } catch (_) {}
-    setSolicitudes(prev =>
-      prev.map(s => s.id === id ? { ...s, estado: 'Aprobado' } : s)
-    );
-    setToast({ msg: '✓ Solicitud aprobada exitosamente.', type: 'success' });
+      await eventraService.actualizarEstadoSolicitud(id, 'Aprobada');
+      setSolicitudes(prev =>
+        prev.map(s => s.id === id ? { ...s, estado: 'Aprobada' } : s)
+      );
+      setToast({ msg: '✓ Solicitud aprobada exitosamente.', type: 'success' });
+    } catch (err) {
+      setToast({ msg: 'Error al aprobar solicitud: ' + (err.message || 'Error del servidor'), type: 'danger' });
+    }
   };
 
   const handleRechazar = async (id) => {
     try {
-      await eventraService.actualizarEstadoSolicitud(id, 'Rechazado');
-    } catch (_) {}
-    setSolicitudes(prev =>
-      prev.map(s => s.id === id ? { ...s, estado: 'Rechazado' } : s)
-    );
-    setToast({ msg: '✗ Solicitud rechazada.', type: 'danger' });
+      await eventraService.actualizarEstadoSolicitud(id, 'Rechazada');
+      setSolicitudes(prev =>
+        prev.map(s => s.id === id ? { ...s, estado: 'Rechazada' } : s)
+      );
+      setToast({ msg: '✗ Solicitud rechazada.', type: 'danger' });
+    } catch (err) {
+      setToast({ msg: 'Error al rechazar solicitud: ' + (err.message || 'Error del servidor'), type: 'danger' });
+    }
   };
 
   // ── Toggle checklist sincronizado con el backend cuando la actividad es real ──

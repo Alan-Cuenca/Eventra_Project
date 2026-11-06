@@ -217,7 +217,9 @@ export const obtenerSolicitudes = async (req, res) => {
 export const actualizarEstadoSolicitud = async (req, res) => {
   const empresa_id = req.user.empresa_id;
   const { id } = req.params;
-  const { estado } = req.body;
+  let { estado } = req.body;
+  if (estado === 'Aprobado') estado = 'Aprobada';
+  if (estado === 'Rechazado') estado = 'Rechazada';
 
   try {
     if (!estado) {

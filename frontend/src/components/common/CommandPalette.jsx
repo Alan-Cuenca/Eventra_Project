@@ -38,7 +38,7 @@ export const CommandPalette = ({ isOpen, onClose }) => {
   const commandItems = [
     // Secciones Principales
     { id: 'dash', label: 'Panel Principal', path: '/dashboard', icon: <LayoutDashboard size={16} />, category: 'Navegación', visible: true },
-    { id: 'events', label: 'Eventos & Calendario', path: '/eventos', icon: <CalendarDays size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isCliente },
+    { id: 'events', label: 'Eventos & Calendario', path: '/eventos', icon: <CalendarDays size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isTrabajador || isCliente },
     { id: 'activities', label: 'Checklist Operativo', path: '/actividades', icon: <CheckSquare size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isTrabajador },
     { id: 'reservations', label: 'Reservas Anti-Colisión', path: '/reservas', icon: <CalendarCheck size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isTrabajador || isCliente },
     { id: 'quotes', label: 'Cotizaciones', path: '/cotizaciones', icon: <Calculator size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isCliente },

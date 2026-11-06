@@ -3,13 +3,14 @@
  * Tabs: Resumen | Actividades | Pagos | Archivos | Historial
  */
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { Badge } from '../../components/common/Badge';
 import { eventraService } from '../../services/eventraService';
+import { useAuth } from '../../context/AuthContext';
 import {
   CalendarDays, Users, DollarSign, Check, X,
   Clock, AlertCircle, CheckCircle2, FileText, History, ChevronLeft,
-  Eye, User, Loader2
+  Eye, User, Loader2, Edit3, FileEdit, Send
 } from 'lucide-react';
 
 // ── Tabs config ────────────────────────────────────────────────────────────
@@ -28,8 +29,13 @@ export const EventDetailPage = ({ eventoId: propId }) => {
   const navigate = useNavigate();
   const { id: paramId } = useParams();
   const eventoId = propId || paramId;
+  const { isAdmin, isGerente, isTrabajador, isCliente } = useAuth();
+  const canEditDirectly = isAdmin || isGerente;
+
   const [activeTab, setActiveTab] = useState('resumen');
-  const [showModal, setShowModal] = useState(false);
+  const [showSolicitudModal, setShowSolicitudModal] = useState(false);
+  const [descripcionSolicitud, setDescripcionSolicitud] = useState('');
+  const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
   const [toast, setToast] = useState(null);
 
   const [evento, setEvento] = useState(null);
@@ -47,8 +53,55 @@ export const EventDetailPage = ({ eventoId: propId }) => {
   const fmt = (n) =>
     new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(n);
 
-  const toggleActividad = async (id) => {
-    // API logic later or rely on another module
+  const toggleActividad = async (act) => {
+    const nuevoEstado = act.estado === 'Completado' ? 'Pendiente' : 'Completado';
+    try {
+      await eventraService.updateActividad(act.id, {
+        ...act,
+        estado: nuevoEstado,
+      });
+      setEvento((prev) => ({
+        ...prev,
+        actividades: (prev.actividades || []).map((a) =>
+          a.id === act.id ? { ...a, estado: nuevoEstado } : a
+        ),
+      }));
+      setToast({
+        msg: nuevoEstado === 'Completado' ? 'Actividad completada ✓' : 'Actividad reabierta.',
+        type: 'success',
+      });
+    } catch (err) {
+      setToast({
+        msg: 'Error al actualizar actividad: ' + (err.message || 'Error del servidor'),
+        type: 'error',
+      });
+    }
+  };
+
+  const handleEnviarSolicitud = async (e) => {
+    e.preventDefault();
+    if (!descripcionSolicitud.trim()) return;
+
+    setEnviandoSolicitud(true);
+    try {
+      await eventraService.createSolicitud({
+        evento_id: evento.id,
+        descripcion: descripcionSolicitud.trim(),
+      });
+      setShowSolicitudModal(false);
+      setDescripcionSolicitud('');
+      setToast({
+        msg: 'Solicitud de modificación enviada exitosamente para revisión.',
+        type: 'success',
+      });
+    } catch (err) {
+      setToast({
+        msg: err.message || 'Error al enviar la solicitud.',
+        type: 'error',
+      });
+    } finally {
+      setEnviandoSolicitud(false);
+    }
   };
 
   const actEstadoBadge = (e) => {
@@ -95,31 +148,79 @@ export const EventDetailPage = ({ eventoId: propId }) => {
         </div>
       )}
 
-      {/* Modal de confirmación genérico */}
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-box animate-slide-up" onClick={e => e.stopPropagation()}>
+      {/* Modal de Solicitud de Modificación */}
+      {showSolicitudModal && (
+        <div className="modal-overlay" onClick={() => setShowSolicitudModal(false)}>
+          <div className="modal-box animate-slide-up" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 style={{ fontSize: '1.1rem', color: 'var(--primary-dark)' }}>Confirmar acción</h3>
-              <button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}>
+              <h3 style={{ fontSize: '1.1rem', color: 'var(--primary-dark)', margin: 0 }}>
+                Solicitar Modificación de Evento
+              </h3>
+              <button
+                type="button"
+                className="btn btn-ghost btn-icon"
+                onClick={() => setShowSolicitudModal(false)}
+              >
                 <X size={16} />
               </button>
             </div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-              ¿Estás seguro de que deseas continuar con esta acción? Esta operación no se puede deshacer.
-            </p>
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  setShowModal(false);
-                  setToast({ msg: 'Acción ejecutada exitosamente.', type: 'success' });
-                }}
-              >
-                Confirmar
-              </button>
-            </div>
+
+            <form onSubmit={handleEnviarSolicitud} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.75rem' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>
+                Evento: <strong style={{ color: 'var(--primary-dark)' }}>{evento.titulo || evento.nombre || `#${evento.id}`}</strong>
+              </p>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--primary-dark)', marginBottom: '0.35rem' }}>
+                  Detalle del cambio requerido *
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  value={descripcionSolicitud}
+                  onChange={(e) => setDescripcionSolicitud(e.target.value)}
+                  placeholder="Describe el ajuste necesario (ej. Se incrementa a 110 invitados, cambio de horario de recepción a las 19:00, requerimiento de sonido adicional)..."
+                  style={{
+                    width: '100%',
+                    fontSize: '0.82rem',
+                    padding: '0.75rem',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--border-subtle)',
+                    outline: 'none',
+                    resize: 'vertical',
+                    fontFamily: 'inherit',
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => setShowSolicitudModal(false)}
+                  disabled={enviandoSolicitud}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-sm inline-flex items-center gap-1.5"
+                  disabled={enviandoSolicitud || !descripcionSolicitud.trim()}
+                >
+                  {enviandoSolicitud ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      <span>Enviando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send size={14} />
+                      <span>Enviar a Revisión</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -142,9 +243,24 @@ export const EventDetailPage = ({ eventoId: propId }) => {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap' }}>
-          <button className="btn btn-secondary btn-sm" onClick={() => setShowModal(true)}>
-            <AlertCircle size={15} /> Solicitar cambio
-          </button>
+          {canEditDirectly ? (
+            <Link
+              to={`/eventos/editar/${evento.id}`}
+              className="btn btn-primary btn-sm inline-flex items-center gap-1.5"
+            >
+              <Edit3 size={15} />
+              <span>Editar Evento</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm inline-flex items-center gap-1.5"
+              onClick={() => setShowSolicitudModal(true)}
+            >
+              <FileEdit size={15} />
+              <span>Solicitar cambio</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -269,7 +385,7 @@ export const EventDetailPage = ({ eventoId: propId }) => {
                     <td>
                       <button
                         className={`btn btn-sm ${act.estado === 'Completado' ? 'btn-secondary' : 'btn-success'}`}
-                        onClick={() => { toggleActividad(act.id); setToast({ msg: act.estado === 'Completado' ? 'Actividad reabierta.' : 'Actividad completada ✓', type: 'success' }); }}
+                        onClick={() => toggleActividad(act)}
                         id={`toggle-actividad-${act.id}`}
                       >
                         {act.estado === 'Completado' ? <><X size={13} /> Reabrir</> : <><Check size={13} /> Completar</>}
@@ -369,9 +485,26 @@ export const EventDetailPage = ({ eventoId: propId }) => {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '0.4rem' }}>
-                  <button className="btn btn-secondary btn-sm btn-icon" title="Ver" onClick={() => setToast({ msg: `Abriendo ${f.nombre}...`, type: 'info' })}>
-                    <Eye size={14} />
-                  </button>
+                  {f.url ? (
+                    <a
+                      href={f.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-secondary btn-sm btn-icon"
+                      title="Ver archivo"
+                    >
+                      <Eye size={14} />
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm btn-icon"
+                      title="Ver"
+                      onClick={() => setToast({ msg: `Archivo "${f.nombre}" almacenado localmente sin URL remota.`, type: 'info' })}
+                    >
+                      <Eye size={14} />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
