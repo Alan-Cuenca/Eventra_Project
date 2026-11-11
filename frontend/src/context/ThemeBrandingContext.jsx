@@ -128,39 +128,56 @@ const ThemeBrandingContext = createContext(null);
 export const ThemeBrandingProvider = ({ children }) => {
   const { user } = useAuth();
   const [branding, setBranding] = useState(DEFAULT_BRANDING);
+  const [customPaleta, setCustomPaleta] = useState(() => {
+    try {
+      const cached = localStorage.getItem('eventra_custom_ia_palette');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
   const [paletaKey, setPaletaKey] = useState(() => {
     const cached = localStorage.getItem(PALETTE_CACHE_KEY);
+    if (cached === 'custom_ia') return 'custom_ia';
     return cached && PALETAS[cached] ? cached : 'sofisticacion_sutil';
   });
   const [loading, setLoading] = useState(true);
 
   // Aplica las variables CSS al :root asegurando alto contraste y aislamiento de vistas públicas
-  const aplicarVariablesCSS = useCallback((key, isAuthenticated = true) => {
-    const paleta = PALETAS[key] || PALETAS.sofisticacion_sutil;
+  const aplicarVariablesCSS = useCallback((key, isAuthenticated = true, overridePalette = null) => {
+    let paleta = overridePalette;
+    if (!paleta) {
+      if (key === 'custom_ia') {
+        paleta = customPaleta || branding?.paleta_personalizada;
+      }
+      if (!paleta) {
+        paleta = PALETAS[key] || PALETAS.sofisticacion_sutil;
+      }
+    }
     const root = document.documentElement;
     const [r, g, b] = paleta.rgbPrimary || hexToRgb(paleta.primary, [82, 111, 125]);
     const rgbBg = paleta.rgbBg || hexToRgb(paleta.bg, [238, 235, 221]);
-    const rgbText = hexToRgb(paleta.text, [35, 61, 73]);
-    const rgbBorder = hexToRgb(paleta.border, [203, 198, 182]);
-    const rgbSurface = hexToRgb(paleta.card || '#FFFFFF', [255, 255, 255]);
+    const rgbText = paleta.rgbText || hexToRgb(paleta.text, [35, 61, 73]);
+    const rgbBorder = paleta.rgbBorder || hexToRgb(paleta.border, [203, 198, 182]);
+    const rgbSurface = hexToRgb(paleta.surface || paleta.card || '#FFFFFF', [255, 255, 255]);
 
     // ── EVENTRA Token-Driven Architecture (Semantic --ev-* CSS Variables) ──
     root.style.setProperty('--ev-bg-base', paleta.bg);
     root.style.setProperty('--ev-bg-base-rgb', rgbBg.join(' '));
-    root.style.setProperty('--ev-surface', paleta.card || '#FFFFFF');
+    root.style.setProperty('--ev-surface', paleta.surface || paleta.card || '#FFFFFF');
     root.style.setProperty('--ev-surface-rgb', rgbSurface.join(' '));
     root.style.setProperty('--ev-surface-glass', `rgb(${rgbSurface.join(' ')} / 0.72)`);
     root.style.setProperty('--ev-border', paleta.border);
     root.style.setProperty('--ev-border-rgb', rgbBorder.join(' '));
     root.style.setProperty('--ev-primary', paleta.primary);
     root.style.setProperty('--ev-primary-rgb', `${r} ${g} ${b}`);
-    root.style.setProperty('--ev-primary-hover', paleta.primaryHover);
+    root.style.setProperty('--ev-primary-hover', paleta.primaryHover || paleta.primary);
     root.style.setProperty('--ev-text-main', paleta.text);
     root.style.setProperty('--ev-text-main-rgb', rgbText.join(' '));
     root.style.setProperty('--ev-text-muted', `rgb(${rgbText.join(' ')} / 0.68)`);
 
     if (isAuthenticated) {
-      root.setAttribute('data-palette', paleta.key);
+      root.setAttribute('data-palette', paleta.key || key);
     } else {
       root.removeAttribute('data-palette');
     }
@@ -171,15 +188,15 @@ export const ThemeBrandingProvider = ({ children }) => {
     root.style.setProperty('--brand-border', paleta.border);
     root.style.setProperty('--brand-primary', paleta.primary);
     root.style.setProperty('--brand-text', paleta.text);
-    root.style.setProperty('--brand-primary-hover', paleta.primaryHover);
-    root.style.setProperty('--brand-primary-light', paleta.primaryLight);
+    root.style.setProperty('--brand-primary-hover', paleta.primaryHover || paleta.primary);
+    root.style.setProperty('--brand-primary-light', paleta.primaryLight || paleta.bg);
 
     // Integración con las variables del portal interno manteniendo alto contraste
     root.style.setProperty('--cream', paleta.bg);
     root.style.setProperty('--bg-main', paleta.bg);
     root.style.setProperty('--bg-primary', paleta.bg);
     root.style.setProperty('--bg-surface', paleta.surface || '#FFFFFF');
-    root.style.setProperty('--bg-card', paleta.card || '#FFFFFF');
+    root.style.setProperty('--bg-card', paleta.surface || paleta.card || '#FFFFFF');
     root.style.setProperty('--bg-card-hover', '#FAFAF7');
     root.style.setProperty('--bg-input', paleta.inputBg || '#FAFAF7');
     root.style.setProperty('--beige', paleta.border);
@@ -187,9 +204,9 @@ export const ThemeBrandingProvider = ({ children }) => {
     root.style.setProperty('--border-color', paleta.border);
     root.style.setProperty('--border-focus', paleta.primary);
     root.style.setProperty('--primary', paleta.primary);
-    root.style.setProperty('--primary-hover', paleta.primaryHover);
+    root.style.setProperty('--primary-hover', paleta.primaryHover || paleta.primary);
     root.style.setProperty('--primary-dark', paleta.text);
-    root.style.setProperty('--primary-light', paleta.primaryLight);
+    root.style.setProperty('--primary-light', paleta.primaryLight || paleta.bg);
     root.style.setProperty('--primary-glow', `rgba(${r}, ${g}, ${b}, 0.22)`);
     root.style.setProperty('--text-primary', paleta.text);
     root.style.setProperty('--text-secondary', paleta.textSecondary || paleta.primary);
@@ -198,7 +215,7 @@ export const ThemeBrandingProvider = ({ children }) => {
     if (paleta.accent) {
       root.style.setProperty('--accent', paleta.accent);
     }
-  }, []);
+  }, [customPaleta, branding?.paleta_personalizada]);
 
   // Cargar branding desde la API cuando el usuario esté autenticado
   const cargarBranding = useCallback(async () => {
@@ -217,39 +234,68 @@ export const ThemeBrandingProvider = ({ children }) => {
       const data = res?.data || res;
       if (data && typeof data === 'object') {
         setBranding((prev) => ({ ...prev, ...data }));
+        if (data.paleta_personalizada) {
+          setCustomPaleta(data.paleta_personalizada);
+          try {
+            localStorage.setItem('eventra_custom_ia_palette', JSON.stringify(data.paleta_personalizada));
+          } catch {}
+        }
         if (data.slug && data.slug !== 'eventra') {
           localStorage.setItem('last_tenant_slug', data.slug);
         }
-        const targetPaleta = data.paleta_colores && PALETAS[data.paleta_colores]
-          ? data.paleta_colores
-          : 'sofisticacion_sutil';
+        const isCustomIA = data.paleta_colores === 'custom_ia';
+        const targetPaleta = isCustomIA
+          ? 'custom_ia'
+          : (data.paleta_colores && PALETAS[data.paleta_colores] ? data.paleta_colores : 'sofisticacion_sutil');
         setPaletaKey(targetPaleta);
         localStorage.setItem(PALETTE_CACHE_KEY, targetPaleta);
-        aplicarVariablesCSS(targetPaleta, true);
+        aplicarVariablesCSS(
+          targetPaleta,
+          true,
+          isCustomIA ? (data.paleta_personalizada || customPaleta) : null
+        );
       }
     } catch (err) {
       console.warn('[ThemeBrandingContext] No se pudo cargar branding personalizado:', err?.message);
       const fallback = localStorage.getItem(PALETTE_CACHE_KEY);
-      const activeKey = fallback && PALETAS[fallback] ? fallback : 'sofisticacion_sutil';
+      const activeKey = fallback && (fallback === 'custom_ia' || PALETAS[fallback]) ? fallback : 'sofisticacion_sutil';
       setPaletaKey(activeKey);
-      aplicarVariablesCSS(activeKey, true);
+      aplicarVariablesCSS(activeKey, true, activeKey === 'custom_ia' ? customPaleta : null);
     } finally {
       setLoading(false);
     }
-  }, [user, aplicarVariablesCSS]);
+  }, [user, aplicarVariablesCSS, customPaleta]);
 
   useEffect(() => {
     cargarBranding();
   }, [cargarBranding]);
 
   // Previsualización local inmediata en el portal interno
-  const previsualizarPaleta = (nuevaKey) => {
-    if (PALETAS[nuevaKey]) {
+  const previsualizarPaleta = (nuevaKey, paletaObj = null) => {
+    const pal = paletaObj || (nuevaKey === 'custom_ia' ? (customPaleta || branding?.paleta_personalizada) : PALETAS[nuevaKey]);
+    if (pal) {
       setPaletaKey(nuevaKey);
       localStorage.setItem(PALETTE_CACHE_KEY, nuevaKey);
-      aplicarVariablesCSS(nuevaKey, true);
+      aplicarVariablesCSS(nuevaKey, true, pal);
     }
   };
+
+  // Inyección y activación inmediata de una paleta generada por IA
+  const aplicarPaletaIA = useCallback((paletaGenerada) => {
+    if (!paletaGenerada) return;
+    setCustomPaleta(paletaGenerada);
+    try {
+      localStorage.setItem('eventra_custom_ia_palette', JSON.stringify(paletaGenerada));
+    } catch {}
+    setPaletaKey('custom_ia');
+    localStorage.setItem(PALETTE_CACHE_KEY, 'custom_ia');
+    setBranding((prev) => ({
+      ...prev,
+      paleta_colores: 'custom_ia',
+      paleta_personalizada: paletaGenerada,
+    }));
+    aplicarVariablesCSS('custom_ia', true, paletaGenerada);
+  }, [aplicarVariablesCSS]);
 
   // Guardar branding a la API
   const guardarBranding = async (formDataOrPayload) => {
@@ -257,25 +303,39 @@ export const ThemeBrandingProvider = ({ children }) => {
     const updated = res?.data || res;
     if (updated && typeof updated === 'object') {
       setBranding((prev) => ({ ...prev, ...updated }));
-      if (updated.paleta_colores && PALETAS[updated.paleta_colores]) {
+      if (updated.paleta_personalizada) {
+        setCustomPaleta(updated.paleta_personalizada);
+        try {
+          localStorage.setItem('eventra_custom_ia_palette', JSON.stringify(updated.paleta_personalizada));
+        } catch {}
+      }
+      if (updated.paleta_colores) {
         setPaletaKey(updated.paleta_colores);
         localStorage.setItem(PALETTE_CACHE_KEY, updated.paleta_colores);
-        aplicarVariablesCSS(updated.paleta_colores, true);
+        aplicarVariablesCSS(
+          updated.paleta_colores,
+          true,
+          updated.paleta_colores === 'custom_ia' ? (updated.paleta_personalizada || customPaleta) : null
+        );
       }
     }
     return updated;
   };
 
-  const palette = PALETAS[paletaKey] || PALETAS.sofisticacion_sutil;
+  const palette = paletaKey === 'custom_ia'
+    ? (customPaleta || branding?.paleta_personalizada || PALETAS.sofisticacion_sutil)
+    : (PALETAS[paletaKey] || PALETAS.sofisticacion_sutil);
 
   const value = {
     branding,
     palette,
     paletaKey,
     PALETAS,
+    customPaleta,
     loading,
     marcaAguaActiva: Boolean(branding?.marca_agua_activa),
     previsualizarPaleta,
+    aplicarPaletaIA,
     guardarBranding,
     recargarBranding: cargarBranding,
     aplicarVariablesCSS,

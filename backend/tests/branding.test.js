@@ -189,4 +189,33 @@ describe('Módulo de Marca Blanca y Branding (White-Label)', () => {
       expect(res.body.data.portal_titulo).toBe('Bienvenido a Hacienda San José');
     });
   });
+
+  describe('POST /api/empresas/analizar-logo-ia', () => {
+    test('401 — Rechaza petición sin token', async () => {
+      const res = await request(app).post('/api/empresas/analizar-logo-ia');
+      expect(res.status).toBe(401);
+    });
+
+    test('200 — Analiza el logotipo adjunto y genera paleta custom_ia con 5 colores', async () => {
+      mockQuery.mockResolvedValueOnce({
+        rowCount: 1,
+        rows: [{ id: 1 }],
+      });
+
+      const res = await request(app)
+        .post('/api/empresas/analizar-logo-ia')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('logo', Buffer.from('fake-logo-bytes-for-palette'), 'logo.png');
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.paleta_colores).toBe('custom_ia');
+      expect(res.body.paleta).toHaveProperty('bg');
+      expect(res.body.paleta).toHaveProperty('surface', '#FFFFFF');
+      expect(res.body.paleta).toHaveProperty('border');
+      expect(res.body.paleta).toHaveProperty('primary');
+      expect(res.body.paleta).toHaveProperty('text');
+      expect(res.body.paleta.text).not.toBe('#000000');
+    });
+  });
 });

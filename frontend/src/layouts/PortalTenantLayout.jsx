@@ -75,9 +75,17 @@ export const PortalTenantLayout = () => {
 
   // 2. Motor de Tonalidades Dinámicas (CSS Variables Theming)
   const paletaActiva = useMemo(() => {
+    if (empresa?.paleta_colores === 'custom_ia' && empresa?.paleta_personalizada) {
+      try {
+        const p = typeof empresa.paleta_personalizada === 'string'
+          ? JSON.parse(empresa.paleta_personalizada)
+          : empresa.paleta_personalizada;
+        if (p && p.primary) return p;
+      } catch {}
+    }
     const key = empresa?.paleta_colores || 'sofisticacion_sutil';
     return PALETAS[key] || PALETAS.sofisticacion_sutil;
-  }, [empresa?.paleta_colores]);
+  }, [empresa?.paleta_colores, empresa?.paleta_personalizada]);
 
   const cssVariables = useMemo(() => {
     const p = paletaActiva;

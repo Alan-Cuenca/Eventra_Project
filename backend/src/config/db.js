@@ -10,6 +10,9 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
+  max: 5,
+  idleTimeoutMillis: 5000,
+  connectionTimeoutMillis: 10000,
   ssl: {
     rejectUnauthorized: false
   }
@@ -34,6 +37,7 @@ if (process.env.NODE_ENV !== 'test') {
   pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS marca_agua_activa BOOLEAN DEFAULT true;').catch(() => {});
   pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS portal_titulo VARCHAR(150);').catch(() => {});
   pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS portal_descripcion TEXT;').catch(() => {});
+  pool.query('ALTER TABLE empresas ADD COLUMN IF NOT EXISTS paleta_personalizada JSONB;').catch(() => {});
   pool.query(`
     UPDATE empresas
     SET logo_url = '/logo_Helados_Catedral.jpg'

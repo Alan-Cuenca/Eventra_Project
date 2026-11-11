@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useBranding, PALETAS } from '../../context/ThemeBrandingContext';
+import { eventraService } from '../../services/eventraService';
 import {
   Palette,
   UploadCloud,
@@ -22,6 +23,8 @@ export const ConfiguracionMarca = () => {
     paletaKey,
     guardarBranding,
     previsualizarPaleta,
+    aplicarPaletaIA,
+    customPaleta,
   } = useBranding();
 
   const [selectedPaleta, setSelectedPaleta] = useState(paletaKey);
@@ -35,7 +38,8 @@ export const ConfiguracionMarca = () => {
   const [restablecerLogo, setRestablecerLogo] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Estados de guardado y feedback
+  // Estados de IA, guardado y feedback
+  const [generandoIA, setGenerandoIA] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [mensajeExito, setMensajeExito] = useState('');
   const [mensajeError, setMensajeError] = useState('');
@@ -54,7 +58,50 @@ export const ConfiguracionMarca = () => {
 
   const handlePaletaChange = (key) => {
     setSelectedPaleta(key);
-    previsualizarPaleta(key);
+    previsualizarPaleta(key, key === 'custom_ia' ? (customPaleta || branding?.paleta_personalizada) : null);
+  };
+
+  const handleGenerarTemaIA = async () => {
+    if (!logoFile && !logoPreview) {
+      setMensajeError('Por favor selecciona o sube un logotipo primero para que la IA pueda analizarlo.');
+      return;
+    }
+
+    setGenerandoIA(true);
+    setMensajeError('');
+    setMensajeExito('');
+
+    try {
+      let payload;
+      if (logoFile) {
+        payload = new FormData();
+        payload.append('logo', logoFile);
+      } else {
+        payload = { logo_url: logoPreview };
+      }
+
+      const res = await eventraService.analizarLogoConIA(payload);
+      const data = res?.data || res;
+
+      if (data?.paleta) {
+        aplicarPaletaIA(data.paleta);
+        setSelectedPaleta('custom_ia');
+        setMensajeExito('✨ ¡Tema cromático generado exitosamente por IA a partir de tu logotipo y aplicado en vivo!');
+        setTimeout(() => setMensajeExito(''), 5500);
+      } else {
+        throw new Error(data?.message || 'No se pudo generar la paleta.');
+      }
+    } catch (err) {
+      console.error('[ConfiguracionMarca] Error al analizar logotipo con IA:', err);
+      const errorMsg =
+        err.data?.message ||
+        err.response?.data?.message ||
+        err.message ||
+        'No se pudo analizar el logotipo con IA. Intenta con otra imagen.';
+      setMensajeError(errorMsg);
+    } finally {
+      setGenerandoIA(false);
+    }
   };
 
   const handleFileSelect = (file) => {
@@ -102,6 +149,9 @@ export const ConfiguracionMarca = () => {
     try {
       const formData = new FormData();
       formData.append('paleta_colores', selectedPaleta);
+      if (selectedPaleta === 'custom_ia' && (customPaleta || branding?.paleta_personalizada)) {
+        formData.append('paleta_personalizada', JSON.stringify(customPaleta || branding.paleta_personalizada));
+      }
       formData.append('marca_agua_activa', String(marcaAgua));
       formData.append('portal_titulo', portalTitulo);
       formData.append('portal_descripcion', portalDescripcion);
@@ -132,7 +182,9 @@ export const ConfiguracionMarca = () => {
 
   const slugEmpresa = branding?.slug || 'empresa';
   const urlPortalRegistro = `${window.location.origin}/portal/${slugEmpresa}/registro`;
-  const activePaletteObj = PALETAS[selectedPaleta] || PALETAS.sofisticacion_sutil;
+  const activePaletteObj = selectedPaleta === 'custom_ia'
+    ? (customPaleta || branding?.paleta_personalizada || PALETAS.sofisticacion_sutil)
+    : (PALETAS[selectedPaleta] || PALETAS.sofisticacion_sutil);
 
   const copiarEnlacePortal = () => {
     navigator.clipboard.writeText(urlPortalRegistro);
@@ -264,6 +316,26 @@ export const ConfiguracionMarca = () => {
                   />
                 </div>
 
+                {/* Botón Mágico de Generación con IA */}
+                <button
+                  type="button"
+                  onClick={handleGenerarTemaIA}
+                  disabled={generandoIA || (!logoFile && !logoPreview)}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-xs tracking-wide text-white shadow-sm transition-all duration-200 bg-gradient-to-r from-[#233D49] to-[#3E5E6D] hover:from-[#1D333E] hover:to-[#334E5C] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed border border-[#526F7D]/30"
+                >
+                  {generandoIA ? (
+                    <>
+                      <RefreshCw size={15} className="animate-spin text-amber-300" />
+                      <span>Procesando logotipo con IA...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={15} className="text-amber-300 fill-amber-300" />
+                      <span>✨ Generar tema con IA</span>
+                    </>
+                  )}
+                </button>
+
                 {logoPreview && (
                   <button
                     type="button"
@@ -330,6 +402,91 @@ export const ConfiguracionMarca = () => {
             </div>
 
             <div className="space-y-3">
+              {/* Opción de Paleta Generada por IA (si existe o está activa) */}
+              {(customPaleta || selectedPaleta === 'custom_ia' || branding?.paleta_personalizada) && (() => {
+                const iaItem = customPaleta || branding?.paleta_personalizada || activePaletteObj;
+                const isSelected = selectedPaleta === 'custom_ia';
+                return (
+                  <div
+                    key="custom_ia"
+                    onClick={() => handlePaletaChange('custom_ia')}
+                    style={{
+                      borderColor: isSelected ? iaItem.primary : (iaItem.border || '#CBC6B6'),
+                      backgroundColor: isSelected ? iaItem.bg : '#FFFFFF',
+                    }}
+                    className="p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between gap-4 shadow-xs hover:shadow-sm"
+                  >
+                    <div className="flex items-center gap-4">
+                      {/* Muestra de 5 Círculos de Color de la IA */}
+                      <div className="flex items-center -space-x-1.5 shrink-0">
+                        <div
+                          className="w-7 h-7 rounded-full border border-black/15 shadow-sm"
+                          style={{ backgroundColor: iaItem.bg }}
+                          title={`Fondo Pastel: ${iaItem.bg}`}
+                        />
+                        <div
+                          className="w-7 h-7 rounded-full border border-black/15 shadow-sm"
+                          style={{ backgroundColor: iaItem.surface || '#FFFFFF' }}
+                          title={`Superficie: ${iaItem.surface || '#FFFFFF'}`}
+                        />
+                        <div
+                          className="w-7 h-7 rounded-full border border-black/15 shadow-sm"
+                          style={{ backgroundColor: iaItem.border }}
+                          title={`Borde Suave: ${iaItem.border}`}
+                        />
+                        <div
+                          className="w-7 h-7 rounded-full border border-black/15 shadow-sm"
+                          style={{ backgroundColor: iaItem.primary }}
+                          title={`Color Primario: ${iaItem.primary}`}
+                        />
+                        <div
+                          className="w-7 h-7 rounded-full border border-black/15 shadow-sm"
+                          style={{ backgroundColor: iaItem.text }}
+                          title={`Texto Tintado: ${iaItem.text}`}
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-bold" style={{ color: iaItem.text }}>
+                            {iaItem.name || 'Paleta Generada por IA'}
+                          </span>
+                          <span
+                            className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full flex items-center gap-1"
+                            style={{
+                              backgroundColor: iaItem.primaryLight || '#E4EFF4',
+                              color: iaItem.primary,
+                            }}
+                          >
+                            <Sparkles size={11} />
+                            Inteligencia Visual
+                          </span>
+                        </div>
+                        <p className="text-xs mt-0.5 line-clamp-1" style={{ color: iaItem.text, opacity: 0.78 }}>
+                          {iaItem.desc || 'Paleta armónica extraída dinámicamente de tu logotipo.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex-shrink-0">
+                      {isSelected ? (
+                        <div
+                          className="w-6 h-6 rounded-full text-white flex items-center justify-center shadow-xs"
+                          style={{ backgroundColor: iaItem.primary }}
+                        >
+                          <Check size={14} />
+                        </div>
+                      ) : (
+                        <div
+                          className="w-6 h-6 rounded-full border-2"
+                          style={{ borderColor: iaItem.border || '#CBC6B6' }}
+                        />
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {Object.values(PALETAS).map((item) => {
                 const isSelected = selectedPaleta === item.key;
                 return (

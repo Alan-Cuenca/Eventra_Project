@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { supabase } from '../config/supabase.js';
 import { generarPasswordTemporal } from '../utils/passwordGenerator.js';
 import { sendWelcomeAdminEmail } from '../services/emailService.js';
+import { analizarLogotipoConIA } from '../services/aiBrandingService.js';
 
 const PLANES_VALIDOS = ['Basico', 'Premium', 'Enterprise'];
 
@@ -384,7 +385,7 @@ export const obtenerEmpresaPublicaPorSlug = async (req, res) => {
 
     const result = await pool.query(
       `SELECT id, nombre_comercial, slug, plan_suscripcion, estado_activo,
-              logo_url, paleta_colores, marca_agua_activa, portal_titulo, portal_descripcion
+              logo_url, paleta_colores, paleta_personalizada, marca_agua_activa, portal_titulo, portal_descripcion
        FROM empresas
        WHERE LOWER(slug) = LOWER($1)
           OR (LOWER($1) = 'la-catedral' AND LOWER(slug) = 'helados-la-catedral')
@@ -419,6 +420,7 @@ export const PALETAS_VALIDAS = [
   'terracota_real',
   'champagne_gala',
   'lavanda_imperial',
+  'custom_ia',
 ];
 
 /**
@@ -462,6 +464,7 @@ export const obtenerMiBranding = async (req, res) => {
          slug, 
          logo_url, 
          COALESCE(paleta_colores, 'sofisticacion_sutil') AS paleta_colores, 
+         paleta_personalizada,
          COALESCE(marca_agua_activa, true) AS marca_agua_activa, 
          portal_titulo, 
          portal_descripcion
@@ -513,6 +516,7 @@ export const actualizarMiBranding = async (req, res) => {
 
     const {
       paleta_colores,
+      paleta_personalizada,
       marca_agua_activa,
       portal_titulo,
       portal_descripcion,
@@ -575,6 +579,14 @@ export const actualizarMiBranding = async (req, res) => {
       valores.push(paleta_colores);
     }
 
+    if (paleta_personalizada !== undefined) {
+      campos.push(`paleta_personalizada = $${idx++}`);
+      const jsonStr = typeof paleta_personalizada === 'object'
+        ? JSON.stringify(paleta_personalizada)
+        : paleta_personalizada;
+      valores.push(jsonStr);
+    }
+
     if (marca_agua_activa !== undefined) {
       const boolMarca = String(marca_agua_activa) === 'true';
       campos.push(`marca_agua_activa = $${idx++}`);
@@ -615,6 +627,7 @@ export const actualizarMiBranding = async (req, res) => {
         slug, 
         logo_url, 
         COALESCE(paleta_colores, 'sofisticacion_sutil') AS paleta_colores, 
+        paleta_personalizada,
         COALESCE(marca_agua_activa, true) AS marca_agua_activa, 
         portal_titulo, 
         portal_descripcion
@@ -639,6 +652,69 @@ export const actualizarMiBranding = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Error interno al actualizar el branding de la empresa.',
+    });
+  }
+};
+
+/**
+ * =============================================================================
+ * CONTROLADOR: analizarLogoIA
+ * =============================================================================
+ * Analiza el logotipo de la empresa mediante visión por IA (GPT-4o / Gemini)
+ * y genera una paleta minimalista de 5 colores armónicos (Sofisticación Sutil).
+ * Guarda la paleta generada en 'empresas' bajo paleta_colores = 'custom_ia'.
+ * =============================================================================
+ */
+export const analizarLogoIA = async (req, res) => {
+  try {
+    let empresa_id = req.user?.empresa_id;
+    if (!empresa_id && (Number(req.user?.rol_id) === 5 || req.user?.rol === 'Super_Admin' || req.user?.rol_nombre === 'Super_Admin')) {
+      empresa_id = req.body?.empresa_id ? Number(req.body.empresa_id) : 1;
+    }
+
+    let buffer = req.file?.buffer;
+    let mimetype = req.file?.mimetype || 'image/png';
+    let dataUrl = req.body?.logo_base64 || req.body?.logo_url;
+
+    // Si no se adjuntó archivo ni base64 en la petición, consultar el logo_url actual de la empresa
+    if (!buffer && !dataUrl && empresa_id) {
+      const empRes = await pool.query('SELECT logo_url FROM empresas WHERE id = $1', [empresa_id]);
+      if (empRes.rows.length > 0 && empRes.rows[0].logo_url) {
+        dataUrl = empRes.rows[0].logo_url;
+      }
+    }
+
+    if (!buffer && !dataUrl) {
+      return res.status(400).json({
+        success: false,
+        message: 'Por favor proporciona o sube un logotipo para analizar con la IA.',
+      });
+    }
+
+    const paletaGenerada = await analizarLogotipoConIA({ buffer, mimetype, dataUrl });
+
+    // Guardar en la base de datos bajo el identificador custom_ia
+    if (empresa_id) {
+      await pool.query(
+        `UPDATE empresas
+         SET paleta_colores = 'custom_ia',
+             paleta_personalizada = $1
+         WHERE id = $2`,
+        [JSON.stringify(paletaGenerada), empresa_id]
+      );
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Paleta generada exitosamente con IA a partir del logotipo.',
+      paleta_colores: 'custom_ia',
+      paleta: paletaGenerada,
+    });
+  } catch (error) {
+    console.error('[empresaController] Error en analizarLogoIA:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al procesar el logotipo con la IA.',
     });
   }
 };

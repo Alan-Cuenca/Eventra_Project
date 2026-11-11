@@ -7,6 +7,7 @@ import {
   suspenderEmpresa,
   obtenerMiBranding,
   actualizarMiBranding,
+  analizarLogoIA,
 } from '../controllers/empresaController.js';
 import {
   verifyToken,
@@ -75,6 +76,28 @@ router.put(
   authorizeRoles([ROL_ADMINISTRADOR, ROL_SUPER_ADMIN, ROL_GERENTE]),
   upload.single('logo'),
   actualizarMiBranding
+);
+
+/**
+ * @openapi
+ * /api/empresas/analizar-logo-ia:
+ *   post:
+ *     summary: Analiza el logotipo con IA y genera automáticamente una paleta armónica personalizada
+ *     tags: [Branding Empresa]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Paleta generada exitosamente
+ *       400:
+ *         description: No se proporcionó imagen
+ */
+router.post(
+  '/analizar-logo-ia',
+  verifyToken,
+  authorizeRoles([ROL_ADMINISTRADOR, ROL_SUPER_ADMIN, ROL_GERENTE]),
+  upload.single('logo'),
+  analizarLogoIA
 );
 
 /**

@@ -571,6 +571,18 @@ export const eventraService = {
     }
   },
 
+  async analizarLogoConIA(formDataOrPayload) {
+    try {
+      const isFormData = typeof FormData !== 'undefined' && formDataOrPayload instanceof FormData;
+      const config = isFormData ? { headers: { 'Content-Type': undefined } } : {};
+      const response = await api.post('/empresas/analizar-logo-ia', formDataOrPayload, config);
+      return response?.data || response;
+    } catch (err) {
+      console.warn('[eventraService] analizarLogoConIA error:', err.message);
+      throw err;
+    }
+  },
+
   async getPortalInfo(slug) {
     try {
       const response = await api.get(`/auth/portal/${slug}`);

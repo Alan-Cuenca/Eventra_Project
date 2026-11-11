@@ -502,6 +502,7 @@ export const obtenerInfoPortalEmpresa = async (req, res) => {
       `SELECT id, nombre_comercial, slug, plan_suscripcion, estado_activo,
               logo_url,
               COALESCE(paleta_colores, 'sofisticacion_sutil') AS paleta_colores,
+              paleta_personalizada,
               COALESCE(marca_agua_activa, true) AS marca_agua_activa,
               portal_titulo,
               portal_descripcion
