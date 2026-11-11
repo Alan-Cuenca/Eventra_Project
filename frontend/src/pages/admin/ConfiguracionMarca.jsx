@@ -15,6 +15,8 @@ import {
   CheckCircle2,
   AlertCircle,
   FileImage,
+  Save,
+  X,
 } from 'lucide-react';
 
 export const ConfiguracionMarca = () => {
@@ -48,13 +50,25 @@ export const ConfiguracionMarca = () => {
   // Sincronizar estado cuando se carga branding
   useEffect(() => {
     if (branding) {
-      setSelectedPaleta(branding.paleta_colores || paletaKey || 'sofisticacion_sutil');
-      setMarcaAgua(Boolean(branding.marca_agua_activa));
-      setPortalTitulo(branding.portal_titulo || '');
-      setPortalDescripcion(branding.portal_descripcion || '');
-      setLogoPreview(branding.logo_url || null);
+      setSelectedPaleta((prev) => branding.paleta_colores || prev || 'sofisticacion_sutil');
+      if (branding.marca_agua_activa !== undefined) setMarcaAgua(Boolean(branding.marca_agua_activa));
+      if (branding.portal_titulo !== undefined) setPortalTitulo(branding.portal_titulo || '');
+      if (branding.portal_descripcion !== undefined) setPortalDescripcion(branding.portal_descripcion || '');
+
+      // Solo sincronizar el logo desde backend si NO hay un archivo seleccionado ni se marcó restablecer
+      if (!logoFile && !restablecerLogo) {
+        setLogoPreview(branding.logo_url || null);
+      }
     }
-  }, [branding, paletaKey]);
+  }, [
+    branding?.logo_url,
+    branding?.paleta_colores,
+    branding?.portal_titulo,
+    branding?.portal_descripcion,
+    branding?.marca_agua_activa,
+    logoFile,
+    restablecerLogo,
+  ]);
 
   const handlePaletaChange = (key) => {
     setSelectedPaleta(key);
@@ -89,6 +103,10 @@ export const ConfiguracionMarca = () => {
       if (data?.paleta) {
         aplicarPaletaIA(data.paleta);
         setSelectedPaleta('custom_ia');
+        if (data.logo_url) {
+          setLogoPreview(data.logo_url);
+          setLogoFile(null);
+        }
         setMensajeExito('✨ ¡Logotipo analizado con Gemini! Identidad visual generada y variables CSS aplicadas en tiempo real.');
         setTimeout(() => setMensajeExito(''), 5500);
       } else {
@@ -131,6 +149,13 @@ export const ConfiguracionMarca = () => {
     reader.readAsDataURL(file);
   };
 
+  const handleCancelarSeleccionLogo = () => {
+    setLogoFile(null);
+    setRestablecerLogo(false);
+    setLogoPreview(branding?.logo_url || null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const handleDrop = (e) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
@@ -143,6 +168,57 @@ export const ConfiguracionMarca = () => {
     setLogoPreview(null);
     setRestablecerLogo(true);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // Guardado exclusivo del logotipo corporativo con feedback directo
+  const handleGuardarLogoDirecto = async (e) => {
+    if (e) e.preventDefault();
+    if (!logoFile && !restablecerLogo) {
+      setMensajeError('Por favor selecciona un nuevo archivo de logotipo antes de guardar.');
+      return;
+    }
+    setGuardando(true);
+    setMensajeExito('');
+    setMensajeError('');
+
+    try {
+      const formData = new FormData();
+      if (logoFile) {
+        formData.append('logo', logoFile);
+      } else if (restablecerLogo) {
+        formData.append('restablecer_logo', 'true');
+      }
+
+      formData.append('paleta_colores', selectedPaleta);
+      if (selectedPaleta === 'custom_ia' && (customPaleta || branding?.paleta_personalizada)) {
+        formData.append('paleta_personalizada', JSON.stringify(customPaleta || branding.paleta_personalizada));
+      }
+      formData.append('marca_agua_activa', String(marcaAgua));
+      formData.append('portal_titulo', portalTitulo);
+      formData.append('portal_descripcion', portalDescripcion);
+
+      const updated = await guardarBranding(formData);
+      if (updated?.logo_url) {
+        setLogoPreview(updated.logo_url);
+      } else if (restablecerLogo) {
+        setLogoPreview(null);
+      }
+      setLogoFile(null);
+      setRestablecerLogo(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      setMensajeExito('✅ ¡Nuevo logotipo corporativo guardado y actualizado exitosamente!');
+      setTimeout(() => setMensajeExito(''), 4500);
+    } catch (err) {
+      console.error('[ConfiguracionMarca] Error al guardar logotipo:', err);
+      const errorMsg =
+        err.data?.message ||
+        err.response?.data?.message ||
+        err.message ||
+        'Error al guardar el nuevo logotipo. Intenta nuevamente.';
+      setMensajeError(errorMsg);
+    } finally {
+      setGuardando(false);
+    }
   };
 
   const handleGuardarCambios = async (e) => {
@@ -167,10 +243,16 @@ export const ConfiguracionMarca = () => {
         formData.append('restablecer_logo', 'true');
       }
 
-      await guardarBranding(formData);
+      const updated = await guardarBranding(formData);
+      if (updated?.logo_url) {
+        setLogoPreview(updated.logo_url);
+      } else if (restablecerLogo) {
+        setLogoPreview(null);
+      }
       setMensajeExito('¡Identidad visual y paleta completa del sistema guardadas exitosamente!');
       setRestablecerLogo(false);
       setLogoFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
       setTimeout(() => setMensajeExito(''), 4500);
     } catch (err) {
       console.error('[ConfiguracionMarca] Error al guardar:', err);
@@ -301,25 +383,94 @@ export const ConfiguracionMarca = () => {
 
               {/* Botones de Carga */}
               <div className="sm:col-span-7 space-y-3">
-                <div
+                {/* Input nativo oculto y accesible con reset on click */}
+                <input
+                  id="logo-file-input"
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      handleFileSelect(e.target.files[0]);
+                    }
+                  }}
+                  onClick={(e) => {
+                    e.target.value = null;
+                  }}
+                  className="hidden"
+                />
+
+                {/* Zona de Drop & Clic accesible */}
+                <label
+                  htmlFor="logo-file-input"
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                  className="border border-[#CBC6B6] rounded-xl p-4 text-center cursor-pointer hover:bg-[#EEEBDD]/40 transition-colors flex flex-col items-center justify-center gap-1.5"
+                  className="border-2 border-dashed border-[#CBC6B6] hover:border-[#526F7D] rounded-xl p-4 text-center cursor-pointer hover:bg-[#EEEBDD]/40 transition-all flex flex-col items-center justify-center gap-1.5 block group"
                 >
-                  <UploadCloud size={22} className="text-[#526F7D]" />
+                  <UploadCloud size={24} className="text-[#526F7D] group-hover:scale-110 transition-transform" />
                   <span className="text-xs font-semibold text-[#233D49]">
                     Arrastra tu imagen o haz clic para subir
                   </span>
-                  <span className="text-[11px] text-[#233D49]/60">Recomendado: 400x120px transparente</span>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileSelect(e.target.files?.[0])}
-                    className="hidden"
-                  />
-                </div>
+                  <span className="text-[11px] text-[#233D49]/60">
+                    Formatos: PNG, JPG, WebP o SVG (Máx. 5 MB)
+                  </span>
+                </label>
+
+                {/* Feedback y Guardado Directo cuando hay un nuevo archivo seleccionado */}
+                {logoFile && (
+                  <div className="p-3 bg-amber-50/90 border border-amber-200/90 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs text-amber-900 animate-fade-in shadow-xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-bold truncate text-[#233D49]">{logoFile.name}</p>
+                        <p className="text-[10px] text-[#233D49]/60">{(logoFile.size / 1024).toFixed(1)} KB — Listo para guardar</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={handleGuardarLogoDirecto}
+                        disabled={guardando}
+                        className="btn btn-primary text-xs py-1.5 px-3.5 rounded-lg flex items-center gap-1.5 font-bold shadow-xs"
+                      >
+                        {guardando ? (
+                          <>
+                            <RefreshCw size={13} className="animate-spin" />
+                            <span>Guardando...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Save size={13} />
+                            <span>Guardar este logotipo</span>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancelarSeleccionLogo}
+                        className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+                        title="Cancelar y descartar este archivo"
+                      >
+                        <X size={15} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Feedback si el usuario marcó restablecer el logo */}
+                {restablecerLogo && (
+                  <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-between gap-2 text-xs text-rose-900 animate-fade-in">
+                    <span className="font-medium">Has marcado restablecer al logotipo predeterminado de EVENTRA.</span>
+                    <button
+                      type="button"
+                      onClick={handleGuardarLogoDirecto}
+                      disabled={guardando}
+                      className="btn text-xs py-1 px-3 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold"
+                    >
+                      Confirmar restablecimiento
+                    </button>
+                  </div>
+                )}
 
                 {/* Botón Mágico de Generación con IA */}
                 <button
@@ -341,7 +492,7 @@ export const ConfiguracionMarca = () => {
                   )}
                 </button>
 
-                {logoPreview && (
+                {logoPreview && !restablecerLogo && (
                   <button
                     type="button"
                     onClick={handleRestablecerAlLogoPorDefecto}

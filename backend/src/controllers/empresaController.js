@@ -565,6 +565,10 @@ export const actualizarMiBranding = async (req, res) => {
       } else {
         nuevoLogoUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
       }
+    } else if (req.body?.logo_base64) {
+      nuevoLogoUrl = req.body.logo_base64;
+    } else if (req.body?.logo_url !== undefined && req.body?.logo_url !== null) {
+      nuevoLogoUrl = req.body.logo_url;
     } else if (restablecer_logo === 'true' || restablecer_logo === true) {
       nuevoLogoUrl = null;
     }
@@ -693,15 +697,59 @@ export const analizarLogoIA = async (req, res) => {
 
     const paletaGenerada = await analizarLogotipoConIA({ buffer, mimetype, dataUrl });
 
+    // Si se subió un archivo o dataUrl nuevo en la petición de análisis IA,
+    // persistir también el logotipo en empresas.logo_url
+    let nuevoLogoGuardado = undefined;
+    if (req.file) {
+      if (supabase) {
+        const fileExt = req.file.originalname ? req.file.originalname.split('.').pop() : 'png';
+        const fileName = `logo_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `logos/${empresa_id}/${fileName}`;
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from('comprobantes')
+            .upload(filePath, req.file.buffer, {
+              contentType: req.file.mimetype,
+              upsert: true,
+            });
+          if (!uploadError) {
+            const { data: publicUrlData } = supabase.storage
+              .from('comprobantes')
+              .getPublicUrl(filePath);
+            nuevoLogoGuardado = publicUrlData.publicUrl;
+          } else {
+            nuevoLogoGuardado = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+          }
+        } catch {
+          nuevoLogoGuardado = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+        }
+      } else {
+        nuevoLogoGuardado = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      }
+    } else if (req.body?.logo_base64) {
+      nuevoLogoGuardado = req.body.logo_base64;
+    }
+
     // Guardar en la base de datos bajo el identificador custom_ia
     if (empresa_id) {
-      await pool.query(
-        `UPDATE empresas
-         SET paleta_colores = 'custom_ia',
-             paleta_personalizada = $1
-         WHERE id = $2`,
-        [JSON.stringify(paletaGenerada), empresa_id]
-      );
+      if (nuevoLogoGuardado) {
+        await pool.query(
+          `UPDATE empresas
+           SET paleta_colores = 'custom_ia',
+               paleta_personalizada = $1,
+               logo_url = $2
+           WHERE id = $3`,
+          [JSON.stringify(paletaGenerada), nuevoLogoGuardado, empresa_id]
+        );
+      } else {
+        await pool.query(
+          `UPDATE empresas
+           SET paleta_colores = 'custom_ia',
+               paleta_personalizada = $1
+           WHERE id = $2`,
+          [JSON.stringify(paletaGenerada), empresa_id]
+        );
+      }
     }
 
     return res.status(200).json({
@@ -709,6 +757,7 @@ export const analizarLogoIA = async (req, res) => {
       message: 'Paleta generada exitosamente con IA a partir del logotipo.',
       paleta_colores: 'custom_ia',
       paleta: paletaGenerada,
+      logo_url: nuevoLogoGuardado,
     });
   } catch (error) {
     console.error('[empresaController] Error en analizarLogoIA:', error.message);
