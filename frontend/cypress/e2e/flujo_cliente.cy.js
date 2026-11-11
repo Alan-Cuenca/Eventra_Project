@@ -1,7 +1,7 @@
 /**
  * flujo_cliente.cy.js — EVENTRA SaaS E2E Test Suite
  * =============================================================================
- * Scope: Alan — Pruebas End-to-End de UI y Navegación del Cliente
+ * Scope: Cliente — Pruebas End-to-End de UI y Navegación del Cliente
  * 
  * Flujo Completo:
  * 1. Acceso y validación del Portal Público de la Empresa (/portal/:slug).
@@ -10,7 +10,7 @@
  * =============================================================================
  */
 
-describe('Flujo E2E del Cliente y Cotizador Dinámico (Scope: Alan)', () => {
+describe('Flujo E2E del Cliente y Cotizador Dinámico', () => {
 
   const MOCK_SLUG = 'banquetes-elite';
 
@@ -20,9 +20,9 @@ describe('Flujo E2E del Cliente y Cotizador Dinámico (Scope: Alan)', () => {
       win.localStorage.setItem('token', 'fake-jwt-token-cliente-test');
       win.localStorage.setItem('user', JSON.stringify({
         id: 'usr-cliente-test-01',
-        nombres: 'Alan',
-        apellidos: 'Puruncajas',
-        email: 'alan.cliente@eventra.com',
+        nombres: 'Cliente',
+        apellidos: 'Demo',
+        email: 'cliente.demo@eventra.com',
         rol_id: 4,
         empresa_id: 1,
         rol_nombre: 'Cliente',
@@ -117,8 +117,8 @@ describe('Flujo E2E del Cliente y Cotizador Dinámico (Scope: Alan)', () => {
 
     // ── PASO 1: Datos del Cliente y Evento ──
     cy.contains('Cotizador Dinámico').should('be.visible');
-    cy.get('#cotizador-nombre').clear().type('Alan Puruncajas');
-    cy.get('#cotizador-email').clear().type('alan.cliente@eventra.com');
+    cy.get('#cotizador-nombre').clear().type('Cliente Demo');
+    cy.get('#cotizador-email').clear().type('cliente.demo@eventra.com');
     cy.get('#cotizador-telefono').clear().type('0991234567');
     cy.get('#cotizador-tipo-evento').select('Matrimonio');
     cy.get('#cotizador-fecha').type('2027-11-20');

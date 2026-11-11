@@ -23,29 +23,29 @@ import { ActividadForm } from './ActividadForm';
 // Mapeo amigable de respaldo para personal conocido
 const STAFF_FALLBACK_MAP = {
   'e684387c-a94a-41c1-82c7-b94c31eff638': {
-    nombre: 'Jorge Sailema',
+    nombre: 'Coordinador Operativo',
     rol: 'Coordinador Operativo',
-    iniciales: 'JS',
+    iniciales: 'CO',
   },
   '19201cfb-3d6c-4af4-b551-0af21d75890c': {
-    nombre: 'Alan Puruncajas',
-    rol: 'Gerente UX/UI & DBA',
-    iniciales: 'AP',
+    nombre: 'Gerente Operativo',
+    rol: 'Gerente Operativo',
+    iniciales: 'GO',
   },
   'usr-trabajador-03': {
-    nombre: 'Jorge Sailema',
+    nombre: 'Coordinador Operativo',
     rol: 'Coordinador Operativo',
-    iniciales: 'JS',
+    iniciales: 'CO',
   },
   'usr-gerente-02': {
-    nombre: 'Alan Puruncajas',
+    nombre: 'Gerencia Operativa',
     rol: 'Gerente Operativo',
-    iniciales: 'AP',
+    iniciales: 'GO',
   },
   'usr-admin-01': {
-    nombre: 'Alejandro Falcón',
+    nombre: 'Administración SaaS',
     rol: 'Administrador SaaS',
-    iniciales: 'AF',
+    iniciales: 'AS',
   },
 };
 
@@ -163,9 +163,9 @@ export const ActividadesList = () => {
     // Si tiene un id pero no está mapeado, asignar rotación elegante del equipo
     if (id) {
       return {
-        nombre: 'Jorge Sailema',
+        nombre: 'Coordinador Operativo',
         rol: 'Coordinador Operativo',
-        iniciales: 'JS',
+        iniciales: 'CO',
       };
     }
 

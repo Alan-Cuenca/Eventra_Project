@@ -185,7 +185,7 @@ export const sendMail = async ({ to, subject, text, html, transporter = null }) 
   // 3. Envío HTTP API vía Brevo (HTTPS puerto 443 — Envía a CUALQUIER dominio: Gmail, Hotmail, Outlook)
   if (process.env.BREVO_API_KEY && process.env.BREVO_API_KEY.trim()) {
     try {
-      const senderEmail = process.env.BREVO_SENDER_EMAIL || process.env.SMTP_USER || 'mateotkd123@gmail.com';
+      const senderEmail = process.env.BREVO_SENDER_EMAIL || process.env.SMTP_USER || 'noreply@eventra.com';
       const senderName = process.env.BREVO_SENDER_NAME || 'EVENTRA SaaS';
       const rawApiKey = process.env.BREVO_API_KEY.trim();
       const apiKey = rawApiKey.startsWith('xkeysib-') ? rawApiKey : `xkeysib-${rawApiKey}`;

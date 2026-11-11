@@ -24,7 +24,7 @@ const MOCK_NOTIFS = [
     icon: <AlertCircle size={14} />,
     color: '#C49A3A',
     title: 'Solicitud de modificación',
-    desc: 'Pablo Vayas solicita +15 comensales.',
+    desc: 'Cliente solicita +15 comensales.',
     time: 'Hace 1 h',
     unread: true,
   },

@@ -355,7 +355,7 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
                 name="admin_nombre"
                 value={formData.admin_nombre}
                 onChange={handleChange}
-                placeholder="Ej. Martín Falcon"
+                placeholder="Ej. Carlos Mendoza"
                 required
                 disabled={estadoProceso === ESTADOS_REGISTRO.REGISTRANDO}
                 className="form-input"

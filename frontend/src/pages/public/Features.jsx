@@ -378,7 +378,7 @@ export const Features = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="text-sm font-bold text-[#233D49]">
-                        Boda Valentina & Mateo
+                        Boda Valentina & Sebastián
                       </h4>
                       <span className="text-[11px] text-[#526F7D]">Faltan 18 días para el gran día</span>
                     </div>

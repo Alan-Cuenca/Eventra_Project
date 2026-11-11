@@ -141,11 +141,11 @@ router.post('/register', registerUser);
  *                 example: "luxury-events"
  *               nombre_completo:
  *                 type: string
- *                 example: "Valeria Morales"
+ *                 example: "Cliente Demo"
  *               email:
  *                 type: string
  *                 format: email
- *                 example: "valeria.morales@gmail.com"
+ *                 example: "cliente.demo@eventra.com"
  *               password:
  *                 type: string
  *                 format: password

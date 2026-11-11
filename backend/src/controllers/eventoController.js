@@ -158,7 +158,7 @@ export const obtenerEventos = async (req, res) => {
          COALESCE((SELECT SUM(monto) FROM pagos WHERE evento_id = e.id AND estado IN ('Aprobado', 'Completado')), 0) AS anticipo_pagado,
          c.total_calculado - COALESCE((SELECT SUM(monto) FROM pagos WHERE evento_id = e.id AND estado IN ('Aprobado', 'Completado')), 0) AS saldo_pendiente,
          COALESCE(ROUND((SELECT COUNT(*) FILTER (WHERE estado = 'Completada')::numeric / NULLIF(COUNT(*), 0) * 100 FROM actividades WHERE evento_id = e.id)), 0) AS progreso_porcentaje,
-         COALESCE((SELECT u.nombre_completo FROM actividades a JOIN usuarios u ON a.responsable_id = u.id WHERE a.evento_id = e.id LIMIT 1), 'Jorge Sailema') AS responsable,
+         COALESCE((SELECT u.nombre_completo FROM actividades a JOIN usuarios u ON a.responsable_id = u.id WHERE a.evento_id = e.id LIMIT 1), 'Coordinador de Eventos') AS responsable,
          CASE 
            WHEN e.titulo ILIKE '%boda%' OR e.titulo ILIKE '%matrimonio%' THEN 'Matrimonio'
            WHEN e.titulo ILIKE '%xv%' OR e.titulo ILIKE '%quince%' THEN 'Quinceañera'
@@ -301,7 +301,7 @@ export const obtenerEventoPorId = async (req, res) => {
          COALESCE((SELECT SUM(monto) FROM pagos WHERE evento_id = e.id AND estado IN ('Aprobado', 'Completado')), 0) AS anticipo_pagado,
          c.total_calculado - COALESCE((SELECT SUM(monto) FROM pagos WHERE evento_id = e.id AND estado IN ('Aprobado', 'Completado')), 0) AS saldo_pendiente,
          COALESCE(ROUND((SELECT COUNT(*) FILTER (WHERE estado = 'Completada')::numeric / NULLIF(COUNT(*), 0) * 100 FROM actividades WHERE evento_id = e.id)), 0) AS progreso_porcentaje,
-         COALESCE((SELECT u.nombre_completo FROM actividades a JOIN usuarios u ON a.responsable_id = u.id WHERE a.evento_id = e.id LIMIT 1), 'Jorge Sailema') AS responsable,
+         COALESCE((SELECT u.nombre_completo FROM actividades a JOIN usuarios u ON a.responsable_id = u.id WHERE a.evento_id = e.id LIMIT 1), 'Coordinador de Eventos') AS responsable,
          CASE 
            WHEN e.titulo ILIKE '%boda%' OR e.titulo ILIKE '%matrimonio%' THEN 'Matrimonio'
            WHEN e.titulo ILIKE '%xv%' OR e.titulo ILIKE '%quince%' THEN 'Quinceañera'

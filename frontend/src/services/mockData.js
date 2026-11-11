@@ -22,7 +22,7 @@ export const ROLES_CONFIG = {
 export const DEMO_USERS = [
   {
     id: 'usr-admin-01',
-    nombre_completo: 'Martín Falcon (Admin)',
+    nombre_completo: 'Administrador Demo',
     email: 'admin@eventra.com',
     password: 'password123',
     rol_id: ROLES.ADMIN,
@@ -32,7 +32,7 @@ export const DEMO_USERS = [
   },
   {
     id: 'usr-gerente-02',
-    nombre_completo: 'Alan Puruncajas (Gerente)',
+    nombre_completo: 'Gerente Operativo',
     email: 'gerente@royalrecepciones.com',
     password: 'password123',
     rol_id: ROLES.GERENTE,
@@ -43,8 +43,8 @@ export const DEMO_USERS = [
   },
   {
     id: 'usr-trabajador-03',
-    nombre_completo: 'Jorge Sailema (Coordinador)',
-    email: 'jorge@royalrecepciones.com',
+    nombre_completo: 'Coordinador de Eventos',
+    email: 'coordinador@royalrecepciones.com',
     password: 'password123',
     rol_id: ROLES.TRABAJADOR,
     empresa_id: 1,
@@ -54,8 +54,8 @@ export const DEMO_USERS = [
   },
   {
     id: 'usr-cliente-04',
-    nombre_completo: 'Pablo Vayas (Cliente)',
-    email: 'pablo.cliente@gmail.com',
+    nombre_completo: 'Cliente Demo',
+    email: 'cliente@eventra.com',
     password: 'password123',
     rol_id: ROLES.CLIENTE,
     empresa_id: 1,
@@ -161,14 +161,14 @@ export const MOCK_EVENTOS = [
     anticipo_pagado: 2500.00,
     saldo_pendiente: 2350.00,
     paquete: 'Paquete Boda de Ensueño',
-    responsable: 'Jorge Sailema',
+    responsable: 'Coordinador Operativo',
   },
   {
     id: 'EVT-2026-002',
     tipo: 'Quinceañera',
     titulo: 'Mis XV Años - Valentina',
-    cliente_nombre: 'Pablo Vayas',
-    cliente_email: 'pablo.cliente@gmail.com',
+    cliente_nombre: 'Pablo Morales',
+    cliente_email: 'cliente@eventra.com',
     cliente_telefono: '+593 98 765 4321',
     fecha: '2026-11-14',
     invitados: 90,
@@ -178,7 +178,7 @@ export const MOCK_EVENTOS = [
     anticipo_pagado: 1950.00,
     saldo_pendiente: 1950.00,
     paquete: 'Paquete Quinceañera Glamour',
-    responsable: 'Jorge Sailema',
+    responsable: 'Coordinador Operativo',
   },
   {
     id: 'EVT-2026-003',
@@ -195,7 +195,7 @@ export const MOCK_EVENTOS = [
     anticipo_pagado: 0.00,
     saldo_pendiente: 2200.00,
     paquete: 'Convención & Gala Corporativa',
-    responsable: 'Alan Puruncajas',
+    responsable: 'Gerente Operativo',
   },
 ];
 
@@ -204,7 +204,7 @@ export const MOCK_SOLICITUDES_CAMBIO = [
     id: 'SOL-01',
     evento_id: 'EVT-2026-002',
     evento_titulo: 'Mis XV Años - Valentina',
-    cliente: 'Pablo Vayas',
+    cliente: 'Pablo Morales',
     fecha_solicitud: '2026-09-12',
     descripcion: 'Solicita aumentar 15 comensales adicionales al banquete gourmet y extender 1 hora extra de DJ.',
     impacto_costo: '+ $420.00',
@@ -250,7 +250,7 @@ export const MOCK_RESERVAS = [
   {
     id: 'RES-002',
     evento_titulo: 'Mis XV Años - Valentina',
-    cliente_nombre: 'Pablo Vayas',
+    cliente_nombre: 'Pablo Morales',
     fecha: '2026-11-14',
     horario: '19:00 - 01:00',
     salon: 'Salón Imperial',

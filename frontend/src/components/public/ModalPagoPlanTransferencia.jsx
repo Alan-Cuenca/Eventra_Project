@@ -21,10 +21,10 @@ import {
 } from 'lucide-react';
 
 export const DATOS_TRANSFERENCIA_EVENTRA = {
-  nombre: 'Alejandro Falcon',
-  cuenta: '2210101010',
-  cedula: '1850116508',
-  correo: 'mfalcon6508@uta.edu.ec',
+  nombre: 'EVENTRA SaaS Corp',
+  cuenta: '0011223344',
+  cedula: '1790011223001',
+  correo: 'pagos@eventra.com',
 };
 
 export const ModalPagoPlanTransferencia = ({

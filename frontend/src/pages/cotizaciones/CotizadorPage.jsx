@@ -286,7 +286,7 @@ export const CotizadorPage = () => {
                     type="text"
                     name="cliente_nombre"
                     className="form-input"
-                    placeholder="Ej: Pablo Vayas"
+                    placeholder="Ej: Carlos Mendoza"
                     value={form.cliente_nombre}
                     onChange={handleChange}
                     id="cotizador-nombre"

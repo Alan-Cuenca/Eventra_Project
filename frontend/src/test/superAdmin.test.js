@@ -102,7 +102,7 @@ describe('Fase 1: Infraestructura Frontend del Super Administrador (ADMIN_GLOBAL
       id: 4,
       rol_id: 4,
       rol_nombre: 'Cliente',
-      email: 'cliente@gmail.com',
+      email: 'cliente@eventra.com',
       empresa_id: 1,
     };
 
@@ -355,7 +355,7 @@ describe('Fase 2: Gestión de Empresas (Tenants) del Super Administrador', () =>
       validarFormulario4Campos({
         nombre_comercial: 'Empresa Valida',
         plan_suscripcion: 'Premium',
-        admin_nombre: 'Martín Falcon',
+        admin_nombre: 'Carlos Mendoza',
         admin_email: 'martin@empresa.com',
       }).valido,
       true

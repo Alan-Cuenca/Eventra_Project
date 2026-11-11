@@ -171,8 +171,8 @@ describe('Módulo de Autenticación y Seguridad JWT — EVENTRA', () => {
               id: 'uuid-admin-real',
               empresa_id: 1,
               rol_id: 1,
-              nombre_completo: 'Alan Puruncajas',
-              email: 'apuruncajas1832@uta.edu.ec',
+              nombre_completo: 'Administrador Test',
+              email: 'admin.test@eventra.com',
               password_hash: hashReal,
               estado_activo: true,
               debe_cambiar_password: false,
@@ -189,7 +189,7 @@ describe('Módulo de Autenticación y Seguridad JWT — EVENTRA', () => {
 
       const res = await request(app)
         .post('/api/auth/login')
-        .send({ email: 'apuruncajas1832@uta.edu.ec', password: passwordCorrecto });
+        .send({ email: 'admin.test@eventra.com', password: passwordCorrecto });
 
       expect(res.statusCode).toBe(200);
       expect(res.body.success).toBe(true);
@@ -198,14 +198,14 @@ describe('Módulo de Autenticación y Seguridad JWT — EVENTRA', () => {
 
       // Validar que no exponga el hash de la contraseña
       expect(res.body.data).not.toHaveProperty('password_hash');
-      expect(res.body.data.email).toBe('apuruncajas1832@uta.edu.ec');
+      expect(res.body.data.email).toBe('admin.test@eventra.com');
 
       // Verificar que el JWT contenga la información requerida de tenant y rol
       const decoded = jwt.verify(res.body.token, TEST_SECRET);
       expect(decoded).toHaveProperty('id', 'uuid-admin-real');
       expect(decoded).toHaveProperty('empresa_id', 1);
       expect(decoded).toHaveProperty('rol_id', 1);
-      expect(decoded).toHaveProperty('email', 'apuruncajas1832@uta.edu.ec');
+      expect(decoded).toHaveProperty('email', 'admin.test@eventra.com');
     });
 
   });
@@ -378,7 +378,7 @@ describe('Módulo de Autenticación y Seguridad JWT — EVENTRA', () => {
     it('400 — rechaza si faltan campos obligatorios', async () => {
       const res = await request(app)
         .post('/api/auth/completar-registro')
-        .send({ nombre_completo: 'Jorge Sailema' });
+        .send({ nombre_completo: 'Colaborador Demo' });
 
       expect(res.statusCode).toBe(400);
       expect(res.body.success).toBe(false);
@@ -396,7 +396,7 @@ describe('Módulo de Autenticación y Seguridad JWT — EVENTRA', () => {
               id: 'uuid-nuevo-empleado',
               empresa_id: 1,
               rol_id: 3,
-              nombre_completo: 'Jorge Sailema',
+              nombre_completo: 'Colaborador Demo',
               email: 'colaborador@empresa.com',
               cedula: '1804567890',
               fecha_nacimiento: '1995-08-20',
@@ -413,7 +413,7 @@ describe('Módulo de Autenticación y Seguridad JWT — EVENTRA', () => {
         .post('/api/auth/completar-registro')
         .send({
           token: tokenValido,
-          nombre_completo: 'Jorge Sailema',
+          nombre_completo: 'Colaborador Demo',
           cedula: '1804567890',
           fecha_nacimiento: '1995-08-20',
           password: 'PasswordSeguro2026!',

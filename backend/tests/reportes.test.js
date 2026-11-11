@@ -37,13 +37,13 @@ const { default: pool } = await import('../src/config/db.js');
 
 // Tokens para pruebas
 const TOKEN_ADMIN = jwt.sign(
-  { id: 'usr-admin-1', empresa_id: 1, rol_id: 1, rol: 'Administrador', email: 'admin@catedral.com', nombre_completo: 'Alan Puruncajas' },
+  { id: 'usr-admin-1', empresa_id: 1, rol_id: 1, rol: 'Administrador', email: 'admin@catedral.com', nombre_completo: 'Administrador Demo' },
   TEST_SECRET,
   { expiresIn: '1h' }
 );
 
 const TOKEN_GERENTE = jwt.sign(
-  { id: 'usr-gerente-1', empresa_id: 1, rol_id: 2, rol: 'Gerente', email: 'gerente@catedral.com', nombre_completo: 'Jorge Sailema' },
+  { id: 'usr-gerente-1', empresa_id: 1, rol_id: 2, rol: 'Gerente', email: 'gerente@catedral.com', nombre_completo: 'Gerente Demo' },
   TEST_SECRET,
   { expiresIn: '1h' }
 );
@@ -155,7 +155,7 @@ describe('Módulo de Dashboards Analíticos y Reportes Corporativos', () => {
         rowCount: 2,
         rows: [
           { id: 'e-1', titulo: 'Boda Valentina', estado_progreso: 'En Planificación', fecha_evento: '2026-11-15', cliente_nombre: 'Valentina Pérez', costo_total: '5000.00' },
-          { id: 'e-2', titulo: 'Aniversario Catedral', estado_progreso: 'En Progreso', fecha_evento: '2026-12-01', cliente_nombre: 'Juan Vayas', costo_total: '3500.00' },
+          { id: 'e-2', titulo: 'Aniversario Catedral', estado_progreso: 'En Progreso', fecha_evento: '2026-12-01', cliente_nombre: 'Juan Morales', costo_total: '3500.00' },
         ],
       });
 

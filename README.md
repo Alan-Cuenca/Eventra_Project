@@ -19,7 +19,7 @@ La plataforma cubre el ciclo de vida completo: desde el descubrimiento público 
 * **Landing Page Multi-página:** Arquitectura comercial moderna en Light Mode que presenta la propuesta de valor, módulos operativos, integración de IA y planes de suscripción.
 * **Flujo Interactivo de Planes y Pagos por Transferencia (`ModalPagoPlanTransferencia`):**
   * Selección de **Plan Básico (Boutique)** o **Plan Premium** (ciclo mensual o anual).
-  * Despliegue de datos oficiales para transferencia bancaria directa (Alejandro Falcon, Cuenta: 2210101010, Cédula: 1850116508, Correo: mfalcon6508@uta.edu.ec) con botón para copiar en un clic.
+  * Despliegue de datos oficiales para transferencia bancaria directa (Titular institucional EVENTRA SaaS Corp, Cuenta Corriente Oficial, RUC Institucional, Correo oficial de pagos) con botón para copiar en un clic.
   * **Zona de carga para comprobante PDF (`.pdf`):** Validación estricta de documentos y previsualización de archivo.
   * **Modal de Despacho de Credenciales:** Entrada del correo de la empresa interesada y confirmación inmediata en pantalla para la posterior entrega de credenciales.
 

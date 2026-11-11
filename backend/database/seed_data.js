@@ -22,7 +22,7 @@ async function seed() {
     // 2. Clientes base para integridad referencial de cotizaciones, reservas y eventos
     const clientesData = [
       { nombres: 'Carlos', apellidos: 'Mendoza', email: 'carlos.mendoza@email.com', telefono: '+593 99 123 4567' },
-      { nombres: 'Pablo', apellidos: 'Vayas', email: clientUser?.email || 'pablo.cliente@gmail.com', telefono: '+593 98 765 4321' },
+      { nombres: 'Pablo', apellidos: 'Morales', email: clientUser?.email || 'cliente.demo@eventra.com', telefono: '+593 98 765 4321' },
       { nombres: 'Mariana', apellidos: 'Silva', email: 'mariana.s@techcorp.ec', telefono: '+593 95 334 8899' },
     ];
 
@@ -256,7 +256,7 @@ async function seed() {
         ]
       },
       {
-        cliente_email: clientUser?.email || 'pablo.cliente@gmail.com',
+        cliente_email: clientUser?.email || 'cliente.demo@eventra.com',
         paquete_nombre: 'Paquete Quinceañera Glamour',
         fecha_evento: '2026-11-14',
         hora_inicio: '19:00:00',

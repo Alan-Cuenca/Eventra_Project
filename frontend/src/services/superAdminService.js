@@ -71,7 +71,7 @@ export const superAdminService = {
         empresa_activa: Boolean(emp.estado_activo),
         nombre_completo:
           emp.admin_nombre ||
-          (esPrincipal ? 'Alejandro Falcón' : `Administrador · ${emp.nombre_comercial}`),
+          (esPrincipal ? 'Administrador General' : `Administrador · ${emp.nombre_comercial}`),
         email:
           emp.admin_email ||
           (esPrincipal ? 'admin@eventra.com' : `admin@${slugBase}.com`),

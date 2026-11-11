@@ -10,12 +10,12 @@ import {
 } from './mockData';
 
 const FALLBACK_STAFF_USERS = [
-  { id: 'e684387c-a94a-41c1-82c7-b94c31eff638', nombre_completo: 'Jorge Sailema', rol_id: 3, email: 'jorge@royalrecepciones.com' },
-  { id: '19201cfb-3d6c-4af4-b551-0af21d75890c', nombre_completo: 'Alan Puruncajas', rol_id: 2, email: 'gerente@royalrecepciones.com' },
-  { id: 'usr-trabajador-03', nombre_completo: 'Jorge Sailema', rol_id: 3, email: 'jorge@royalrecepciones.com' },
-  { id: 'usr-gerente-02', nombre_completo: 'Alan Puruncajas', rol_id: 2, email: 'gerente@royalrecepciones.com' },
-  { id: 'usr-admin-01', nombre_completo: 'Alejandro Falcón', rol_id: 1, email: 'admin@eventra.com' },
-  { id: 'usr-cliente-04', nombre_completo: 'Pablo Vayas', rol_id: 4, email: 'pablo.cliente@gmail.com' },
+  { id: 'usr-trabajador-01', nombre_completo: 'Coordinador de Montaje', rol_id: 3, email: 'operaciones@eventra.com' },
+  { id: 'usr-gerente-01', nombre_completo: 'Gerente de Eventos', rol_id: 2, email: 'gerencia@eventra.com' },
+  { id: 'usr-trabajador-03', nombre_completo: 'Especialista en Decoración', rol_id: 3, email: 'decoracion@eventra.com' },
+  { id: 'usr-gerente-02', nombre_completo: 'Supervisor de Logística', rol_id: 2, email: 'logistica@eventra.com' },
+  { id: 'usr-admin-01', nombre_completo: 'Administrador Demo', rol_id: 1, email: 'admin@eventra.com' },
+  { id: 'usr-cliente-04', nombre_completo: 'Cliente Demo', rol_id: 4, email: 'cliente@eventra.com' },
 ];
 
 export const eventraService = {

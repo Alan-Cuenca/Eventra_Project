@@ -5,15 +5,15 @@ export const DEFAULT_CONFIG = {
   plataforma: {
     nombre_comercial: 'EVENTRA SaaS Multi-Tenant',
     subtitulo: 'Gestión Inteligente de Eventos y Recepciones',
-    correo_soporte: 'mfalcon6508@uta.edu.ec',
+    correo_soporte: 'soporte@eventra.com',
     modo_mantenimiento: false,
     registro_publico_activo: true,
   },
   transferencia: {
-    titular: 'Alejandro Falcon',
-    numero_cuenta: '2210101010',
-    cedula: '1850116508',
-    correo_notificacion: 'mfalcon6508@uta.edu.ec',
+    titular: 'EVENTRA SaaS Corp',
+    numero_cuenta: '0011223344',
+    cedula: '1790011223001',
+    correo_notificacion: 'transferencias@eventra.com',
     entidad_bancaria: 'Banco Pichincha / Transferencia Interbancaria',
   },
   planes: {
