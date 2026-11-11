@@ -56,6 +56,9 @@ const TOKEN_CLIENTE_EMPRESA_1 = jwt.sign(
 describe('EVARA AI — Asistente Conversacional Multi-Tenant con Google Gemini', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // clearAllMocks no descarta respuestas "Once" pendientes: se reinicia el mock de Gemini
+    // para que una respuesta no consumida no contamine el test siguiente.
+    mockGenerateContent.mockReset();
     mockQueryHandler = null;
   });
 
@@ -136,16 +139,21 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant con Google Gemini',
     expect(res.body.data.ia_disponible).toBe(true);
   });
 
-  // Helper: mocks de BD para una consulta autenticada (límite, paquetes, servicios, contador)
+  // Helper: BD simulada por SQL (mismo patrón que el resto de la suite), independiente
+  // del orden y número de consultas que hagan el middleware y el controlador.
   const mockConsultaAutenticada = () => {
-    pool.query
-      .mockResolvedValueOnce({ rowCount: 1, rows: [{ plan_suscripcion: 'Basico', mensajes_chatbot_mes: 1 }] })
-      .mockResolvedValueOnce({
-        rowCount: 1,
-        rows: [{ nombre: 'Boda Diamante', descripcion: 'Gala', precio_total: 2500, servicios_incluidos: 'Catering' }],
-      })
-      .mockResolvedValueOnce({ rowCount: 0, rows: [] })
-      .mockResolvedValueOnce({ rowCount: 1, rows: [] });
+    mockQueryHandler = async (sql) => {
+      if (sql.includes('empresas') && sql.includes('SELECT')) {
+        return { rowCount: 1, rows: [{ id: 1, plan_suscripcion: 'Basico', mensajes_chatbot_mes: 1 }] };
+      }
+      if (sql.includes('paquetes')) {
+        return {
+          rowCount: 1,
+          rows: [{ nombre: 'Boda Diamante', descripcion: 'Gala', precio_total: 2500, servicios_incluidos: 'Catering' }],
+        };
+      }
+      return { rows: [], rowCount: 0 };
+    };
   };
 
   it('debe usar el siguiente modelo si el principal ya no existe (404)', async () => {
