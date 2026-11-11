@@ -20,16 +20,18 @@ const TEST_SECRET = 'test_secret_eventra_jest';
 // ─── Mocks de Infraestructura ────────────────────────────────────────────────
 let mockQueryHandler = null;
 
+const mockPool = {
+  query: jest.fn(async (sql, params) => {
+    if (mockQueryHandler) {
+      return mockQueryHandler(sql, params);
+    }
+    return { rows: [], rowCount: 0 };
+  }),
+  connect: jest.fn(),
+};
+
 jest.unstable_mockModule('../src/config/db.js', () => ({
-  default: {
-    query: jest.fn(async (sql, params) => {
-      if (mockQueryHandler) {
-        return mockQueryHandler(sql, params);
-      }
-      return { rows: [], rowCount: 0 };
-    }),
-    connect: jest.fn(),
-  },
+  default: mockPool,
 }));
 
 jest.unstable_mockModule('openai', () => ({

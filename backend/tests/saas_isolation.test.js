@@ -15,12 +15,14 @@ process.env.PORT       = '0';
 
 const TEST_SECRET = 'test_secret_eventra_jest';
 
+const mockPool = {
+  query: jest.fn(),
+  connect: jest.fn(),
+};
+
 // Mock de la base de datos
 jest.unstable_mockModule('../src/config/db.js', () => ({
-  default: {
-    query: jest.fn(async () => ({ rows: [], rowCount: 0 })),
-    connect: jest.fn(),
-  },
+  default: mockPool,
 }));
 
 // Mock de OpenAI
