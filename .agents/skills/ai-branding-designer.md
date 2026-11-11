@@ -1,3 +1,8 @@
+---
+name: ai-branding-designer
+description: Skill Maestra de Diseño de Marca Blanca (White-Label) para EVENTRA SaaS. Fusiona la calidez y tradición de Helados La Catedral con la distinción y Liquid Glass de Eventos Imperial bajo las reglas de Sofisticación Sutil.
+---
+
 # Skill Maestra de Diseño de Marca Blanca: `ai-branding-designer`
 > **EVENTRA SaaS White-Label AI Design System**  
 > Fusión armónica de los perfiles de identidad corporativa: **Helados La Catedral** (Tradición, Calidez, Tonos Crema/Marfil) y **Eventos Imperial** (Lujo, Distinción, Perla/Malva, Liquid Glass).
@@ -85,4 +90,3 @@ Toda paleta generada a partir del logotipo debe responder estrictamente a 5 clav
 ```text
 Actúa como el diseñador definido en 'ai-branding-designer.md'. Analiza los colores de este logotipo y genera un JSON estricto con 5 claves (bg, surface, border, primary, text). El 'primary' debe ser el acento del logo sin ser neón; el 'bg' un derivado muy claro/pastel; y el 'text' oscuro legible. Respeta la armonía visual.
 ```
-

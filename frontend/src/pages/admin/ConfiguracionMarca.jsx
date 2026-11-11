@@ -127,8 +127,6 @@ export const ConfiguracionMarca = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       setLogoPreview(e.target.result);
-      // Auto-generación y adaptación inmediata del tema con Gemini Vision al subir logotipo
-      ejecutarAnalisisIA(file, e.target.result);
     };
     reader.readAsDataURL(file);
   };
