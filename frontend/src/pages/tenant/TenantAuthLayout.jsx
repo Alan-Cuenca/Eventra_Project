@@ -17,6 +17,34 @@ const getInitials = (name) => {
 };
 
 /**
+ * Determina la URL de la página principal del inquilino (salto de servidor / dominio externo)
+ */
+const getTenantLandingUrl = (slug, tenantData) => {
+  if (tenantData?.sitio_web) return tenantData.sitio_web;
+  if (tenantData?.url_landing) return tenantData.url_landing;
+
+  const normalized = (slug || '').toLowerCase().trim();
+  if (normalized.includes('catedral')) {
+    return 'http://localhost:5174/';
+  }
+  if (normalized.includes('imperial')) {
+    return 'http://localhost:5175/';
+  }
+
+  // Fallback al referrer si el cliente navegó desde un origen externo
+  if (typeof window !== 'undefined' && document.referrer) {
+    try {
+      const refUrl = new URL(document.referrer);
+      if (refUrl.origin !== window.location.origin) {
+        return refUrl.origin;
+      }
+    } catch {}
+  }
+
+  return '/';
+};
+
+/**
  * =============================================================================
  * TenantAuthLayout
  * =============================================================================
@@ -38,6 +66,8 @@ export const TenantAuthLayout = ({ title, subtitle, children }) => {
   const portalDesc =
     tenantData.portal_descripcion ||
     'La plataforma SaaS para planificar, coordinar y ejecutar recepciones y eventos con precisión profesional.';
+
+  const landingUrl = getTenantLandingUrl(slug, tenantData);
 
   return (
     <div className="login-root">
@@ -154,33 +184,61 @@ export const TenantAuthLayout = ({ title, subtitle, children }) => {
       {/* ── Panel Derecho — Formulario idéntico a Login.jsx ────────────────── */}
       <div className="login-right">
         <div className="login-card animate-fade-in">
-          {/* Botón de Retorno idéntico al de EVENTRA */}
+          {/* Botón de Retorno: regresa al landing externo del inquilino */}
           <div style={{ marginBottom: '1.25rem' }}>
-            <Link
-              to={`/portal/${slug}`}
-              id="back-to-landing-link"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                fontSize: '0.8125rem',
-                fontWeight: 600,
-                color: 'var(--primary)',
-                textDecoration: 'none',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'var(--primary-dark)';
-                e.currentTarget.style.transform = 'translateX(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'var(--primary)';
-                e.currentTarget.style.transform = 'none';
-              }}
-            >
-              <ArrowLeft size={15} />
-              <span>Volver a la página principal</span>
-            </Link>
+            {landingUrl.startsWith('http://') || landingUrl.startsWith('https://') ? (
+              <a
+                href={landingUrl}
+                id="back-to-landing-link"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  color: 'var(--primary)',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--primary-dark)';
+                  e.currentTarget.style.transform = 'translateX(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--primary)';
+                  e.currentTarget.style.transform = 'none';
+                }}
+              >
+                <ArrowLeft size={15} />
+                <span>Volver a la página principal</span>
+              </a>
+            ) : (
+              <Link
+                to={landingUrl}
+                id="back-to-landing-link"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  color: 'var(--primary)',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--primary-dark)';
+                  e.currentTarget.style.transform = 'translateX(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--primary)';
+                  e.currentTarget.style.transform = 'none';
+                }}
+              >
+                <ArrowLeft size={15} />
+                <span>Volver a la página principal</span>
+              </Link>
+            )}
           </div>
 
           {/* Encabezado del Formulario */}
