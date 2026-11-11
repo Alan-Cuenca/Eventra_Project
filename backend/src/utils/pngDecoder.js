@@ -60,3 +60,4 @@ export function decodePngRgb(buffer) {
 }
 
 console.log('PNG decoder module ready');
+

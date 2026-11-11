@@ -257,3 +257,4 @@ export const extractPaletteFromImage = (imageSource) => {
 };
 
 export default extractPaletteFromImage;
+
