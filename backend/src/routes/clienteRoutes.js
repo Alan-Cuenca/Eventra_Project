@@ -1,9 +1,17 @@
 import express from 'express';
 import { crearCliente, obtenerClientes, obtenerClientePorId, actualizarCliente, eliminarCliente } from '../controllers/clienteController.js';
+import { registrarClientePortal } from '../controllers/authController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 import { verificarLimitePlan } from '../middlewares/planLimitsMiddleware.js';
 
 const router = express.Router();
+
+/**
+ * @route  POST /api/clientes/registro-publico
+ * @desc   Autoregistro seguro de clientes finales desde el portal de una empresa (marca blanca)
+ * @access Public — validación de cuota de plan SaaS
+ */
+router.post('/registro-publico', verificarLimitePlan('clientes'), registrarClientePortal);
 
 /**
  * @route  POST /api/clientes

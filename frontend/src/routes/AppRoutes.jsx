@@ -13,14 +13,15 @@ import { AdministradoresTenantPage } from '../pages/super-admin/AdministradoresT
 import { AuditoriaLogsPage } from '../pages/super-admin/AuditoriaLogsPage';
 import { ConfiguracionSaasPage } from '../pages/super-admin/ConfiguracionSaasPage';
 
-// ── Autenticación ──────────────────────────────────────────────────────────
+// ── Autenticación y Marca Blanca ───────────────────────────────────────────
 import { Login } from '../pages/auth/Login';
-import { RegistroClientePortal } from '../pages/auth/RegistroClientePortal';
 import { PortalRedirect } from '../pages/auth/PortalRedirect';
 import { CompletarRegistro } from '../pages/auth/CompletarRegistro';
 import { PrimerLoginCambioPassword } from '../pages/auth/PrimerLoginCambioPassword';
 import { ColaboradoresPage } from '../pages/admin/ColaboradoresPage';
 import { ConfiguracionMarca } from '../pages/admin/ConfiguracionMarca';
+import { PortalTenantLayout } from '../layouts/PortalTenantLayout';
+import { RegistroClienteTenant } from '../pages/portal/RegistroClienteTenant';
 
 // ── Sitio Web Público SaaS EVENTRA (Multi-página) ─────────────────────────
 import { PublicLayout } from '../pages/public/PublicLayout';
@@ -107,8 +108,11 @@ export const AppRoutes = () => {
       {/* ── Autenticación y Acceso (Aisladas, fuera de PublicLayout) ──────── */}
       <Route path="/login"                  element={<Login />} />
       <Route path="/registro"               element={<PortalRedirect />} />
-      <Route path="/portal/:slug"           element={<Navigate to="registro" replace />} />
-      <Route path="/portal/:slug/registro"  element={<RegistroClientePortal />} />
+      {/* ── Portal de Inquilino con Marca Blanca (White-Label) ─────────────── */}
+      <Route path="/portal/:slug" element={<PortalTenantLayout />}>
+        <Route index element={<Navigate to="registro" replace />} />
+        <Route path="registro" element={<RegistroClienteTenant />} />
+      </Route>
       <Route path="/completar-registro"     element={<CompletarRegistro />} />
       <Route path="/primer-acceso/cambiar-password" element={<PrimerLoginCambioPassword />} />
 

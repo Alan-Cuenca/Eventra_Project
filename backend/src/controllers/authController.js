@@ -286,6 +286,7 @@ export const registerUser = async (req, res) => {
 export const registrarClientePortal = async (req, res) => {
   const {
     empresa_slug,
+    empresa_id,
     nombre_completo,
     nombres,
     apellidos,
@@ -296,10 +297,10 @@ export const registrarClientePortal = async (req, res) => {
   } = req.body;
 
   // 1. Validaciones básicas de entrada
-  if (!empresa_slug || !empresa_slug.trim()) {
+  if ((!empresa_slug || !empresa_slug.trim()) && !empresa_id) {
     return res.status(400).json({
       success: false,
-      message: 'El parámetro empresa_slug es obligatorio para identificar el portal de la empresa.',
+      message: 'El identificador de la empresa (empresa_id o empresa_slug) es obligatorio para identificar el portal de la empresa.',
     });
   }
 
@@ -330,13 +331,23 @@ export const registrarClientePortal = async (req, res) => {
   const client = await pool.connect();
 
   try {
-    // 2. Buscar empresa por slug y verificar estado activo
-    const empresaRes = await client.query(
-      `SELECT id, nombre_comercial, slug, plan_suscripcion, estado_activo
-       FROM empresas
-       WHERE LOWER(slug) = LOWER($1)`,
-      [empresa_slug.trim()]
-    );
+    // 2. Buscar empresa por id o slug y verificar estado activo
+    let empresaRes;
+    if (empresa_id) {
+      empresaRes = await client.query(
+        `SELECT id, nombre_comercial, slug, plan_suscripcion, estado_activo
+         FROM empresas
+         WHERE id = $1`,
+        [Number(empresa_id)]
+      );
+    } else {
+      empresaRes = await client.query(
+        `SELECT id, nombre_comercial, slug, plan_suscripcion, estado_activo
+         FROM empresas
+         WHERE LOWER(slug) = LOWER($1)`,
+        [empresa_slug.trim()]
+      );
+    }
 
     if (empresaRes.rowCount === 0) {
       return res.status(404).json({

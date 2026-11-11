@@ -578,4 +578,9 @@ export const eventraService = {
       throw err;
     }
   },
+
+  async registrarClientePublico(payload) {
+    const response = await api.post('/clientes/registro-publico', payload);
+    return response?.data || response;
+  },
 };
