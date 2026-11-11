@@ -87,6 +87,7 @@ export const PortalTenantLayout = () => {
     const rgbText = p.rgbText ? p.rgbText.join(' ') : '29 51 62';
 
     return {
+      // 1. Tokens semánticos globales
       '--ev-bg-base': p.bg || '#F3F0E4',
       '--ev-bg-base-rgb': rgbBg,
       '--ev-surface': p.surface || p.card || '#FFFFFF',
@@ -101,7 +102,22 @@ export const PortalTenantLayout = () => {
       '--ev-text-main-rgb': rgbText,
       '--ev-text-muted': p.textSecondary || '#3E5E6D',
       '--ev-accent': p.accent || '#C49A3A',
-      // Variables semánticas de marca para el Split-Screen White-Label
+
+      // 2. Variables exactas del Design System de EVENTRA (Sofisticación Sutil)
+      '--cream': p.bg || '#F3F0E4',
+      '--beige': p.border || '#CEC8B8',
+      '--primary': p.primary || '#4D7182',
+      '--primary-hover': p.primaryHover || '#3d5f6e',
+      '--primary-dark': p.text || '#233D49',
+      '--primary-light': p.primaryLight || '#e8f0f4',
+      '--text-primary': p.text || '#233D49',
+      '--text-secondary': p.textSecondary || '#4D7182',
+      '--border-subtle': p.border || '#CEC8B8',
+      '--border-focus': p.primary || '#4D7182',
+      '--bg-main': p.bg || '#F3F0E4',
+      '--bg-input': p.inputBg || '#FAFAF7',
+
+      // 3. Variables semánticas de marca para el Split-Screen White-Label
       '--brand-bg': p.bg || '#F3F0E4',
       '--brand-primary': p.primary || '#4D7182',
       '--brand-primary-hover': p.primaryHover || '#385563',

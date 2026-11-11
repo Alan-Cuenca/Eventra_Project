@@ -3,21 +3,21 @@ import { useOutletContext, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { TenantAuthLayout } from './TenantAuthLayout';
 import {
-  Mail,
   Lock,
+  Mail,
+  ArrowRight,
   Eye,
   EyeOff,
-  ArrowRight,
-  AlertCircle,
   Loader2,
+  AlertCircle,
 } from 'lucide-react';
 
 /**
  * =============================================================================
- * LoginTenant (Autenticación White-Label en Split-Screen)
+ * LoginTenant
  * =============================================================================
- * Formulario de inicio de sesión de marca blanca adaptado al nuevo Layout
- * de pantalla dividida. Consume dinámicamente el contexto del tenant activo.
+ * Formulario de autenticación para el Portal de Inquilino con los mismos estilos,
+ * fuentes (Outfit / Plus Jakarta Sans), clases y micro-interacciones de Login.jsx.
  * =============================================================================
  */
 export const LoginTenant = () => {
@@ -30,21 +30,20 @@ export const LoginTenant = () => {
 
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errorMsg) setErrorMsg('');
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMsg('');
+    setError('');
 
     if (!formData.email.trim() || !formData.password) {
-      setErrorMsg('Por favor completa tu correo electrónico y contraseña.');
+      setError('Por favor completa todos los campos.');
       return;
     }
 
@@ -60,7 +59,6 @@ export const LoginTenant = () => {
         return;
       }
 
-      // Redirección por rol
       if (rolId === 5) {
         navigate('/super-admin/dashboard', { replace: true });
       } else if (rolId === 4) {
@@ -70,7 +68,7 @@ export const LoginTenant = () => {
       }
     } catch (err) {
       console.error('[LoginTenant] Error de autenticación:', err);
-      let msg = 'Credenciales incorrectas. Verifica tu correo y contraseña.';
+      let msg = 'Credenciales incorrectas. Verifica tu email y contraseña.';
       if (err?.status === 403 || err?.response?.status === 403) {
         msg =
           err?.data?.message ||
@@ -79,7 +77,7 @@ export const LoginTenant = () => {
       } else if (err?.message && !err.message.includes('401')) {
         msg = err.message;
       }
-      setErrorMsg(msg);
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -88,44 +86,76 @@ export const LoginTenant = () => {
   return (
     <TenantAuthLayout
       title="Iniciar sesión"
-      subtitle="Accede a tu panel de gestión"
+      subtitle="Accede a tu panel de gestión de eventos"
     >
-      {/* Alerta de Error amigable */}
-      {errorMsg && (
+      {/* Mensaje de Error (Idéntico a Login.jsx) */}
+      {error && (
         <div
           role="alert"
-          className="mb-5 p-3.5 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs font-medium flex items-center gap-2.5 animate-in fade-in duration-200"
+          style={{
+            background: 'var(--danger-light)',
+            border: '1px solid rgba(201,92,92,0.3)',
+            borderRadius: 'var(--radius-md)',
+            padding: '0.75rem 1rem',
+            marginBottom: '1.25rem',
+            fontSize: '0.8375rem',
+            color: '#8a2f2f',
+            display: 'flex',
+            gap: '0.5rem',
+            alignItems: 'flex-start',
+          }}
         >
-          <AlertCircle size={16} className="shrink-0" />
-          <span>{errorMsg}</span>
+          <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+          <span>{error}</span>
         </div>
       )}
 
-      {/* Formulario */}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Campo: Correo Electrónico */}
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5">
+      {/* Formulario Estándar de EVENTRA */}
+      <form id="tenant-login-form" onSubmit={handleSubmit} noValidate>
+        {/* Correo Electrónico */}
+        <div className="form-group">
+          <label className="form-label" htmlFor="tenant-email">
             Correo electrónico
           </label>
-          <div className="relative">
-            <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <div style={{ position: 'relative' }}>
+            <Mail
+              size={15}
+              style={{
+                position: 'absolute',
+                left: '1rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--text-muted)',
+                pointerEvents: 'none',
+              }}
+            />
             <input
-              type="email"
+              id="tenant-email"
               name="email"
+              type="email"
+              className="form-input"
+              style={{ paddingLeft: '2.65rem' }}
+              placeholder="usuario@empresa.com"
               value={formData.email}
               onChange={handleChange}
-              placeholder="tu@correo.com"
+              autoComplete="email"
               required
-              className="w-full pl-10 pr-3.5 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20 focus:border-[var(--brand-primary)] transition-all"
+              disabled={loading}
             />
           </div>
         </div>
 
-        {/* Campo: Contraseña con Enlace de Recuperación */}
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-xs font-medium text-gray-700">
+        {/* Contraseña */}
+        <div className="form-group">
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '0.375rem',
+            }}
+          >
+            <label className="form-label" htmlFor="tenant-password" style={{ margin: 0 }}>
               Contraseña
             </label>
             <a
@@ -133,66 +163,107 @@ export const LoginTenant = () => {
               onClick={(e) => {
                 e.preventDefault();
                 alert(
-                  `Para restablecer tus accesos, contacta al administrador de ${
-                    tenantData.nombre_comercial || 'tu empresa organizadora'
+                  `Para restablecer tus accesos, contacta a la administración de ${
+                    tenantData.nombre_comercial || 'tu empresa'
                   }.`
                 );
               }}
-              className="text-xs text-[var(--brand-primary)] hover:underline"
+              style={{
+                fontSize: '0.75rem',
+                color: 'var(--primary)',
+                fontWeight: 600,
+                textDecoration: 'none',
+              }}
             >
               ¿Olvidaste tu contraseña?
             </a>
           </div>
-          <div className="relative">
-            <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+
+          <div style={{ position: 'relative' }}>
+            <Lock
+              size={15}
+              style={{
+                position: 'absolute',
+                left: '1rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--text-muted)',
+                pointerEvents: 'none',
+              }}
+            />
             <input
-              type={showPassword ? 'text' : 'password'}
+              id="tenant-password"
               name="password"
+              type={showPassword ? 'text' : 'password'}
+              className="form-input"
+              style={{ paddingLeft: '2.65rem', paddingRight: '3rem' }}
+              placeholder="••••••••"
               value={formData.password}
               onChange={handleChange}
-              placeholder="••••••••"
+              autoComplete="current-password"
               required
-              className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20 focus:border-[var(--brand-primary)] transition-all"
+              disabled={loading}
             />
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
-              aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+              id="tenant-toggle-password"
+              onClick={() => setShowPassword((s) => !s)}
+              style={{
+                position: 'absolute',
+                right: '0.875rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--text-muted)',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+              aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
         </div>
 
-        {/* Botón CTA Dinámico */}
-        <div className="pt-2">
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-[var(--brand-primary)] text-white w-full py-3 rounded-lg hover:opacity-90 transition-opacity font-medium text-sm flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:opacity-50"
-          >
-            {loading ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                <span>Validando credenciales...</span>
-              </>
-            ) : (
-              <>
-                <span>Ingresar al Portal</span>
-                <ArrowRight size={16} />
-              </>
-            )}
-          </button>
-        </div>
+        {/* Botón CTA (Clase Oficial .btn .btn-primary .btn-lg) */}
+        <button
+          id="tenant-submit-btn"
+          type="submit"
+          className="btn btn-primary btn-lg"
+          style={{ width: '100%', marginTop: '0.5rem' }}
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <Loader2 size={17} className="animate-spin" />
+              Verificando credenciales...
+            </>
+          ) : (
+            <>
+              Ingresar al sistema
+              <ArrowRight size={17} />
+            </>
+          )}
+        </button>
       </form>
 
-      {/* Enlace de Pie de Formulario */}
-      <div className="mt-8 pt-6 border-t border-gray-100 text-center text-xs text-gray-500">
+      {/* Footer del Formulario */}
+      <div
+        style={{
+          marginTop: '1.5rem',
+          textAlign: 'center',
+          fontSize: '0.8125rem',
+          color: 'var(--text-muted)',
+          lineHeight: '1.45',
+        }}
+      >
         ¿Aún no tienes cuenta en este portal?{' '}
         <Link
           to={`/portal/${slug}/registro`}
-          className="font-semibold text-[var(--brand-primary)] hover:underline"
+          style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'underline' }}
         >
           Regístrate aquí
         </Link>
