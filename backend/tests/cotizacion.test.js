@@ -20,7 +20,7 @@ const TEST_SECRET = 'test_secret_eventra_jest';
 
 // ─── Mock de la BD ───────────────────────────────────────────────────────────
 jest.unstable_mockModule('../src/config/db.js', () => ({
-  default: { query: jest.fn() },
+  default: { query: jest.fn(async () => ({ rows: [], rowCount: 0 })), connect: jest.fn() },
 }));
 
 // ─── Mock de OpenAI ──────────────────────────────────────────────────────────

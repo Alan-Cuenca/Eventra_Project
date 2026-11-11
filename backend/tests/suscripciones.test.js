@@ -18,7 +18,7 @@ const TEST_SECRET = 'test_secret_eventra_suscripciones';
 // Mock de la base de datos PostgreSQL
 jest.unstable_mockModule('../src/config/db.js', () => ({
   default: {
-    query: jest.fn(),
+    query: jest.fn(async () => ({ rows: [], rowCount: 0 })),
     connect: jest.fn(),
   },
 }));
