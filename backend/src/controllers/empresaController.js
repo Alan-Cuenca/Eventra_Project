@@ -695,7 +695,14 @@ export const analizarLogoIA = async (req, res) => {
       });
     }
 
-    const paletaGenerada = await analizarLogotipoConIA({ buffer, mimetype, dataUrl });
+    let clientPalette = req.body?.paleta;
+    if (typeof clientPalette === 'string') {
+      try {
+        clientPalette = JSON.parse(clientPalette);
+      } catch {}
+    }
+
+    const paletaGenerada = await analizarLogotipoConIA({ buffer, mimetype, dataUrl, clientPalette });
 
     // Si se subió un archivo o dataUrl nuevo en la petición de análisis IA,
     // persistir también el logotipo en empresas.logo_url

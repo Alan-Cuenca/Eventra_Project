@@ -8,10 +8,16 @@
 import axios from 'axios';
 
 // ── Configuración de URL Base (VITE_API_URL) ──────────────────────────────────
-// Prioriza la variable de entorno VITE_API_URL; si no está definida, apunta
-// directamente al backend desplegado en Render.
+// Prioriza la variable de entorno VITE_API_URL; si estamos en localhost, apunta al backend local.
+// En despliegue remoto sin variable, apunta al backend de Render.
 const getBaseUrl = () => {
-  return import.meta.env.VITE_API_URL || 'https://eventra-project-l3hl.onrender.com/api';
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return 'http://localhost:3000/api';
+  }
+  return 'https://eventra-project-l3hl.onrender.com/api';
 };
 
 const BASE_URL = getBaseUrl();

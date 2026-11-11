@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
+import { decodePngRgb } from '../utils/pngDecoder.js';
 
 /**
  * =============================================================================
@@ -82,46 +83,76 @@ const parseJsonResponse = (rawText) => {
 
 /**
  * Fallback heurístico inteligente: extrae colores de la muestra binaria de la imagen
- * garantizando cero caídas ante fallos de red o cuota en APIs externas.
+ * o utiliza la paleta cromática real analizada, garantizando cero caídas ante fallos de red.
  */
-export const generarPaletaFallback = (imageBuffer) => {
-  let seedR = 140, seedG = 74, seedB = 50; // Terracota cálido por defecto
+export const generarPaletaFallback = (imageBuffer, clientPalette = null) => {
+  if (clientPalette && clientPalette.primary) {
+    return normalizarPaleta(clientPalette);
+  }
+
+  let seedR = 82, seedG = 111, seedB = 125; // Azul pizarra sobrio
 
   if (Buffer.isBuffer(imageBuffer) && imageBuffer.length > 64) {
-    let sumR = 0, sumG = 0, sumB = 0, count = 0;
-    const step = Math.max(1, Math.floor(imageBuffer.length / 40));
-    for (let i = 24; i < imageBuffer.length - 16; i += step) {
-      sumR += imageBuffer[i];
-      sumG += imageBuffer[i + 1] || imageBuffer[i];
-      sumB += imageBuffer[i + 2] || imageBuffer[i];
-      count++;
-    }
-    if (count > 0) {
-      seedR = Math.max(30, Math.min(220, Math.round(sumR / count)));
-      seedG = Math.max(30, Math.min(220, Math.round(sumG / count)));
-      seedB = Math.max(30, Math.min(220, Math.round(sumB / count)));
+    // 1. Intentar decodificación exacta de píxeles PNG
+    const pngPixels = decodePngRgb(imageBuffer);
+    if (pngPixels && pngPixels.length > 0) {
+      const buckets = new Map();
+      for (const { r, g, b, a } of pngPixels) {
+        if (a < 50) continue;
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const delta = max - min;
+        const l = (max + min) / (2 * 255);
+        const s = max === 0 ? 0 : delta / max;
+
+        // Filtrar blancos, negros y grises neutros
+        if (l > 0.08 && l < 0.90 && s > 0.18) {
+          const qr = Math.round(r / 16) * 16;
+          const qg = Math.round(g / 16) * 16;
+          const qb = Math.round(b / 16) * 16;
+          const key = `${qr},${qg},${qb}`;
+          const current = buckets.get(key) || { count: 0, weight: 0, r, g, b };
+          current.count += 1;
+          current.weight += (1 + s * 4);
+          buckets.set(key, current);
+        }
+      }
+
+      let best = null;
+      let maxWeight = -1;
+      for (const bucket of buckets.values()) {
+        if (bucket.weight > maxWeight) {
+          maxWeight = bucket.weight;
+          best = bucket;
+        }
+      }
+      if (best) {
+        seedR = best.r;
+        seedG = best.g;
+        seedB = best.b;
+      }
     }
   }
 
   // Primario representativo no neón
   const primaryHex = `#${seedR.toString(16).padStart(2, '0')}${seedG.toString(16).padStart(2, '0')}${seedB.toString(16).padStart(2, '0')}`.toUpperCase();
 
-  // Fondo pastel ultra claro (95-98% luminosidad, nunca #FFFFFF)
-  const bgR = Math.min(255, Math.round(245 + (seedR * 0.04)));
-  const bgG = Math.min(255, Math.round(242 + (seedG * 0.04)));
-  const bgB = Math.min(255, Math.round(236 + (seedB * 0.04)));
+  // Fondo pastel ultra claro (96-98% luminosidad, nunca #FFFFFF)
+  const bgR = Math.min(255, Math.round(247 + (seedR * 0.03)));
+  const bgG = Math.min(255, Math.round(247 + (seedG * 0.03)));
+  const bgB = Math.min(255, Math.round(247 + (seedB * 0.03)));
   const bgHex = `#${bgR.toString(16).padStart(2, '0')}${bgG.toString(16).padStart(2, '0')}${bgB.toString(16).padStart(2, '0')}`.toUpperCase();
 
   // Borde muy suave
-  const borderR = Math.min(255, Math.round(208 + (seedR * 0.06)));
-  const borderG = Math.min(255, Math.round(202 + (seedG * 0.06)));
-  const borderB = Math.min(255, Math.round(192 + (seedB * 0.06)));
+  const borderR = Math.min(255, Math.round(215 + (seedR * 0.06)));
+  const borderG = Math.min(255, Math.round(215 + (seedG * 0.06)));
+  const borderB = Math.min(255, Math.round(215 + (seedB * 0.06)));
   const borderHex = `#${borderR.toString(16).padStart(2, '0')}${borderG.toString(16).padStart(2, '0')}${borderB.toString(16).padStart(2, '0')}`.toUpperCase();
 
   // Texto índigo/carbón tintado (prohibido #000000)
-  const textR = Math.max(20, Math.min(45, Math.round(seedR * 0.18)));
-  const textG = Math.max(20, Math.min(45, Math.round(seedR * 0.18)));
-  const textB = Math.max(28, Math.min(55, Math.round(seedB * 0.22)));
+  const textR = Math.max(18, Math.min(42, Math.round(seedR * 0.16)));
+  const textG = Math.max(22, Math.min(48, Math.round(seedG * 0.16)));
+  const textB = Math.max(26, Math.min(54, Math.round(seedB * 0.20)));
   const textHex = `#${textR.toString(16).padStart(2, '0')}${textG.toString(16).padStart(2, '0')}${textB.toString(16).padStart(2, '0')}`.toUpperCase();
 
   return normalizarPaleta({
@@ -195,7 +226,7 @@ export const normalizarPaleta = (rawPaleta) => {
  * @param {string} [params.dataUrl] - Imagen ya formateada como Data URL (base64)
  * @returns {Promise<Object>} Paleta enriquecida de 5 colores listos para CSS injection
  */
-export const analizarLogotipoConIA = async ({ buffer, mimetype = 'image/png', dataUrl }) => {
+export const analizarLogotipoConIA = async ({ buffer, mimetype = 'image/png', dataUrl, clientPalette }) => {
   let base64Data = '';
   let fullDataUrl = '';
   let finalMime = mimetype;
@@ -212,9 +243,14 @@ export const analizarLogotipoConIA = async ({ buffer, mimetype = 'image/png', da
     }
   }
 
+  // Si el cliente ya analizó la imagen vía Canvas y no hay claves de IA externas operativas,
+  // priorizar la paleta cromática real del cliente directamente
+  const hasGemini = process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.includes('tu_clave') && !process.env.GEMINI_API_KEY.includes('placeholder');
+  const hasOpenai = process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.includes('tu_clave') && !process.env.OPENAI_API_KEY.includes('placeholder');
+
   // ── 1. Inferencia Principal: Google Gemini Vision (@google/genai) ─────────
   const geminiKey = process.env.GEMINI_API_KEY;
-  if (geminiKey && !geminiKey.includes('tu_clave') && !geminiKey.includes('placeholder')) {
+  if (hasGemini) {
     try {
       const ai = new GoogleGenAI({ apiKey: geminiKey });
       const promptText = `Actúa como el diseñador definido en 'ai-branding-designer.md'. Analiza los colores de este logotipo y genera un JSON estricto con 5 claves (bg, surface, border, primary, text). El 'primary' debe ser el acento del logo sin ser neón; el 'bg' un derivado muy claro/pastel; y el 'text' oscuro legible. Respeta la armonía visual. Responde estrictamente un objeto JSON con las 5 claves.`;
@@ -266,7 +302,7 @@ export const analizarLogotipoConIA = async ({ buffer, mimetype = 'image/png', da
 
   // ── 2. Inferencia Secundaria de Respaldo: OpenAI GPT-4o Vision ───────────
   const openaiKey = process.env.OPENAI_API_KEY;
-  if (openaiKey && !openaiKey.includes('tu_clave') && !openaiKey.includes('placeholder')) {
+  if (hasOpenai) {
     try {
       const openai = new OpenAI({ apiKey: openaiKey });
       const completion = await openai.chat.completions.create({
@@ -305,9 +341,10 @@ export const analizarLogotipoConIA = async ({ buffer, mimetype = 'image/png', da
     }
   }
 
-  // ── 3. Fallback Heurístico Sofisticado (Garantía de Cero Caídas) ─────────
-  console.log('[aiBrandingService] Empleando motor heurístico Sofisticación Sutil para extracción cromática.');
-  return generarPaletaFallback(buffer);
+  // ── 3. Extracción Cromática Real Determinística (Garantía de Cero Caídas) ─────────
+  console.log('[aiBrandingService] Empleando motor de análisis cromático real para extracción del logo.');
+  const effectiveBuffer = buffer || (base64Data ? Buffer.from(base64Data, 'base64') : null);
+  return generarPaletaFallback(effectiveBuffer, clientPalette);
 };
 
 export default {

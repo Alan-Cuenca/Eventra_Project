@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useBranding, PALETAS } from '../../context/ThemeBrandingContext';
 import { eventraService } from '../../services/eventraService';
+import { extractPaletteFromImage } from '../../utils/imageColorExtractor';
 import {
   Palette,
   UploadCloud,
@@ -89,30 +90,56 @@ export const ConfiguracionMarca = () => {
     setMensajeExito('');
 
     try {
+      // 1. Extracción de color real de alta precisión desde el canvas del navegador
+      let clientExtractedPalette = null;
+      try {
+        clientExtractedPalette = await extractPaletteFromImage(file || preview);
+        if (clientExtractedPalette) {
+          // Aplicar inmediatamente en la UI para feedback visual instantáneo con los colores reales
+          aplicarPaletaIA(clientExtractedPalette);
+          setSelectedPaleta('custom_ia');
+        }
+      } catch (extractorErr) {
+        console.warn('[ConfiguracionMarca] Extractor local de canvas:', extractorErr);
+      }
+
+      // 2. Enviar al backend para persistencia y análisis multimodal
       let payload;
       if (file) {
         payload = new FormData();
         payload.append('logo', file);
+        if (clientExtractedPalette) {
+          payload.append('paleta', JSON.stringify(clientExtractedPalette));
+        }
       } else if (preview && branding?.logo_url && preview === branding.logo_url) {
-        // El logo ya está guardado en el servidor, no es necesario reenviar megabytes de base64
-        payload = { use_current: true, logo_url: preview };
+        payload = {
+          use_current: true,
+          logo_url: preview,
+          paleta: clientExtractedPalette,
+        };
       } else if (preview) {
-        payload = { logo_url: preview };
+        payload = {
+          logo_url: preview,
+          paleta: clientExtractedPalette,
+        };
       } else {
-        payload = {};
+        payload = {
+          paleta: clientExtractedPalette,
+        };
       }
 
       const res = await eventraService.analizarLogoConIA(payload);
       const data = res?.data || res;
+      const finalPalette = data?.paleta || clientExtractedPalette;
 
-      if (data?.paleta) {
-        aplicarPaletaIA(data.paleta);
+      if (finalPalette) {
+        aplicarPaletaIA(finalPalette);
         setSelectedPaleta('custom_ia');
-        if (data.logo_url) {
+        if (data?.logo_url) {
           setLogoPreview(data.logo_url);
           setLogoFile(null);
         }
-        setMensajeExito('✨ ¡Logotipo analizado con Gemini! Identidad visual generada y variables CSS aplicadas en tiempo real.');
+        setMensajeExito('✨ ¡Tema cromático generado con éxito a partir de los colores reales del logotipo!');
         setTimeout(() => setMensajeExito(''), 5500);
       } else {
         throw new Error(data?.message || 'No se pudo generar la paleta.');
