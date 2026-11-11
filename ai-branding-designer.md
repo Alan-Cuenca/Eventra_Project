@@ -85,3 +85,4 @@ Toda paleta generada a partir del logotipo debe responder estrictamente a 5 clav
 ```text
 Actúa como el diseñador definido en 'ai-branding-designer.md'. Analiza los colores de este logotipo y genera un JSON estricto con 5 claves (bg, surface, border, primary, text). El 'primary' debe ser el acento del logo sin ser neón; el 'bg' un derivado muy claro/pastel; y el 'text' oscuro legible. Respeta la armonía visual.
 ```
+
