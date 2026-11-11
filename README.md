@@ -4,12 +4,12 @@
 [![TailwindCSS](https://img.shields.io/badge/Styles-Tailwind%20%2B%20CSS%20Variables-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
 [![Node.js](https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-339933?style=flat-square&logo=node.js)](https://nodejs.org/)
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%20(Supabase)-336791?style=flat-square&logo=postgresql)](https://supabase.com/)
-[![Gemini](https://img.shields.io/badge/AI-Google%20Gemini%201.5%20Flash-4285F4?style=flat-square&logo=google)](https://ai.google.dev/)
+[![Gemini](https://img.shields.io/badge/AI-Google%20Gemini%20Flash--Lite-4285F4?style=flat-square&logo=google)](https://ai.google.dev/)
 [![Brevo](https://img.shields.io/badge/Email-Brevo%20HTTP%20API-0B996F?style=flat-square)](https://www.brevo.com/)
 
 **EVENTRA** es una solución integral **Software as a Service (SaaS)** multi-inquilino de última generación diseñada para digitalizar, centralizar y optimizar la operación integral de empresas de organización de eventos, recepciones, bodas y banquetes.
 
-La plataforma cubre el ciclo de vida completo: desde el descubrimiento público en la Landing Page comercial y contratación de planes B2B mediante transferencia bancaria y subida de comprobantes PDF, pasando por la gestión concurrente de salones, cotizaciones y actividades, hasta la atención automatizada de clientes mediante el asistente conversacional **EVARA AI (Google Gemini 1.5 Flash)** y un portal privado de autoservicio para el cliente final.
+La plataforma cubre el ciclo de vida completo: desde el descubrimiento público en la Landing Page comercial y contratación de planes B2B mediante transferencia bancaria y subida de comprobantes PDF, pasando por la gestión concurrente de salones, cotizaciones y actividades, hasta la atención automatizada de clientes mediante el asistente conversacional **EVARA AI (Google Gemini)** y un portal privado de autoservicio para el cliente final.
 
 ---
 
@@ -46,7 +46,7 @@ La plataforma cubre el ciclo de vida completo: desde el descubrimiento público 
 * Monitoreo en tiempo real en `/mi-suscripcion` y advertencias visuales amigables con CTA directo a actualización de plan ante excesos de cuota.
 
 ### 5. Asistente Conversacional Inteligente: EVARA AI (`EvaraChatWidget`)
-* Desarrollado con el SDK oficial `@google/genai` sobre **Google Gemini 1.5 Flash**.
+* Desarrollado con el SDK oficial `@google/genai` sobre **Google Gemini Flash-Lite** (alias `gemini-flash-lite-latest`, con modelos de respaldo configurables en `GEMINI_MODELS`).
 * **Contexto Dinámico Multi-tenant:** El chatbot conoce en tiempo real los servicios, paquetes, precios y datos de contacto de la empresa organizadora, respondiendo dudas de clientes las 24 horas del día.
 * Interfaz flotante con indicador de escritura, formato en markdown y control de cuota mensual por tenant.
 
@@ -80,7 +80,7 @@ La plataforma cubre el ciclo de vida completo: desde el descubrimiento público 
                 │                   │                   │
 ┌───────────────▼────────┐ ┌────────▼────────┐ ┌────────▼───────────────┐
 │       POSTGRESQL       │ │    GOOGLE AI    │ │     EMAIL SERVICE      │
-│  (Supabase Multi-tenant│ │ Gemini 1.5 Flash│ │  Brevo HTTP API v3     │
+│  (Supabase Multi-tenant│ │ Gemini (latest) │ │  Brevo HTTP API v3     │
 │   Isolation & Indexes) │ │ (EVARA Chatbot) │ │  SMTP (Nodemailer)     │
 └────────────────────────┘ └─────────────────┘ └────────────────────────┘
 ```
@@ -94,7 +94,7 @@ La plataforma cubre el ciclo de vida completo: desde el descubrimiento público 
 ### **Backend**
 * **Servidor:** Node.js con Express modularizado (Controladores, Rutas, Middlewares y Servicios).
 * **Base de Datos:** PostgreSQL alojado en Supabase con restricciones de unicidad compuestas multi-tenant (`uq_clientes_empresa_email`), claves foráneas en cascada e índices dedicados por `empresa_id`.
-* **Inteligencia Artificial:** SDK oficial `@google/genai` (Google Gemini 1.5 Flash).
+* **Inteligencia Artificial:** SDK oficial `@google/genai` (Google Gemini Flash-Lite con respaldo automático entre modelos).
 * **Servicio de Correo Híbrido:** Prioridad 1 con **Brevo HTTP API v3** (elude bloqueos de puertos 587/465 en nubes serverless/PaaS como Render), con fallback a Resend API y Nodemailer SMTP.
 * **Almacenamiento de Archivos:** Supabase Storage (gestión de logos y comprobantes mediante `multer`).
 
