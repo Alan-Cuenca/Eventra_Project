@@ -1,22 +1,27 @@
-import OpenAI from 'openai';
 import { GoogleGenAI } from '@google/genai';
+import OpenAI from 'openai';
 
 /**
  * =============================================================================
  * SERVICIO: aiBrandingService.js
  * =============================================================================
- * Análisis visual de logotipos corporativos mediante IA (GPT-4o / Gemini Vision)
- * para generar automáticamente una paleta cromática minimalista de alta gama,
- * respetando el estándar "Sofisticación Sutil" de EVENTRA.
+ * Análisis visual de logotipos corporativos mediante Google Gemini (Vision)
+ * basado en las directrices maestras de diseño de 'ai-branding-designer.md'.
+ * 
+ * Genera una paleta de 5 colores esenciales (bg, surface, border, primary, text)
+ * respetando el estándar de "Sofisticación Sutil" (fusión Helados La Catedral &
+ * Eventos Imperial).
  * =============================================================================
  */
 
-const SYSTEM_PROMPT = `Eres un diseñador UI/UX experto. Analiza este logotipo de empresa y extrae una paleta de 5 colores en formato JSON estricto (\`bg\`, \`surface\`, \`border\`, \`primary\`, \`text\`). Reglas críticas (Sofisticación Sutil): 
-- \`bg\`: Debe ser un tono pastel ultra claro (casi blanco/crema) inspirado en el logo, para no fatigar la vista.
-- \`surface\`: Siempre \`#FFFFFF\`.
-- \`border\`: Un tono neutro o grisáceo muy suave derivado del logo.
-- \`primary\`: El color más vibrante y representativo del logo, usado para botones principales.
-- \`text\`: Un tono extremadamente oscuro (casi negro, pero tintado con el color del logo) para máxima legibilidad. Prohibido #000000.`;
+export const SYSTEM_PROMPT = `Actúa como el diseñador definido en 'ai-branding-designer.md'. Analiza los colores de este logotipo y genera un JSON estricto con 5 claves (bg, surface, border, primary, text). El 'primary' debe ser el acento del logo sin ser neón; el 'bg' un derivado muy claro/pastel; y el 'text' oscuro legible. Respeta la armonía visual.
+
+Reglas críticas de diseño:
+- bg: Tonos perla, marfil o crema ultra claros y desaturados derivados del logo (nunca blanco puro #FFFFFF).
+- surface: Siempre #FFFFFF.
+- border: Tono neutro o apastelado muy suave derivado del logo.
+- primary: El color más icónico del logo, calibrado para no ser neón ni saturado en exceso.
+- text: Tono índigo oscuro o gris carbón profundo con tinte del logo (ESTRICTAMENTE PROHIBIDO #000000).`;
 
 /**
  * Convierte un color HEX (#RRGGBB) a [R, G, B]
@@ -65,7 +70,6 @@ const parseJsonResponse = (rawText) => {
   try {
     return JSON.parse(cleaned);
   } catch (err) {
-    // Extraer bloque entre llaves si hay texto circundante
     const match = cleaned.match(/\{[\s\S]*\}/);
     if (match) {
       try {
@@ -78,13 +82,12 @@ const parseJsonResponse = (rawText) => {
 
 /**
  * Fallback heurístico inteligente: extrae colores de la muestra binaria de la imagen
- * o genera una paleta estética refinada cuando la API no está configurada o falla.
+ * garantizando cero caídas ante fallos de red o cuota en APIs externas.
  */
-export const generarPaletaFallback = (imageBuffer, fallbackHint = 'catedral') => {
+export const generarPaletaFallback = (imageBuffer) => {
   let seedR = 140, seedG = 74, seedB = 50; // Terracota cálido por defecto
 
   if (Buffer.isBuffer(imageBuffer) && imageBuffer.length > 64) {
-    // Muestreo determinista de bytes de la imagen para derivar el tono principal
     let sumR = 0, sumG = 0, sumB = 0, count = 0;
     const step = Math.max(1, Math.floor(imageBuffer.length / 40));
     for (let i = 24; i < imageBuffer.length - 16; i += step) {
@@ -100,10 +103,10 @@ export const generarPaletaFallback = (imageBuffer, fallbackHint = 'catedral') =>
     }
   }
 
-  // Generar tono primario vibrante
+  // Primario representativo no neón
   const primaryHex = `#${seedR.toString(16).padStart(2, '0')}${seedG.toString(16).padStart(2, '0')}${seedB.toString(16).padStart(2, '0')}`.toUpperCase();
 
-  // Fondo pastel ultra claro (luminosidad alta con tinte sutil)
+  // Fondo pastel ultra claro (95-98% luminosidad, nunca #FFFFFF)
   const bgR = Math.min(255, Math.round(245 + (seedR * 0.04)));
   const bgG = Math.min(255, Math.round(242 + (seedG * 0.04)));
   const bgB = Math.min(255, Math.round(236 + (seedB * 0.04)));
@@ -115,10 +118,10 @@ export const generarPaletaFallback = (imageBuffer, fallbackHint = 'catedral') =>
   const borderB = Math.min(255, Math.round(192 + (seedB * 0.06)));
   const borderHex = `#${borderR.toString(16).padStart(2, '0')}${borderG.toString(16).padStart(2, '0')}${borderB.toString(16).padStart(2, '0')}`.toUpperCase();
 
-  // Texto oscuro tintado (prohibido #000000)
-  const textR = Math.max(16, Math.min(48, Math.round(seedR * 0.18)));
-  const textG = Math.max(16, Math.min(48, Math.round(seedG * 0.18)));
-  const textB = Math.max(16, Math.min(48, Math.round(seedB * 0.18)));
+  // Texto índigo/carbón tintado (prohibido #000000)
+  const textR = Math.max(20, Math.min(45, Math.round(seedR * 0.18)));
+  const textG = Math.max(20, Math.min(45, Math.round(seedR * 0.18)));
+  const textB = Math.max(28, Math.min(55, Math.round(seedB * 0.22)));
   const textHex = `#${textR.toString(16).padStart(2, '0')}${textG.toString(16).padStart(2, '0')}${textB.toString(16).padStart(2, '0')}`.toUpperCase();
 
   return normalizarPaleta({
@@ -135,7 +138,12 @@ export const generarPaletaFallback = (imageBuffer, fallbackHint = 'catedral') =>
  * en los tokens del Design System de EVENTRA
  */
 export const normalizarPaleta = (rawPaleta) => {
-  const bg = isValidHex(rawPaleta?.bg) ? rawPaleta.bg.toUpperCase() : '#F5F2EB';
+  // Asegurar que bg no sea blanco puro #FFFFFF
+  let bg = isValidHex(rawPaleta?.bg) ? rawPaleta.bg.toUpperCase() : '#F5F2EB';
+  if (bg === '#FFFFFF' || bg === '#FFF') {
+    bg = '#F6F3EC';
+  }
+
   const surface = '#FFFFFF';
   const border = isValidHex(rawPaleta?.border) ? rawPaleta.border.toUpperCase() : '#CEC8B8';
   const primary = isValidHex(rawPaleta?.primary) ? rawPaleta.primary.toUpperCase() : '#4D7182';
@@ -159,7 +167,7 @@ export const normalizarPaleta = (rawPaleta) => {
     key: 'custom_ia',
     name: 'Paleta Generada por IA',
     category: 'Inteligencia Visual (Sofisticación Sutil)',
-    desc: 'Paleta armónica extraída dinámicamente de la identidad gráfica del logotipo.',
+    desc: 'Paleta armónica extraída dinámicamente de la identidad gráfica del logotipo con Google Gemini.',
     bg,
     surface,
     border,
@@ -178,7 +186,8 @@ export const normalizarPaleta = (rawPaleta) => {
 };
 
 /**
- * Analiza un logotipo (Buffer o Data URL) utilizando OpenAI (GPT-4o) o Gemini Vision.
+ * Analiza un logotipo (Buffer o Data URL) utilizando Google Gemini Vision
+ * (@google/genai con gemini-1.5-flash / gemini-2.5-flash).
  *
  * @param {Object} params
  * @param {Buffer} [params.buffer] - Buffer de la imagen cargada
@@ -203,7 +212,59 @@ export const analizarLogotipoConIA = async ({ buffer, mimetype = 'image/png', da
     }
   }
 
-  // ── 1. Intentar con OpenAI (GPT-4o / GPT-4o-mini Vision) ─────────────────
+  // ── 1. Inferencia Principal: Google Gemini Vision (@google/genai) ─────────
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (geminiKey && !geminiKey.includes('tu_clave') && !geminiKey.includes('placeholder')) {
+    try {
+      const ai = new GoogleGenAI({ apiKey: geminiKey });
+      const promptText = `Actúa como el diseñador definido en 'ai-branding-designer.md'. Analiza los colores de este logotipo y genera un JSON estricto con 5 claves (bg, surface, border, primary, text). El 'primary' debe ser el acento del logo sin ser neón; el 'bg' un derivado muy claro/pastel; y el 'text' oscuro legible. Respeta la armonía visual. Responde estrictamente un objeto JSON con las 5 claves.`;
+
+      const contents = [
+        {
+          role: 'user',
+          parts: [
+            { text: promptText },
+            ...(base64Data
+              ? [
+                  {
+                    inlineData: {
+                      mimeType: finalMime,
+                      data: base64Data,
+                    },
+                  },
+                ]
+              : []),
+          ],
+        },
+      ];
+
+      // Probar prioritariamente gemini-1.5-flash o gemini-2.5-flash
+      const visionModels = ['gemini-1.5-flash', 'gemini-2.5-flash', 'gemini-flash-latest'];
+      for (const model of visionModels) {
+        try {
+          const response = await ai.models.generateContent({
+            model,
+            contents,
+            config: {
+              abortSignal: AbortSignal.timeout(12000),
+            },
+          });
+
+          const raw = (response?.text ?? '').trim();
+          const parsed = parseJsonResponse(raw);
+          if (parsed && parsed.primary) {
+            return normalizarPaleta(parsed);
+          }
+        } catch (mErr) {
+          // Continuar al siguiente modelo de visión si este falló
+        }
+      }
+    } catch (err) {
+      console.warn('[aiBrandingService] Gemini Vision falló:', err.message);
+    }
+  }
+
+  // ── 2. Inferencia Secundaria de Respaldo: OpenAI GPT-4o Vision ───────────
   const openaiKey = process.env.OPENAI_API_KEY;
   if (openaiKey && !openaiKey.includes('tu_clave') && !openaiKey.includes('placeholder')) {
     try {
@@ -240,52 +301,7 @@ export const analizarLogotipoConIA = async ({ buffer, mimetype = 'image/png', da
         return normalizarPaleta(parsed);
       }
     } catch (err) {
-      console.warn('[aiBrandingService] OpenAI Vision falló o clave no válida:', err.message);
-    }
-  }
-
-  // ── 2. Intentar con Google Gemini Vision ──────────────────────────────────
-  const geminiKey = process.env.GEMINI_API_KEY;
-  if (geminiKey && !geminiKey.includes('tu_clave') && !geminiKey.includes('placeholder')) {
-    try {
-      const ai = new GoogleGenAI({ apiKey: geminiKey });
-      const promptText = `${SYSTEM_PROMPT}\n\nAnaliza este logotipo de empresa y genera la paleta de 5 colores en formato JSON puro.`;
-
-      const contents = [
-        {
-          role: 'user',
-          parts: [
-            { text: promptText },
-            ...(base64Data
-              ? [
-                  {
-                    inlineData: {
-                      mimeType: finalMime,
-                      data: base64Data,
-                    },
-                  },
-                ]
-              : []),
-          ],
-        },
-      ];
-
-      const modelName = process.env.GEMINI_VISION_MODEL || 'gemini-2.5-flash';
-      const response = await ai.models.generateContent({
-        model: modelName,
-        contents,
-        config: {
-          abortSignal: AbortSignal.timeout(12000),
-        },
-      });
-
-      const raw = (response?.text ?? '').trim();
-      const parsed = parseJsonResponse(raw);
-      if (parsed && parsed.primary) {
-        return normalizarPaleta(parsed);
-      }
-    } catch (err) {
-      console.warn('[aiBrandingService] Gemini Vision falló o clave no válida:', err.message);
+      console.warn('[aiBrandingService] OpenAI Vision falló:', err.message);
     }
   }
 

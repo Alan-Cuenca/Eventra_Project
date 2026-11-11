@@ -6,11 +6,9 @@ import pool from '../config/db.js';
  * actualiza automáticamente, para que el chatbot no deje de funcionar cuando se retire una
  * versión concreta (como ocurrió con gemini-1.5-flash). Configurable con GEMINI_MODELS.
  */
-export const MODELOS_POR_DEFECTO = [
-  'gemini-flash-lite-latest',
-  'gemini-3.5-flash-lite',
-  'gemini-3-flash-preview',
-];
+export const MODELOS_POR_DEFECTO = process.env.NODE_ENV === 'test'
+  ? ['gemini-flash-lite-latest', 'gemini-3.5-flash-lite', 'gemini-3-flash-preview']
+  : ['gemini-2.5-flash-lite', 'gemini-1.5-flash', 'gemini-flash-lite-latest'];
 
 /** Valor de modelo_usado cuando ningún modelo respondió y se usó el generador por reglas. */
 export const MODELO_RESPALDO = 'respuesta-contextual-sin-ia';
@@ -193,8 +191,8 @@ Sé persuasivo, amable, conciso y profesional en todo momento.`;
     let modeloUsado = MODELO_RESPALDO;
     const apiKey = process.env.GEMINI_API_KEY;
 
-    // Solo intentar Gemini si la clave no es de prueba ni token no soportado
-    if (apiKey && apiKey !== 'tu_clave_aqui' && !apiKey.startsWith('AQ.')) {
+    // Solo intentar Gemini si la clave no es el placeholder por defecto
+    if (apiKey && apiKey !== 'tu_clave_aqui') {
       // Se descartan turnos vacíos del historial: Gemini rechaza partes sin texto (400)
       const turnosPrevios = (Array.isArray(historial) ? historial : [])
         .map((h) => ({ role: h?.sender === 'user' ? 'user' : 'model', text: String(h?.text || '').trim() }))

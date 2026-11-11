@@ -127,8 +127,10 @@ export const PortalTenantLayout = () => {
 
       // 3. Variables semánticas de marca para el Split-Screen White-Label
       '--brand-bg': p.bg || '#F3F0E4',
+      '--brand-surface': p.surface || '#FFFFFF',
       '--brand-primary': p.primary || '#4D7182',
       '--brand-primary-hover': p.primaryHover || '#385563',
+      '--brand-primary-light': p.primaryLight || '#E4EFF4',
       '--brand-text': p.text || '#1D333E',
       '--brand-border': p.border || '#CEC8B8',
     };

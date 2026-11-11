@@ -61,8 +61,11 @@ export const ConfiguracionMarca = () => {
     previsualizarPaleta(key, key === 'custom_ia' ? (customPaleta || branding?.paleta_personalizada) : null);
   };
 
-  const handleGenerarTemaIA = async () => {
-    if (!logoFile && !logoPreview) {
+  const ejecutarAnalisisIA = async (overrideFile = null, overridePreview = null) => {
+    const file = overrideFile || logoFile;
+    const preview = overridePreview || logoPreview;
+
+    if (!file && !preview) {
       setMensajeError('Por favor selecciona o sube un logotipo primero para que la IA pueda analizarlo.');
       return;
     }
@@ -73,11 +76,11 @@ export const ConfiguracionMarca = () => {
 
     try {
       let payload;
-      if (logoFile) {
+      if (file) {
         payload = new FormData();
-        payload.append('logo', logoFile);
+        payload.append('logo', file);
       } else {
-        payload = { logo_url: logoPreview };
+        payload = { logo_url: preview };
       }
 
       const res = await eventraService.analizarLogoConIA(payload);
@@ -86,7 +89,7 @@ export const ConfiguracionMarca = () => {
       if (data?.paleta) {
         aplicarPaletaIA(data.paleta);
         setSelectedPaleta('custom_ia');
-        setMensajeExito('✨ ¡Tema cromático generado exitosamente por IA a partir de tu logotipo y aplicado en vivo!');
+        setMensajeExito('✨ ¡Logotipo analizado con Gemini! Identidad visual generada y variables CSS aplicadas en tiempo real.');
         setTimeout(() => setMensajeExito(''), 5500);
       } else {
         throw new Error(data?.message || 'No se pudo generar la paleta.');
@@ -103,6 +106,8 @@ export const ConfiguracionMarca = () => {
       setGenerandoIA(false);
     }
   };
+
+  const handleGenerarTemaIA = () => ejecutarAnalisisIA();
 
   const handleFileSelect = (file) => {
     if (!file) return;
@@ -122,6 +127,8 @@ export const ConfiguracionMarca = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       setLogoPreview(e.target.result);
+      // Auto-generación y adaptación inmediata del tema con Gemini Vision al subir logotipo
+      ejecutarAnalisisIA(file, e.target.result);
     };
     reader.readAsDataURL(file);
   };
