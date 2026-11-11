@@ -16,12 +16,14 @@ process.env.EMAIL_SIMULATION_MODE = 'true';
 
 const TEST_SECRET = 'test_secret_eventra_solicitudes';
 
+const mockPool = {
+  query: jest.fn(async () => ({ rows: [], rowCount: 0 })),
+  connect: jest.fn(),
+};
+
 // Mock de la base de datos PostgreSQL
 jest.unstable_mockModule('../src/config/db.js', () => ({
-  default: {
-    query: jest.fn(),
-    connect: jest.fn(),
-  },
+  default: mockPool,
 }));
 
 // Mock de OpenAI

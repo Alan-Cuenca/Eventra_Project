@@ -9,17 +9,25 @@ import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { jest } from '@jest/globals';
 
-process.env.JWT_SECRET     = 'test_secret_eventra_chatbot';
+process.env.JWT_SECRET     = 'test_secret_eventra_jest';
 process.env.GEMINI_API_KEY = 'test_gemini_key_eventra';
 process.env.NODE_ENV       = 'test';
 process.env.PORT           = '0';
 
-const TEST_SECRET = 'test_secret_eventra_chatbot';
+const TEST_SECRET = 'test_secret_eventra_jest';
+
+let mockQueryHandler = null;
 
 // Mock de la base de datos PostgreSQL
 jest.unstable_mockModule('../src/config/db.js', () => ({
   default: {
-    query: jest.fn(),
+    query: jest.fn(async (sql, params) => {
+      if (mockQueryHandler) {
+        const customRes = await mockQueryHandler(sql, params);
+        if (customRes) return customRes;
+      }
+      return { rows: [], rowCount: 0 };
+    }),
     connect: jest.fn(),
   },
 }));
@@ -48,14 +56,16 @@ const TOKEN_CLIENTE_EMPRESA_1 = jwt.sign(
 describe('EVARA AI — Asistente Conversacional Multi-Tenant con Google Gemini', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockQueryHandler = null;
   });
 
   it('debe rechazar con 400 si el mensaje está vacío', async () => {
-    // 1. Consulta límite plan
-    pool.query.mockResolvedValueOnce({
-      rowCount: 1,
-      rows: [{ plan_suscripcion: 'Basico', mensajes_chatbot_mes: 0 }],
-    });
+    mockQueryHandler = async (sql) => {
+      if (sql.includes('empresas')) {
+        return { rowCount: 1, rows: [{ id: 1, plan_suscripcion: 'Basico', mensajes_chatbot_mes: 0 }] };
+      }
+      return { rows: [], rowCount: 0 };
+    };
 
     const res = await request(app)
       .post('/api/chatbot')
@@ -67,42 +77,37 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant con Google Gemini',
   });
 
   it('debe consultar el catálogo SQL dinámico de la empresa y llamar a Gemini retornando 200', async () => {
-    // 1. Mock consulta límite empresa
-    pool.query.mockResolvedValueOnce({
-      rowCount: 1,
-      rows: [{ plan_suscripcion: 'Basico', mensajes_chatbot_mes: 5 }],
-    });
-
-    // 2. Mock consulta paquetes
-    pool.query.mockResolvedValueOnce({
-      rowCount: 1,
-      rows: [
-        {
-          nombre: 'Boda Diamante',
-          descripcion: 'Paquete de gala para 150 invitados',
-          precio_total: 2500.00,
-          servicios_incluidos: 'Catering, Fotografía, Iluminación',
-        },
-      ],
-    });
-
-    // 3. Mock consulta servicios
-    pool.query.mockResolvedValueOnce({
-      rowCount: 1,
-      rows: [
-        {
-          nombre: 'Barra Libre Premium',
-          descripcion: 'Coctelería de autor',
-          precio_base: 450.00,
-        },
-      ],
-    });
-
-    // 4. Mock incremento contador de mensajes
-    pool.query.mockResolvedValueOnce({
-      rowCount: 1,
-      rows: [],
-    });
+    mockQueryHandler = async (sql) => {
+      if (sql.includes('empresas') && sql.includes('SELECT')) {
+        return { rowCount: 1, rows: [{ id: 1, plan_suscripcion: 'Basico', mensajes_chatbot_mes: 5 }] };
+      }
+      if (sql.includes('paquetes')) {
+        return {
+          rowCount: 1,
+          rows: [
+            {
+              nombre: 'Boda Diamante',
+              descripcion: 'Paquete de gala para 150 invitados',
+              precio_total: 2500.00,
+              servicios_incluidos: 'Catering, Fotografía, Iluminación',
+            },
+          ],
+        };
+      }
+      if (sql.includes('servicios')) {
+        return {
+          rowCount: 1,
+          rows: [
+            {
+              nombre: 'Barra Libre Premium',
+              descripcion: 'Coctelería de autor',
+              precio_base: 450.00,
+            },
+          ],
+        };
+      }
+      return { rows: [], rowCount: 0 };
+    };
 
     // Mock respuesta Gemini
     mockGenerateContent.mockResolvedValueOnce({
@@ -129,41 +134,18 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant con Google Gemini',
   });
 
   it('debe resolver la empresa mediante slug si la consulta es pública sin token', async () => {
-    // 1. SELECT id FROM empresas WHERE slug = $1 (en verificarLimitePlan)
-    pool.query.mockResolvedValueOnce({
-      rowCount: 1,
-      rows: [{ id: 2 }],
-    });
-
-    // 2. SELECT plan_suscripcion, mensajes_chatbot_mes FROM empresas WHERE id = $1
-    pool.query.mockResolvedValueOnce({
-      rowCount: 1,
-      rows: [{ plan_suscripcion: 'Basico', mensajes_chatbot_mes: 20 }],
-    });
-
-    // 3. SELECT id FROM empresas WHERE slug = $1 (en consultarEvara)
-    pool.query.mockResolvedValueOnce({
-      rowCount: 1,
-      rows: [{ id: 2 }],
-    });
-
-    // 4. Paquetes
-    pool.query.mockResolvedValueOnce({
-      rowCount: 0,
-      rows: [],
-    });
-
-    // 5. Servicios
-    pool.query.mockResolvedValueOnce({
-      rowCount: 0,
-      rows: [],
-    });
-
-    // 6. UPDATE contador
-    pool.query.mockResolvedValueOnce({
-      rowCount: 1,
-      rows: [],
-    });
+    mockQueryHandler = async (sql) => {
+      if (sql.includes('empresas') && sql.includes('slug')) {
+        return { rowCount: 1, rows: [{ id: 2 }] };
+      }
+      if (sql.includes('empresas') && sql.includes('plan_suscripcion')) {
+        return { rowCount: 1, rows: [{ id: 2, plan_suscripcion: 'Basico', mensajes_chatbot_mes: 20 }] };
+      }
+      if (sql.includes('empresas')) {
+        return { rowCount: 1, rows: [{ id: 2, plan_suscripcion: 'Basico', mensajes_chatbot_mes: 20 }] };
+      }
+      return { rows: [], rowCount: 0 };
+    };
 
     // Mock respuesta Gemini
     mockGenerateContent.mockResolvedValueOnce({

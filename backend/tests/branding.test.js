@@ -24,11 +24,13 @@ const mockEmpresa = {
 
 const mockQuery = jest.fn();
 
+const mockPool = {
+  query: mockQuery,
+  on: jest.fn(),
+};
+
 jest.unstable_mockModule('../src/config/db.js', () => ({
-  default: {
-    query: mockQuery,
-    on: jest.fn(),
-  },
+  default: mockPool,
 }));
 
 jest.unstable_mockModule('../src/config/supabase.js', () => ({

@@ -19,17 +19,19 @@ const TEST_SECRET = 'test_secret_eventra_jest';
 
 let mockQueryHandler = null;
 
+const mockPool = {
+  query: jest.fn((sql, params) => {
+    if (mockQueryHandler) {
+      return mockQueryHandler(sql, params);
+    }
+    return Promise.resolve({ rows: [], rowCount: 0 });
+  }),
+  connect: jest.fn(),
+};
+
 // Mock de PostgreSQL
 jest.unstable_mockModule('../src/config/db.js', () => ({
-  default: {
-    query: jest.fn((sql, params) => {
-      if (mockQueryHandler) {
-        return mockQueryHandler(sql, params);
-      }
-      return Promise.resolve({ rows: [], rowCount: 0 });
-    }),
-    connect: jest.fn(),
-  },
+  default: mockPool,
 }));
 
 // Mock de OpenAI
