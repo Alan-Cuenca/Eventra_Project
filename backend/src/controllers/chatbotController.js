@@ -2,15 +2,78 @@ import { GoogleGenAI } from '@google/genai';
 import pool from '../config/db.js';
 
 /**
+ * Modelos de Gemini en orden de preferencia. El primero es un alias "latest" que Google
+ * actualiza automáticamente, para que el chatbot no deje de funcionar cuando se retire una
+ * versión concreta (como ocurrió con gemini-1.5-flash). Configurable con GEMINI_MODELS.
+ */
+export const MODELOS_POR_DEFECTO = [
+  'gemini-flash-lite-latest',
+  'gemini-3.5-flash-lite',
+  'gemini-3-flash-preview',
+];
+
+/** Valor de modelo_usado cuando ningún modelo respondió y se usó el generador por reglas. */
+export const MODELO_RESPALDO = 'respuesta-contextual-sin-ia';
+
+const obtenerModelos = () => {
+  const configurados = (process.env.GEMINI_MODELS || '')
+    .split(',')
+    .map((m) => m.trim())
+    .filter(Boolean);
+  return configurados.length > 0 ? configurados : MODELOS_POR_DEFECTO;
+};
+
+const tiempoLimiteMs = () => {
+  const n = Number.parseInt(process.env.GEMINI_TIMEOUT_MS, 10);
+  return Number.isFinite(n) && n > 0 ? n : 12000; // el cliente está esperando en el chat
+};
+
+// Errores que no se arreglan cambiando de modelo (clave inválida, sin permisos, petición mal formada)
+const esErrorDefinitivo = (error) => /"code":\s*(400|401|403)\b|API key|PERMISSION_DENIED|INVALID_ARGUMENT/i.test(String(error?.message));
+
+/**
+ * Intenta generar la respuesta con cada modelo configurado, con tiempo límite por intento.
+ * @returns {Promise<{ texto: string, modelo: string } | null>} null si ningún modelo respondió.
+ */
+const generarConGemini = async ({ apiKey, contents, systemPrompt }) => {
+  const ai = new GoogleGenAI({ apiKey });
+  const fallos = [];
+
+  for (const modelo of obtenerModelos()) {
+    try {
+      const respuesta = await ai.models.generateContent({
+        model: modelo,
+        contents,
+        config: {
+          systemInstruction: systemPrompt,
+          abortSignal: AbortSignal.timeout(tiempoLimiteMs()),
+        },
+      });
+      const texto = (respuesta?.text ?? '').trim();
+      if (texto) return { texto, modelo };
+      fallos.push(`${modelo}: respuesta vacía`);
+    } catch (error) {
+      fallos.push(`${modelo}: ${String(error?.message || error).slice(0, 160)}`);
+      if (esErrorDefinitivo(error)) break;
+    }
+  }
+
+  // console.error (no warn) para que el fallo de la IA sea visible en los logs de producción
+  console.error(`[chatbotController] Ningún modelo de Gemini respondió; se usa la respuesta por reglas. ${fallos.join(' | ')}`);
+  return null;
+};
+
+/**
  * Consulta a EVARA AI, asistente de ventas conversacional multi-tenant de EVENTRA.
- * Desarrollado con Google Gemini (SDK oficial @google/genai y modelo gemini-1.5-flash).
+ * Desarrollado con Google Gemini (SDK oficial @google/genai).
  *
  * Flujo:
  *   1. Extrae el mensaje de req.body y empresa_id (de req.user.empresa_id o slug/body).
  *   2. Consulta SQL en tiempo real de paquetes y servicios de la empresa (Anti-Alucinaciones).
- *   3. Configura el cliente de IA: new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }).
- *   4. Construye el System Prompt dinámico estricto basado ÚNICAMENTE en el catálogo JSON.
- *   5. Ejecuta la inferencia mediante ai.models.generateContent con modelo 'gemini-1.5-flash'.
+ *   3. Construye el System Prompt dinámico estricto basado ÚNICAMENTE en el catálogo JSON.
+ *   4. Ejecuta la inferencia con el primer modelo disponible de GEMINI_MODELS (con respaldos y tiempo límite).
+ *   5. Si la IA no está disponible, responde con el generador contextual por reglas e indica
+ *      modelo_usado = 'respuesta-contextual-sin-ia' e ia_disponible = false.
  *   6. Retorna la respuesta generada con status 200.
  *   7. Manejo robusto de errores con try/catch devolviendo status 500 en caso de fallo.
  *
@@ -125,44 +188,36 @@ Tu alcance y funciones son:
    - Ofrécele resolver dudas adicionales sobre qué incluye el paquete o servicios complementarios (catering, música, fotografía, etc.).
 Sé persuasivo, amable, conciso y profesional en todo momento.`;
 
-    // 5. Inicialización y llamada a Google Gemini AI
+    // 5. Llamada a Google Gemini AI (con modelos de respaldo y tiempo límite)
     let textoIA = '';
+    let modeloUsado = MODELO_RESPALDO;
     const apiKey = process.env.GEMINI_API_KEY;
 
     // Solo intentar Gemini si la clave no es de prueba ni token no soportado
     if (apiKey && apiKey !== 'tu_clave_aqui' && !apiKey.startsWith('AQ.')) {
-      try {
-        const ai = new GoogleGenAI({ apiKey });
-        
-        let contents;
-        if (Array.isArray(historial) && historial.length > 0) {
-          contents = [
-            ...historial.map((h) => ({
-              role: h.sender === 'user' ? 'user' : 'model',
-              parts: [{ text: String(h.text || '').trim() }],
-            })),
+      // Se descartan turnos vacíos del historial: Gemini rechaza partes sin texto (400)
+      const turnosPrevios = (Array.isArray(historial) ? historial : [])
+        .map((h) => ({ role: h?.sender === 'user' ? 'user' : 'model', text: String(h?.text || '').trim() }))
+        .filter((h) => h.text);
+
+      const contents = turnosPrevios.length > 0
+        ? [
+            ...turnosPrevios.map((h) => ({ role: h.role, parts: [{ text: h.text }] })),
             { role: 'user', parts: [{ text: String(mensaje).trim() }] },
-          ];
-        } else {
-          contents = String(mensaje).trim();
-        }
+          ]
+        : String(mensaje).trim();
 
-        const geminiResponse = await ai.models.generateContent({
-          model: 'gemini-1.5-flash',
-          contents,
-          config: {
-            systemInstruction: systemPrompt,
-          },
-        });
-
-        textoIA = geminiResponse.text ?? '';
-      } catch (geminiError) {
-        console.warn('[chatbotController] Error en llamada a Google Gemini:', geminiError.message);
-        // Fallback contextual inteligente con soporte de historial
-        textoIA = generarRespuestaContextual(mensaje, catalogoEmpresa.paquetes, catalogoEmpresa.servicios, historial);
+      const generado = await generarConGemini({ apiKey, contents, systemPrompt });
+      if (generado) {
+        textoIA = generado.texto;
+        modeloUsado = generado.modelo;
       }
     } else {
-      // Clave no configurada o modo fallback: respuesta contextual basada en catálogo e historial
+      console.warn('[chatbotController] GEMINI_API_KEY no configurada: EVARA responde solo con reglas del catálogo.');
+    }
+
+    if (!textoIA) {
+      // Respaldo contextual basado en catálogo e historial
       textoIA = generarRespuestaContextual(mensaje, catalogoEmpresa.paquetes, catalogoEmpresa.servicios, historial);
     }
 
@@ -178,7 +233,8 @@ Sé persuasivo, amable, conciso y profesional en todo momento.`;
       respuesta: textoIA,
       data: {
         respuesta: textoIA,
-        modelo_usado: 'gemini-1.5-flash',
+        modelo_usado: modeloUsado,
+        ia_disponible: modeloUsado !== MODELO_RESPALDO,
         empresa_id: empresa_id,
       },
     });
