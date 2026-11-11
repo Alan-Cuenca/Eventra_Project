@@ -21,8 +21,8 @@ import { PrimerLoginCambioPassword } from '../pages/auth/PrimerLoginCambioPasswo
 import { ColaboradoresPage } from '../pages/admin/ColaboradoresPage';
 import { ConfiguracionMarca } from '../pages/admin/ConfiguracionMarca';
 import { PortalTenantLayout } from '../layouts/PortalTenantLayout';
-import { RegistroClienteTenant } from '../pages/portal/RegistroClienteTenant';
-import { LoginClienteTenant } from '../pages/portal/LoginClienteTenant';
+import { RegistroTenant } from '../pages/tenant/RegistroTenant';
+import { LoginTenant } from '../pages/tenant/LoginTenant';
 
 // ── Sitio Web Público SaaS EVENTRA (Multi-página) ─────────────────────────
 import { PublicLayout } from '../pages/public/PublicLayout';
@@ -111,9 +111,9 @@ export const AppRoutes = () => {
       <Route path="/registro"               element={<PortalRedirect />} />
       {/* ── Portal de Inquilino con Marca Blanca (White-Label) ─────────────── */}
       <Route path="/portal/:slug" element={<PortalTenantLayout />}>
-        <Route index element={<Navigate to="registro" replace />} />
-        <Route path="registro" element={<RegistroClienteTenant />} />
-        <Route path="login" element={<LoginClienteTenant />} />
+        <Route index element={<Navigate to="login" replace />} />
+        <Route path="registro" element={<RegistroTenant />} />
+        <Route path="login" element={<LoginTenant />} />
       </Route>
       <Route path="/completar-registro"     element={<CompletarRegistro />} />
       <Route path="/primer-acceso/cambiar-password" element={<PrimerLoginCambioPassword />} />
