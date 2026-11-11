@@ -22,7 +22,7 @@ import {
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max
+  limits: { fileSize: 25 * 1024 * 1024 }, // 25 MB max para admitir imágenes de alta resolución
 });
 
 const router = express.Router();

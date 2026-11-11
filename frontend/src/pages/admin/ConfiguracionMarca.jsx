@@ -93,8 +93,13 @@ export const ConfiguracionMarca = () => {
       if (file) {
         payload = new FormData();
         payload.append('logo', file);
-      } else {
+      } else if (preview && branding?.logo_url && preview === branding.logo_url) {
+        // El logo ya está guardado en el servidor, no es necesario reenviar megabytes de base64
+        payload = { use_current: true, logo_url: preview };
+      } else if (preview) {
         payload = { logo_url: preview };
+      } else {
+        payload = {};
       }
 
       const res = await eventraService.analizarLogoConIA(payload);
@@ -114,11 +119,16 @@ export const ConfiguracionMarca = () => {
       }
     } catch (err) {
       console.error('[ConfiguracionMarca] Error al analizar logotipo con IA:', err);
-      const errorMsg =
+      let errorMsg =
         err.data?.message ||
         err.response?.data?.message ||
         err.message ||
         'No se pudo analizar el logotipo con IA. Intenta con otra imagen.';
+
+      if (err.status === 413 || err.response?.status === 413 || String(errorMsg).includes('413')) {
+        errorMsg = 'El archivo de imagen es demasiado pesado para la red (excede el límite). Por favor sube una imagen de hasta 15 MB.';
+      }
+
       setMensajeError(errorMsg);
     } finally {
       setGenerandoIA(false);
@@ -133,8 +143,8 @@ export const ConfiguracionMarca = () => {
       setMensajeError('Por favor selecciona un archivo de imagen válido (PNG, JPG, SVG, WebP).');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setMensajeError('El logotipo no debe superar los 5 MB de tamaño.');
+    if (file.size > 15 * 1024 * 1024) {
+      setMensajeError('El logotipo no debe superar los 15 MB de tamaño.');
       return;
     }
 

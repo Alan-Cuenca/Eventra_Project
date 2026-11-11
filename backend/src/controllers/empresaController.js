@@ -680,8 +680,8 @@ export const analizarLogoIA = async (req, res) => {
     let mimetype = req.file?.mimetype || 'image/png';
     let dataUrl = req.body?.logo_base64 || req.body?.logo_url;
 
-    // Si no se adjuntó archivo ni base64 en la petición, consultar el logo_url actual de la empresa
-    if (!buffer && !dataUrl && empresa_id) {
+    // Si no se adjuntó archivo o se solicitó use_current, consultar el logo_url actual de la empresa
+    if (!buffer && (!dataUrl || req.body?.use_current) && empresa_id) {
       const empRes = await pool.query('SELECT logo_url FROM empresas WHERE id = $1', [empresa_id]);
       if (empRes.rows.length > 0 && empRes.rows[0].logo_url) {
         dataUrl = empRes.rows[0].logo_url;
