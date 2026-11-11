@@ -56,6 +56,9 @@ const TOKEN_CLIENTE_EMPRESA_1 = jwt.sign(
 describe('EVARA AI — Asistente Conversacional Multi-Tenant con Google Gemini', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // clearAllMocks no descarta respuestas "Once" pendientes: se reinicia el mock de Gemini
+    // para que una respuesta no consumida no contamine el test siguiente.
+    mockGenerateContent.mockReset();
     mockQueryHandler = null;
   });
 
@@ -124,13 +127,111 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant con Google Gemini',
     expect(res.body.respuesta).toBeTruthy();
     expect(mockGenerateContent).toHaveBeenCalledWith(
       expect.objectContaining({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-flash-lite-latest',
         contents: '¿Qué paquetes tienen para bodas?',
         config: expect.objectContaining({
           systemInstruction: expect.stringContaining('Eres EVARA'),
+          abortSignal: expect.any(AbortSignal),
         }),
       })
     );
+    expect(res.body.data.modelo_usado).toBe('gemini-flash-lite-latest');
+    expect(res.body.data.ia_disponible).toBe(true);
+  });
+
+  // Helper: BD simulada por SQL (mismo patrón que el resto de la suite), independiente
+  // del orden y número de consultas que hagan el middleware y el controlador.
+  const mockConsultaAutenticada = () => {
+    mockQueryHandler = async (sql) => {
+      if (sql.includes('empresas') && sql.includes('SELECT')) {
+        return { rowCount: 1, rows: [{ id: 1, plan_suscripcion: 'Basico', mensajes_chatbot_mes: 1 }] };
+      }
+      if (sql.includes('paquetes')) {
+        return {
+          rowCount: 1,
+          rows: [{ nombre: 'Boda Diamante', descripcion: 'Gala', precio_total: 2500, servicios_incluidos: 'Catering' }],
+        };
+      }
+      return { rows: [], rowCount: 0 };
+    };
+  };
+
+  it('debe usar el siguiente modelo si el principal ya no existe (404)', async () => {
+    mockConsultaAutenticada();
+    mockGenerateContent
+      .mockRejectedValueOnce(new Error('{"error":{"code":404,"message":"models/x is not found","status":"NOT_FOUND"}}'))
+      .mockResolvedValueOnce({ text: 'Respuesta del modelo de respaldo' });
+
+    const res = await request(app)
+      .post('/api/chatbot')
+      .set('Authorization', `Bearer ${TOKEN_CLIENTE_EMPRESA_1}`)
+      .send({ mensaje: 'Hola' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.respuesta).toBe('Respuesta del modelo de respaldo');
+    expect(res.body.data.modelo_usado).toBe('gemini-3.5-flash-lite');
+    expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+  });
+
+  it('debe indicar ia_disponible=false y responder por reglas si ningún modelo responde', async () => {
+    mockConsultaAutenticada();
+    mockGenerateContent.mockRejectedValue(new Error('{"error":{"code":503,"status":"UNAVAILABLE"}}'));
+    const errorLog = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await request(app)
+      .post('/api/chatbot')
+      .set('Authorization', `Bearer ${TOKEN_CLIENTE_EMPRESA_1}`)
+      .send({ mensaje: '¿Qué paquetes tienen?' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.respuesta).toContain('Boda Diamante');
+    expect(res.body.data.modelo_usado).toBe('respuesta-contextual-sin-ia');
+    expect(res.body.data.ia_disponible).toBe(false);
+    expect(mockGenerateContent).toHaveBeenCalledTimes(3);
+    expect(errorLog).toHaveBeenCalledWith(expect.stringContaining('Ningún modelo de Gemini respondió'));
+
+    errorLog.mockRestore();
+    mockGenerateContent.mockReset();
+  });
+
+  it('no debe probar otros modelos si la clave es inválida (403)', async () => {
+    mockConsultaAutenticada();
+    mockGenerateContent.mockRejectedValueOnce(new Error('{"error":{"code":403,"status":"PERMISSION_DENIED"}}'));
+    const errorLog = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await request(app)
+      .post('/api/chatbot')
+      .set('Authorization', `Bearer ${TOKEN_CLIENTE_EMPRESA_1}`)
+      .send({ mensaje: 'Hola' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.ia_disponible).toBe(false);
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+    errorLog.mockRestore();
+  });
+
+  it('debe descartar turnos vacíos del historial antes de enviarlo a Gemini', async () => {
+    mockConsultaAutenticada();
+    mockGenerateContent.mockResolvedValueOnce({ text: 'ok' });
+
+    await request(app)
+      .post('/api/chatbot')
+      .set('Authorization', `Bearer ${TOKEN_CLIENTE_EMPRESA_1}`)
+      .send({
+        mensaje: '¿Y el precio?',
+        historial: [
+          { sender: 'user', text: 'Quiero una boda' },
+          { sender: 'bot', text: '   ' },
+          { sender: 'bot', text: 'Tenemos Boda Diamante' },
+        ],
+      });
+
+    const { contents } = mockGenerateContent.mock.calls[0][0];
+    expect(contents).toEqual([
+      { role: 'user', parts: [{ text: 'Quiero una boda' }] },
+      { role: 'model', parts: [{ text: 'Tenemos Boda Diamante' }] },
+      { role: 'user', parts: [{ text: '¿Y el precio?' }] },
+    ]);
   });
 
   it('debe resolver la empresa mediante slug si la consulta es pública sin token', async () => {
