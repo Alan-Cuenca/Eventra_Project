@@ -386,7 +386,10 @@ export const obtenerEmpresaPublicaPorSlug = async (req, res) => {
       `SELECT id, nombre_comercial, slug, plan_suscripcion, estado_activo,
               logo_url, paleta_colores, marca_agua_activa, portal_titulo, portal_descripcion
        FROM empresas
-       WHERE LOWER(slug) = LOWER($1)`,
+       WHERE LOWER(slug) = LOWER($1)
+          OR (LOWER($1) = 'la-catedral' AND LOWER(slug) = 'helados-la-catedral')
+          OR (LOWER($1) IN ('recepciones-eventos-imperial-1', 'eventos-imperial') AND LOWER(slug) IN ('recepciones-eventos-imperial-1', 'eventos-imperial'))
+       LIMIT 1`,
       [slug.trim()]
     );
 
