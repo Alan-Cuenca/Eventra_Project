@@ -354,7 +354,7 @@ export const RegistroClienteTenant = () => {
         <p className="text-xs text-[var(--ev-text-muted)]">
           ¿Ya dispones de una cuenta en este portal?{' '}
           <Link
-            to="/login"
+            to={`/portal/${slug}/login`}
             className="font-semibold text-[var(--ev-primary)] hover:underline ml-1 inline-flex items-center gap-0.5"
           >
             Iniciar Sesión
@@ -366,3 +366,4 @@ export const RegistroClienteTenant = () => {
 };
 
 export default RegistroClienteTenant;
+

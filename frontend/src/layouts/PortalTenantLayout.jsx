@@ -223,7 +223,7 @@ export const PortalTenantLayout = () => {
           {/* Lado Derecho: Acciones rápidas (Login y Contacto) */}
           <div className="flex items-center gap-3 shrink-0">
             <Link
-              to="/login"
+              to={`/portal/${slug}/login`}
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[var(--ev-primary)] bg-[var(--ev-primary)]/10 hover:bg-[var(--ev-primary)]/15 border border-[var(--ev-primary)]/20 transition-all active:scale-[0.98]"
             >
               <span>Iniciar Sesión</span>
@@ -254,3 +254,4 @@ export const PortalTenantLayout = () => {
 };
 
 export default PortalTenantLayout;
+
