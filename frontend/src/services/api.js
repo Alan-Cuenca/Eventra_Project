@@ -31,6 +31,17 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
+
+    // Si la petición contiene FormData (ej. carga de logotipo), eliminar el
+    // Content-Type por defecto (application/json) para que Axios y el navegador
+    // generen el header multipart/form-data con su respectivo boundary automáticamente.
+    if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+      if (config.headers?.common) {
+        delete config.headers.common['Content-Type'];
+      }
+    }
+
     return config;
   },
   (error) => Promise.reject(error)

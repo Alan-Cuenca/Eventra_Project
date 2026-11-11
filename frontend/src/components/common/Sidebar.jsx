@@ -33,9 +33,9 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
 
   const [secondaryCollapsed, setSecondaryCollapsed] = useState(false);
 
-  const brandLogo = (!isSuperAdmin && branding?.logo_url) ? branding.logo_url : logoImg;
-  const brandName = (!isSuperAdmin && branding?.nombre_comercial) ? branding.nombre_comercial : 'EVENTRA';
-  const brandTagline = (!isSuperAdmin && branding?.portal_titulo) ? branding.portal_titulo : 'Gestión Inteligente de Eventos';
+  const brandLogo = branding?.logo_url ? branding.logo_url : logoImg;
+  const brandName = branding?.nombre_comercial ? branding.nombre_comercial : 'EVENTRA';
+  const brandTagline = branding?.portal_titulo ? branding.portal_titulo : 'Gestión Inteligente de Eventos';
 
   // Macro Módulos del Primary Rail
   const MACRO_MODULES = [

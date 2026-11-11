@@ -72,7 +72,7 @@ router.get(
 router.put(
   '/mi-branding',
   verifyToken,
-  authorizeRoles([ROL_ADMINISTRADOR, ROL_SUPER_ADMIN]),
+  authorizeRoles([ROL_ADMINISTRADOR, ROL_SUPER_ADMIN, ROL_GERENTE]),
   upload.single('logo'),
   actualizarMiBranding
 );

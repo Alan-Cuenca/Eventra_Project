@@ -427,7 +427,14 @@ export const PALETAS_VALIDAS = [
  */
 export const obtenerMiBranding = async (req, res) => {
   try {
-    const empresa_id = req.user?.empresa_id;
+    let empresa_id = req.user?.empresa_id;
+
+    // Si es Super_Admin y proporciona explícitamente empresa_id por query, se consulta dicha empresa
+    if (!empresa_id && (Number(req.user?.rol_id) === 5 || req.user?.rol === 'Super_Admin' || req.user?.rol_nombre === 'Super_Admin')) {
+      if (req.query?.empresa_id) {
+        empresa_id = Number(req.query.empresa_id);
+      }
+    }
 
     if (!empresa_id) {
       // Si es un Super Admin sin empresa asignada, retorna branding institucional EVENTRA
