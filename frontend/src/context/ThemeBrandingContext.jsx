@@ -217,6 +217,9 @@ export const ThemeBrandingProvider = ({ children }) => {
       const data = res?.data || res;
       if (data && typeof data === 'object') {
         setBranding((prev) => ({ ...prev, ...data }));
+        if (data.slug && data.slug !== 'eventra') {
+          localStorage.setItem('last_tenant_slug', data.slug);
+        }
         const targetPaleta = data.paleta_colores && PALETAS[data.paleta_colores]
           ? data.paleta_colores
           : 'sofisticacion_sutil';

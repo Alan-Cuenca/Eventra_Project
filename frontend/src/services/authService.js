@@ -38,6 +38,9 @@ export const authService = {
           localStorage.setItem(ROL_ID_KEY, String(response.data.rol_id));
           localStorage.setItem(ROL_NOMBRE_KEY, response.data.rol_nombre || ROLES_NOMBRES[response.data.rol_id] || 'Usuario');
         }
+        if (response.data?.empresa_slug) {
+          localStorage.setItem('last_tenant_slug', response.data.empresa_slug);
+        }
         return { user: response.data, token: response.token, isRealBackend: true };
       }
       throw new Error('Respuesta inválida del servidor');

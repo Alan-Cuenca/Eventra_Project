@@ -438,6 +438,7 @@ export const registrarClientePortal = async (req, res) => {
       rol_nombre: 'Cliente',
       empresa_id: empresa.id,
       empresa_nombre: empresa.nombre_comercial,
+      empresa_slug: empresa.slug,
       plan_suscripcion: empresa.plan_suscripcion,
       email: nuevoUsuario.email,
       cliente_id: nuevoCliente.id,
@@ -452,6 +453,7 @@ export const registrarClientePortal = async (req, res) => {
       data: {
         usuario: nuevoUsuario,
         cliente: nuevoCliente,
+        empresa_slug: empresa.slug,
         empresa: {
           id: empresa.id,
           nombre_comercial: empresa.nombre_comercial,
@@ -563,6 +565,7 @@ export const loginUser = async (req, res) => {
       `SELECT u.id, u.empresa_id, u.rol_id, u.nombre_completo, u.email, u.password_hash, u.estado_activo,
               r.nombre AS rol_nombre,
               e.nombre_comercial AS empresa_nombre,
+              e.slug AS empresa_slug,
               e.plan_suscripcion,
               e.estado_activo AS empresa_activa
        FROM usuarios u
@@ -614,6 +617,7 @@ export const loginUser = async (req, res) => {
       rol: user.rol_nombre,
       rol_nombre: user.rol_nombre,
       empresa_id: user.empresa_id !== undefined && user.empresa_id !== null ? Number(user.empresa_id) : null,
+      empresa_slug: user.empresa_slug || null,
       plan_suscripcion: user.plan_suscripcion || null,
       email: user.email,
     };

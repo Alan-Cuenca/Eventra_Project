@@ -38,6 +38,7 @@ export const DEMO_USERS = [
     rol_id: ROLES.GERENTE,
     empresa_id: 1,
     empresa_nombre: 'Recepciones & Eventos Imperial',
+    empresa_slug: 'eventos-imperial',
     estado_activo: true,
   },
   {
@@ -48,6 +49,7 @@ export const DEMO_USERS = [
     rol_id: ROLES.TRABAJADOR,
     empresa_id: 1,
     empresa_nombre: 'Recepciones & Eventos Imperial',
+    empresa_slug: 'eventos-imperial',
     estado_activo: true,
   },
   {
@@ -58,6 +60,7 @@ export const DEMO_USERS = [
     rol_id: ROLES.CLIENTE,
     empresa_id: 1,
     empresa_nombre: 'Recepciones & Eventos Imperial',
+    empresa_slug: 'eventos-imperial',
     estado_activo: true,
   },
 ];

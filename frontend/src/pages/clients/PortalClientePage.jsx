@@ -56,7 +56,6 @@ export const PortalClientePage = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login', { replace: true });
   };
 
   const nombre = user?.nombre_completo ?? 'Cliente';

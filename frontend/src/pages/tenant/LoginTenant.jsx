@@ -25,6 +25,13 @@ export const LoginTenant = () => {
   const tenantData = context.tenantData || context.empresa || {};
   const slug = context.slug || tenantData.slug || '';
 
+  // Preservar el slug de la empresa activa para que el logout siempre retorne a este portal
+  React.useEffect(() => {
+    if (slug) {
+      localStorage.setItem('last_tenant_slug', slug);
+    }
+  }, [slug]);
+
   const navigate = useNavigate();
   const { login } = useAuth();
 

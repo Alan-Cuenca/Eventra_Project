@@ -59,9 +59,11 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('eventra_user');
       localStorage.removeItem('rol_id');
       localStorage.removeItem('rol_nombre');
-      // Redirigir fuera del contexto de React Router para resetear el estado
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      const lastSlug = typeof window !== 'undefined' ? localStorage.getItem('last_tenant_slug') : null;
+      const targetLogin = lastSlug && lastSlug !== 'eventra' ? `/portal/${lastSlug}/login` : '/login';
+      // Redirigir fuera del contexto de React Router para resetear el estado hacia el portal correcto
+      if (window.location.pathname !== targetLogin) {
+        window.location.href = targetLogin;
       }
     }
 

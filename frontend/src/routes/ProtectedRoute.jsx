@@ -14,6 +14,10 @@ export const ProtectedRoute = ({ allowedRoles = [] }) => {
   }
 
   if (!token || !user) {
+    const lastSlug = typeof window !== 'undefined' ? localStorage.getItem('last_tenant_slug') : null;
+    if (lastSlug && lastSlug !== 'eventra') {
+      return <Navigate to={`/portal/${lastSlug}/login`} replace />;
+    }
     return <Navigate to="/login" replace />;
   }
 

@@ -30,10 +30,39 @@ export const AuthProvider = ({ children }) => {
     return await authService.register(userData);
   };
 
-  const logout = () => {
+  const logout = (customRedirect) => {
+    // 1. Identificar si es Super Admin (ADMIN_GLOBAL)
+    const isSuper =
+      Number(user?.rol_id) === 5 ||
+      Number(user?.rol_id) === ROLES.SUPER_ADMIN ||
+      user?.rol === 'Super_Admin' ||
+      user?.rol_nombre === 'Super_Admin';
+
+    // 2. Obtener el slug exclusivo de la empresa del usuario
+    const tenantSlug = isSuper
+      ? null
+      : (user?.empresa_slug || user?.slug || localStorage.getItem('last_tenant_slug'));
+
+    let targetUrl = '/login';
+    if (customRedirect) {
+      targetUrl = customRedirect;
+    } else if (tenantSlug && tenantSlug !== 'eventra') {
+      targetUrl = `/portal/${tenantSlug}/login`;
+    }
+
+    if (isSuper) {
+      localStorage.removeItem('last_tenant_slug');
+    }
+
+    // 3. Limpiar estado de sesión
     authService.logout();
     setUser(null);
     setToken(null);
+
+    // 4. Redirección al portal de autenticación correspondiente (portal exclusivo del inquilino)
+    if (typeof window !== 'undefined') {
+      window.location.href = targetUrl;
+    }
   };
 
   const refreshSession = async () => {

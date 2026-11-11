@@ -278,7 +278,7 @@ export const SuperAdminHeader = ({ onToggleSidebar }) => {
                   className="profile-dropdown-item danger"
                   onClick={() => {
                     setProfileOpen(false);
-                    logout();
+                    logout('/login');
                   }}
                   title="Cerrar sesión global"
                 >
