@@ -10,6 +10,9 @@ jobs:
   backend-tests:
     name: Backend Jest Suite & Security Tests
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
 
     steps:
       - name: Checkout Repository
@@ -23,7 +26,7 @@ jobs:
           cache-dependency-path: 'backend/package-lock.json'
 
       - name: Install Backend Dependencies
-        run: npm --prefix backend install
+        run: npm install
 
       - name: Run Backend Integration & Security Tests
         env:
@@ -31,11 +34,14 @@ jobs:
           NODE_ENV: test
           PORT: 0
           EMAIL_SIMULATION_MODE: "true"
-        run: npm --prefix backend test
+        run: npm test
 
   frontend-tests-and-build:
     name: Frontend Unit Tests & Build Verification
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
 
     steps:
       - name: Checkout Repository
@@ -49,11 +55,10 @@ jobs:
           cache-dependency-path: 'frontend/package-lock.json'
 
       - name: Install Frontend Dependencies
-        run: npm --prefix frontend install
+        run: npm install
 
       - name: Run Frontend Unit Tests
-        run: npm --prefix frontend test
+        run: npm test
 
       - name: Compile Production Build
-        run: npm --prefix frontend run build
-
+        run: npm run build
