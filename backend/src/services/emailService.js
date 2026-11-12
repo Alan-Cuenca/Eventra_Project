@@ -471,6 +471,101 @@ export const sendWelcomeAdminEmail = async ({
 };
 
 /**
+ * Envía el enlace seguro de restablecimiento de contraseña.
+ * @param {object} params
+ * @param {string} params.to
+ * @param {string} params.nombre
+ * @param {string} params.enlaceReset
+ * @param {number} params.minutosValidez
+ * @param {string} [params.empresaNombre]
+ * @param {object} [params.transporter]
+ * @returns {Promise<{ success: boolean, messageId?: string, error?: string }>}
+ */
+export const sendPasswordResetEmail = async ({
+  to,
+  nombre,
+  enlaceReset,
+  minutosValidez = 30,
+  empresaNombre,
+  transporter = null,
+}) => {
+  const safeNombre = escapeHtml(nombre || '');
+  const safeEnlace = escapeHtml(enlaceReset);
+  const safeEmpresa = empresaNombre ? escapeHtml(empresaNombre) : null;
+
+  const subject = 'EVENTRA — Restablecimiento de contraseña';
+  const text = [
+    `Hola ${nombre || ''},`,
+    '',
+    `Recibimos una solicitud para restablecer la contraseña de tu cuenta${empresaNombre ? ` en ${empresaNombre}` : ''} en EVENTRA.`,
+    `Para crear una nueva contraseña ingresa al siguiente enlace (válido por ${minutosValidez} minutos y de un solo uso):`,
+    enlaceReset,
+    '',
+    'Si no solicitaste este cambio, ignora este correo: tu contraseña actual seguirá funcionando.',
+    '',
+    'El equipo de EVENTRA',
+  ].join('\n');
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${subject}</title>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #F3F0E4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #233D49;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #F3F0E4; padding: 40px 15px;">
+        <tr>
+          <td align="center">
+            <table role="presentation" width="100%" style="max-width: 580px; background-color: #FFFFFF; border-radius: 14px; box-shadow: 0 4px 20px rgba(35, 61, 73, 0.08); overflow: hidden; border: 1px solid #ECE7D5;">
+              <tr>
+                <td style="padding: 32px 32px 24px; text-align: center; background-color: #FFFFFF; border-bottom: 1px solid #F3F0E4;">
+                  <h1 style="margin: 0; font-size: 26px; font-weight: 700; color: #233D49; letter-spacing: 1.5px;">EVENTRA</h1>
+                  <p style="margin: 6px 0 0; font-size: 13px; color: #4D7182; text-transform: uppercase; letter-spacing: 1px;">Gestión Integral de Eventos & Recepciones</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 32px;">
+                  <h2 style="margin: 0 0 16px; font-size: 20px; font-weight: 600; color: #233D49;">Hola${safeNombre ? `, ${safeNombre}` : ''}</h2>
+                  <p style="margin: 0 0 20px; font-size: 15px; line-height: 1.6; color: #4D7182;">
+                    Recibimos una solicitud para restablecer la contraseña de tu cuenta${safeEmpresa ? ` en <strong>${safeEmpresa}</strong>` : ''}.
+                  </p>
+                  <div style="text-align: center; margin: 30px 0;">
+                    <a href="${safeEnlace}" target="_blank"
+                       style="background-color: #4D7182; color: #FFFFFF; text-decoration: none; padding: 14px 30px; border-radius: 8px; font-weight: 600; font-size: 15px; display: inline-block;">
+                      Restablecer mi contraseña
+                    </a>
+                  </div>
+                  <p style="margin: 0 0 12px; font-size: 12px; color: #C49A3A; font-weight: 500;">
+                    ⚠ El enlace expira en ${Number(minutosValidez)} minutos y solo puede usarse una vez.
+                  </p>
+                  <p style="font-size: 12px; color: #8A98A0; line-height: 1.5; margin-top: 20px;">
+                    Si no solicitaste este cambio, ignora este correo: tu contraseña actual seguirá funcionando.<br/>
+                    Si el botón no funciona, copia y pega este enlace en tu navegador:<br/>
+                    <a href="${safeEnlace}" style="color: #4D7182; word-break: break-all;">${safeEnlace}</a>
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 20px 32px; background-color: #F9F8F5; border-top: 1px solid #ECE7D5; text-align: center;">
+                  <p style="margin: 0; font-size: 12px; color: #8A98A0;">
+                    Este es un correo automático generado por EVENTRA SaaS.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+  return sendMail({ to, subject, text, html, transporter });
+};
+
+/**
  * Envía una invitación para completar registro a un colaborador.
  * @param {object} params
  * @param {string} params.to

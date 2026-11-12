@@ -73,9 +73,20 @@ apiClient.interceptors.response.use(
       }
     }
 
+    // ── Contraseña temporal pendiente de cambio (403 PASSWORD_CHANGE_REQUIRED) ──
+    const requiereCambioPassword =
+      error.response?.status === 403 &&
+      error.response?.data?.error === 'PASSWORD_CHANGE_REQUIRED';
+    if (requiereCambioPassword && typeof window !== 'undefined') {
+      const destino = '/primer-acceso/cambiar-password';
+      if (window.location.pathname !== destino) {
+        window.location.href = destino;
+      }
+    }
+
     // ── Manejo crítico: límite de plan SaaS alcanzado (403 Forbidden) ───────
     let isPlanLimit = false;
-    if (error.response?.status === 403) {
+    if (error.response?.status === 403 && !requiereCambioPassword) {
       const errorData = error.response?.data;
       isPlanLimit =
         errorData?.error === 'PLAN_LIMIT_EXCEEDED' ||

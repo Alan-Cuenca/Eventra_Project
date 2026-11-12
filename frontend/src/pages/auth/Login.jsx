@@ -263,9 +263,30 @@ export const Login = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="login-password">
-                Contraseña
-              </label>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '0.375rem',
+                }}
+              >
+                <label className="form-label" htmlFor="login-password" style={{ margin: 0 }}>
+                  Contraseña
+                </label>
+                <Link
+                  to="/recuperar-password"
+                  id="forgot-password-link"
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--primary)',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                  }}
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
               <div style={{ position: 'relative' }}>
                 <Lock
                   size={15}

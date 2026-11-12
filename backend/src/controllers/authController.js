@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import { ROL_SUPER_ADMIN, ROL_ADMINISTRADOR } from '../middlewares/authMiddleware.js';
-import { getMailTransporter } from '../services/emailService.js';
+import { getMailTransporter, sendPasswordResetEmail } from '../services/emailService.js';
 
 /**
  * =============================================================================
@@ -564,6 +564,7 @@ export const loginUser = async (req, res) => {
     // --- Buscar usuario por email con datos de rol y empresa ---
     const result = await pool.query(
       `SELECT u.id, u.empresa_id, u.rol_id, u.nombre_completo, u.email, u.password_hash, u.estado_activo,
+              u.debe_cambiar_password,
               r.nombre AS rol_nombre,
               e.nombre_comercial AS empresa_nombre,
               e.slug AS empresa_slug,
@@ -612,25 +613,13 @@ export const loginUser = async (req, res) => {
     }
 
     // --- Generar token JWT con empresa_id y rol_id explícitos ---
-    const payload = {
-      id: user.id,
-      rol_id: Number(user.rol_id),
-      rol: user.rol_nombre,
-      rol_nombre: user.rol_nombre,
-      empresa_id: user.empresa_id !== undefined && user.empresa_id !== null ? Number(user.empresa_id) : null,
-      empresa_slug: user.empresa_slug || null,
-      plan_suscripcion: user.plan_suscripcion || null,
-      email: user.email,
-    };
-
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
-
-    // --- Respuesta exitosa (sin exponer password_hash) ---
-    const { password_hash, ...userData } = user;
+    const { token, data: userData } = construirSesion(user);
 
     return res.status(200).json({
       success: true,
-      message: 'Inicio de sesión exitoso.',
+      message: userData.debe_cambiar_password
+        ? 'Inicio de sesión exitoso. Debes actualizar tu contraseña temporal para continuar.'
+        : 'Inicio de sesión exitoso.',
       token,
       data: userData,
     });
@@ -640,6 +629,317 @@ export const loginUser = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Error interno del servidor al iniciar sesión.',
+    });
+  }
+};
+
+/**
+ * =============================================================================
+ * GESTIÓN DE CONTRASEÑAS: cambio obligatorio y recuperación
+ * =============================================================================
+ */
+
+const SALT_ROUNDS_PASSWORD = 10;
+const RESET_MINUTOS_VALIDEZ = 30;
+const PROPOSITO_RESET = 'reset_password';
+
+const SQL_USUARIO_SESION = `
+  SELECT u.id, u.empresa_id, u.rol_id, u.nombre_completo, u.email, u.password_hash, u.estado_activo,
+         u.debe_cambiar_password,
+         r.nombre AS rol_nombre,
+         e.nombre_comercial AS empresa_nombre,
+         e.slug AS empresa_slug,
+         e.plan_suscripcion,
+         e.estado_activo AS empresa_activa
+  FROM usuarios u
+  LEFT JOIN roles r ON u.rol_id = r.id
+  LEFT JOIN empresas e ON u.empresa_id = e.id`;
+
+/**
+ * Genera el JWT de sesión y los datos públicos del usuario (sin password_hash).
+ * Si la cuenta tiene una contraseña temporal, el token lleva debe_cambiar_password = true
+ * y el middleware verifyToken bloqueará el resto de la API hasta que se cambie.
+ */
+function construirSesion(user) {
+  const debeCambiar = user.debe_cambiar_password === true;
+  const payload = {
+    id: user.id,
+    rol_id: Number(user.rol_id),
+    rol: user.rol_nombre,
+    rol_nombre: user.rol_nombre,
+    empresa_id: user.empresa_id !== undefined && user.empresa_id !== null ? Number(user.empresa_id) : null,
+    empresa_slug: user.empresa_slug || null,
+    plan_suscripcion: user.plan_suscripcion || null,
+    email: user.email,
+    debe_cambiar_password: debeCambiar,
+  };
+
+  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+  const { password_hash, ...data } = user;
+  return { token, data: { ...data, debe_cambiar_password: debeCambiar } };
+}
+
+/**
+ * Valida la política de contraseñas de EVENTRA.
+ * @returns {string|null} Mensaje de error o null si es válida.
+ */
+export const validarPoliticaPassword = (password, confirmacion) => {
+  if (!password || typeof password !== 'string') {
+    return 'Debes ingresar la nueva contraseña.';
+  }
+  if (password.length < 8) {
+    return 'La nueva contraseña debe tener al menos 8 caracteres.';
+  }
+  if (password.length > 72) {
+    return 'La nueva contraseña no puede superar los 72 caracteres.';
+  }
+  if (!/[A-Z]/.test(password)) {
+    return 'La nueva contraseña debe incluir al menos una letra mayúscula.';
+  }
+  if (!/\d/.test(password)) {
+    return 'La nueva contraseña debe incluir al menos un número.';
+  }
+  if (confirmacion !== undefined && password !== confirmacion) {
+    return 'Las contraseñas no coinciden.';
+  }
+  return null;
+};
+
+/**
+ * Ruta de login a la que debe volver el usuario según su empresa.
+ */
+const rutaLoginUsuario = (user) => {
+  if (Number(user.rol_id) !== ROL_SUPER_ADMIN && user.empresa_slug) {
+    return `/portal/${user.empresa_slug}/login`;
+  }
+  return '/login';
+};
+
+/**
+ * POST /api/auth/cambiar-password-obligatorio
+ * Cambia la contraseña del usuario autenticado (obligatorio tras recibir una
+ * contraseña temporal). Requiere la contraseña actual. Devuelve un JWT nuevo
+ * sin la marca debe_cambiar_password.
+ *
+ * Nota: los errores de validación usan 400 (nunca 401) para no cerrar la sesión
+ * desde el interceptor del frontend.
+ */
+export const cambiarPasswordObligatorio = async (req, res) => {
+  const { password_temporal, password_actual, password_nuevo, password_confirmar } = req.body || {};
+  const passwordActual = password_temporal ?? password_actual;
+  const userId = req.user?.id;
+
+  try {
+    if (!passwordActual) {
+      return res.status(400).json({
+        success: false,
+        message: 'Debes ingresar tu contraseña actual (la contraseña temporal recibida por correo).',
+      });
+    }
+
+    const errorPolitica = validarPoliticaPassword(password_nuevo, password_confirmar);
+    if (errorPolitica) {
+      return res.status(400).json({ success: false, message: errorPolitica });
+    }
+
+    const result = await pool.query(`${SQL_USUARIO_SESION} WHERE u.id = $1`, [userId]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
+    }
+
+    const user = result.rows[0];
+
+    if (!user.estado_activo) {
+      return res.status(403).json({
+        success: false,
+        message: 'La cuenta de usuario está desactivada. Contacte al administrador.',
+      });
+    }
+
+    const actualValida = await bcrypt.compare(passwordActual, user.password_hash);
+    if (!actualValida) {
+      return res.status(400).json({
+        success: false,
+        message: 'La contraseña actual (temporal) es incorrecta.',
+      });
+    }
+
+    const esIgual = await bcrypt.compare(password_nuevo, user.password_hash);
+    if (esIgual) {
+      return res.status(400).json({
+        success: false,
+        message: 'La nueva contraseña debe ser diferente a la contraseña temporal.',
+      });
+    }
+
+    const nuevoHash = await bcrypt.hash(password_nuevo, SALT_ROUNDS_PASSWORD);
+    await pool.query(
+      `UPDATE usuarios
+          SET password_hash = $1, debe_cambiar_password = false, fecha_actualizacion = CURRENT_TIMESTAMP
+        WHERE id = $2`,
+      [nuevoHash, user.id]
+    );
+
+    const { token, data } = construirSesion({
+      ...user,
+      password_hash: nuevoHash,
+      debe_cambiar_password: false,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Contraseña actualizada exitosamente.',
+      token,
+      data,
+    });
+  } catch (error) {
+    console.error('[authController] Error en cambiarPasswordObligatorio:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor al actualizar la contraseña.',
+    });
+  }
+};
+
+/**
+ * POST /api/auth/recuperar-password
+ * Envía un enlace de restablecimiento (válido 30 min, de un solo uso) al correo.
+ *
+ * Seguridad:
+ *  - Responde siempre el mismo mensaje exista o no la cuenta (evita enumeración).
+ *  - El token se firma con JWT_SECRET + hash actual de la contraseña: en cuanto
+ *    la contraseña cambia, el enlace deja de funcionar (uso único).
+ */
+export const solicitarRecuperacionPassword = async (req, res) => {
+  const { email } = req.body || {};
+  const respuestaGenerica = {
+    success: true,
+    message: 'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña en los próximos minutos.',
+  };
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || typeof email !== 'string' || !emailRegex.test(email.trim())) {
+    return res.status(400).json({
+      success: false,
+      message: 'Ingresa un correo electrónico válido.',
+    });
+  }
+
+  try {
+    const result = await pool.query(`${SQL_USUARIO_SESION} WHERE u.email = $1`, [
+      email.toLowerCase().trim(),
+    ]);
+
+    const user = result.rows[0];
+    const empresaBloqueada =
+      user && Number(user.rol_id) !== ROL_SUPER_ADMIN && user.empresa_activa === false;
+
+    if (user && user.estado_activo && !empresaBloqueada) {
+      const resetToken = jwt.sign(
+        { id: user.id, proposito: PROPOSITO_RESET },
+        process.env.JWT_SECRET + user.password_hash,
+        { expiresIn: `${RESET_MINUTOS_VALIDEZ}m` }
+      );
+
+      const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
+      const base =
+        Number(user.rol_id) !== ROL_SUPER_ADMIN && user.empresa_slug
+          ? `${frontendUrl}/portal/${encodeURIComponent(user.empresa_slug)}/restablecer-password`
+          : `${frontendUrl}/restablecer-password`;
+      const enlaceReset = `${base}?token=${encodeURIComponent(resetToken)}`;
+
+      // Envío desacoplado: no se espera la respuesta del proveedor de correo para
+      // no revelar (por tiempo de respuesta) si la cuenta existe.
+      sendPasswordResetEmail({
+        to: user.email,
+        nombre: user.nombre_completo,
+        empresaNombre: user.empresa_nombre,
+        enlaceReset,
+        minutosValidez: RESET_MINUTOS_VALIDEZ,
+      })
+        .then((r) => {
+          if (!r?.success) {
+            console.error('[authController] No se pudo enviar el correo de recuperación:', r?.error);
+          }
+        })
+        .catch((err) => console.error('[authController] Error enviando correo de recuperación:', err.message));
+    }
+
+    return res.status(200).json(respuestaGenerica);
+  } catch (error) {
+    console.error('[authController] Error en solicitarRecuperacionPassword:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'No fue posible procesar la solicitud. Intenta nuevamente en unos minutos.',
+    });
+  }
+};
+
+/**
+ * POST /api/auth/restablecer-password
+ * Establece una nueva contraseña usando el token recibido por correo.
+ * También limpia la marca debe_cambiar_password (la contraseña ya es personal).
+ */
+export const restablecerPassword = async (req, res) => {
+  const { token, password_nuevo, password_confirmar } = req.body || {};
+  const mensajeTokenInvalido =
+    'El enlace de recuperación es inválido, ya fue utilizado o ha expirado. Solicita uno nuevo.';
+
+  try {
+    if (!token || typeof token !== 'string') {
+      return res.status(400).json({ success: false, message: mensajeTokenInvalido });
+    }
+
+    const errorPolitica = validarPoliticaPassword(password_nuevo, password_confirmar);
+    if (errorPolitica) {
+      return res.status(400).json({ success: false, message: errorPolitica });
+    }
+
+    const sinVerificar = jwt.decode(token);
+    if (!sinVerificar?.id || sinVerificar.proposito !== PROPOSITO_RESET) {
+      return res.status(400).json({ success: false, message: mensajeTokenInvalido });
+    }
+
+    const result = await pool.query(`${SQL_USUARIO_SESION} WHERE u.id = $1`, [sinVerificar.id]);
+    const user = result.rows[0];
+    if (!user) {
+      return res.status(400).json({ success: false, message: mensajeTokenInvalido });
+    }
+
+    try {
+      const verificado = jwt.verify(token, process.env.JWT_SECRET + user.password_hash);
+      if (verificado.proposito !== PROPOSITO_RESET || verificado.id !== user.id) {
+        throw new Error('Propósito inválido');
+      }
+    } catch {
+      return res.status(400).json({ success: false, message: mensajeTokenInvalido });
+    }
+
+    if (!user.estado_activo) {
+      return res.status(403).json({
+        success: false,
+        message: 'La cuenta de usuario está desactivada. Contacte al administrador.',
+      });
+    }
+
+    const nuevoHash = await bcrypt.hash(password_nuevo, SALT_ROUNDS_PASSWORD);
+    await pool.query(
+      `UPDATE usuarios
+          SET password_hash = $1, debe_cambiar_password = false, fecha_actualizacion = CURRENT_TIMESTAMP
+        WHERE id = $2`,
+      [nuevoHash, user.id]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Tu contraseña fue restablecida exitosamente. Ya puedes iniciar sesión.',
+      data: { redirect: rutaLoginUsuario(user) },
+    });
+  } catch (error) {
+    console.error('[authController] Error en restablecerPassword:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor al restablecer la contraseña.',
     });
   }
 };

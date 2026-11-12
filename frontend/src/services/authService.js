@@ -163,11 +163,25 @@ export const authService = {
   },
 
   /**
-   * POST /api/auth/recuperar-credencial
-   * Solicita regeneración y despacho de credenciales caducadas por correo.
+   * POST /api/auth/recuperar-password
+   * Solicita el envío de un enlace de restablecimiento de contraseña al correo.
+   * El backend responde siempre con un mensaje genérico (exista o no la cuenta).
    */
-  async solicitarRecuperacionCredencial(email) {
-    return await api.post('/auth/recuperar-credencial', { email });
+  async solicitarRecuperacionPassword(email) {
+    return await api.post('/auth/recuperar-password', { email });
+  },
+
+  /**
+   * POST /api/auth/restablecer-password
+   * Establece una nueva contraseña con el token recibido por correo.
+   * Retorna { data: { redirect } } con la ruta de login correspondiente.
+   */
+  async restablecerPassword({ token, password_nuevo, password_confirmar }) {
+    return await api.post('/auth/restablecer-password', {
+      token,
+      password_nuevo,
+      password_confirmar,
+    });
   },
 
   /**

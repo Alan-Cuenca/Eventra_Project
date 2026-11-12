@@ -165,16 +165,9 @@ export const LoginTenant = () => {
             <label className="form-label" htmlFor="tenant-password" style={{ margin: 0 }}>
               Contraseña
             </label>
-            <a
-              href="#recuperar"
-              onClick={(e) => {
-                e.preventDefault();
-                alert(
-                  `Para restablecer tus accesos, contacta a la administración de ${
-                    tenantData.nombre_comercial || 'tu empresa'
-                  }.`
-                );
-              }}
+            <Link
+              to={`/portal/${slug}/recuperar-password`}
+              id="tenant-forgot-password-link"
               style={{
                 fontSize: '0.75rem',
                 color: 'var(--primary)',
@@ -183,7 +176,7 @@ export const LoginTenant = () => {
               }}
             >
               ¿Olvidaste tu contraseña?
-            </a>
+            </Link>
           </div>
 
           <div style={{ position: 'relative' }}>
