@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { superAdminService } from '../../services/superAdminService';
+import { authService } from '../../services/authService';
 import { GlobalStatCard } from '../../components/super-admin/GlobalStatCard';
 import { CrearEmpresaModal } from '../../components/super-admin/CrearEmpresaModal';
 import {
@@ -129,12 +130,20 @@ export const AdministradoresTenantPage = () => {
     }
   };
 
-  const handleReenviarCredenciales = (adm) => {
+  const handleReenviarCredenciales = async (adm) => {
     setAdminSeleccionado(adm);
-    mostrarToast(
-      `Notificación de recordatorio y enlace de acceso enviados a ${adm.email}.`,
-      'success'
-    );
+    try {
+      await authService.solicitarRecuperacionPassword(adm.email);
+      mostrarToast(
+        `Enlace de restablecimiento de contraseña enviado a ${adm.email}.`,
+        'success'
+      );
+    } catch (err) {
+      mostrarToast(
+        err?.message || 'No fue posible enviar el enlace de restablecimiento.',
+        'error'
+      );
+    }
   };
 
   return (

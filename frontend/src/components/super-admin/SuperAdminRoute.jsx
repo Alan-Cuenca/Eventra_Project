@@ -64,6 +64,11 @@ export const SuperAdminRoute = () => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Contraseña temporal pendiente de cambio
+  if (user?.debe_cambiar_password === true) {
+    return <Navigate to="/primer-acceso/cambiar-password" replace />;
+  }
+
   // Usuario autenticado pero SIN permisos de Super Administrador
   if (!isSuperAdmin) {
     console.warn('[SuperAdminRoute] Intento de acceso no autorizado al panel global por usuario rol:', user?.rol_id);

@@ -6,8 +6,11 @@ import {
   registrarClientePortal,
   obtenerInfoPortalEmpresa,
   loginUser,
+  cambiarPasswordObligatorio,
+  solicitarRecuperacionPassword,
+  restablecerPassword,
 } from '../controllers/authController.js';
-import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+import { verifyToken, verifyTokenPermitirCambioPendiente, authorizeRoles } from '../middlewares/authMiddleware.js';
 import { verificarLimitePlan } from '../middlewares/planLimitsMiddleware.js';
 
 const router = express.Router();
@@ -232,6 +235,90 @@ router.post('/login', loginUser);
 
 /**
  * @openapi
+ * /api/auth/cambiar-password-obligatorio:
+ *   post:
+ *     summary: Cambia la contraseña temporal por una contraseña personal
+ *     description: >
+ *       Obligatorio para cuentas creadas con contraseña temporal (debe_cambiar_password = true).
+ *       Mientras no se cambie, el resto de endpoints protegidos responden 403 PASSWORD_CHANGE_REQUIRED.
+ *       Retorna un nuevo JWT sin la marca de cambio pendiente.
+ *     tags: [Autenticación]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [password_temporal, password_nuevo, password_confirmar]
+ *             properties:
+ *               password_temporal: { type: string, format: password }
+ *               password_nuevo: { type: string, format: password, minLength: 8 }
+ *               password_confirmar: { type: string, format: password }
+ *     responses:
+ *       200:
+ *         description: Contraseña actualizada — retorna nuevo token
+ *       400:
+ *         description: Contraseña actual incorrecta o nueva contraseña no válida
+ */
+router.post('/cambiar-password-obligatorio', verifyTokenPermitirCambioPendiente, cambiarPasswordObligatorio);
+
+/**
+ * @openapi
+ * /api/auth/recuperar-password:
+ *   post:
+ *     summary: Solicita un enlace de restablecimiento de contraseña por correo
+ *     description: >
+ *       Responde siempre con el mismo mensaje (exista o no la cuenta). El enlace es válido
+ *       por 30 minutos y queda invalidado en cuanto la contraseña cambia.
+ *     tags: [Autenticación]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email: { type: string, format: email }
+ *     responses:
+ *       200:
+ *         description: Solicitud procesada
+ *       400:
+ *         description: Correo inválido
+ */
+router.post('/recuperar-password', solicitarRecuperacionPassword);
+
+/**
+ * @openapi
+ * /api/auth/restablecer-password:
+ *   post:
+ *     summary: Establece una nueva contraseña con el token recibido por correo
+ *     tags: [Autenticación]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [token, password_nuevo, password_confirmar]
+ *             properties:
+ *               token: { type: string }
+ *               password_nuevo: { type: string, format: password, minLength: 8 }
+ *               password_confirmar: { type: string, format: password }
+ *     responses:
+ *       200:
+ *         description: Contraseña restablecida — retorna la ruta de login correspondiente
+ *       400:
+ *         description: Token inválido/expirado o contraseña no válida
+ */
+router.post('/restablecer-password', restablecerPassword);
+
+/**
+ * @openapi
  * /api/auth/me:
  *   get:
  *     summary: Valida el token y retorna el payload del usuario autenticado
@@ -247,7 +334,7 @@ router.post('/login', loginUser);
  *       401:
  *         description: Token ausente, expirado o inválido
  */
-router.get('/me', verifyToken, (req, res) => {
+router.get('/me', verifyTokenPermitirCambioPendiente, (req, res) => {
   return res.status(200).json({
     success: true,
     message: 'Acceso autorizado.',

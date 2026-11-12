@@ -140,6 +140,10 @@ CREATE TABLE IF NOT EXISTS usuarios (
         REFERENCES roles(id)
 );
 
+-- Cambio obligatorio de contraseña (cuentas creadas con contraseña temporal / asignada por terceros)
+ALTER TABLE usuarios
+    ADD COLUMN IF NOT EXISTS debe_cambiar_password BOOLEAN DEFAULT false;
+
 -- Idempotencia para modificaciones de usuarios
 ALTER TABLE usuarios ALTER COLUMN empresa_id DROP NOT NULL;
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS cedula VARCHAR(20);

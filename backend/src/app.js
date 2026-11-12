@@ -21,6 +21,7 @@ import empresaRoutes from './routes/empresaRoutes.js';
 import suscripcionRoutes from './routes/suscripcionRoutes.js';
 import reporteRoutes from './routes/reporteRoutes.js';
 import configuracionRoutes from './routes/configuracionRoutes.js';
+import { ejecutarMigraciones } from './config/schemaMigrations.js';
 
 dotenv.config();
 
@@ -124,6 +125,9 @@ const HOST = '0.0.0.0';
 const isTestEnv = Boolean(process.env.JEST_WORKER_ID) || (process.env.NODE_ENV === 'test' && !process.env.RENDER);
 
 if (!isTestEnv) {
+  // Migraciones idempotentes (no bloquean el arranque si la BD no responde)
+  ejecutarMigraciones().catch((err) => console.error('[app] Error en migraciones:', err.message));
+
   app.listen(PORT, HOST, () => {
     console.log(`Server is running on http://${HOST}:${PORT}`);
   });

@@ -88,8 +88,8 @@ export const crearUsuario = async (req, res) => {
     const passwordHash = await bcrypt.hash(password, salt);
 
     const result = await pool.query(
-      `INSERT INTO usuarios (empresa_id, rol_id, nombre_completo, email, password_hash)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO usuarios (empresa_id, rol_id, nombre_completo, email, password_hash, debe_cambiar_password)
+       VALUES ($1, $2, $3, $4, $5, true)
        RETURNING id, empresa_id, rol_id, nombre_completo, email, estado_activo, fecha_creacion`,
       [empresa_id, Number(rol_id), nombreFinal, email, passwordHash]
     );
