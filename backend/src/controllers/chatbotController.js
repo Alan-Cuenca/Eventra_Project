@@ -1,14 +1,46 @@
 import { GoogleGenAI } from '@google/genai';
 import pool from '../config/db.js';
+import {
+  obtenerRolId,
+  esPersonalInterno,
+  construirPromptPersonal,
+  responderPersonalSinIA,
+} from '../utils/evaraGuiaSistema.js';
 
 /**
- * Modelos de Gemini en orden de preferencia. El primero es un alias "latest" que Google
+ * Modelos de Gemini en orden de preferencia. Los primeros son alias "latest" que Google
  * actualiza automáticamente, para que el chatbot no deje de funcionar cuando se retire una
  * versión concreta (como ocurrió con gemini-1.5-flash). Configurable con GEMINI_MODELS.
  */
-export const MODELOS_POR_DEFECTO = process.env.NODE_ENV === 'test'
-  ? ['gemini-flash-lite-latest', 'gemini-3.5-flash-lite', 'gemini-3-flash-preview']
-  : ['gemini-2.5-flash-lite', 'gemini-1.5-flash', 'gemini-flash-lite-latest'];
+export const MODELOS_POR_DEFECTO = ['gemini-flash-lite-latest', 'gemini-flash-latest', 'gemini-2.5-flash'];
+
+const MAX_TURNOS_HISTORIAL = 12;
+const MAX_CARACTERES_TURNO = 2000;
+
+/**
+ * Convierte el historial del chat al formato de Gemini:
+ * descarta turnos vacíos, empieza siempre con un turno del usuario (el saludo inicial
+ * del bot se omite), fusiona turnos consecutivos del mismo rol y limita su tamaño.
+ */
+export const prepararHistorial = (historial) => {
+  const turnos = (Array.isArray(historial) ? historial : [])
+    .map((h) => ({
+      role: h?.sender === 'user' ? 'user' : 'model',
+      text: String(h?.text || '').trim().slice(0, MAX_CARACTERES_TURNO),
+    }))
+    .filter((h) => h.text)
+    .slice(-MAX_TURNOS_HISTORIAL);
+
+  while (turnos.length && turnos[0].role !== 'user') turnos.shift();
+
+  const fusionados = [];
+  for (const t of turnos) {
+    const ultimo = fusionados[fusionados.length - 1];
+    if (ultimo && ultimo.role === t.role) ultimo.text += `\n${t.text}`;
+    else fusionados.push({ ...t });
+  }
+  return fusionados;
+};
 
 /** Valor de modelo_usado cuando ningún modelo respondió y se usó el generador por reglas. */
 export const MODELO_RESPALDO = 'respuesta-contextual-sin-ia';
@@ -176,8 +208,11 @@ export const consultarEvara = async (req, res) => {
       })),
     };
 
-    // 4. System Prompt Dinámico Estricto
-    const systemPrompt = `Eres EVARA, el asistente de ventas experto de esta empresa de eventos.
+    // 4. System Prompt Dinámico Estricto según quién pregunta:
+    //    personal interno → guía de uso del sistema; cliente/visitante → asistente de ventas
+    const rolId = obtenerRolId(req.user);
+    const modoPersonal = esPersonalInterno(rolId);
+    const systemPrompt = modoPersonal ? construirPromptPersonal(rolId, catalogoEmpresa) : `Eres EVARA, el asistente de ventas experto de esta empresa de eventos.
 Tu alcance y funciones son:
 1. Orientar amablemente a los clientes respondiendo dudas basándote ÚNICAMENTE en este catálogo oficial: ${JSON.stringify(catalogoEmpresa)}. Prohibido inventar precios o servicios no incluidos.
 2. Si el cliente te indica una fecha, te pide cotizar o desea agendar/reservar:
@@ -193,17 +228,17 @@ Sé persuasivo, amable, conciso y profesional en todo momento.`;
 
     // Solo intentar Gemini si la clave no es el placeholder por defecto
     if (apiKey && apiKey !== 'tu_clave_aqui') {
-      // Se descartan turnos vacíos del historial: Gemini rechaza partes sin texto (400)
-      const turnosPrevios = (Array.isArray(historial) ? historial : [])
-        .map((h) => ({ role: h?.sender === 'user' ? 'user' : 'model', text: String(h?.text || '').trim() }))
-        .filter((h) => h.text);
+      // Historial saneado: Gemini rechaza (400) partes vacías o conversaciones que no
+      // empiezan por el usuario o que repiten rol en turnos consecutivos.
+      const mensajeActual = String(mensaje).trim();
+      const turnos = prepararHistorial([
+        ...(Array.isArray(historial) ? historial : []),
+        { sender: 'user', text: mensajeActual },
+      ]);
 
-      const contents = turnosPrevios.length > 0
-        ? [
-            ...turnosPrevios.map((h) => ({ role: h.role, parts: [{ text: h.text }] })),
-            { role: 'user', parts: [{ text: String(mensaje).trim() }] },
-          ]
-        : String(mensaje).trim();
+      const contents = turnos.length > 1
+        ? turnos.map((h) => ({ role: h.role, parts: [{ text: h.text }] }))
+        : mensajeActual;
 
       const generado = await generarConGemini({ apiKey, contents, systemPrompt });
       if (generado) {
@@ -215,8 +250,10 @@ Sé persuasivo, amable, conciso y profesional en todo momento.`;
     }
 
     if (!textoIA) {
-      // Respaldo contextual basado en catálogo e historial
-      textoIA = generarRespuestaContextual(mensaje, catalogoEmpresa.paquetes, catalogoEmpresa.servicios, historial);
+      // Respaldo contextual sin IA: guía del sistema para el personal, catálogo para clientes
+      textoIA = modoPersonal
+        ? responderPersonalSinIA(mensaje, rolId)
+        : generarRespuestaContextual(mensaje, catalogoEmpresa.paquetes, catalogoEmpresa.servicios, historial);
     }
 
     // 6. Incrementar contador de mensajes de chatbot de la empresa para control de cuotas SaaS
@@ -233,6 +270,7 @@ Sé persuasivo, amable, conciso y profesional en todo momento.`;
         respuesta: textoIA,
         modelo_usado: modeloUsado,
         ia_disponible: modeloUsado !== MODELO_RESPALDO,
+        modo: modoPersonal ? 'guia-sistema' : 'ventas',
         empresa_id: empresa_id,
       },
     });

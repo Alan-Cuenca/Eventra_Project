@@ -1,89 +1,115 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Sparkles, 
-  X, 
-  Send, 
-  Bot, 
-  RefreshCw,
-  HelpCircle
-} from 'lucide-react';
+import { Sparkles, X, Send, Bot, ArrowRight } from 'lucide-react';
 import { api } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
+
+/** Rutas a las que EVARA puede enlazar con un botón (solo módulos reales del Sidebar) */
+const RUTAS_ENLAZABLES = {
+  '/configuracion-marca': 'Identidad y Marca',
+  '/cotizador': 'Ir al Cotizador',
+  '/cotizaciones': 'Ver Cotizaciones',
+  '/reservas': 'Ver Reservas',
+  '/eventos': 'Ver Eventos',
+  '/actividades': 'Ver Actividades',
+  '/solicitudes': 'Ver Solicitudes',
+  '/pagos': 'Ir a Pagos',
+  '/clientes': 'Ver Clientes',
+  '/servicios': 'Ver Servicios',
+  '/paquetes': 'Ver Paquetes',
+  '/proveedores': 'Ver Proveedores',
+  '/reportes': 'Ver Reportes',
+  '/colaboradores': 'Ver Equipo',
+  '/mi-suscripcion': 'Mi Suscripción',
+  '/dashboard': 'Ir al Dashboard',
+};
+
+const MAX_HISTORIAL = 12;
+
+const horaActual = () => new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+/** Extrae las rutas válidas mencionadas en el texto, ej. "(/configuracion-marca)" */
+const rutasEnTexto = (texto) => {
+  const encontradas = String(texto).match(/\/[a-z-]+/g) || [];
+  return [...new Set(encontradas)].filter((r) => RUTAS_ENLAZABLES[r]).slice(0, 3);
+};
 
 export const EvaraChatWidget = () => {
+  const navigate = useNavigate();
+  const { isAdmin, isGerente, isTrabajador } = useAuth();
+  const esPersonal = Boolean(isAdmin || isGerente || isTrabajador);
+
+  // Textos según quién usa el chat: el personal recibe ayuda del sistema; el cliente, asesoría de ventas
+  const textos = useMemo(
+    () =>
+      esPersonal
+        ? {
+            subtitulo: 'Asistente del Sistema',
+            saludo: '¡Hola! Soy EVARA. Puedo indicarte dónde está cada función de EVENTRA y cómo usarla. ¿Qué necesitas hacer?',
+            sugerencias: isAdmin
+              ? ['¿Cómo cambio el tema del portal?', '¿Cómo invito a un trabajador?', '¿Dónde registro un pago?']
+              : ['¿Dónde veo mis actividades?', '¿Cómo registro una reserva?', '¿Dónde registro un pago?'],
+          }
+        : {
+            subtitulo: 'Asistente de Ventas y Catálogo',
+            saludo: '¡Hola! Soy EVARA, asistente de ventas y planificación de eventos. ¿Qué tipo de evento o recepción deseas cotizar hoy?',
+            sugerencias: ['¿Qué paquetes para bodas tienen?', '¿Cuál es el costo del catering?', '¿Tienen opciones con barra libre?'],
+          },
+    [esPersonal, isAdmin]
+  );
+
   const [isOpen, setIsOpen] = useState(false);
   const [inputMessage, setInputMessage] = useState('');
-  const [messages, setMessages] = useState([
-    {
-      sender: 'evara',
-      text: '¡Hola! Soy EVARA, asistente de ventas y planificación de eventos. ¿Qué tipo de evento o recepción deseas cotizar hoy?',
-      timestamp: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-    },
-  ]);
+  const [messages, setMessages] = useState(() => [{ sender: 'evara', text: textos.saludo, timestamp: horaActual() }]);
   const [loading, setLoading] = useState(false);
-
-  const handleResetChat = () => {
-    setMessages([
-      {
-        sender: 'evara',
-        text: '¡Hola! Soy EVARA, tu asistente de ventas de eventos. ¿Para qué fecha o tipo de evento deseas que te recomiende nuestro mejor paquete?',
-        timestamp: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-      },
-    ]);
-  };
   const messagesEndRef = useRef(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // Si cambia el rol (login/logout) y aún no hay conversación, actualizar el saludo
+  useEffect(() => {
+    setMessages((prev) => (prev.length <= 1 ? [{ sender: 'evara', text: textos.saludo, timestamp: horaActual() }] : prev));
+  }, [textos.saludo]);
 
   useEffect(() => {
-    if (isOpen) {
-      scrollToBottom();
-    }
+    if (isOpen) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isOpen, loading]);
+
+  const sugerencias = textos.sugerencias;
 
   const handleSend = async (e) => {
     e.preventDefault();
     const texto = inputMessage.trim();
     if (!texto || loading) return;
 
-    const userMessage = {
-      sender: 'user',
-      text: texto,
-      timestamp: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-    };
+    // Historial previo (sin el mensaje actual) para que EVARA recuerde el contexto
+    const historial = messages
+      .slice(1) // el saludo inicial no aporta contexto
+      .slice(-MAX_HISTORIAL)
+      .map(({ sender, text }) => ({ sender, text }));
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => [...prev, { sender: 'user', text: texto, timestamp: horaActual() }]);
     setInputMessage('');
     setLoading(true);
 
     try {
-      // Petición a POST /api/chatbot con Axios
-      const response = await api.post('/chatbot', { mensaje: texto });
-      
+      const response = await api.post('/chatbot', { mensaje: texto, historial });
       const respuestaTexto =
         response?.respuesta ||
         response?.data?.respuesta ||
         response?.data?.data?.respuesta ||
-        'Con gusto te oriento. Te invito a consultar nuestros paquetes y servicios disponibles para más detalles.';
+        'Con gusto te oriento. ¿Podrías darme un poco más de detalle sobre lo que necesitas?';
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: 'evara',
-          text: respuestaTexto,
-          timestamp: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-        },
-      ]);
+      setMessages((prev) => [...prev, { sender: 'evara', text: respuestaTexto, timestamp: horaActual() }]);
     } catch (error) {
       console.error('[EvaraChatWidget] Error al consultar EVARA:', error);
+      const limite = error?.response?.status === 403 || error?.status === 403;
       setMessages((prev) => [
         ...prev,
         {
           sender: 'evara',
-          text: 'Lo siento, tuve un momento de congestión al consultar el catálogo. Por favor inténtalo de nuevo.',
-          timestamp: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+          text: limite
+            ? 'Se alcanzó el límite de mensajes de EVARA de tu plan este mes. Un Administrador puede ampliarlo en Mi Suscripción (/mi-suscripcion).'
+            : 'Lo siento, no pude responder en este momento. Por favor inténtalo de nuevo.',
+          timestamp: horaActual(),
         },
       ]);
     } finally {
@@ -91,11 +117,6 @@ export const EvaraChatWidget = () => {
     }
   };
 
-  const sugerencias = [
-    '¿Qué paquetes para bodas tienen?',
-    '¿Cuál es el costo del catering?',
-    '¿Tienen opciones con barra libre?',
-  ];
 
   return (
     <>
@@ -139,7 +160,7 @@ export const EvaraChatWidget = () => {
                   </span>
                 </div>
                 <p className="text-[10px] sm:text-[11px] text-white/80 truncate">
-                  Asistente de Ventas y Catálogo
+                  {textos.subtitulo}
                 </p>
               </div>
             </div>
@@ -179,34 +200,22 @@ export const EvaraChatWidget = () => {
                       }`}
                     >
                       {msg.text}
-                      {!isUser && (msg.text.includes('/cotizador') || msg.text.includes('/reservas')) && (
+                      {!isUser && index > 0 && rutasEnTexto(msg.text).length > 0 && (
                         <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2 border-t border-[#CBC6B6]/50">
-                          {msg.text.includes('/cotizador') && (
+                          {rutasEnTexto(msg.text).map((ruta) => (
                             <button
+                              key={ruta}
                               type="button"
                               onClick={() => {
                                 setIsOpen(false);
-                                navigate('/cotizador');
+                                navigate(ruta);
                               }}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#526F7D] hover:bg-[#3E5763] text-white text-[11px] font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--ev-primary)] hover:bg-[var(--ev-primary-hover)] text-white text-[11px] font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
                             >
-                              <FileText size={12} />
-                              <span>Ir al Cotizador</span>
+                              <span>{RUTAS_ENLAZABLES[ruta]}</span>
+                              <ArrowRight size={12} />
                             </button>
-                          )}
-                          {msg.text.includes('/reservas') && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setIsOpen(false);
-                                navigate('/reservas');
-                              }}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#233D49] hover:bg-[#16272F] text-white text-[11px] font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
-                            >
-                              <Calendar size={12} />
-                              <span>Ver Reservas</span>
-                            </button>
-                          )}
+                          ))}
                         </div>
                       )}
                     </div>
