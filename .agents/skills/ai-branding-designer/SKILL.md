@@ -85,9 +85,15 @@ Toda paleta generada a partir del logotipo debe responder estrictamente a 5 clav
 
 ---
 
-## 4. Prompt Estricto de Inferencia para la IA (Google Gemini Vision)
+## 4. Paleta Completa del Logo (arquitectura híbrida)
 
-```text
-Actúa como el diseñador definido en 'ai-branding-designer.md'. Analiza los colores de este logotipo y genera un JSON estricto con 5 claves (bg, surface, border, primary, text). El 'primary' debe ser el acento del logo sin ser neón; el 'bg' un derivado muy claro/pastel; y el 'text' oscuro legible. Respeta la armonía visual.
-```
+El tema ya no se construye con un solo color. El motor `paletteEngine.js` (copias idénticas en `backend/src/utils/` y `frontend/src/utils/`, deben mantenerse sincronizadas):
+
+1. **Extrae todos los colores reales** del logo (k-means en OKLab, máx. 8), descarta el fondo neutro detectado en los bordes y guarda su presencia en `logoColors`.
+2. **Asigna roles** `primary`, `secondary`, `accent` y `text`. La IA (Gemini → GPT-4o) solo elige entre los HEX detectados; cualquier color inventado se descarta. Sin IA, la asignación es algorítmica.
+3. **Calibra** cada rol: primario ≥ 4.5:1 contra blanco, secundario/acento ≥ 3:1, texto ≥ 7:1 contra `bg`, croma limitada (sin neón).
+
+Además de los 5 tokens base, el tema incluye `secondary`, `secondaryHover`, `secondaryLight`, `accent`, `accentLight` y `logoColors`, inyectados como `--secondary`, `--secondary-light`, `--accent`, `--accent-light`, `--brand-secondary` y `--brand-accent`.
+
+El prompt vigente está en `SYSTEM_PROMPT` de `backend/src/services/aiBrandingService.js`.
 

@@ -20,6 +20,13 @@ import {
   X,
 } from 'lucide-react';
 
+const ROLE_LABELS = {
+  primary: 'Primario',
+  secondary: 'Secundario',
+  accent: 'Acento',
+  text: 'Texto',
+};
+
 export const ConfiguracionMarca = () => {
   const {
     branding,
@@ -610,33 +617,25 @@ export const ConfiguracionMarca = () => {
                     className="p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between gap-4 shadow-xs hover:shadow-sm"
                   >
                     <div className="flex items-center gap-4">
-                      {/* Muestra de 5 Círculos de Color de la IA */}
+                      {/* Círculos de los roles del tema generado */}
                       <div className="flex items-center -space-x-1.5 shrink-0">
-                        <div
-                          className="w-7 h-7 rounded-full border border-black/15 shadow-sm"
-                          style={{ backgroundColor: iaItem.bg }}
-                          title={`Fondo Pastel: ${iaItem.bg}`}
-                        />
-                        <div
-                          className="w-7 h-7 rounded-full border border-black/15 shadow-sm"
-                          style={{ backgroundColor: iaItem.surface || '#FFFFFF' }}
-                          title={`Superficie: ${iaItem.surface || '#FFFFFF'}`}
-                        />
-                        <div
-                          className="w-7 h-7 rounded-full border border-black/15 shadow-sm"
-                          style={{ backgroundColor: iaItem.border }}
-                          title={`Borde Suave: ${iaItem.border}`}
-                        />
-                        <div
-                          className="w-7 h-7 rounded-full border border-black/15 shadow-sm"
-                          style={{ backgroundColor: iaItem.primary }}
-                          title={`Color Primario: ${iaItem.primary}`}
-                        />
-                        <div
-                          className="w-7 h-7 rounded-full border border-black/15 shadow-sm"
-                          style={{ backgroundColor: iaItem.text }}
-                          title={`Texto Tintado: ${iaItem.text}`}
-                        />
+                        {[
+                          ['Fondo', iaItem.bg],
+                          ['Borde', iaItem.border],
+                          ['Primario', iaItem.primary],
+                          ['Secundario', iaItem.secondary],
+                          ['Acento', iaItem.accent !== iaItem.secondary ? iaItem.accent : null],
+                          ['Texto', iaItem.text],
+                        ]
+                          .filter(([, hex]) => Boolean(hex))
+                          .map(([label, hex]) => (
+                            <div
+                              key={label}
+                              className="w-7 h-7 rounded-full border border-black/15 shadow-sm"
+                              style={{ backgroundColor: hex }}
+                              title={`${label}: ${hex}`}
+                            />
+                          ))}
                       </div>
 
                       <div>
@@ -658,6 +657,28 @@ export const ConfiguracionMarca = () => {
                         <p className="text-xs mt-0.5 line-clamp-1" style={{ color: iaItem.text, opacity: 0.78 }}>
                           {iaItem.desc || 'Paleta armónica extraída dinámicamente de tu logotipo.'}
                         </p>
+
+                        {/* Paleta completa detectada en el logo (proporcional a su presencia) */}
+                        {Array.isArray(iaItem.logoColors) && iaItem.logoColors.length > 0 && (
+                          <div className="mt-2">
+                            <div
+                              className="flex h-2.5 w-full max-w-[220px] rounded-full overflow-hidden border border-black/10"
+                              title="Colores reales detectados en el logotipo"
+                            >
+                              {iaItem.logoColors.map((c) => (
+                                <div
+                                  key={c.hex}
+                                  style={{ backgroundColor: c.hex, flexGrow: Math.max(c.population || 0, 0.04) }}
+                                  title={`${c.hex} · ${Math.round((c.population || 0) * 100)}%${c.role ? ` · ${ROLE_LABELS[c.role]}` : ''}`}
+                                />
+                              ))}
+                            </div>
+                            <p className="text-[10px] mt-1" style={{ color: iaItem.text, opacity: 0.65 }}>
+                              {iaItem.logoColors.length} colores detectados en tu logo
+                              {iaItem.source === 'ia' ? ' · roles asignados con IA' : ''}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -905,6 +926,28 @@ export const ConfiguracionMarca = () => {
                     style={{ backgroundColor: activePaletteObj.primary }}
                   >
                     Registrarme en el Portal
+                  </div>
+
+                  {/* Secundario y acento del logo aplicados a elementos de apoyo */}
+                  <div className="flex items-center justify-center gap-2 flex-wrap">
+                    <span
+                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                      style={{
+                        backgroundColor: activePaletteObj.secondaryLight || activePaletteObj.primaryLight,
+                        color: activePaletteObj.secondary || activePaletteObj.primaryHover || activePaletteObj.primary,
+                      }}
+                    >
+                      Bodas
+                    </span>
+                    <span
+                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                      style={{
+                        backgroundColor: activePaletteObj.accentLight || activePaletteObj.primaryLight,
+                        color: activePaletteObj.accent || activePaletteObj.primary,
+                      }}
+                    >
+                      Desde $1.200
+                    </span>
                   </div>
 
                   <div
