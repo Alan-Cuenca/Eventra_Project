@@ -133,6 +133,16 @@ export const PortalTenantLayout = () => {
       '--brand-primary-light': p.primaryLight || '#E4EFF4',
       '--brand-text': p.text || '#1D333E',
       '--brand-border': p.border || '#CEC8B8',
+      '--brand-secondary': p.secondary || p.primaryHover || '#385563',
+      '--brand-accent': p.accent || '#C49A3A',
+
+      // 4. Paleta completa del logo (secundario y acento reales)
+      '--accent': p.accent || '#C49A3A',
+      '--accent-light': p.accentLight || p.primaryLight || '#F4E6C8',
+      '--secondary': p.secondary || p.primaryHover || '#385563',
+      '--secondary-hover': p.secondaryHover || p.secondary || '#2C4550',
+      '--secondary-light': p.secondaryLight || p.primaryLight || '#E4EFF4',
+      '--ev-secondary': p.secondary || p.primaryHover || '#385563',
     };
   }, [paletaActiva]);
 
