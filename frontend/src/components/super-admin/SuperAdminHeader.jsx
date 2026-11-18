@@ -141,7 +141,7 @@ export const SuperAdminHeader = ({ onToggleSidebar }) => {
             >
               EVENTRA <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>| Consola Global</span>
             </div>
-            <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+            <div style={{ fontSize: '0.6875rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
               Supervisión y Gobernanza SaaS Multi-Tenant
             </div>
           </div>
@@ -184,7 +184,7 @@ export const SuperAdminHeader = ({ onToggleSidebar }) => {
               >
                 {user?.nombre_completo || 'Super Administrador'}
               </span>
-              <Badge variant="primary" style={{ fontSize: '0.6rem', padding: '0.1rem 0.45rem' }}>
+              <Badge variant="primary" style={{ fontSize: '0.6875rem', padding: '0.1rem 0.45rem' }}>
                 <ShieldCheck size={10} style={{ display: 'inline', marginRight: '3px' }} />
                 Super_Admin
               </Badge>
@@ -224,7 +224,7 @@ export const SuperAdminHeader = ({ onToggleSidebar }) => {
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.4rem' }}>
-                  <Badge variant="primary" style={{ fontSize: '0.62rem', padding: '0.12rem 0.45rem' }}>
+                  <Badge variant="primary" style={{ fontSize: '0.6875rem', padding: '0.12rem 0.45rem' }}>
                     Super_Admin (Rol 5)
                   </Badge>
                   <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>

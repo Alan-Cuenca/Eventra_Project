@@ -172,7 +172,7 @@ export const SuperAdminSidebar = ({ isOpen, onClose }) => {
                       <span style={{ flex: 1 }}>{item.label}</span>
                       <span
                         style={{
-                          fontSize: '0.62rem',
+                          fontSize: '0.6875rem',
                           fontWeight: 700,
                           padding: '0.1rem 0.4rem',
                           borderRadius: '9999px',
@@ -203,13 +203,13 @@ export const SuperAdminSidebar = ({ isOpen, onClose }) => {
           >
             SUPER ADMINISTRADOR
           </div>
-          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
             Gobernanza Multi-Tenant
           </div>
           <div
             style={{
-              fontSize: '0.65rem',
-              color: 'var(--success)',
+              fontSize: '0.6875rem',
+              color: 'var(--success-text)',
               marginTop: '0.2rem',
               display: 'flex',
               alignItems: 'center',

@@ -48,6 +48,7 @@ describe('Flujo E2E del Cliente y Cotizador Dinámico', () => {
   // TEST 2: Flujo Completo del Cotizador Dinámico y Cálculo de Precios en Pantalla
   // ───────────────────────────────────────────────────────────────────────────
   it('2. Un Gerente completa el Cotizador Dinámico y se envía cliente_id al backend', () => {
+    cy.apiVacia(); // el resto de llamadas (branding, consumo...) no debe llegar a un backend real
     // Interceptar peticiones del cotizador
     cy.intercept('GET', '**/api/paquetes', {
       statusCode: 200,
@@ -165,6 +166,7 @@ describe('Flujo E2E del Cliente y Cotizador Dinámico', () => {
   });
 
   it('4. Si el backend rechaza la cotización, se muestra el error y no un éxito falso', () => {
+    cy.apiVacia();
     cy.intercept('GET', '**/api/clientes', { statusCode: 200, body: { success: true, data: [{ id: 'cli-e2e-1', nombres: 'Cliente', apellidos: 'Demo', email: 'c@e.com', estado_activo: true }] } });
     cy.intercept('GET', '**/api/paquetes', { statusCode: 200, body: { success: true, data: [{ id: 'p1', nombre: 'Paquete Oro', precio_total: 2500, servicios_incluidos: ['Catering'], descuento: '' }] } });
     cy.intercept('GET', '**/api/servicios', { statusCode: 200, body: { success: true, data: [] } });

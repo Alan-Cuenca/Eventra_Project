@@ -143,7 +143,7 @@ export const RegistroTenant = () => {
               height: '64px',
               borderRadius: 'var(--radius-lg)',
               background: 'var(--success-light)',
-              color: 'var(--success)',
+              color: 'var(--success-text)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

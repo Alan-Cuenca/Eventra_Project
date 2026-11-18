@@ -91,7 +91,7 @@ export const ReservasList = () => {
       </div>
 
       {error && (
-        <div style={{ padding: '0.85rem 1rem', background: 'var(--danger-light)', color: 'var(--danger)', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.875rem' }}>
+        <div style={{ padding: '0.85rem 1rem', background: 'var(--danger-light)', color: 'var(--danger-text)', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.875rem' }}>
           {error}
         </div>
       )}
@@ -126,7 +126,6 @@ export const ReservasList = () => {
             <table className="custom-table">
               <thead>
                 <tr>
-                  <th>ID</th>
                   <th>Evento / Cliente</th>
                   <th>Fecha</th>
                   <th>Horario</th>
@@ -138,9 +137,6 @@ export const ReservasList = () => {
               <tbody>
                 {filteredReservas.map(reserva => (
                   <tr key={reserva.id}>
-                    <td style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      {String(reserva.id).substring(0, 8).toUpperCase()}
-                    </td>
                     <td>
                       <div style={{ fontWeight: 600 }}>{reserva.evento_titulo}</div>
                       <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{reserva.cliente_nombre}</div>

@@ -18,6 +18,7 @@ import {
   FileEdit,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
+import { formatMoney } from '../../utils/format';
 
 export const PortalClientePage = () => {
   const { user, logout } = useAuth();
@@ -147,7 +148,7 @@ export const PortalClientePage = () => {
               <span className="text-lg font-bold tracking-tight text-[#233D49]">
                 {brandName}
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#4D7182]/15 text-[#4D7182]">
+              <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#4D7182]/15 text-[#4D7182]">
                 Portal Cliente
               </span>
             </div>
@@ -170,7 +171,7 @@ export const PortalClientePage = () => {
           <button
             id="portal-logout-btn"
             onClick={handleLogout}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#CEC8B8] text-xs font-semibold text-[#233D49] hover:bg-[#FAF8F2] hover:text-[#C95C5C] hover:border-[#C95C5C]/40 transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#CEC8B8] text-xs font-semibold text-[#233D49] hover:bg-[#FAF8F2] hover:text-[#B04646] hover:border-[#C95C5C]/40 transition-colors shadow-sm"
           >
             <LogOut size={14} />
             <span>Cerrar Sesión</span>
@@ -199,7 +200,7 @@ export const PortalClientePage = () => {
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-6 border-b border-[#CEC8B8]/50">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#4D9A72]/15 text-[#4D9A72] border border-[#4D9A72]/30">
+                <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#4D9A72]/15 text-[#2F7A55] border border-[#4D9A72]/30">
                   {mainEvent?.estado || 'Confirmado'}
                 </span>
                 <span className="text-xs text-[#4D7182] font-semibold">
@@ -241,25 +242,25 @@ export const PortalClientePage = () => {
             <div className="p-4 rounded-2xl bg-[#F3F0E4]/60 border border-[#CEC8B8]">
               <span className="text-xs text-[#4D7182] font-semibold">Inversión Total Contratada</span>
               <p className="text-2xl font-extrabold text-[#233D49] mt-1">
-                ${Number(totalEvento).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                {formatMoney(Number(totalEvento))}
               </p>
               <p className="text-[11px] text-[#4D7182] mt-0.5">Paquete base + servicios incluidos</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-[#F3F0E4]/60 border border-[#CEC8B8]">
-              <span className="text-xs text-[#4D9A72] font-semibold">Monto Abonado</span>
-              <p className="text-2xl font-extrabold text-[#4D9A72] mt-1">
-                ${Number(pagado).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              <span className="text-xs text-[#2F7A55] font-semibold">Monto Abonado</span>
+              <p className="text-2xl font-extrabold text-[#2F7A55] mt-1">
+                {formatMoney(Number(pagado))}
               </p>
-              <p className="text-[11px] text-[#4D9A72] mt-0.5">{porcentajePagado}% del total cubierto</p>
+              <p className="text-[11px] text-[#2F7A55] mt-0.5">{porcentajePagado}% del total cubierto</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-[#F3F0E4]/60 border border-[#CEC8B8]">
-              <span className="text-xs text-[#C49A3A] font-semibold">Saldo Pendiente</span>
-              <p className="text-2xl font-extrabold text-[#C49A3A] mt-1">
-                ${Number(saldoPendiente).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              <span className="text-xs text-[#7A5C14] font-semibold">Saldo Pendiente</span>
+              <p className="text-2xl font-extrabold text-[#7A5C14] mt-1">
+                {formatMoney(Number(saldoPendiente))}
               </p>
-              <p className="text-[11px] text-[#233D49]/60 mt-0.5">Liquidación previa a la fecha del evento</p>
+              <p className="text-[11px] text-[#233D49]/75 mt-0.5">Liquidación previa a la fecha del evento</p>
             </div>
           </div>
 
@@ -299,7 +300,7 @@ export const PortalClientePage = () => {
                       <div className="w-12 h-12 rounded-xl bg-[#4D7182]/10 text-[#4D7182] flex items-center justify-center group-hover:bg-[#4D7182] group-hover:text-white transition-colors duration-200">
                         <Icon size={22} />
                       </div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#4D7182] bg-[#F3F0E4] px-2 py-0.5 rounded-full border border-[#CEC8B8]/60">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#4D7182] bg-[#F3F0E4] px-2 py-0.5 rounded-full border border-[#CEC8B8]/60">
                         {item.badge}
                       </span>
                     </div>
@@ -307,7 +308,7 @@ export const PortalClientePage = () => {
                     <h4 className="text-base font-bold text-[#233D49] mb-1.5 group-hover:text-[#4D7182] transition-colors">
                       {item.titulo}
                     </h4>
-                    <p className="text-xs text-[#233D49]/70 leading-relaxed">
+                    <p className="text-xs text-[#233D49]/80 leading-relaxed">
                       {item.desc}
                     </p>
                   </div>
@@ -323,9 +324,9 @@ export const PortalClientePage = () => {
         </div>
 
         {/* ── Footer de Seguridad y Conexión ─────────────────────────── */}
-        <div className="p-4 rounded-2xl bg-white border border-[#CEC8B8] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#233D49]/70">
+        <div className="p-4 rounded-2xl bg-white border border-[#CEC8B8] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#233D49]/80">
           <div className="flex items-center gap-2">
-            <ShieldCheck size={16} className="text-[#4D9A72]" />
+            <ShieldCheck size={16} className="text-[#2F7A55]" />
             <span>Sesión protegida por RBAC · Conexión directa a Supabase & Render</span>
           </div>
           <div className="text-right text-[#4D7182] font-medium">

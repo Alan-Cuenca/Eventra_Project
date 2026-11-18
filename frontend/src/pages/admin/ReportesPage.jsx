@@ -27,6 +27,7 @@ import {
   RefreshCw,
   Loader2,
 } from 'lucide-react';
+import { formatMoney } from '../../utils/format';
 
 const COLORES_DONUT = ['#526F7D', '#233D49', '#4D9A72', '#C49A3A'];
 
@@ -117,14 +118,14 @@ export const ReportesPage = () => {
             alt="Logo Empresa"
             className="w-14 h-14 rounded-2xl bg-[#F3F0E4] p-1.5 border border-[#CBC6B6] object-contain shadow-xs shrink-0"
             onError={(e) => {
-              e.currentTarget.src = '/logo_Helados_Catedral.jpg';
+              e.currentTarget.style.visibility = 'hidden';
             }}
           />
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#233D49]">
+              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#233D49]">
                 {nombreVisible}
-              </span>
+              </h1>
               {/* Badge de RUC con Alto Contraste garantizado en cualquier paleta y modo */}
               <span
                 style={{
@@ -223,15 +224,15 @@ export const ReportesPage = () => {
             <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
               Total Recaudado
             </span>
-            <div className="w-9 h-9 rounded-xl bg-[#4D9A72]/15 text-[#4D9A72] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-[#4D9A72]/15 text-[#2F7A55] flex items-center justify-center">
               <DollarSign size={18} />
             </div>
           </div>
           <div className="space-y-1">
             <div className="text-3xl font-extrabold tracking-tight text-[#233D49] tabular-nums">
-              ${Number(kpis.total_recaudado || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              {formatMoney(Number(kpis.total_recaudado || 0))}
             </div>
-            <p className="text-xs text-[#233D49]/70">
+            <p className="text-xs text-[#233D49]/80">
               Ingresos de pagos validados y aprobados contablemente
             </p>
           </div>
@@ -240,18 +241,18 @@ export const ReportesPage = () => {
         {/* Card 2: Saldos por Cobrar */}
         <div className="bg-white rounded-2xl border border-[#CBC6B6]/60 shadow-sm p-6 hover:shadow-md transition-all space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#C49A3A]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#7A5C14]">
               Saldos por Cobrar
             </span>
-            <div className="w-9 h-9 rounded-xl bg-[#C49A3A]/15 text-[#C49A3A] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-[#C49A3A]/15 text-[#7A5C14] flex items-center justify-center">
               <AlertTriangle size={18} />
             </div>
           </div>
           <div className="space-y-1">
             <div className="text-3xl font-extrabold tracking-tight text-[#233D49] tabular-nums">
-              ${Number(kpis.total_saldos_pendientes || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              {formatMoney(Number(kpis.total_saldos_pendientes || 0))}
             </div>
-            <p className="text-xs text-[#233D49]/70">
+            <p className="text-xs text-[#233D49]/80">
               Cartera pendiente de abono en cotizaciones y reservas
             </p>
           </div>
@@ -271,7 +272,7 @@ export const ReportesPage = () => {
             <div className="text-3xl font-extrabold tracking-tight text-[#233D49] tabular-nums">
               {kpis.total_eventos || 0}
             </div>
-            <p className="text-xs text-[#233D49]/70">
+            <p className="text-xs text-[#233D49]/80">
               {kpis.eventos_activos || 0} eventos actualmente en planificación o progreso
             </p>
           </div>
@@ -327,7 +328,7 @@ export const ReportesPage = () => {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-xs text-[#233D49]/70">
+              <div className="h-full flex flex-col items-center justify-center text-xs text-[#233D49]/80">
                 <span>No hay datos suficientes para graficar ingresos este periodo.</span>
               </div>
             )}
@@ -379,7 +380,7 @@ export const ReportesPage = () => {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="text-xs text-[#233D49]/70 text-center">
+              <div className="text-xs text-[#233D49]/80 text-center">
                 Sin eventos registrados para la distribución.
               </div>
             )}
@@ -468,22 +469,22 @@ export const ReportesPage = () => {
                       {row.fecha_evento ? new Date(row.fecha_evento).toLocaleDateString('es-ES') : 'Sin fecha'}
                     </td>
                     <td className="py-3.5 px-5 text-xs text-right tabular-nums font-medium">
-                      ${Number(row.costo_total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      {formatMoney(Number(row.costo_total || 0))}
                     </td>
-                    <td className="py-3.5 px-5 text-xs text-right tabular-nums text-[#4D9A72] font-semibold">
-                      ${Number(row.total_abonado || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    <td className="py-3.5 px-5 text-xs text-right tabular-nums text-[#2F7A55] font-semibold">
+                      {formatMoney(Number(row.total_abonado || 0))}
                     </td>
-                    <td className="py-3.5 px-5 text-xs text-right tabular-nums text-[#C95C5C] font-bold">
-                      ${Number(row.saldo_pendiente || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    <td className="py-3.5 px-5 text-xs text-right tabular-nums text-[#B04646] font-bold">
+                      {formatMoney(Number(row.saldo_pendiente || 0))}
                     </td>
                     <td className="py-3.5 px-5 text-xs text-center">
                       <span
                         className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
                           row.estado_pago === 'Pagado'
-                            ? 'bg-[#4D9A72]/15 text-[#4D9A72]'
+                            ? 'bg-[#4D9A72]/15 text-[#2F7A55]'
                             : row.estado_pago === 'Abonado Parcial'
-                            ? 'bg-[#C49A3A]/15 text-[#9A7422]'
-                            : 'bg-[#C95C5C]/15 text-[#C95C5C]'
+                            ? 'bg-[#C49A3A]/15 text-[#7A5C14]'
+                            : 'bg-[#C95C5C]/15 text-[#B04646]'
                         }`}
                       >
                         {row.estado_pago}
@@ -527,8 +528,8 @@ export const ReportesPage = () => {
                         {p.metodo_pago || 'Efectivo'}
                       </span>
                     </td>
-                    <td className="py-3.5 px-5 text-xs text-right tabular-nums text-[#4D9A72] font-bold">
-                      ${Number(p.monto || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    <td className="py-3.5 px-5 text-xs text-right tabular-nums text-[#2F7A55] font-bold">
+                      {formatMoney(Number(p.monto || 0))}
                     </td>
                   </tr>
                 ))}
@@ -569,7 +570,7 @@ export const ReportesPage = () => {
                       </span>
                     </td>
                     <td className="py-3.5 px-5 text-xs text-right tabular-nums font-bold text-[#233D49]">
-                      ${Number(evt.costo_total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      {formatMoney(Number(evt.costo_total || 0))}
                     </td>
                   </tr>
                 ))}

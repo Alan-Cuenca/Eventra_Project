@@ -49,7 +49,7 @@ export const SolicitudesPublicasPlan = () => {
       </p>
 
       {error && (
-        <div style={{ padding: '0.75rem 1rem', background: 'var(--danger-light)', color: 'var(--danger)', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.85rem' }}>
+        <div style={{ padding: '0.75rem 1rem', background: 'var(--danger-light)', color: 'var(--danger-text)', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.85rem' }}>
           {error}
         </div>
       )}

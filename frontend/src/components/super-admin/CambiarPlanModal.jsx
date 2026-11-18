@@ -21,7 +21,7 @@ const PLANES_DISPONIBLES = [
   {
     id: 'Premium',
     nombre: 'Premium',
-    color: '#C49A3A',
+    color: '#7A5C14',
     precio: '$99/mes',
     desc: 'Tier Corporativo con Asistente EVARA AI y límites ampliados',
   },
@@ -58,7 +58,7 @@ export const CambiarPlanModal = ({ isOpen, onClose, empresa, onPlanActualizado }
             {
               id: 'Premium',
               nombre: 'Premium',
-              color: '#C49A3A',
+              color: '#7A5C14',
               precio: `$${config.planes.premium?.precio_mensual ?? 99}/mes`,
               desc: 'Tier Corporativo con Asistente EVARA AI y límites ampliados',
             },
@@ -193,7 +193,7 @@ export const CambiarPlanModal = ({ isOpen, onClose, empresa, onPlanActualizado }
                 borderRadius: 'var(--radius-md)',
                 background: 'rgba(201, 92, 92, 0.15)',
                 border: '1px solid rgba(201, 92, 92, 0.3)',
-                color: 'var(--danger)',
+                color: 'var(--danger-text)',
                 fontSize: '0.75rem',
                 fontWeight: 600,
                 display: 'flex',
@@ -215,7 +215,7 @@ export const CambiarPlanModal = ({ isOpen, onClose, empresa, onPlanActualizado }
                 borderRadius: 'var(--radius-md)',
                 background: 'rgba(77, 154, 114, 0.15)',
                 border: '1px solid rgba(77, 154, 114, 0.3)',
-                color: 'var(--success)',
+                color: 'var(--success-text)',
                 fontSize: '0.75rem',
                 fontWeight: 600,
                 display: 'flex',
@@ -287,7 +287,7 @@ export const CambiarPlanModal = ({ isOpen, onClose, empresa, onPlanActualizado }
                       <span style={{ fontSize: '0.8rem', fontWeight: 800, color: plan.color, display: 'block' }}>
                         {plan.precio}
                       </span>
-                      <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+                      <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
                         {plan.desc}
                       </span>
                     </div>

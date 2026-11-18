@@ -160,21 +160,21 @@ export const ProveedoresList = () => {
         </div>
 
         <div className="p-4 rounded-2xl bg-white border border-[#CEC8B8] shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-[#4D9A72]/15 text-[#4D9A72] flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-[#4D9A72]/15 text-[#2F7A55] flex items-center justify-center shrink-0">
             <ShieldCheck size={22} />
           </div>
           <div>
-            <span className="text-xs font-semibold text-[#4D9A72]">Proveedores Activos</span>
-            <p className="text-2xl font-extrabold text-[#4D9A72]">{totalActivos}</p>
+            <span className="text-xs font-semibold text-[#2F7A55]">Proveedores Activos</span>
+            <p className="text-2xl font-extrabold text-[#2F7A55]">{totalActivos}</p>
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-white border border-[#CEC8B8] shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-[#C49A3A]/15 text-[#C49A3A] flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-[#C49A3A]/15 text-[#7A5C14] flex items-center justify-center shrink-0">
             <Briefcase size={22} />
           </div>
           <div>
-            <span className="text-xs font-semibold text-[#C49A3A]">Especialidades</span>
+            <span className="text-xs font-semibold text-[#7A5C14]">Especialidades</span>
             <p className="text-2xl font-extrabold text-[#233D49]">{especialidades.length}</p>
           </div>
         </div>
@@ -183,7 +183,7 @@ export const ProveedoresList = () => {
       {/* Barra de Búsqueda y Filtros */}
       <div className="p-4 rounded-2xl bg-white border border-[#CEC8B8] shadow-sm flex flex-col md:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7D8F97]" />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#566D7A]" />
           <input
             type="text"
             value={searchTerm}
@@ -239,7 +239,7 @@ export const ProveedoresList = () => {
               ? 'No se encontraron proveedores con los filtros aplicados'
               : 'No hay proveedores registrados aún'}
           </h3>
-          <p className="text-xs text-[#7D8F97] max-w-sm mx-auto">
+          <p className="text-xs text-[#566D7A] max-w-sm mx-auto">
             {searchTerm || statusFilter !== 'all' || specialtyFilter !== 'all'
               ? 'Intenta ajustar tus términos de búsqueda o limpiar los filtros seleccionados.'
               : 'Comienza integrando a tus contratistas de confianza (música, fotografía, catering, ambientación).'}
@@ -294,7 +294,7 @@ export const ProveedoresList = () => {
                               {nombreEmpresa}
                             </div>
                             {prov.empresa && prov.nombre && prov.empresa !== prov.nombre && (
-                              <div className="text-[11px] text-[#7D8F97]">
+                              <div className="text-[11px] text-[#566D7A]">
                                 Rep: {prov.nombre}
                               </div>
                             )}
@@ -321,19 +321,19 @@ export const ProveedoresList = () => {
                               <span>{prov.telefono}</span>
                             </a>
                           ) : (
-                            <span className="text-[#7D8F97] text-[11px]">Sin teléfono</span>
+                            <span className="text-[#566D7A] text-[11px]">Sin teléfono</span>
                           )}
 
                           {prov.email ? (
                             <a
                               href={`mailto:${prov.email}`}
-                              className="flex items-center gap-1.5 text-xs text-[#7D8F97] hover:text-[#4D7182] transition-colors"
+                              className="flex items-center gap-1.5 text-xs text-[#566D7A] hover:text-[#4D7182] transition-colors"
                             >
                               <Mail size={13} className="text-[#4D7182]" />
                               <span className="truncate max-w-[200px]">{prov.email}</span>
                             </a>
                           ) : (
-                            <span className="text-[#7D8F97] text-[11px]">Sin email</span>
+                            <span className="text-[#566D7A] text-[11px]">Sin email</span>
                           )}
                         </div>
                       </td>
@@ -342,8 +342,8 @@ export const ProveedoresList = () => {
                       <td className="py-4 px-6">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
                           isActive
-                            ? 'bg-[#4D9A72]/15 text-[#4D9A72] border border-[#4D9A72]/30'
-                            : 'bg-[#7D8F97]/15 text-[#7D8F97] border border-[#7D8F97]/30'
+                            ? 'bg-[#4D9A72]/15 text-[#2F7A55] border border-[#4D9A72]/30'
+                            : 'bg-[#7D8F97]/15 text-[#566D7A] border border-[#7D8F97]/30'
                         }`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-[#4D9A72]' : 'bg-[#7D8F97]'}`} />
                           <span>{isActive ? 'Activo' : 'Inactivo'}</span>
@@ -364,7 +364,7 @@ export const ProveedoresList = () => {
                           <button
                             type="button"
                             onClick={() => setDeletingProv(prov)}
-                            className="p-2 rounded-xl text-[#C95C5C] hover:bg-[#C95C5C]/10 transition-colors"
+                            className="p-2 rounded-xl text-[#B04646] hover:bg-[#C95C5C]/10 transition-colors"
                             title="Eliminar Proveedor"
                           >
                             <Trash2 size={15} />
@@ -385,7 +385,7 @@ export const ProveedoresList = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in overflow-y-auto">
           <div className="backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 rounded-3xl p-6 sm:p-7 max-w-md w-full border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] space-y-4 my-auto max-h-[calc(100vh-3.5rem)] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-[#CEC8B8]/50">
-              <div className="flex items-center gap-2 text-[#C95C5C]">
+              <div className="flex items-center gap-2 text-[#B04646]">
                 <AlertCircle size={20} />
                 <h3 className="text-base font-bold text-[#233D49]">
                   Eliminar Proveedor
@@ -393,7 +393,7 @@ export const ProveedoresList = () => {
               </div>
               <button
                 onClick={() => setDeletingProv(null)}
-                className="p-1 rounded-lg text-[#7D8F97] hover:bg-[#F3F0E4]"
+                className="p-1 rounded-lg text-[#566D7A] hover:bg-[#F3F0E4]"
               >
                 <X size={16} />
               </button>

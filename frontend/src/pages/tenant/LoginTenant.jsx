@@ -197,7 +197,7 @@ export const LoginTenant = () => {
               type={showPassword ? 'text' : 'password'}
               className="form-input"
               style={{ paddingLeft: '2.65rem', paddingRight: '3rem' }}
-              placeholder="••••••••"
+              placeholder="Tu contraseña"
               value={formData.password}
               onChange={handleChange}
               autoComplete="current-password"

@@ -144,7 +144,7 @@ export const ProveedorForm = () => {
                 Empresa o Nombre del Proveedor *
               </label>
               <div className="relative">
-                <Building2 size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7D8F97]" />
+                <Building2 size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#566D7A]" />
                 <input
                   type="text"
                   name="nombre_empresa_o_contacto"
@@ -163,7 +163,7 @@ export const ProveedorForm = () => {
                 Especialidad o Rubro *
               </label>
               <div className="relative">
-                <Briefcase size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7D8F97]" />
+                <Briefcase size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#566D7A]" />
                 <input
                   type="text"
                   name="especialidad"
@@ -182,7 +182,7 @@ export const ProveedorForm = () => {
                 Teléfono de Contacto *
               </label>
               <div className="relative">
-                <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7D8F97]" />
+                <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#566D7A]" />
                 <input
                   type="tel"
                   name="telefono"
@@ -201,7 +201,7 @@ export const ProveedorForm = () => {
                 Correo Electrónico
               </label>
               <div className="relative">
-                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7D8F97]" />
+                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#566D7A]" />
                 <input
                   type="email"
                   name="email"

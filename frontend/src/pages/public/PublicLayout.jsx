@@ -23,7 +23,7 @@ class PublicErrorBoundary extends Component {
     if (this.state.hasError) {
       return (
         <div className="max-w-xl mx-auto my-20 p-8 bg-white rounded-2xl border border-[var(--ev-border)] text-center shadow-md">
-          <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-[#C95C5C]/15 text-[#C95C5C] flex items-center justify-center">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-[#C95C5C]/15 text-[#B04646] flex items-center justify-center">
             <AlertCircle className="w-6 h-6" />
           </div>
           <h2 className="text-xl font-bold text-[var(--ev-text-main)] mb-2">

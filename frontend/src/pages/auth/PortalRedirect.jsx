@@ -75,7 +75,7 @@ export const PortalRedirect = () => {
         {/* Buscador de Portal */}
         <form onSubmit={handleBuscarPortal} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div style={{ position: 'relative' }}>
-            <Building2 size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#7E919C' }} />
+            <Building2 size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#566D7A' }} />
             <input
               type="text"
               required

@@ -222,7 +222,7 @@ export const GlobalDashboardPage = () => {
                 height: '42px',
                 borderRadius: 'var(--radius-md)',
                 background: 'rgba(201, 92, 92, 0.15)',
-                color: 'var(--danger)',
+                color: 'var(--danger-text)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -232,7 +232,7 @@ export const GlobalDashboardPage = () => {
               {errorInfo.tipo === 'NETWORK' ? <WifiOff size={20} /> : <ShieldAlert size={20} />}
             </div>
             <div>
-              <h3 style={{ color: 'var(--danger)', fontSize: '0.95rem', fontWeight: 'bold', margin: 0 }}>
+              <h3 style={{ color: 'var(--danger-text)', fontSize: '0.95rem', fontWeight: 'bold', margin: 0 }}>
                 {errorInfo.tipo === 'NETWORK'
                   ? 'Error de Conexión con el Backend'
                   : errorInfo.tipo === 'FORBIDDEN'
@@ -251,7 +251,7 @@ export const GlobalDashboardPage = () => {
       )}
 
       {/* ── Grid de Tarjetas de Métricas ───────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
         <GlobalStatCard
           title="Total Inquilinos"
           value={loading ? null : metricas.totalEmpresas}
@@ -538,7 +538,7 @@ export const GlobalDashboardPage = () => {
                             fontSize: '0.72rem',
                             fontWeight: 700,
                             background: 'rgba(77, 154, 114, 0.15)',
-                            color: 'var(--success)',
+                            color: 'var(--success-text)',
                           }}
                         >
                           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success)' }}></span>
@@ -555,7 +555,7 @@ export const GlobalDashboardPage = () => {
                             fontSize: '0.72rem',
                             fontWeight: 700,
                             background: 'rgba(201, 92, 92, 0.15)',
-                            color: 'var(--danger)',
+                            color: 'var(--danger-text)',
                           }}
                         >
                           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--danger)' }}></span>

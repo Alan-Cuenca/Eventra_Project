@@ -101,7 +101,7 @@ export const EventoForm = () => {
       )}
 
       {error && (
-        <div style={{ padding: '1rem', background: 'var(--danger-light)', color: 'var(--danger)', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem' }}>
+        <div style={{ padding: '1rem', background: 'var(--danger-light)', color: 'var(--danger-text)', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem' }}>
           {error}
         </div>
       )}

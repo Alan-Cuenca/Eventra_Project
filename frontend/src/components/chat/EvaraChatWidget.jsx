@@ -155,11 +155,11 @@ export const EvaraChatWidget = () => {
                   <h3 className="text-xs sm:text-sm font-bold tracking-tight text-white truncate">
                     EVARA AI
                   </h3>
-                  <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-[#4D9A72] text-white shrink-0">
+                  <span className="px-1.5 py-0.2 rounded text-[11px] font-semibold bg-[#4D9A72] text-white shrink-0">
                     En línea
                   </span>
                 </div>
-                <p className="text-[10px] sm:text-[11px] text-white/80 truncate">
+                <p className="text-[11px] sm:text-[11px] text-white/80 truncate">
                   {textos.subtitulo}
                 </p>
               </div>
@@ -221,7 +221,7 @@ export const EvaraChatWidget = () => {
                     </div>
                   </div>
 
-                  <span className="text-[10px] text-[#7D8F97] mt-0.5 px-1 tabular-nums">
+                  <span className="text-[11px] text-[#566D7A] mt-0.5 px-1 tabular-nums">
                     {msg.timestamp}
                   </span>
                 </div>
@@ -234,7 +234,7 @@ export const EvaraChatWidget = () => {
                 <div className="w-6 h-6 rounded-full bg-[#526F7D]/15 text-[#526F7D] flex items-center justify-center shrink-0 mt-0.5">
                   <Bot size={13} />
                 </div>
-                <div className="px-3.5 py-2 rounded-2xl rounded-tl-xs bg-white border border-[#CBC6B6] text-xs text-[#7D8F97] flex items-center gap-1.5 shadow-xs">
+                <div className="px-3.5 py-2 rounded-2xl rounded-tl-xs bg-white border border-[#CBC6B6] text-xs text-[#566D7A] flex items-center gap-1.5 shadow-xs">
                   <span>EVARA está escribiendo</span>
                   <span className="flex gap-1 items-center">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#526F7D] animate-bounce"></span>
@@ -256,7 +256,7 @@ export const EvaraChatWidget = () => {
                   key={i}
                   type="button"
                   onClick={() => setInputMessage(sug)}
-                  className="px-2.5 py-1 rounded-full bg-[#FAF8F5] hover:bg-[#F3F0E4] border border-[#CBC6B6] text-[#526F7D] whitespace-nowrap transition-colors text-[10px] sm:text-[11px]"
+                  className="px-2.5 py-1 rounded-full bg-[#FAF8F5] hover:bg-[#F3F0E4] border border-[#CBC6B6] text-[#526F7D] whitespace-nowrap transition-colors text-[11px] sm:text-[11px]"
                 >
                   {sug}
                 </button>

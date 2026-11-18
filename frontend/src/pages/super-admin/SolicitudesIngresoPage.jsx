@@ -23,6 +23,7 @@ import {
   X,
   Inbox,
 } from 'lucide-react';
+import { formatMoney } from '../../utils/format';
 
 /**
  * =============================================================================
@@ -441,7 +442,7 @@ export const SolicitudesIngresoPage = () => {
                       </td>
 
                       <td style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--text-primary)' }}>
-                        ${Number(sol.monto || 49).toFixed(2)} USD
+                        {formatMoney(sol.monto || 49)} USD
                       </td>
 
                       <td>
@@ -592,7 +593,7 @@ export const SolicitudesIngresoPage = () => {
                     Monto Declarado
                   </span>
                   <strong style={{ fontFamily: 'monospace', color: 'var(--text-primary)' }}>
-                    ${Number(solicitudActiva.monto || 49).toFixed(2)} USD
+                    {formatMoney(solicitudActiva.monto || 49)} USD
                   </strong>
                 </div>
                 <div>
@@ -657,7 +658,7 @@ export const SolicitudesIngresoPage = () => {
                     gap: '0.65rem',
                   }}
                 >
-                  <ShieldCheck size={18} style={{ color: 'var(--success)', flexShrink: 0 }} />
+                  <ShieldCheck size={18} style={{ color: 'var(--success-text)', flexShrink: 0 }} />
                   <span>
                     Registro verificado directamente por la consola de administración global. Puedes aprobar o suspender la membresía en cualquier momento.
                   </span>

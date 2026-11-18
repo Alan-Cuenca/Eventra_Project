@@ -21,7 +21,7 @@ export const Footer = () => {
                   <span className="text-xl font-bold tracking-tight text-[var(--ev-text-main)]">
                     EVENTRA
                   </span>
-                  <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-[var(--ev-border)]/50 text-[var(--ev-text-main)]/80 border border-[var(--ev-border)]/70">
+                  <span className="text-[11px] font-semibold uppercase px-1.5 py-0.5 rounded bg-[var(--ev-border)]/50 text-[var(--ev-text-main)]/80 border border-[var(--ev-border)]/70">
                     SaaS
                   </span>
                 </div>
@@ -37,12 +37,12 @@ export const Footer = () => {
 
             <div className="space-y-1.5 pt-2">
               <div className="flex items-center gap-2 text-xs text-[var(--ev-text-main)]/85 font-medium">
-                <ShieldCheck className="w-4 h-4 text-[#4D9A72]" />
-                <span>Zero Double-Booking garantizado con PostgreSQL</span>
+                <ShieldCheck className="w-4 h-4 text-[#2F7A55]" />
+                <span>Sin dobles reservas de salón</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-[var(--ev-text-main)]/85 font-medium">
                 <Lock className="w-4 h-4 text-[var(--ev-primary)]" />
-                <span>Seguridad RBAC y almacenamiento en Supabase</span>
+                <span>Acceso por roles y almacenamiento seguro</span>
               </div>
             </div>
           </div>
@@ -88,16 +88,16 @@ export const Footer = () => {
             </h4>
             <ul className="space-y-2 text-sm text-[var(--ev-text-muted)] font-medium">
               <li className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#4D9A72]" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#2F7A55]" />
                 <span>Control de Acceso RBAC</span>
               </li>
               <li className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#4D9A72]" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#2F7A55]" />
                 <span>Cifrado HTTPS / TLS 1.3</span>
               </li>
               <li className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#4D9A72]" />
-                <span>Aislamiento Multi-Tenant</span>
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#2F7A55]" />
+                <span>Datos separados por empresa</span>
               </li>
             </ul>
           </div>

@@ -233,7 +233,7 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
                 borderRadius: 'var(--radius-md)',
                 background: 'rgba(77, 154, 114, 0.15)',
                 border: '1px solid rgba(77, 154, 114, 0.3)',
-                color: 'var(--success)',
+                color: 'var(--success-text)',
                 fontSize: '0.75rem',
                 fontWeight: 600,
                 display: 'flex',
@@ -255,7 +255,7 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
                 borderRadius: 'var(--radius-md)',
                 background: 'rgba(196, 154, 58, 0.15)',
                 border: '1px solid rgba(196, 154, 58, 0.3)',
-                color: 'var(--warning)',
+                color: 'var(--warning-text)',
                 fontSize: '0.75rem',
                 fontWeight: 600,
                 display: 'flex',
@@ -282,7 +282,7 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
                 borderRadius: 'var(--radius-md)',
                 background: 'rgba(201, 92, 92, 0.15)',
                 border: '1px solid rgba(201, 92, 92, 0.3)',
-                color: 'var(--danger)',
+                color: 'var(--danger-text)',
                 fontSize: '0.75rem',
                 fontWeight: 600,
                 display: 'flex',
@@ -301,7 +301,7 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
           {/* 1. Nombre Comercial */}
           <div>
             <label className="form-label" style={{ marginBottom: '0.35rem' }}>
-              Nombre Comercial de la Empresa <span style={{ color: 'var(--danger)' }}>*</span>
+              Nombre Comercial de la Empresa <span style={{ color: 'var(--danger-text)' }}>*</span>
             </label>
             <div style={{ position: 'relative' }}>
               <Building2 size={15} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
@@ -322,7 +322,7 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
           {/* 2. Plan de Suscripción Inicial */}
           <div>
             <label className="form-label" style={{ marginBottom: '0.35rem' }}>
-              Plan de Suscripción Inicial <span style={{ color: 'var(--danger)' }}>*</span>
+              Plan de Suscripción Inicial <span style={{ color: 'var(--danger-text)' }}>*</span>
             </label>
             <div style={{ position: 'relative' }}>
               <Layers size={15} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
@@ -346,7 +346,7 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
           {/* 3. Nombre Completo del Administrador */}
           <div>
             <label className="form-label" style={{ marginBottom: '0.35rem' }}>
-              Nombre Completo del Administrador Inicial <span style={{ color: 'var(--danger)' }}>*</span>
+              Nombre Completo del Administrador Inicial <span style={{ color: 'var(--danger-text)' }}>*</span>
             </label>
             <div style={{ position: 'relative' }}>
               <User size={15} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
@@ -367,7 +367,7 @@ export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
           {/* 4. Correo Electrónico del Administrador */}
           <div>
             <label className="form-label" style={{ marginBottom: '0.35rem' }}>
-              Correo Electrónico del Administrador Inicial <span style={{ color: 'var(--danger)' }}>*</span>
+              Correo Electrónico del Administrador Inicial <span style={{ color: 'var(--danger-text)' }}>*</span>
             </label>
             <div style={{ position: 'relative' }}>
               <Mail size={15} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />

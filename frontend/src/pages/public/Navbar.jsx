@@ -32,7 +32,7 @@ export const Navbar = () => {
               <span className="text-xl font-bold tracking-tight text-[var(--ev-text-main)]">
                 EVENTRA
               </span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--ev-border)]/40 text-[var(--ev-text-main)]/80 border border-[var(--ev-border)]/60">
+              <span className="text-[11px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--ev-border)]/40 text-[var(--ev-text-main)]/80 border border-[var(--ev-border)]/60">
                 SaaS
               </span>
             </div>
@@ -58,7 +58,7 @@ export const Navbar = () => {
             >
               <span>{item.name}</span>
               {item.badge && (
-                <span className="inline-flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[var(--ev-primary)]/15 text-[var(--ev-primary)] border border-[var(--ev-primary)]/25">
+                <span className="inline-flex items-center gap-0.5 text-[11px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[var(--ev-primary)]/15 text-[var(--ev-primary)] border border-[var(--ev-primary)]/25">
                   <Sparkles className="w-2.5 h-2.5" />
                   {item.badge}
                 </span>
@@ -110,7 +110,7 @@ export const Navbar = () => {
               >
                 <span>{item.name}</span>
                 {item.badge && (
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[var(--ev-primary)]/15 text-[var(--ev-primary)]">
+                  <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[var(--ev-primary)]/15 text-[var(--ev-primary)]">
                     {item.badge}
                   </span>
                 )}

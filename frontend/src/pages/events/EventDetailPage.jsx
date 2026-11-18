@@ -12,6 +12,7 @@ import {
   Clock, AlertCircle, CheckCircle2, FileText, History, ChevronLeft,
   Eye, User, Loader2, Edit3, FileEdit, Send
 } from 'lucide-react';
+import { formatMoney } from '../../utils/format';
 
 // ── Tabs config ────────────────────────────────────────────────────────────
 const TABS = [
@@ -48,8 +49,7 @@ export const EventDetailPage = ({ eventoId: propId }) => {
       .finally(() => setLoading(false));
   }, [eventoId]);
 
-  const fmt = (n) =>
-    new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(n);
+  const fmt = formatMoney;
 
   const ESTADOS_EVENTO = ['En Planificación', 'En Progreso', 'Finalizado', 'Cancelado'];
   const puedeCambiarEstado = isAdmin || isGerente || isTrabajador;
@@ -85,7 +85,7 @@ export const EventDetailPage = ({ eventoId: propId }) => {
         ),
       }));
       setToast({
-        msg: nuevoEstado === 'Completada' ? 'Actividad completada ✓' : 'Actividad reabierta.',
+        msg: nuevoEstado === 'Completada' ? 'Actividad completada' : 'Actividad reabierta.',
         type: 'success',
       });
     } catch (err) {
@@ -129,8 +129,8 @@ export const EventDetailPage = ({ eventoId: propId }) => {
   };
 
   const histTipo = (t) => {
-    if (t === 'success') return { color: 'var(--success)', bg: 'var(--success-light)', icon: <CheckCircle2 size={13} /> };
-    if (t === 'warning') return { color: 'var(--warning)', bg: 'var(--warning-light)', icon: <AlertCircle size={13} /> };
+    if (t === 'success') return { color: 'var(--success-text)', bg: 'var(--success-light)', icon: <CheckCircle2 size={13} /> };
+    if (t === 'warning') return { color: 'var(--warning-text)', bg: 'var(--warning-light)', icon: <AlertCircle size={13} /> };
     return { color: 'var(--primary)', bg: 'var(--primary-light)', icon: <Clock size={13} /> };
   };
 
@@ -147,7 +147,7 @@ export const EventDetailPage = ({ eventoId: propId }) => {
   if (error || !evento) {
     return (
       <div style={{ padding: '3rem', textAlign: 'center' }}>
-        <p style={{ color: 'var(--danger)', marginBottom: '1rem' }}>{error || 'Evento no encontrado'}</p>
+        <p style={{ color: 'var(--danger-text)', marginBottom: '1rem' }}>{error || 'Evento no encontrado'}</p>
         <button className="btn btn-secondary btn-sm" onClick={() => navigate('/eventos')}>
           <ChevronLeft size={16} /> Volver a eventos
         </button>
@@ -325,8 +325,8 @@ export const EventDetailPage = ({ eventoId: propId }) => {
           <div className="grid-cols-4">
             {[
               { label: 'Costo Total', value: fmt(evento.monto_total || 0), icon: DollarSign, color: 'var(--primary)' },
-              { label: 'Anticipo Pagado', value: fmt(evento.anticipo_pagado || 0), icon: CheckCircle2, color: 'var(--success)' },
-              { label: 'Saldo Pendiente', value: fmt(evento.saldo_pendiente || 0), icon: Clock, color: 'var(--warning)' },
+              { label: 'Anticipo Pagado', value: fmt(evento.anticipo_pagado || 0), icon: CheckCircle2, color: 'var(--success-text)' },
+              { label: 'Saldo Pendiente', value: fmt(evento.saldo_pendiente || 0), icon: Clock, color: 'var(--warning-text)' },
               { label: 'Invitados', value: evento.invitados || 0, icon: Users, color: 'var(--info)' },
             ].map(({ label, value, icon: Icon, color }) => (
               <div key={label} className="kpi-card">
@@ -479,8 +479,8 @@ export const EventDetailPage = ({ eventoId: propId }) => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
               {[
                 { label: 'Monto Total', value: fmt(evento.monto_total), color: 'var(--primary)' },
-                { label: 'Pagado', value: fmt(evento.anticipo_pagado), color: 'var(--success)' },
-                { label: 'Pendiente', value: fmt(evento.saldo_pendiente), color: 'var(--warning)' },
+                { label: 'Pagado', value: fmt(evento.anticipo_pagado), color: 'var(--success-text)' },
+                { label: 'Pendiente', value: fmt(evento.saldo_pendiente), color: 'var(--warning-text)' },
               ].map(item => (
                 <div key={item.label} style={{ textAlign: 'center', padding: '1rem', background: 'var(--white)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
                   <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>{item.label}</div>

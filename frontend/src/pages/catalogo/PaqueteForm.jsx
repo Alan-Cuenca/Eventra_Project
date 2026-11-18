@@ -9,6 +9,7 @@ import { api } from '../../services/api';
 import { eventraService } from '../../services/eventraService';
 import { Card } from '../../components/common/Card';
 import { ArrowLeft, Save, Loader2, Edit2, PlusCircle, CheckCircle2 } from 'lucide-react';
+import { formatMoney } from '../../utils/format';
 
 export const PaqueteForm = () => {
   const { id } = useParams();
@@ -140,7 +141,7 @@ export const PaqueteForm = () => {
                 <label className="form-label">Precio Total de Venta (USD) *</label>
                 <input type="number" step="0.01" min="0" name="precio_total" className="form-input" value={form.precio_total} onChange={handleChange} required disabled={submitting} />
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  Precio sugerido según servicios seleccionados: <strong>${precioSugerido.toFixed(2)}</strong>
+                  Precio sugerido según servicios seleccionados: <strong>{formatMoney(precioSugerido)}</strong>
                 </span>
               </div>
 
@@ -189,7 +190,7 @@ export const PaqueteForm = () => {
                   />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.15rem' }}>{srv.nombre}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>${parseFloat(srv.precio_base).toFixed(2)}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{formatMoney(srv.precio_base)}</div>
                   </div>
                 </label>
               );

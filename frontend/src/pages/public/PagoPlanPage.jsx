@@ -185,7 +185,7 @@ export const PagoPlanPage = () => {
         </Link>
 
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#CBC6B6] text-xs font-bold text-[#233D49]">
-          <ShieldCheck size={15} className="text-[#4D9A72]" />
+          <ShieldCheck size={15} className="text-[#2F7A55]" />
           <span>Activación Corporativa · Pago por Transferencia Bancaria Únicamente</span>
         </div>
       </div>
@@ -198,7 +198,7 @@ export const PagoPlanPage = () => {
           </div>
 
           <div className="space-y-1.5 max-w-2xl mx-auto">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#4D9A72]/15 text-[#4D9A72] text-xs font-extrabold uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#4D9A72]/15 text-[#2F7A55] text-xs font-extrabold uppercase tracking-wider">
               Comprobante PDF Registrado · {planInfo.nombre}
             </span>
             <h2
@@ -293,7 +293,7 @@ export const PagoPlanPage = () => {
                   : 'bg-white text-[#233D49] border-[#CBC6B6] hover:border-[#526F7D]'
               }`}
             >
-              <Sparkles size={13} className={selectedPlan === 'Premium' ? 'text-[#C49A3A]' : 'text-[#526F7D]'} />
+              <Sparkles size={13} className={selectedPlan === 'Premium' ? 'text-[#7A5C14]' : 'text-[#526F7D]'} />
               <span>Plan Premium (${premiumPrice}/mes)</span>
             </button>
           </div>
@@ -322,8 +322,8 @@ export const PagoPlanPage = () => {
                 >
                   {copiedField === 'all' ? (
                     <>
-                      <Check size={13} className="text-[#4D9A72]" />
-                      <span className="text-[#4D9A72]">¡Datos copiados!</span>
+                      <Check size={13} className="text-[#2F7A55]" />
+                      <span className="text-[#2F7A55]">¡Datos copiados!</span>
                     </>
                   ) : (
                     <>
@@ -339,7 +339,7 @@ export const PagoPlanPage = () => {
                 {/* Nombre */}
                 <div className="bg-white rounded-xl p-3.5 border border-[#CBC6B6] flex items-center justify-between gap-2 shadow-2xs">
                   <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#526F7D] block">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#526F7D] block">
                       Nombre del Titular
                     </span>
                     <span className="text-sm sm:text-base font-extrabold text-[#233D49]">
@@ -352,14 +352,14 @@ export const PagoPlanPage = () => {
                     className="p-2 rounded-lg bg-[#F3F0E4] hover:bg-[#CEC8B8]/60 text-[#233D49] transition-colors cursor-pointer"
                     title="Copiar Nombre"
                   >
-                    {copiedField === 'nombre' ? <Check size={15} className="text-[#4D9A72]" /> : <Copy size={15} />}
+                    {copiedField === 'nombre' ? <Check size={15} className="text-[#2F7A55]" /> : <Copy size={15} />}
                   </button>
                 </div>
 
                 {/* Cuenta */}
                 <div className="bg-white rounded-xl p-3.5 border border-[#CBC6B6] flex items-center justify-between gap-2 shadow-2xs">
                   <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#526F7D] block">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#526F7D] block">
                       Número de Cuenta
                     </span>
                     <span className="text-sm sm:text-base font-mono font-extrabold text-[#233D49]">
@@ -372,14 +372,14 @@ export const PagoPlanPage = () => {
                     className="p-2 rounded-lg bg-[#F3F0E4] hover:bg-[#CEC8B8]/60 text-[#233D49] transition-colors cursor-pointer"
                     title="Copiar Cuenta"
                   >
-                    {copiedField === 'cuenta' ? <Check size={15} className="text-[#4D9A72]" /> : <Copy size={15} />}
+                    {copiedField === 'cuenta' ? <Check size={15} className="text-[#2F7A55]" /> : <Copy size={15} />}
                   </button>
                 </div>
 
                 {/* Cédula */}
                 <div className="bg-white rounded-xl p-3.5 border border-[#CBC6B6] flex items-center justify-between gap-2 shadow-2xs">
                   <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#526F7D] block">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#526F7D] block">
                       Cédula de Identidad
                     </span>
                     <span className="text-sm sm:text-base font-mono font-extrabold text-[#233D49]">
@@ -392,14 +392,14 @@ export const PagoPlanPage = () => {
                     className="p-2 rounded-lg bg-[#F3F0E4] hover:bg-[#CEC8B8]/60 text-[#233D49] transition-colors cursor-pointer"
                     title="Copiar Cédula"
                   >
-                    {copiedField === 'cedula' ? <Check size={15} className="text-[#4D9A72]" /> : <Copy size={15} />}
+                    {copiedField === 'cedula' ? <Check size={15} className="text-[#2F7A55]" /> : <Copy size={15} />}
                   </button>
                 </div>
 
                 {/* Correo */}
                 <div className="bg-white rounded-xl p-3.5 border border-[#CBC6B6] flex items-center justify-between gap-2 shadow-2xs">
                   <div className="min-w-0">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#526F7D] block">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#526F7D] block">
                       Correo de Notificación
                     </span>
                     <span className="text-xs sm:text-sm font-mono font-extrabold text-[#233D49] truncate block">
@@ -412,7 +412,7 @@ export const PagoPlanPage = () => {
                     className="p-2 rounded-lg bg-[#F3F0E4] hover:bg-[#CEC8B8]/60 text-[#233D49] transition-colors shrink-0 cursor-pointer"
                     title="Copiar Correo"
                   >
-                    {copiedField === 'correo' ? <Check size={15} className="text-[#4D9A72]" /> : <Copy size={15} />}
+                    {copiedField === 'correo' ? <Check size={15} className="text-[#2F7A55]" /> : <Copy size={15} />}
                   </button>
                 </div>
               </div>
@@ -452,7 +452,7 @@ export const PagoPlanPage = () => {
             </div>
 
             {errorMsg && !modalCorreoAbierto && (
-              <div className="p-3 rounded-xl bg-[#C95C5C]/10 border border-[#C95C5C]/30 text-[#C95C5C] text-xs font-bold flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-[#C95C5C]/10 border border-[#C95C5C]/30 text-[#B04646] text-xs font-bold flex items-center gap-2">
                 <AlertCircle size={16} className="shrink-0" />
                 <span>{errorMsg}</span>
               </div>
@@ -475,7 +475,7 @@ export const PagoPlanPage = () => {
                     <FileText size={24} />
                   </div>
                   <div className="space-y-0.5 max-w-[240px]">
-                    <span className="text-xs font-extrabold text-[#4D9A72] uppercase tracking-wider block">
+                    <span className="text-xs font-extrabold text-[#2F7A55] uppercase tracking-wider block">
                       Archivo PDF Cargado
                     </span>
                     <p className="text-sm font-bold text-[#233D49] truncate">
@@ -495,7 +495,7 @@ export const PagoPlanPage = () => {
                     <p className="text-sm font-extrabold text-[#233D49]">
                       Haz clic aquí o arrastra el PDF del comprobante
                     </p>
-                    <p className="text-[11px] text-[#233D49]/70">
+                    <p className="text-[11px] text-[#233D49]/80">
                       Acepta únicamente archivos <strong>.PDF</strong> (máx. 12 MB)
                     </p>
                   </div>
@@ -555,7 +555,7 @@ export const PagoPlanPage = () => {
                   <Mail size={18} />
                 </div>
                 <div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#526F7D] block">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#526F7D] block">
                     Comprobante PDF Verificado
                   </span>
                   <h3
@@ -579,19 +579,19 @@ export const PagoPlanPage = () => {
             {/* Formulario compacto */}
             <form onSubmit={handleFinalizarSolicitud} className="p-6 space-y-4">
               <div className="p-3 rounded-xl bg-[#4D9A72]/10 border border-[#4D9A72]/30 flex items-center gap-3 text-xs">
-                <FileText size={18} className="text-[#4D9A72] shrink-0" />
+                <FileText size={18} className="text-[#2F7A55] shrink-0" />
                 <div className="min-w-0">
                   <span className="font-extrabold text-[#233D49] block truncate">
                     {pdfFile?.name}
                   </span>
-                  <span className="text-[#4D9A72] font-bold">
+                  <span className="text-[#2F7A55] font-bold">
                     {planInfo.nombre} · ${planInfo.precio}.00 USD
                   </span>
                 </div>
               </div>
 
               {errorMsg && (
-                <div className="p-3 rounded-xl bg-[#C95C5C]/10 border border-[#C95C5C]/30 text-[#C95C5C] text-xs font-bold flex items-center gap-2">
+                <div className="p-3 rounded-xl bg-[#C95C5C]/10 border border-[#C95C5C]/30 text-[#B04646] text-xs font-bold flex items-center gap-2">
                   <AlertCircle size={15} className="shrink-0" />
                   <span>{errorMsg}</span>
                 </div>
@@ -599,7 +599,7 @@ export const PagoPlanPage = () => {
 
               <div>
                 <label className="block text-xs font-extrabold uppercase tracking-wider text-[#233D49] mb-1.5">
-                  Correo electrónico para recibir credenciales <span className="text-[#C95C5C]">*</span>
+                  Correo electrónico para recibir credenciales <span className="text-[#B04646]">*</span>
                 </label>
                 <input
                   type="email"

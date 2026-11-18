@@ -235,7 +235,7 @@ export const ClienteForm = () => {
               <div className="form-group">
                 <label className="form-label" htmlFor="page-nombres">
                   <User size={13} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
-                  Nombres <span style={{ color: 'var(--accent)' }}>*</span>
+                  Nombres <span style={{ color: 'var(--warning-text)' }}>*</span>
                 </label>
                 <input
                   id="page-nombres"
@@ -251,7 +251,7 @@ export const ClienteForm = () => {
               </div>
               <div className="form-group">
                 <label className="form-label" htmlFor="page-apellidos">
-                  Apellidos <span style={{ color: 'var(--accent)' }}>*</span>
+                  Apellidos <span style={{ color: 'var(--warning-text)' }}>*</span>
                 </label>
                 <input
                   id="page-apellidos"

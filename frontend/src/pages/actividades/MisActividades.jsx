@@ -69,7 +69,7 @@ export const MisActividades = () => {
 
   if (error) {
     return (
-      <div className="p-6 rounded-2xl bg-[#C95C5C]/15 border border-[#C95C5C]/30 text-[#C95C5C] text-sm font-semibold">
+      <div className="p-6 rounded-2xl bg-[#C95C5C]/15 border border-[#C95C5C]/30 text-[#B04646] text-sm font-semibold">
         {error}
       </div>
     );
@@ -120,14 +120,14 @@ export const MisActividades = () => {
         {/* Métrica Global de Progreso */}
         <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white border border-[#CEC8B8] shadow-sm">
           <div className="text-right">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#4D7182]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#4D7182]">
               Tu Rendimiento
             </span>
             <p className="text-base font-extrabold text-[#233D49] leading-tight">
               {completadas} de {totalTareas} Tareas
             </p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-[#4D9A72]/15 text-[#4D9A72] font-extrabold flex items-center justify-center text-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#4D9A72]/15 text-[#2F7A55] font-extrabold flex items-center justify-center text-xs">
             {porcentajeGlobal}%
           </div>
         </div>
@@ -135,13 +135,13 @@ export const MisActividades = () => {
 
       {actividades.length === 0 ? (
         <div className="bg-white rounded-3xl p-12 text-center border border-[#CEC8B8] shadow-sm space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[#4D9A72]/15 text-[#4D9A72] mx-auto flex items-center justify-center">
+          <div className="w-14 h-14 rounded-2xl bg-[#4D9A72]/15 text-[#2F7A55] mx-auto flex items-center justify-center">
             <CheckCircle2 size={28} />
           </div>
           <h3 className="text-lg font-bold text-[#233D49]">
             ¡Estás completamente al día!
           </h3>
-          <p className="text-xs text-[#7D8F97] max-w-sm mx-auto">
+          <p className="text-xs text-[#566D7A] max-w-sm mx-auto">
             No tienes actividades pendientes asignadas en este momento. Cuando el coordinador programe nuevas tareas aparecerán aquí.
           </p>
         </div>
@@ -160,7 +160,7 @@ export const MisActividades = () => {
                 {/* Cabecera del Evento + Progreso */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#CEC8B8]/50">
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#4D7182]/10 text-[#4D7182]">
+                    <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#4D7182]/10 text-[#4D7182]">
                       Evento Asignado
                     </span>
                     <h3 className="text-lg font-bold text-[#233D49] mt-1">
@@ -192,7 +192,7 @@ export const MisActividades = () => {
                         key={tarea.id}
                         className={`group flex items-center gap-3.5 p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 ${
                           isDone
-                            ? 'bg-[#F3F0E4]/40 border-[#CEC8B8]/60 text-[#7D8F97]'
+                            ? 'bg-[#F3F0E4]/40 border-[#CEC8B8]/60 text-[#566D7A]'
                             : 'bg-white border-[#CEC8B8] hover:border-[#4D7182] hover:shadow-sm'
                         }`}
                       >
@@ -218,7 +218,7 @@ export const MisActividades = () => {
                         {/* Descripción de la Tarea */}
                         <div className="flex-1 min-w-0">
                           <p className={`text-sm font-semibold leading-snug ${
-                            isDone ? 'line-through text-[#7D8F97]' : 'text-[#233D49]'
+                            isDone ? 'line-through text-[#566D7A]' : 'text-[#233D49]'
                           }`}>
                             {tarea.descripcion}
                           </p>
@@ -231,10 +231,10 @@ export const MisActividades = () => {
                         </div>
 
                         {/* Estado Badge */}
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shrink-0 ${
                           isDone
-                            ? 'bg-[#4D9A72]/15 text-[#4D9A72] border border-[#4D9A72]/30'
-                            : 'bg-[#C49A3A]/15 text-[#C49A3A] border border-[#C49A3A]/30'
+                            ? 'bg-[#4D9A72]/15 text-[#2F7A55] border border-[#4D9A72]/30'
+                            : 'bg-[#C49A3A]/15 text-[#7A5C14] border border-[#C49A3A]/30'
                         }`}>
                           {isDone ? 'Completada' : 'Pendiente'}
                         </span>

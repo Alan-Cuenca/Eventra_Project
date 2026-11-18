@@ -18,6 +18,7 @@ import {
   CalendarCheck, Layers, Building2, MessageSquare, BarChart2,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { formatMoney } from '../../utils/format';
 
 // ── Componente Toast ─────────────────────────────────────────────────────────
 const Toast = ({ message, type = 'success', onDone }) => {
@@ -194,8 +195,7 @@ export const DashboardPage = () => {
     tareas_pendientes:     kpis?.tareas_pendientes     ?? 0,
   };
 
-  const fmt = (n) =>
-    new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(Number(n) || 0);
+  const fmt = formatMoney;
 
   // ── Handlers de aprobación sincronizados con eventraService.actualizarEstadoSolicitud ──
   const handleAprobar = async (id) => {
@@ -204,7 +204,7 @@ export const DashboardPage = () => {
       setSolicitudes(prev =>
         prev.map(s => s.id === id ? { ...s, estado: 'Aprobada' } : s)
       );
-      setToast({ msg: '✓ Solicitud aprobada exitosamente.', type: 'success' });
+      setToast({ msg: 'Solicitud aprobada exitosamente.', type: 'success' });
     } catch (err) {
       setToast({ msg: 'Error al aprobar solicitud: ' + (err.message || 'Error del servidor'), type: 'danger' });
     }
@@ -216,7 +216,7 @@ export const DashboardPage = () => {
       setSolicitudes(prev =>
         prev.map(s => s.id === id ? { ...s, estado: 'Rechazada' } : s)
       );
-      setToast({ msg: '✗ Solicitud rechazada.', type: 'danger' });
+      setToast({ msg: 'Solicitud rechazada.', type: 'danger' });
     } catch (err) {
       setToast({ msg: 'Error al rechazar solicitud: ' + (err.message || 'Error del servidor'), type: 'danger' });
     }
@@ -263,11 +263,11 @@ export const DashboardPage = () => {
         <div>
           <h1>
             {isCliente
-              ? `¡Hola, ${user?.nombre_completo?.split(' ')[0] || 'Cliente'}! 👋`
+              ? `¡Hola, ${user?.nombre_completo?.split(' ')[0] || 'Cliente'}!`
               : `Bienvenido, ${user?.nombre_completo?.split(' ')[0] || 'Usuario'}`}
           </h1>
           <p>
-            {isAdmin     && 'Supervisión global de la plataforma SaaS · Métricas de suscripción y límites activos.'}
+            {isAdmin     && 'Resumen de tu empresa: eventos, clientes, ingresos y uso de tu plan.'}
             {isGerente   && 'Control de operaciones, finanzas y aprobaciones comerciales de eventos.'}
             {isTrabajador && 'Gestión de actividades operativas y checklist de eventos asignados.'}
             {isCliente   && 'Seguimiento en tiempo real del progreso y presupuesto de tu recepción.'}
@@ -475,7 +475,7 @@ export const DashboardPage = () => {
                       {sol.impacto_costo && (
                         <div style={{
                           fontWeight: 800, fontSize: '1.05rem',
-                          color: 'var(--warning)',
+                          color: 'var(--warning-text)',
                           background: 'var(--warning-light)',
                           padding: '0.3rem 0.75rem',
                           borderRadius: 'var(--radius-md)',
@@ -727,8 +727,8 @@ export const DashboardPage = () => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
                 {[
                   { label: 'COSTO TOTAL', value: fmt(totalEvt), color: 'var(--primary-dark)', bg: 'var(--cream)', icon: <DollarSign size={16} /> },
-                  { label: 'ANTICIPO PAGADO', value: fmt(anticipoEvt), color: 'var(--success)', bg: 'var(--success-light)', icon: <CheckCircle2 size={16} /> },
-                  { label: 'SALDO PENDIENTE', value: fmt(saldoEvt), color: 'var(--warning)', bg: 'var(--warning-light)', icon: <Clock size={16} /> },
+                  { label: 'ANTICIPO PAGADO', value: fmt(anticipoEvt), color: 'var(--success-text)', bg: 'var(--success-light)', icon: <CheckCircle2 size={16} /> },
+                  { label: 'SALDO PENDIENTE', value: fmt(saldoEvt), color: 'var(--warning-text)', bg: 'var(--warning-light)', icon: <Clock size={16} /> },
                 ].map((item) => (
                   <div
                     key={item.label}
@@ -755,8 +755,8 @@ export const DashboardPage = () => {
             <div className="grid-cols-3">
               {[
                 { icon: <CalendarCheck size={22} />, label: 'Ver detalle completo', sub: 'Actividades, pagos y archivos', to: '/eventos', color: 'var(--primary)' },
-                { icon: <MessageSquare size={22} />, label: 'Solicitar modificación', sub: 'Cambia detalles de tu evento', to: '/portal-cliente/solicitudes', color: 'var(--warning)' },
-                { icon: <CalendarDays size={22} />, label: 'Mis reservas', sub: 'Salones y servicios reservados', to: '/reservas', color: 'var(--success)' },
+                { icon: <MessageSquare size={22} />, label: 'Solicitar modificación', sub: 'Cambia detalles de tu evento', to: '/portal-cliente/solicitudes', color: 'var(--warning-text)' },
+                { icon: <CalendarDays size={22} />, label: 'Mis reservas', sub: 'Salones y servicios reservados', to: '/reservas', color: 'var(--success-text)' },
               ].map((card) => (
                 <Link
                   key={card.label}

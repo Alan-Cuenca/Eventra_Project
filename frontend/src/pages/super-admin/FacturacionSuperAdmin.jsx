@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   ArrowRight,
 } from 'lucide-react';
+import { formatMoney } from '../../utils/format';
 
 export const FacturacionSuperAdmin = () => {
   const [suscripciones, setSuscripciones] = useState([]);
@@ -153,15 +154,15 @@ export const FacturacionSuperAdmin = () => {
             <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
               Ingresos Recurrentes Mensuales (MRR)
             </span>
-            <div className="w-9 h-9 rounded-xl bg-[#4D9A72]/15 text-[#4D9A72] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-[#4D9A72]/15 text-[#2F7A55] flex items-center justify-center">
               <DollarSign size={20} />
             </div>
           </div>
           <p className="text-2xl sm:text-3xl font-extrabold text-[#233D49] mt-3 tabular-nums font-mono">
-            ${mrrAprobado.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {formatMoney(mrrAprobado)}
           </p>
-          <p className="text-xs text-[#7D8F97] mt-1.5 flex items-center gap-1.5">
-            <TrendingUp size={13} className="text-[#4D9A72]" />
+          <p className="text-xs text-[#566D7A] mt-1.5 flex items-center gap-1.5">
+            <TrendingUp size={13} className="text-[#2F7A55]" />
             <span>Membresías aprobadas y liquidadas</span>
           </p>
         </div>
@@ -179,8 +180,8 @@ export const FacturacionSuperAdmin = () => {
           <p className="text-2xl sm:text-3xl font-extrabold text-[#233D49] mt-3 tabular-nums">
             {empresasActivasCount}
           </p>
-          <p className="text-xs text-[#7D8F97] mt-1.5 flex items-center gap-1.5">
-            <ShieldCheck size={13} className="text-[#4D9A72]" />
+          <p className="text-xs text-[#566D7A] mt-1.5 flex items-center gap-1.5">
+            <ShieldCheck size={13} className="text-[#2F7A55]" />
             <span>Tenants con servicio operativo activo</span>
           </p>
         </div>
@@ -191,14 +192,14 @@ export const FacturacionSuperAdmin = () => {
             <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
               Pagos por Aprobar
             </span>
-            <div className="w-9 h-9 rounded-xl bg-[#C49A3A]/15 text-[#C49A3A] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-[#C49A3A]/15 text-[#7A5C14] flex items-center justify-center">
               <Clock size={20} />
             </div>
           </div>
           <p className="text-2xl sm:text-3xl font-extrabold text-[#233D49] mt-3 tabular-nums">
             {pagosPorAprobar.length}
           </p>
-          <p className="text-xs text-[#7D8F97] mt-1.5 flex items-center gap-1.5">
+          <p className="text-xs text-[#566D7A] mt-1.5 flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[#C49A3A]"></span>
             <span>Comprobantes de empresas en revisión</span>
           </p>
@@ -208,7 +209,7 @@ export const FacturacionSuperAdmin = () => {
       {/* Barra de Filtros y Búsqueda */}
       <div className="bg-white rounded-2xl border border-[#CBC6B6] p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7D8F97]" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#566D7A]" />
           <input
             type="text"
             placeholder="Buscar por empresa, RUC o plan..."
@@ -255,7 +256,7 @@ export const FacturacionSuperAdmin = () => {
             <tbody className="divide-y divide-[#CBC6B6]/40 text-[#233D49]">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="py-12 text-center text-[#7D8F97]">
+                  <td colSpan="6" className="py-12 text-center text-[#566D7A]">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <RefreshCw size={24} className="animate-spin text-[#526F7D]" />
                       <span className="font-semibold">Cargando pagos de suscripción global...</span>
@@ -264,11 +265,11 @@ export const FacturacionSuperAdmin = () => {
                 </tr>
               ) : suscripcionesFiltradas.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="py-12 text-center text-[#7D8F97]">
+                  <td colSpan="6" className="py-12 text-center text-[#566D7A]">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <FileCheck size={32} className="text-[#526F7D]/50" />
                       <p className="font-semibold text-[#233D49]">No se encontraron pagos de suscripción</p>
-                      <p className="text-xs text-[#7D8F97]">No hay registros con los filtros seleccionados.</p>
+                      <p className="text-xs text-[#566D7A]">No hay registros con los filtros seleccionados.</p>
                     </div>
                   </td>
                 </tr>
@@ -295,7 +296,7 @@ export const FacturacionSuperAdmin = () => {
                               {susc.empresa_nombre || 'Empresa Tenant'}
                             </span>
                             {susc.empresa_ruc && (
-                              <span className="text-[11px] text-[#7D8F97] block font-mono tabular-nums">
+                              <span className="text-[11px] text-[#566D7A] block font-mono tabular-nums">
                                 RUC: {susc.empresa_ruc}
                               </span>
                             )}
@@ -310,10 +311,10 @@ export const FacturacionSuperAdmin = () => {
                       </td>
 
                       <td className="py-3.5 px-5 font-bold font-mono text-sm tabular-nums text-[#233D49]">
-                        ${Number(susc.monto).toFixed(2)}
+                        {formatMoney(susc.monto)}
                       </td>
 
-                      <td className="py-3.5 px-5 text-[#7D8F97] tabular-nums font-medium">
+                      <td className="py-3.5 px-5 text-[#566D7A] tabular-nums font-medium">
                         {new Date(susc.fecha_pago || susc.fecha_registro).toLocaleDateString('es-ES', {
                           day: '2-digit',
                           month: 'short',
@@ -325,10 +326,10 @@ export const FacturacionSuperAdmin = () => {
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
                             isApproved
-                              ? 'bg-[#4D9A72]/15 text-[#4D9A72] border-[#4D9A72]/30'
+                              ? 'bg-[#4D9A72]/15 text-[#2F7A55] border-[#4D9A72]/30'
                               : isPending
-                              ? 'bg-[#C49A3A]/15 text-[#C49A3A] border-[#C49A3A]/30'
-                              : 'bg-[#C95C5C]/15 text-[#C95C5C] border-[#C95C5C]/30'
+                              ? 'bg-[#C49A3A]/15 text-[#7A5C14] border-[#C49A3A]/30'
+                              : 'bg-[#C95C5C]/15 text-[#B04646] border-[#C95C5C]/30'
                           }`}
                         >
                           {isApproved && <CheckCircle2 size={12} />}
@@ -380,7 +381,7 @@ export const FacturacionSuperAdmin = () => {
                   <h3 className="text-base sm:text-lg font-bold text-[#233D49]">
                     Auditoría de Suscripción SaaS
                   </h3>
-                  <p className="text-xs text-[#7D8F97]">
+                  <p className="text-xs text-[#566D7A]">
                     Verifica el comprobante recibido antes de activar la membresía del tenant.
                   </p>
                 </div>
@@ -388,7 +389,7 @@ export const FacturacionSuperAdmin = () => {
 
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-lg text-[#7D8F97] hover:bg-[#F3F0E4] hover:text-[#233D49] transition-colors"
+                className="p-1.5 rounded-lg text-[#566D7A] hover:bg-[#F3F0E4] hover:text-[#233D49] transition-colors"
                 title="Cerrar modal"
               >
                 <X size={18} />
@@ -406,7 +407,7 @@ export const FacturacionSuperAdmin = () => {
               <div className="min-w-0 text-right">
                 <span className="text-[#526F7D] font-semibold text-[11px] block">Monto Depositado:</span>
                 <p className="text-sm sm:text-base font-extrabold text-[#233D49] tabular-nums font-mono truncate">
-                  ${Number(pagoSeleccionado.monto).toFixed(2)}
+                  {formatMoney(pagoSeleccionado.monto)}
                 </p>
               </div>
               <div className="min-w-0">
@@ -462,7 +463,7 @@ export const FacturacionSuperAdmin = () => {
                   </div>
                 </div>
               ) : (
-                <div className="p-5 rounded-xl bg-[#FAF8F5] border border-[#CBC6B6] text-center text-xs text-[#7D8F97]">
+                <div className="p-5 rounded-xl bg-[#FAF8F5] border border-[#CBC6B6] text-center text-xs text-[#566D7A]">
                   <FileCheck size={26} className="mx-auto mb-1 text-[#526F7D]/50" />
                   <p className="font-semibold text-[#233D49]">Sin comprobante digital adjunto</p>
                   <p className="mt-0.5">El pago fue ingresado manualmente por el administrador.</p>

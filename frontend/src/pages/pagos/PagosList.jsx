@@ -24,6 +24,7 @@ import {
   RefreshCw,
   User
 } from 'lucide-react';
+import { formatMoney } from '../../utils/format';
 
 export const PagosList = () => {
   const { isAdmin, isGerente } = useAuth();
@@ -160,14 +161,14 @@ export const PagosList = () => {
             <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
               Total Recaudado
             </span>
-            <div className="w-9 h-9 rounded-xl bg-[#4D9A72]/15 text-[#4D9A72] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-[#4D9A72]/15 text-[#2F7A55] flex items-center justify-center">
               <DollarSign size={20} />
             </div>
           </div>
           <p className="text-2xl sm:text-3xl font-extrabold text-[#233D49] mt-3 tabular-nums font-mono">
-            ${totalRecaudado.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {formatMoney(totalRecaudado)}
           </p>
-          <p className="text-xs text-[#7D8F97] mt-1.5 flex items-center gap-1">
+          <p className="text-xs text-[#566D7A] mt-1.5 flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-[#4D9A72]"></span>
             Pagos aprobados y conciliados
           </p>
@@ -184,9 +185,9 @@ export const PagosList = () => {
             </div>
           </div>
           <p className="text-2xl sm:text-3xl font-extrabold text-[#233D49] mt-3 tabular-nums font-mono">
-            ${anticiposCobrados.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {formatMoney(anticiposCobrados)}
           </p>
-          <p className="text-xs text-[#7D8F97] mt-1.5 flex items-center gap-1">
+          <p className="text-xs text-[#566D7A] mt-1.5 flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-[#526F7D]"></span>
             Garantías y confirmaciones de eventos
           </p>
@@ -198,14 +199,14 @@ export const PagosList = () => {
             <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D]">
               Saldos Pendientes
             </span>
-            <div className="w-9 h-9 rounded-xl bg-[#C49A3A]/15 text-[#C49A3A] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-[#C49A3A]/15 text-[#7A5C14] flex items-center justify-center">
               <Clock size={20} />
             </div>
           </div>
           <p className="text-2xl sm:text-3xl font-extrabold text-[#233D49] mt-3 tabular-nums font-mono">
-            ${saldosPendientes.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {formatMoney(saldosPendientes)}
           </p>
-          <p className="text-xs text-[#7D8F97] mt-1.5 flex items-center gap-1">
+          <p className="text-xs text-[#566D7A] mt-1.5 flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-[#C49A3A]"></span>
             En revisión o pendientes de caja
           </p>
@@ -213,7 +214,7 @@ export const PagosList = () => {
 
       </div>
 
-      {/* Tarjeta de Integración DEUNA */}
+      {/* Tarjeta informativa de pagos digitales */}
       <div className="bg-white shadow-sm rounded-2xl border border-[#CBC6B6] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-[#526F7D]/10 border border-[#526F7D]/20 flex items-center justify-center text-[#526F7D]">
@@ -221,21 +222,21 @@ export const PagosList = () => {
           </div>
           <div>
             <h2 className="text-sm font-bold text-[#233D49]">
-              Integración DEUNA activa - Pagos digitales procesados en tiempo real
+              Pagos por Deuna y transferencia
             </h2>
-            <p className="text-xs text-[#7D8F97] mt-0.5">
-              Recepción automática de transferencias QR y validación de abonos digitales directos.
+            <p className="text-xs text-[#566D7A] mt-0.5">
+              Revisa el comprobante que sube el cliente y apruébalo o recházalo; el saldo del evento se actualiza al aprobar.
             </p>
           </div>
         </div>
 
         {/* Indicador de Estado Conectado */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#4D9A72]/15 border border-[#4D9A72]/30 text-xs font-bold text-[#4D9A72]">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#4D9A72]/15 border border-[#4D9A72]/30 text-xs font-bold text-[#2F7A55]">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4D9A72] opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#4D9A72]"></span>
           </span>
-          <span>Conectado</span>
+          <span>Revisión manual</span>
         </div>
       </div>
 
@@ -243,7 +244,7 @@ export const PagosList = () => {
       {pagosEnRevision.length > 0 && (
         <div className="p-4 rounded-2xl bg-[#C49A3A]/10 border border-[#C49A3A]/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <AlertTriangle size={18} className="text-[#C49A3A] shrink-0" />
+            <AlertTriangle size={18} className="text-[#7A5C14] shrink-0" />
             <span className="text-xs font-semibold text-[#233D49]">
               Tienes <strong>{pagosEnRevision.length}</strong> {pagosEnRevision.length === 1 ? 'comprobante' : 'comprobantes'} pendiente(s) de verificación humana.
             </span>
@@ -262,7 +263,7 @@ export const PagosList = () => {
         
         {/* Input de Búsqueda */}
         <div className="relative w-full sm:w-72">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7D8F97]" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#566D7A]" />
           <input
             type="text"
             placeholder="Buscar por cliente, evento o método..."
@@ -312,7 +313,7 @@ export const PagosList = () => {
             <tbody className="divide-y divide-[#CBC6B6]/40 text-xs text-[#233D49]">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="py-12 text-center text-[#7D8F97]">
+                  <td colSpan="7" className="py-12 text-center text-[#566D7A]">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <RefreshCw size={24} className="animate-spin text-[#526F7D]" />
                       <span className="font-semibold">Cargando pagos y comprobantes...</span>
@@ -321,11 +322,11 @@ export const PagosList = () => {
                 </tr>
               ) : pagosFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="py-12 text-center text-[#7D8F97]">
+                  <td colSpan="7" className="py-12 text-center text-[#566D7A]">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <FileCheck size={32} className="text-[#526F7D]/50" />
                       <p className="font-semibold text-[#233D49]">No se encontraron pagos registrados</p>
-                      <p className="text-xs text-[#7D8F97]">No hay transacciones que coincidan con los filtros actuales.</p>
+                      <p className="text-xs text-[#566D7A]">No hay transacciones que coincidan con los filtros actuales.</p>
                     </div>
                   </td>
                 </tr>
@@ -353,7 +354,7 @@ export const PagosList = () => {
                               {pago.cliente_nombre || 'Cliente General'}
                             </span>
                             {pago.cliente_email && (
-                              <span className="text-[11px] text-[#7D8F97] block">
+                              <span className="text-[11px] text-[#566D7A] block">
                                 {pago.cliente_email}
                               </span>
                             )}
@@ -366,7 +367,7 @@ export const PagosList = () => {
                         <span className="font-semibold text-[#233D49] block">
                           {pago.evento_titulo || 'Evento Corporativo'}
                         </span>
-                        <span className="text-[10px] text-[#7D8F97] uppercase tracking-wider">
+                        <span className="text-[11px] text-[#566D7A] uppercase tracking-wider">
                           Ref: #{String(pago.evento_id).substring(0, 8)}
                         </span>
                       </td>
@@ -374,9 +375,9 @@ export const PagosList = () => {
                       {/* 3. Monto & Concepto */}
                       <td className="py-3.5 px-5">
                         <span className="font-extrabold text-sm text-[#233D49] block tabular-nums font-mono">
-                          ${Number(pago.monto).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {formatMoney(Number(pago.monto))}
                         </span>
-                        <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#526F7D]/10 text-[#526F7D]">
+                        <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-[#526F7D]/10 text-[#526F7D]">
                           {pago.concepto || 'Abono'}
                         </span>
                       </td>
@@ -392,7 +393,7 @@ export const PagosList = () => {
                       </td>
 
                       {/* 5. Fecha */}
-                      <td className="py-3.5 px-5 text-[#7D8F97] font-medium tabular-nums">
+                      <td className="py-3.5 px-5 text-[#566D7A] font-medium tabular-nums">
                         {new Date(pago.fecha_pago || pago.fecha_registro || Date.now()).toLocaleDateString('es-ES', {
                           day: '2-digit',
                           month: 'short',
@@ -404,10 +405,10 @@ export const PagosList = () => {
                       <td className="py-3.5 px-5">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
                           isApproved
-                            ? 'bg-[#4D9A72]/15 text-[#4D9A72] border-[#4D9A72]/30'
+                            ? 'bg-[#4D9A72]/15 text-[#2F7A55] border-[#4D9A72]/30'
                             : isPending
-                            ? 'bg-[#C49A3A]/15 text-[#C49A3A] border-[#C49A3A]/30'
-                            : 'bg-[#C95C5C]/15 text-[#C95C5C] border-[#C95C5C]/30'
+                            ? 'bg-[#C49A3A]/15 text-[#7A5C14] border-[#C49A3A]/30'
+                            : 'bg-[#C95C5C]/15 text-[#B04646] border-[#C95C5C]/30'
                         }`}>
                           {isApproved && <CheckCircle size={12} />}
                           {isPending && <Clock size={12} />}
@@ -460,14 +461,14 @@ export const PagosList = () => {
                   <h3 className="text-base sm:text-lg font-bold text-[#233D49]">
                     Validación de Comprobante de Pago
                   </h3>
-                  <p className="text-xs text-[#7D8F97]">
+                  <p className="text-xs text-[#566D7A]">
                     Revisa los datos antes de emitir tu resolución contable.
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-lg text-[#7D8F97] hover:bg-[#F3F0E4] hover:text-[#233D49] transition-colors"
+                className="p-1.5 rounded-lg text-[#566D7A] hover:bg-[#F3F0E4] hover:text-[#233D49] transition-colors"
                 title="Cerrar modal"
               >
                 <X size={18} />
@@ -485,7 +486,7 @@ export const PagosList = () => {
               <div className="min-w-0 text-right">
                 <span className="text-[#526F7D] font-semibold text-[11px] block">Monto Depositado:</span>
                 <p className="text-sm sm:text-base font-extrabold text-[#233D49] tabular-nums font-mono truncate">
-                  ${Number(pagoSeleccionado.monto).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {formatMoney(Number(pagoSeleccionado.monto))}
                 </p>
               </div>
               <div className="min-w-0">
@@ -533,7 +534,7 @@ export const PagosList = () => {
                   </div>
                 </div>
               ) : (
-                <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-[#CBC6B6] text-center text-xs text-[#7D8F97]">
+                <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-[#CBC6B6] text-center text-xs text-[#566D7A]">
                   <FileCheck size={26} className="mx-auto mb-1 text-[#526F7D]/50" />
                   <p className="font-semibold text-[#233D49]">Sin comprobante digital adjunto</p>
                   <p className="mt-0.5">El pago fue registrado bajo modalidad en efectivo o caja física.</p>

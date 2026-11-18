@@ -79,7 +79,7 @@ export const EvaraAI = () => {
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-[#CBC6B6]/80 shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-[#4D9A72]/15 text-[#4D9A72] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#4D9A72]/15 text-[#2F7A55] flex items-center justify-center font-bold">
               <Calendar className="w-5 h-5" />
             </div>
             <h3 className="text-base font-bold text-[#233D49]">Consciencia de Agenda</h3>
@@ -89,7 +89,7 @@ export const EvaraAI = () => {
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-[#CBC6B6]/80 shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C49A3A]/15 text-[#C49A3A] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#C49A3A]/15 text-[#7A5C14] flex items-center justify-center font-bold">
               <FileText className="w-5 h-5" />
             </div>
             <h3 className="text-base font-bold text-[#233D49]">Cotizaciones Estructuradas</h3>
@@ -128,7 +128,7 @@ export const EvaraAI = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-bold text-[#233D49]">EVARA AI</h3>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#526F7D]/15 text-[#526F7D] uppercase">
+                  <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-[#526F7D]/15 text-[#526F7D] uppercase">
                     Asistente Oficial
                   </span>
                 </div>
@@ -139,11 +139,11 @@ export const EvaraAI = () => {
             </div>
 
             <div className="text-right hidden sm:block">
-              <span className="text-xs font-semibold text-[#4D9A72] flex items-center gap-1 justify-end">
+              <span className="text-xs font-semibold text-[#2F7A55] flex items-center gap-1 justify-end">
                 <span className="w-2 h-2 rounded-full bg-[#4D9A72] animate-pulse" />
                 Respuesta en 1.2 segundos
               </span>
-              <span className="text-[10px] text-[#233D49]/60">Garantía Anti-Alucinación</span>
+              <span className="text-[11px] text-[#233D49]/75">Garantía Anti-Alucinación</span>
             </div>
           </div>
 
@@ -169,7 +169,7 @@ export const EvaraAI = () => {
               <div className="space-y-3">
                 <div className="p-4 rounded-2xl rounded-tl-none bg-white border border-[#CBC6B6]/70 text-xs sm:text-sm text-[#233D49] shadow-xs leading-relaxed space-y-2">
                   <p>
-                    ¡Hola! Qué gran noticia, muchísimas felicidades por su compromiso. 💍✨
+                    ¡Hola! Qué gran noticia, muchísimas felicidades por su compromiso.
                   </p>
                   <p>
                     He consultado en tiempo real la disponibilidad de nuestros salones para mediados de noviembre: el <strong>Jardín de Cristal</strong> está 100% disponible para el sábado 14 de noviembre en turno nocturno (18:00 - 02:00).
@@ -183,14 +183,14 @@ export const EvaraAI = () => {
                 <div className="p-5 rounded-2xl bg-[#EEEBDD]/60 border border-[#CBC6B6] shadow-xs space-y-3">
                   <div className="flex items-center justify-between pb-2 border-b border-[#CBC6B6]/60">
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#526F7D]">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#526F7D]">
                         Proforma Estimada #EV-8921
                       </span>
                       <h4 className="text-sm font-bold text-[#233D49]">
                         Paquete Nupcial Esmeralda (120 Pax)
                       </h4>
                     </div>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded bg-white text-[#4D9A72] border border-[#CBC6B6]/70">
+                    <span className="text-xs font-bold px-2 py-0.5 rounded bg-white text-[#2F7A55] border border-[#CBC6B6]/70">
                       Disponibilidad Confirmada
                     </span>
                   </div>
@@ -213,7 +213,7 @@ export const EvaraAI = () => {
 
                   <div className="pt-2 border-t border-[#CBC6B6]/60 flex justify-between items-center">
                     <div>
-                      <span className="text-[11px] text-[#233D49]/70">Total inversión estimada:</span>
+                      <span className="text-[11px] text-[#233D49]/80">Total inversión estimada:</span>
                       <div className="text-base font-extrabold text-[#233D49]">$6,720 USD</div>
                     </div>
                     <div className="flex gap-2">
@@ -237,9 +237,9 @@ export const EvaraAI = () => {
           </div>
 
           {/* Footer simulado de envío */}
-          <div className="p-4 bg-white border-t border-[#CBC6B6]/70 flex items-center justify-between text-xs text-[#233D49]/70">
+          <div className="p-4 bg-white border-t border-[#CBC6B6]/70 flex items-center justify-between text-xs text-[#233D49]/80">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[#4D9A72]" />
+              <ShieldCheck className="w-4 h-4 text-[#2F7A55]" />
               <span>Conexión cifrada directa con API REST de EVENTRA</span>
             </div>
             <span className="italic">Simulación generada con datos del catálogo de la empresa</span>
@@ -283,7 +283,7 @@ export const EvaraAI = () => {
               <div className="w-8 h-8 rounded-lg bg-[#526F7D] text-white flex items-center justify-center font-bold text-sm">
                 2
               </div>
-              <h4 className="text-base font-bold text-[#233D49]">Aislamiento Multi-Tenant</h4>
+              <h4 className="text-base font-bold text-[#233D49]">Datos separados por empresa</h4>
               <p className="text-xs sm:text-sm text-[#233D49]/80 leading-relaxed">
                 La información de tus recetas, costos de proveedores y márgenes de ganancia está segregada por tenant; ninguna otra empresa tiene acceso a tus datos.
               </p>

@@ -117,7 +117,7 @@ export const ActividadForm = ({ actividad, onClose, onSaved }) => {
             style={{
               padding: '0.75rem 1rem',
               background: 'var(--danger-light)',
-              color: 'var(--danger)',
+              color: 'var(--danger-text)',
               borderRadius: 'var(--radius-md)',
               marginBottom: '1.25rem',
               fontSize: '0.85rem',

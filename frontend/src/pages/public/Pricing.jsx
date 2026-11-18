@@ -80,7 +80,7 @@ export const Pricing = () => {
             className={`px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 focus:outline-none cursor-pointer ${
               !isAnnual
                 ? 'bg-white text-[#233D49] shadow-xs border border-[#CBC6B6]/60'
-                : 'text-[#233D49]/70 hover:text-[#233D49]'
+                : 'text-[#233D49]/80 hover:text-[#233D49]'
             }`}
           >
             Facturación Mensual
@@ -91,11 +91,11 @@ export const Pricing = () => {
             className={`px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 focus:outline-none cursor-pointer ${
               isAnnual
                 ? 'bg-white text-[#233D49] shadow-xs border border-[#CBC6B6]/60'
-                : 'text-[#233D49]/70 hover:text-[#233D49]'
+                : 'text-[#233D49]/80 hover:text-[#233D49]'
             }`}
           >
             <span>Facturación Anual</span>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#4D9A72]/20 text-[#4D9A72]">
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#4D9A72]/20 text-[#2F7A55]">
               Ahorra 20%
             </span>
           </button>
@@ -112,7 +112,7 @@ export const Pricing = () => {
                 <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D] px-3 py-1 rounded-full bg-[#EEEBDD]">
                   Plan Boutique
                 </span>
-                <span className="text-xs text-[#233D49]/60 font-medium">Centros en crecimiento</span>
+                <span className="text-xs text-[#233D49]/75 font-medium">Centros en crecimiento</span>
               </div>
 
               <h3 className="text-2xl font-bold text-[#233D49] mb-2">Básico</h3>
@@ -128,7 +128,7 @@ export const Pricing = () => {
                 </span>
                 <span className="text-sm font-semibold text-[#526F7D]">USD / mes</span>
                 {isAnnual && (
-                  <span className="text-xs text-[#233D49]/60 ml-1">(Facturado anualmente)</span>
+                  <span className="text-xs text-[#233D49]/75 ml-1">(Facturado anualmente)</span>
                 )}
               </div>
 
@@ -139,43 +139,43 @@ export const Pricing = () => {
                 </span>
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49]/85">
-                  <Check className="w-4 h-4 text-[#4D9A72] shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>
                     <strong>Hasta 10 eventos</strong> por mes
                   </span>
                 </div>
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49]/85">
-                  <Check className="w-4 h-4 text-[#4D9A72] shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>
                     <strong>3 cuentas de usuario</strong> con roles (Admin, Gerente, Trabajador)
                   </span>
                 </div>
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49]/85">
-                  <Check className="w-4 h-4 text-[#4D9A72] shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>
                     <strong>Control anti-colisión</strong> de agenda con bloqueo garantizado
                   </span>
                 </div>
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49]/85">
-                  <Check className="w-4 h-4 text-[#4D9A72] shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>Cotizador ágil estructurado por paquetes base</span>
                 </div>
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49]/85">
-                  <Check className="w-4 h-4 text-[#4D9A72] shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>Portal estándar para el anfitrión con cronograma</span>
                 </div>
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49]/50">
-                  <X className="w-4 h-4 text-[#C95C5C]/60 shrink-0 mt-0.5" />
+                  <X className="w-4 h-4 text-[#B04646]/60 shrink-0 mt-0.5" />
                   <span className="line-through">Asistente comercial EVARA AI (24/7)</span>
                 </div>
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49]/50">
-                  <X className="w-4 h-4 text-[#C95C5C]/60 shrink-0 mt-0.5" />
+                  <X className="w-4 h-4 text-[#B04646]/60 shrink-0 mt-0.5" />
                   <span className="line-through">
                     Cotizador dinámico completo (4 pasos con desglose de margen)
                   </span>
@@ -192,7 +192,7 @@ export const Pricing = () => {
                 <span>Seleccionar Plan Boutique</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
-              <p className="text-[11px] text-center text-[#233D49]/60 mt-2">
+              <p className="text-[11px] text-center text-[#233D49]/75 mt-2">
                 Continuar al pago por transferencia bancaria
               </p>
             </div>
@@ -211,7 +211,7 @@ export const Pricing = () => {
                 <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D] px-3 py-1 rounded-full bg-[#526F7D]/10">
                   Escala Total
                 </span>
-                <span className="text-xs text-[#4D9A72] font-bold">Máxima Automatización</span>
+                <span className="text-xs text-[#2F7A55] font-bold">Máxima Automatización</span>
               </div>
 
               <h3 className="text-2xl font-bold text-[#233D49] mb-2">Premium</h3>
@@ -227,7 +227,7 @@ export const Pricing = () => {
                 </span>
                 <span className="text-sm font-semibold text-[#526F7D]">USD / mes</span>
                 {isAnnual && (
-                  <span className="text-xs text-[#233D49]/60 ml-1">(Facturado anualmente)</span>
+                  <span className="text-xs text-[#233D49]/75 ml-1">(Facturado anualmente)</span>
                 )}
               </div>
 
@@ -238,14 +238,14 @@ export const Pricing = () => {
                 </span>
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49] font-medium">
-                  <Check className="w-4 h-4 text-[#4D9A72] shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>
                     <strong>Eventos Ilimitados</strong> sin restricciones mensuales
                   </span>
                 </div>
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49] font-medium">
-                  <Check className="w-4 h-4 text-[#4D9A72] shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>
                     <strong>Usuarios Ilimitados</strong> (Administradores, Gerentes y Personal de Piso)
                   </span>
@@ -261,28 +261,28 @@ export const Pricing = () => {
                 </div>
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49] font-medium">
-                  <Check className="w-4 h-4 text-[#4D9A72] shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>
                     <strong>Cotizador Dinámico Completo</strong> (Stepper de 4 pasos con cálculo de márgenes)
                   </span>
                 </div>
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49] font-medium">
-                  <Check className="w-4 h-4 text-[#4D9A72] shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>
                     <strong>Portal Premium del Anfitrión</strong> con firma de contrato y seguimiento de pagos
                   </span>
                 </div>
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49] font-medium">
-                  <Check className="w-4 h-4 text-[#4D9A72] shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>
                     Almacenamiento ilimitado de comprobantes en <strong>Supabase Storage</strong>
                   </span>
                 </div>
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49] font-medium">
-                  <Check className="w-4 h-4 text-[#4D9A72] shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>Soporte prioritario 24/7 con ejecutivo de cuenta asignado</span>
                 </div>
               </div>

@@ -21,6 +21,8 @@ export const ReservaForm = () => {
     salon: '',
     fecha: '',
     horario: '19:00 - 02:00', // Valor por defecto
+    hora_inicio_custom: '18:00',
+    hora_fin_custom: '23:00',
   });
   
   const [submitting, setSubmitting] = useState(false);
@@ -59,7 +61,7 @@ export const ReservaForm = () => {
     const { name, value } = e.target;
     setForm(p => ({ ...p, [name]: value }));
     // Si cambia el salón, la fecha o el horario, limpiamos el error de conflicto
-    if (name === 'salon' || name === 'fecha' || name === 'horario') {
+    if (['salon', 'fecha', 'horario', 'hora_inicio_custom', 'hora_fin_custom'].includes(name)) {
       setConflictError(false);
       setError('');
     }
@@ -77,7 +79,9 @@ export const ReservaForm = () => {
     setSubmitting(true);
 
     try {
-      const [hora_inicio, hora_fin] = form.horario.split(' - ').map((h) => h.trim());
+      const [hora_inicio, hora_fin] = form.horario === 'custom'
+        ? [form.hora_inicio_custom, form.hora_fin_custom]
+        : form.horario.split(' - ').map((h) => h.trim());
 
       await eventraService.createReserva({
         cotizacion_id: form.cotizacion_id,
@@ -223,7 +227,15 @@ export const ReservaForm = () => {
                     <option value="15:00 - 21:00">Tarde (15:00 - 21:00)</option>
                     <option value="19:00 - 02:00">Noche (19:00 - 02:00)</option>
                     <option value="20:00 - 03:00">Noche Extendida (20:00 - 03:00)</option>
+                    <option value="custom">Otro horario…</option>
                   </select>
+                  {form.horario === 'custom' && (
+                    <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem', alignItems: 'center' }}>
+                      <input type="time" name="hora_inicio_custom" className="form-input" value={form.hora_inicio_custom} onChange={handleChange} aria-label="Hora de inicio" required />
+                      <span style={{ color: 'var(--text-secondary)' }}>a</span>
+                      <input type="time" name="hora_fin_custom" className="form-input" value={form.hora_fin_custom} onChange={handleChange} aria-label="Hora de fin" required />
+                    </div>
+                  )}
                 </div>
               </div>
 

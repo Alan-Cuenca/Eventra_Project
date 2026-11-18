@@ -200,7 +200,7 @@ export const AuditoriaLogsPage = () => {
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
                 background: 'rgba(77, 154, 114, 0.15)',
-                color: 'var(--success)',
+                color: 'var(--success-text)',
                 border: '1px solid rgba(77, 154, 114, 0.3)',
               }}
             >
@@ -270,7 +270,7 @@ export const AuditoriaLogsPage = () => {
         <GlobalStatCard
           title="Seguridad & Motor DB"
           value={loading ? null : metricas.seguridad}
-          subtitle="RBAC JWT + PostgreSQL"
+          subtitle="Registro de actividad de la plataforma"
           icon={<Lock size={20} />}
           accentColor="#4D7182"
           badgeText="Blindado"
@@ -331,8 +331,8 @@ export const AuditoriaLogsPage = () => {
               { id: 'ALL', label: 'Todos' },
               { id: 'TENANT', label: 'Tenants' },
               { id: 'BILLING', label: 'Facturación' },
-              { id: 'SECURITY', label: 'Seguridad RBAC' },
-              { id: 'SYSTEM', label: 'PostgreSQL' },
+              { id: 'SECURITY', label: 'Seguridad' },
+              { id: 'SYSTEM', label: 'Sistema' },
             ].map((cat) => (
               <button
                 key={cat.id}
@@ -398,7 +398,7 @@ export const AuditoriaLogsPage = () => {
                         style={{
                           padding: '0.2rem 0.55rem',
                           borderRadius: 'var(--radius-full)',
-                          fontSize: '0.68rem',
+                          fontSize: '0.6875rem',
                           fontWeight: 700,
                           background:
                             log.categoria === 'BILLING'
@@ -442,7 +442,7 @@ export const AuditoriaLogsPage = () => {
                     <td>
                       <div style={{ fontSize: '0.75rem' }}>
                         <strong style={{ display: 'block', color: 'var(--text-primary)' }}>{log.actor}</strong>
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.68rem' }}>{log.ip}</span>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.6875rem' }}>{log.ip}</span>
                       </div>
                     </td>
                   </tr>

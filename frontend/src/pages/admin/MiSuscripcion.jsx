@@ -23,6 +23,7 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
+import { formatMoney } from '../../utils/format';
 
 export const MiSuscripcion = () => {
   const { user } = useAuth();
@@ -235,11 +236,11 @@ export const MiSuscripcion = () => {
                 Plan {planActual}
               </h3>
               <span className="text-sm font-bold text-[#526F7D] tabular-nums">
-                ${costoActual.toFixed(2)}/mes
+                {formatMoney(costoActual)}/mes
               </span>
             </div>
           </div>
-          <p className="text-xs text-[#7D8F97] mt-3 pt-2 border-t border-[#CBC6B6]/40 flex items-center gap-1.5">
+          <p className="text-xs text-[#566D7A] mt-3 pt-2 border-t border-[#CBC6B6]/40 flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[#4D9A72]"></span>
             <span>Módulos y soporte SaaS activo</span>
           </p>
@@ -254,7 +255,7 @@ export const MiSuscripcion = () => {
               </span>
               <div
                 className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                  tienePagoPendiente ? 'bg-[#C49A3A]/15 text-[#C49A3A]' : 'bg-[#4D9A72]/15 text-[#4D9A72]'
+                  tienePagoPendiente ? 'bg-[#C49A3A]/15 text-[#7A5C14]' : 'bg-[#4D9A72]/15 text-[#2F7A55]'
                 }`}
               >
                 <ShieldCheck size={18} />
@@ -264,15 +265,15 @@ export const MiSuscripcion = () => {
               <span
                 className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
                   tienePagoPendiente
-                    ? 'bg-[#C49A3A]/15 text-[#C49A3A] border-[#C49A3A]/30'
-                    : 'bg-[#4D9A72]/15 text-[#4D9A72] border-[#4D9A72]/30'
+                    ? 'bg-[#C49A3A]/15 text-[#7A5C14] border-[#C49A3A]/30'
+                    : 'bg-[#4D9A72]/15 text-[#2F7A55] border-[#4D9A72]/30'
                 }`}
               >
                 {tienePagoPendiente ? 'En Revisión' : 'Activa y Vigente'}
               </span>
             </div>
           </div>
-          <p className="text-xs text-[#7D8F97] mt-3 pt-2 border-t border-[#CBC6B6]/40">
+          <p className="text-xs text-[#566D7A] mt-3 pt-2 border-t border-[#CBC6B6]/40">
             {tienePagoPendiente
               ? 'Comprobante en auditoría por el equipo global.'
               : 'Sin vencimientos pendientes.'}
@@ -294,10 +295,10 @@ export const MiSuscripcion = () => {
               <p className="text-2xl sm:text-3xl font-extrabold text-[#233D49] tabular-nums">
                 {suscripciones.filter((s) => s.estado === 'Aprobado').length}
               </p>
-              <span className="text-xs font-semibold text-[#7D8F97]">meses pagos</span>
+              <span className="text-xs font-semibold text-[#566D7A]">meses pagos</span>
             </div>
           </div>
-          <p className="text-xs text-[#7D8F97] mt-3 pt-2 border-t border-[#CBC6B6]/40 flex items-center gap-1.5">
+          <p className="text-xs text-[#566D7A] mt-3 pt-2 border-t border-[#CBC6B6]/40 flex items-center gap-1.5">
             <Clock size={13} className="text-[#526F7D]" />
             <span>Facturación unificada</span>
           </p>
@@ -319,7 +320,7 @@ export const MiSuscripcion = () => {
               <div>
                 <div className="flex justify-between text-[11px] mb-0.5">
                   <span className="font-semibold text-[#233D49]">Usuarios</span>
-                  <span className="font-mono text-[#7D8F97] font-bold">
+                  <span className="font-mono text-[#566D7A] font-bold">
                     {consumo.uso?.usuarios ?? 3} / {consumo.limites?.usuarios ?? 3}
                   </span>
                 </div>
@@ -340,7 +341,7 @@ export const MiSuscripcion = () => {
               <div>
                 <div className="flex justify-between text-[11px] mb-0.5">
                   <span className="font-semibold text-[#233D49]">Clientes</span>
-                  <span className="font-mono text-[#7D8F97] font-bold">
+                  <span className="font-mono text-[#566D7A] font-bold">
                     {consumo.uso?.clientes ?? 50} / {consumo.limites?.clientes ?? 50}
                   </span>
                 </div>
@@ -361,7 +362,7 @@ export const MiSuscripcion = () => {
               <div>
                 <div className="flex justify-between text-[11px] mb-0.5">
                   <span className="font-semibold text-[#233D49]">Mensajes de IA</span>
-                  <span className="font-mono text-[#7D8F97] font-bold">
+                  <span className="font-mono text-[#566D7A] font-bold">
                     {consumo.uso?.chatbot ?? 300} / {consumo.limites?.chatbot ?? 300}
                   </span>
                 </div>
@@ -381,7 +382,7 @@ export const MiSuscripcion = () => {
             </div>
           </div>
 
-          <p className="text-[11px] text-[#7D8F97] mt-3 pt-2 border-t border-[#CBC6B6]/40">
+          <p className="text-[11px] text-[#566D7A] mt-3 pt-2 border-t border-[#CBC6B6]/40">
             Cuota mensual asignada
           </p>
         </div>
@@ -391,7 +392,7 @@ export const MiSuscripcion = () => {
       {!esPremium && (
         <div className="bg-gradient-to-r from-[#F3F0E4] via-[#FAF8F2] to-white border border-[#C49A3A]/40 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-5 animate-fade-in">
           <div className="space-y-1.5 max-w-2xl">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#C49A3A]/15 text-[#9A7422] border border-[#C49A3A]/30">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#C49A3A]/15 text-[#7A5C14] border border-[#C49A3A]/30">
               <Sparkles size={13} />
               Oportunidad de Crecimiento SaaS
             </span>
@@ -447,7 +448,7 @@ export const MiSuscripcion = () => {
             <h2 className="text-base font-bold text-[#233D49]">
               Renovar o Mejorar Plan de Suscripción (Transferencia Bancaria Únicamente)
             </h2>
-            <p className="text-xs text-[#7D8F97]">
+            <p className="text-xs text-[#566D7A]">
               Selecciona el plan, realiza la transferencia con los datos indicados y sube el comprobante en PDF.
             </p>
           </div>
@@ -468,10 +469,10 @@ export const MiSuscripcion = () => {
                 Plan Básico
               </span>
               <span className="text-sm font-extrabold text-[#233D49] tabular-nums">
-                ${precioBasico}.00 <span className="text-xs font-normal text-[#7D8F97]">/mes</span>
+                ${precioBasico}.00 <span className="text-xs font-normal text-[#566D7A]">/mes</span>
               </span>
             </div>
-            <p className="text-xs text-[#7D8F97] mt-1">
+            <p className="text-xs text-[#566D7A] mt-1">
               Gestión de hasta {saasConfig?.planes?.basico_max_eventos ?? 20} eventos al mes, {saasConfig?.planes?.basico_max_usuarios ?? 3} colaboradores y catálogo esencial.
             </p>
           </div>
@@ -486,14 +487,14 @@ export const MiSuscripcion = () => {
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-[#526F7D] flex items-center gap-1">
-                <Sparkles size={13} className="text-[#C49A3A]" />
+                <Sparkles size={13} className="text-[#7A5C14]" />
                 Plan Premium (Recomendado)
               </span>
               <span className="text-sm font-extrabold text-[#233D49] tabular-nums">
-                ${precioPremium}.00 <span className="text-xs font-normal text-[#7D8F97]">/mes</span>
+                ${precioPremium}.00 <span className="text-xs font-normal text-[#566D7A]">/mes</span>
               </span>
             </div>
-            <p className="text-xs text-[#7D8F97] mt-1">
+            <p className="text-xs text-[#566D7A] mt-1">
               Eventos ampliados ({saasConfig?.planes?.premium_max_eventos ?? 100}/mes), Asistente AI EVARA ({saasConfig?.planes?.premium_max_chatbot ?? 1500} consultas) y soporte prioritario.
             </p>
           </div>
@@ -510,7 +511,7 @@ export const MiSuscripcion = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
             <div className="bg-white p-3 rounded-xl border border-[#CBC6B6]/80 flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase text-[#526F7D] block">Titular</span>
+                <span className="text-[11px] font-bold uppercase text-[#526F7D] block">Titular</span>
                 <span className="text-xs font-extrabold text-[#233D49]">{datosTransferencia.nombre}</span>
               </div>
               <button
@@ -519,13 +520,13 @@ export const MiSuscripcion = () => {
                 className="p-1.5 rounded-lg hover:bg-[#F3F0E4] text-[#526F7D]"
                 title="Copiar Titular"
               >
-                {copiedField === 'nombre' ? <Check size={14} className="text-[#4D9A72]" /> : <Copy size={14} />}
+                {copiedField === 'nombre' ? <Check size={14} className="text-[#2F7A55]" /> : <Copy size={14} />}
               </button>
             </div>
 
             <div className="bg-white p-3 rounded-xl border border-[#CBC6B6]/80 flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase text-[#526F7D] block">Cuenta</span>
+                <span className="text-[11px] font-bold uppercase text-[#526F7D] block">Cuenta</span>
                 <span className="text-xs font-mono font-extrabold text-[#233D49]">{datosTransferencia.cuenta}</span>
               </div>
               <button
@@ -534,13 +535,13 @@ export const MiSuscripcion = () => {
                 className="p-1.5 rounded-lg hover:bg-[#F3F0E4] text-[#526F7D]"
                 title="Copiar Cuenta"
               >
-                {copiedField === 'cuenta' ? <Check size={14} className="text-[#4D9A72]" /> : <Copy size={14} />}
+                {copiedField === 'cuenta' ? <Check size={14} className="text-[#2F7A55]" /> : <Copy size={14} />}
               </button>
             </div>
 
             <div className="bg-white p-3 rounded-xl border border-[#CBC6B6]/80 flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase text-[#526F7D] block">Cédula / RUC</span>
+                <span className="text-[11px] font-bold uppercase text-[#526F7D] block">Cédula / RUC</span>
                 <span className="text-xs font-mono font-extrabold text-[#233D49]">{datosTransferencia.cedula}</span>
               </div>
               <button
@@ -549,13 +550,13 @@ export const MiSuscripcion = () => {
                 className="p-1.5 rounded-lg hover:bg-[#F3F0E4] text-[#526F7D]"
                 title="Copiar Identificación"
               >
-                {copiedField === 'cedula' ? <Check size={14} className="text-[#4D9A72]" /> : <Copy size={14} />}
+                {copiedField === 'cedula' ? <Check size={14} className="text-[#2F7A55]" /> : <Copy size={14} />}
               </button>
             </div>
 
             <div className="bg-white p-3 rounded-xl border border-[#CBC6B6]/80 flex items-center justify-between">
               <div className="min-w-0">
-                <span className="text-[10px] font-bold uppercase text-[#526F7D] block">Correo</span>
+                <span className="text-[11px] font-bold uppercase text-[#526F7D] block">Correo</span>
                 <span className="text-xs font-mono font-bold text-[#233D49] truncate block">{datosTransferencia.correo}</span>
               </div>
               <button
@@ -564,7 +565,7 @@ export const MiSuscripcion = () => {
                 className="p-1.5 rounded-lg hover:bg-[#F3F0E4] text-[#526F7D] shrink-0"
                 title="Copiar Correo"
               >
-                {copiedField === 'correo' ? <Check size={14} className="text-[#4D9A72]" /> : <Copy size={14} />}
+                {copiedField === 'correo' ? <Check size={14} className="text-[#2F7A55]" /> : <Copy size={14} />}
               </button>
             </div>
           </div>
@@ -574,7 +575,7 @@ export const MiSuscripcion = () => {
         <form onSubmit={handleSubmitPago} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-[#233D49] mb-1.5">
-              Subir PDF del Comprobante de Pago ({planSeleccionado} — ${montoPlan}.00) <span className="text-[#C95C5C]">*</span>
+              Subir PDF del Comprobante de Pago ({planSeleccionado} — ${montoPlan}.00) <span className="text-[#B04646]">*</span>
             </label>
 
             {!archivo ? (
@@ -595,7 +596,7 @@ export const MiSuscripcion = () => {
                     <p className="text-xs font-bold text-[#233D49]">
                       Haz clic o arrastra el PDF del comprobante de transferencia bancaria
                     </p>
-                    <p className="text-[11px] text-[#7D8F97] mt-0.5">
+                    <p className="text-[11px] text-[#566D7A] mt-0.5">
                       Formato recomendado: PDF (.pdf) · Al subirlo ingresarás el correo para el envío de tus credenciales
                     </p>
                   </div>
@@ -619,7 +620,7 @@ export const MiSuscripcion = () => {
                     <p className="text-xs font-bold text-[#233D49] truncate max-w-xs">
                       {archivo.name}
                     </p>
-                    <p className="text-[11px] text-[#7D8F97]">
+                    <p className="text-[11px] text-[#566D7A]">
                       {(archivo.size / 1024).toFixed(1)} KB · Comprobante listo para finalizar
                     </p>
                   </div>
@@ -636,7 +637,7 @@ export const MiSuscripcion = () => {
                   <button
                     type="button"
                     onClick={removerArchivo}
-                    className="p-1.5 rounded-lg text-[#C95C5C] hover:bg-[#C95C5C]/10 transition-colors"
+                    className="p-1.5 rounded-lg text-[#B04646] hover:bg-[#C95C5C]/10 transition-colors"
                   >
                     <X size={16} />
                   </button>
@@ -661,7 +662,7 @@ export const MiSuscripcion = () => {
                   <Mail size={18} />
                 </div>
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#4D7182] block">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#4D7182] block">
                     Comprobante Subido Correctamente
                   </span>
                   <h3 className="text-base font-extrabold text-[#233D49]">
@@ -680,12 +681,12 @@ export const MiSuscripcion = () => {
 
             <form onSubmit={handleSubmitPago} className="p-6 space-y-5">
               <div className="p-3.5 rounded-xl bg-[#4D9A72]/10 border border-[#4D9A72]/30 flex items-center gap-3 text-xs">
-                <FileText size={18} className="text-[#4D9A72] shrink-0" />
+                <FileText size={18} className="text-[#2F7A55] shrink-0" />
                 <div className="min-w-0">
                   <span className="font-bold text-[#233D49] block truncate">
                     {archivo?.name}
                   </span>
-                  <span className="text-[#4D9A72] font-semibold">
+                  <span className="text-[#2F7A55] font-semibold">
                     Plan {planSeleccionado} · ${planSeleccionado === 'Premium' ? '99.00' : '49.00'} USD
                   </span>
                 </div>
@@ -693,7 +694,7 @@ export const MiSuscripcion = () => {
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#233D49] mb-1.5">
-                  Correo electrónico para recibir credenciales <span className="text-[#C95C5C]">*</span>
+                  Correo electrónico para recibir credenciales <span className="text-[#B04646]">*</span>
                 </label>
                 <input
                   type="email"
@@ -704,7 +705,7 @@ export const MiSuscripcion = () => {
                   placeholder="gerencia@tuempresa.com"
                   className="w-full px-4 py-3 rounded-xl border-2 border-[#CBC6B6] focus:border-[#4D7182] text-sm text-[#233D49] focus:outline-none"
                 />
-                <p className="text-xs text-[#7D8F97] mt-1.5">
+                <p className="text-xs text-[#566D7A] mt-1.5">
                   Al finalizar, enviaremos a este correo las credenciales de acceso para tu cuenta corporativa.
                 </p>
               </div>
@@ -737,7 +738,7 @@ export const MiSuscripcion = () => {
           <h2 className="text-sm font-bold text-[#233D49]">
             Historial de Facturación y Comprobantes
           </h2>
-          <span className="text-xs text-[#7D8F97]">
+          <span className="text-xs text-[#566D7A]">
             {suscripciones.length} registros
           </span>
         </div>
@@ -757,13 +758,13 @@ export const MiSuscripcion = () => {
             <tbody className="divide-y divide-[#CBC6B6]/40 text-[#233D49]">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="py-8 text-center text-[#7D8F97]">
+                  <td colSpan="6" className="py-8 text-center text-[#566D7A]">
                     Cargando historial de facturas...
                   </td>
                 </tr>
               ) : suscripciones.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="py-8 text-center text-[#7D8F97]">
+                  <td colSpan="6" className="py-8 text-center text-[#566D7A]">
                     No se han registrado pagos previos de suscripción.
                   </td>
                 </tr>
@@ -775,16 +776,16 @@ export const MiSuscripcion = () => {
 
                   return (
                     <tr key={susc.id} className="hover:bg-[#FAF8F2] transition-colors">
-                      <td className="py-3 px-4 font-mono text-[11px] text-[#7D8F97] tabular-nums">
+                      <td className="py-3 px-4 font-mono text-[11px] text-[#566D7A] tabular-nums">
                         #{String(susc.id).substring(0, 8)}
                       </td>
                       <td className="py-3 px-4 font-bold text-[#233D49]">
                         Plan {susc.plan_nombre}
                       </td>
                       <td className="py-3 px-4 font-bold tabular-nums font-mono text-sm">
-                        ${Number(susc.monto).toFixed(2)}
+                        {formatMoney(susc.monto)}
                       </td>
-                      <td className="py-3 px-4 text-[#7D8F97] tabular-nums">
+                      <td className="py-3 px-4 text-[#566D7A] tabular-nums">
                         {new Date(susc.fecha_pago || susc.fecha_registro).toLocaleDateString('es-ES', {
                           day: '2-digit',
                           month: 'short',
@@ -803,17 +804,17 @@ export const MiSuscripcion = () => {
                             <span>Ver Comprobante</span>
                           </a>
                         ) : (
-                          <span className="text-[#7D8F97] italic">Sin archivo</span>
+                          <span className="text-[#566D7A] italic">Sin archivo</span>
                         )}
                       </td>
                       <td className="py-3 px-4">
                         <span
                           className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
                             isApproved
-                              ? 'bg-[#4D9A72]/15 text-[#4D9A72] border-[#4D9A72]/30'
+                              ? 'bg-[#4D9A72]/15 text-[#2F7A55] border-[#4D9A72]/30'
                               : isPending
-                              ? 'bg-[#C49A3A]/15 text-[#C49A3A] border-[#C49A3A]/30'
-                              : 'bg-[#C95C5C]/15 text-[#C95C5C] border-[#C95C5C]/30'
+                              ? 'bg-[#C49A3A]/15 text-[#7A5C14] border-[#C49A3A]/30'
+                              : 'bg-[#C95C5C]/15 text-[#B04646] border-[#C95C5C]/30'
                           }`}
                         >
                           {isApproved && <CheckCircle2 size={11} />}

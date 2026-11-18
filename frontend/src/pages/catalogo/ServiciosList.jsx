@@ -28,6 +28,7 @@ import {
   Tag,
   Check,
 } from 'lucide-react';
+import { formatMoney } from '../../utils/format';
 
 // ── Formulario reutilizable dentro del Drawer ─────────────────────────────────
 const ServicioFormDrawer = ({ initialData = {}, onSubmit, submitting, onCancel }) => {
@@ -398,7 +399,7 @@ export const ServiciosList = () => {
 
                       <div className="flex items-center gap-2 shrink-0">
                         <span className="text-xs font-bold text-[var(--ev-primary)] tabular-nums tracking-tight">
-                          ${parseFloat(srv.precio_base || 0).toFixed(2)}
+                          {formatMoney(srv.precio_base || 0)}
                         </span>
                         <ChevronRight size={14} className="text-[var(--ev-border)]" />
                       </div>
@@ -411,7 +412,7 @@ export const ServiciosList = () => {
 
           <div className="pt-2 border-t border-[var(--ev-border)]/40 text-[11px] text-[var(--ev-text-muted)] flex items-center justify-between">
             <span className="tabular-nums font-medium">Mostrando {filteredServicios.length} de {servicios.length}</span>
-            <span className="text-[10px] font-semibold text-[var(--ev-primary)]">Tarifario Base</span>
+            <span className="text-[11px] font-semibold text-[var(--ev-primary)]">Tarifario Base</span>
           </div>
 
         </div>
@@ -453,7 +454,7 @@ export const ServiciosList = () => {
                       <button
                         type="button"
                         onClick={() => setDeleteTarget(selectedServicio)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#C95C5C]/10 hover:bg-[#C95C5C]/20 text-[#C95C5C] text-xs font-semibold active:scale-[0.98] transition-transform duration-150"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#C95C5C]/10 hover:bg-[#C95C5C]/20 text-[#B04646] text-xs font-semibold active:scale-[0.98] transition-transform duration-150"
                       >
                         <Trash2 size={13} />
                         <span>Desactivar</span>
@@ -466,19 +467,19 @@ export const ServiciosList = () => {
               {/* Tarjeta de Precio & Valoración (Radios Concéntricos: R_int 16px) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-[16px] bg-[var(--ev-bg-base)]/40 border border-[var(--ev-border)]/50">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block mb-1">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block mb-1">
                     Precio Base de Catálogo
                   </span>
                   <div className="text-3xl font-black text-[var(--ev-text-main)] tabular-nums tracking-tight">
-                    ${parseFloat(selectedServicio.precio_base || 0).toFixed(2)}
+                    {formatMoney(selectedServicio.precio_base || 0)}
                   </div>
-                  <span className="text-[10px] text-[var(--ev-primary)] font-medium mt-1 block">
+                  <span className="text-[11px] text-[var(--ev-primary)] font-medium mt-1 block">
                     Calculable por evento o por comensal
                   </span>
                 </div>
 
                 <div className="p-4 rounded-[16px] bg-[var(--ev-bg-base)]/40 border border-[var(--ev-border)]/50">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block mb-1">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block mb-1">
                     Disponibilidad en Cotizador
                   </span>
                   <div className="flex items-center gap-2 mt-2">
@@ -487,7 +488,7 @@ export const ServiciosList = () => {
                       Sincronizado con EVARA AI
                     </span>
                   </div>
-                  <span className="text-[10px] text-[var(--ev-text-muted)] mt-1 block">
+                  <span className="text-[11px] text-[var(--ev-text-muted)] mt-1 block">
                     Disponible para cotización instantánea 24/7
                   </span>
                 </div>
@@ -506,11 +507,11 @@ export const ServiciosList = () => {
               {/* Bento de Integración */}
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="p-3 rounded-[14px] bg-[var(--ev-bg-base)]/30 border border-[var(--ev-border)]/40">
-                  <span className="text-[10px] text-[var(--ev-text-muted)] uppercase font-semibold block">Margen Operativo</span>
+                  <span className="text-[11px] text-[var(--ev-text-muted)] uppercase font-semibold block">Margen Operativo</span>
                   <span className="text-base font-bold text-[var(--ev-text-main)] tabular-nums mt-0.5 block">Protegido (30%)</span>
                 </div>
                 <div className="p-3 rounded-[14px] bg-[var(--ev-bg-base)]/30 border border-[var(--ev-border)]/40">
-                  <span className="text-[10px] text-[var(--ev-text-muted)] uppercase font-semibold block">Partición Inquilino</span>
+                  <span className="text-[11px] text-[var(--ev-text-muted)] uppercase font-semibold block">Partición Inquilino</span>
                   <span className="text-base font-bold text-[var(--ev-primary)] mt-0.5 block">Catálogo Propio</span>
                 </div>
               </div>
@@ -538,12 +539,7 @@ export const ServiciosList = () => {
                 </button>
               )}
             </div>
-          )}
-
-          <div className="pt-4 border-t border-[var(--ev-border)]/40 flex items-center justify-between text-xs text-[var(--ev-text-muted)]">
-            <span>Preservación de contexto</span>
-            <span className="font-medium text-[var(--ev-primary)]">Split View 35/65</span>
-          </div>
+          )} 
 
         </div>
 
@@ -599,7 +595,7 @@ export const ServiciosList = () => {
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
           <div className="w-full max-w-sm rounded-[22px] backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] p-6 text-center animate-fade-in">
-            <div className="w-10 h-10 rounded-full bg-[#C95C5C]/15 text-[#C95C5C] flex items-center justify-center mx-auto mb-3">
+            <div className="w-10 h-10 rounded-full bg-[#C95C5C]/15 text-[#B04646] flex items-center justify-center mx-auto mb-3">
               <AlertTriangle size={20} />
             </div>
             <h3 className="text-base font-bold text-[var(--ev-text-main)] mb-1">
@@ -638,7 +634,7 @@ export const ServiciosList = () => {
               : 'bg-[var(--ev-surface)] text-[var(--ev-text-main)] border-[var(--ev-border)] shadow-md'
           }`}
         >
-          {toast.type === 'error' ? <AlertTriangle size={15} /> : <CheckCircle2 size={15} className="text-[#4D9A72]" />}
+          {toast.type === 'error' ? <AlertTriangle size={15} /> : <CheckCircle2 size={15} className="text-[#2F7A55]" />}
           <span>{toast.message}</span>
         </div>
       )}

@@ -107,7 +107,7 @@ export const DetalleEmpresaModal = ({
                       fontSize: '0.7rem',
                       fontWeight: 700,
                       background: 'rgba(77, 154, 114, 0.15)',
-                      color: 'var(--success)',
+                      color: 'var(--success-text)',
                     }}
                   >
                     <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success)' }}></span>
@@ -124,7 +124,7 @@ export const DetalleEmpresaModal = ({
                       fontSize: '0.7rem',
                       fontWeight: 700,
                       background: 'rgba(201, 92, 92, 0.15)',
-                      color: 'var(--danger)',
+                      color: 'var(--danger-text)',
                     }}
                   >
                     <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--danger)' }}></span>
@@ -170,7 +170,7 @@ export const DetalleEmpresaModal = ({
                 <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                   {empresa.total_usuarios || 0}
                 </div>
-                <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
                   Usuarios Totales
                 </div>
               </div>
@@ -184,13 +184,13 @@ export const DetalleEmpresaModal = ({
                   textAlign: 'center',
                 }}
               >
-                <div style={{ width: '30px', height: '30px', margin: '0 auto 0.4rem', borderRadius: 'var(--radius-sm)', background: 'rgba(196, 154, 58, 0.12)', color: 'var(--warning)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '30px', height: '30px', margin: '0 auto 0.4rem', borderRadius: 'var(--radius-sm)', background: 'rgba(196, 154, 58, 0.12)', color: 'var(--warning-text)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <CalendarDays size={16} />
                 </div>
                 <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                   {empresa.total_eventos || 0}
                 </div>
-                <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
                   Eventos Totales
                 </div>
               </div>
@@ -204,13 +204,13 @@ export const DetalleEmpresaModal = ({
                   textAlign: 'center',
                 }}
               >
-                <div style={{ width: '30px', height: '30px', margin: '0 auto 0.4rem', borderRadius: 'var(--radius-sm)', background: 'rgba(77, 154, 114, 0.12)', color: 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '30px', height: '30px', margin: '0 auto 0.4rem', borderRadius: 'var(--radius-sm)', background: 'rgba(77, 154, 114, 0.12)', color: 'var(--success-text)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <DollarSign size={16} />
                 </div>
                 <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                   {formatearMoneda(empresa.total_ingresos)}
                 </div>
-                <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: '0.15rem' }} title="Pagos completados registrados en eventos de esta empresa">
+                <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: '0.15rem' }} title="Pagos completados registrados en eventos de esta empresa">
                   Ingresos por eventos
                 </div>
               </div>

@@ -196,7 +196,7 @@ export const PortalTenantLayout = () => {
         }}
       >
         <div className="bg-white rounded-[24px] shadow-sm border border-[#CEC8B8]/70 p-8 max-w-md w-full text-center flex flex-col items-center">
-          <div className="w-14 h-14 rounded-2xl bg-[#C95C5C]/10 text-[#C95C5C] flex items-center justify-center mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-[#C95C5C]/10 text-[#B04646] flex items-center justify-center mb-4">
             <AlertTriangle size={28} />
           </div>
           <h2 className="text-xl font-bold text-[#233D49] tracking-tight">

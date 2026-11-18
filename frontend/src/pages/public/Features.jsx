@@ -47,7 +47,7 @@ export const Features = () => {
     {
       id: 'reservas',
       title: 'Control de Reservas & Agenda',
-      subtitle: 'Garantía Zero Double-Booking respaldada por PostgreSQL',
+      subtitle: 'Evita dobles reservas por salón, fecha y horario',
       icon: CalendarDays,
       badge: 'Cero Colisiones',
       description: 'El corazón operativo de EVENTRA. Administra salones, fechas y turnos sin margen para el error humano. Si un salón ya tiene una reserva en ese horario, el sistema bloquea inmediatamente cualquier intento de cruce.',
@@ -129,7 +129,7 @@ export const Features = () => {
                 className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 focus:outline-none ${
                   isSelected
                     ? 'bg-white text-[#233D49] shadow-sm border border-[#CBC6B6]/70 scale-[1.02]'
-                    : 'text-[#233D49]/70 hover:text-[#233D49] hover:bg-white/60'
+                    : 'text-[#233D49]/80 hover:text-[#233D49] hover:bg-white/60'
                 }`}
               >
                 <Icon className={`w-4 h-4 ${isSelected ? 'text-[#526F7D]' : 'text-[#233D49]/50'}`} />
@@ -174,7 +174,7 @@ export const Features = () => {
               <ul className="space-y-2.5">
                 {currentMod.highlights.map((item, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-xs sm:text-sm text-[#233D49]/85">
-                    <CheckCircle2 className="w-4 h-4 text-[#4D9A72] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -207,11 +207,11 @@ export const Features = () => {
                 </div>
 
                 {/* Barra Stepper de 4 Pasos */}
-                <div className="grid grid-cols-4 gap-2 text-center text-[10px] font-bold">
+                <div className="grid grid-cols-4 gap-2 text-center text-[11px] font-bold">
                   <div className="p-1.5 rounded-lg bg-[#4D9A72] text-white">1. Parámetros</div>
                   <div className="p-1.5 rounded-lg bg-[#4D9A72] text-white">2. Paquete</div>
                   <div className="p-1.5 rounded-lg bg-[#526F7D] text-white">3. Servicios</div>
-                  <div className="p-1.5 rounded-lg bg-white text-[#233D49]/60 border border-[#CBC6B6]">4. Proforma</div>
+                  <div className="p-1.5 rounded-lg bg-white text-[#233D49]/75 border border-[#CBC6B6]">4. Proforma</div>
                 </div>
 
                 {/* Tarjeta de cálculo en vivo */}
@@ -241,7 +241,7 @@ export const Features = () => {
 
                   <div className="pt-3 border-t border-[#CBC6B6]/60 flex justify-between items-center">
                     <div>
-                      <span className="text-[10px] font-bold text-[#4D9A72] uppercase tracking-wider block">
+                      <span className="text-[11px] font-bold text-[#2F7A55] uppercase tracking-wider block">
                         Margen Protegido: 38%
                       </span>
                       <span className="text-base font-extrabold text-[#233D49]">
@@ -257,7 +257,7 @@ export const Features = () => {
                   </div>
                 </div>
 
-                <div className="text-[11px] text-[#233D49]/70 text-center italic">
+                <div className="text-[11px] text-[#233D49]/80 text-center italic">
                   *Los cambios en el número de asistentes recalculan catering e insumos al instante.
                 </div>
               </div>
@@ -273,7 +273,7 @@ export const Features = () => {
                       Matriz de Concurrencia de Salones
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#4D9A72]/20 text-[#4D9A72]">
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#4D9A72]/20 text-[#2F7A55]">
                     UNIQUE Guard Activo
                   </span>
                 </div>
@@ -281,9 +281,9 @@ export const Features = () => {
                 {/* Calendario Simulador de Salones */}
                 <div className="space-y-2.5">
                   {[
-                    { salon: 'Salón Imperial', fecha: 'Sábado 14 Nov', turno: 'Noche (19:00 - 03:00)', estado: 'Confirmado & Bloqueado', color: 'bg-[#C95C5C]/15 text-[#C95C5C] border-[#C95C5C]/30', icon: ShieldCheck },
-                    { salon: 'Jardín de Cristal', fecha: 'Sábado 14 Nov', turno: 'Tarde (12:00 - 18:00)', estado: 'Disponible', color: 'bg-[#4D9A72]/15 text-[#4D9A72] border-[#4D9A72]/30', icon: CheckCircle2 },
-                    { salon: 'Terraza Lounge VIP', fecha: 'Sábado 14 Nov', turno: 'Noche (20:00 - 02:00)', estado: 'En Cotización (Pre-bloqueo)', color: 'bg-[#C49A3A]/15 text-[#C49A3A] border-[#C49A3A]/30', icon: Clock }
+                    { salon: 'Salón Imperial', fecha: 'Sábado 14 Nov', turno: 'Noche (19:00 - 03:00)', estado: 'Confirmado & Bloqueado', color: 'bg-[#C95C5C]/15 text-[#B04646] border-[#C95C5C]/30', icon: ShieldCheck },
+                    { salon: 'Jardín de Cristal', fecha: 'Sábado 14 Nov', turno: 'Tarde (12:00 - 18:00)', estado: 'Disponible', color: 'bg-[#4D9A72]/15 text-[#2F7A55] border-[#4D9A72]/30', icon: CheckCircle2 },
+                    { salon: 'Terraza Lounge VIP', fecha: 'Sábado 14 Nov', turno: 'Noche (20:00 - 02:00)', estado: 'En Cotización (Pre-bloqueo)', color: 'bg-[#C49A3A]/15 text-[#7A5C14] border-[#C49A3A]/30', icon: Clock }
                   ].map((row, idx) => (
                     <div key={idx} className="bg-white p-3.5 rounded-xl border border-[#CBC6B6]/60 flex items-center justify-between shadow-xs">
                       <div>
@@ -340,15 +340,15 @@ export const Features = () => {
                           <CheckCircle2 className="w-3.5 h-3.5" />
                         </div>
                         <div>
-                          <div className={`text-xs font-semibold ${task.done ? 'line-through text-[#233D49]/60' : 'text-[#233D49]'}`}>
+                          <div className={`text-xs font-semibold ${task.done ? 'line-through text-[#233D49]/75' : 'text-[#233D49]'}`}>
                             {task.tarea}
                           </div>
-                          <span className="text-[10px] text-[#526F7D] font-medium">
+                          <span className="text-[11px] text-[#526F7D] font-medium">
                             {task.rol} · {task.hora}
                           </span>
                         </div>
                       </div>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${task.done ? 'bg-[#4D9A72]/15 text-[#4D9A72]' : 'bg-[#CBC6B6]/40 text-[#233D49]/70'}`}>
+                      <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${task.done ? 'bg-[#4D9A72]/15 text-[#2F7A55]' : 'bg-[#CBC6B6]/40 text-[#233D49]/80'}`}>
                         {task.done ? 'Listo' : 'Pendiente'}
                       </span>
                     </div>
@@ -369,7 +369,7 @@ export const Features = () => {
                   <span className="text-xs font-bold text-[#526F7D] uppercase tracking-wide">
                     Vista Exclusiva del Anfitrión (Cliente)
                   </span>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-white text-[#4D9A72] border border-[#4D9A72]/30">
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-white text-[#2F7A55] border border-[#4D9A72]/30">
                     Acceso Activo
                   </span>
                 </div>
@@ -383,7 +383,7 @@ export const Features = () => {
                       <span className="text-[11px] text-[#526F7D]">Faltan 18 días para el gran día</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-[10px] text-[#233D49]/60 uppercase font-bold block">Presupuesto</span>
+                      <span className="text-[11px] text-[#233D49]/75 uppercase font-bold block">Presupuesto</span>
                       <span className="text-sm font-extrabold text-[#233D49]">$8,900 USD</span>
                     </div>
                   </div>
@@ -392,12 +392,12 @@ export const Features = () => {
                   <div className="p-3 rounded-lg bg-[#EEEBDD]/50 border border-[#CBC6B6]/50 space-y-2">
                     <div className="flex justify-between text-xs font-semibold">
                       <span>Estado Financiero</span>
-                      <span className="text-[#4D9A72]">Abonado 50% ($4,450)</span>
+                      <span className="text-[#2F7A55]">Abonado 50% ($4,450)</span>
                     </div>
                     <div className="w-full bg-white rounded-full h-2 overflow-hidden border border-[#CBC6B6]/40">
                       <div className="bg-[#4D9A72] h-2 rounded-full w-1/2" />
                     </div>
-                    <div className="flex justify-between text-[10px] text-[#233D49]/70 pt-0.5">
+                    <div className="flex justify-between text-[11px] text-[#233D49]/80 pt-0.5">
                       <span>Abono inicial registrado</span>
                       <span>Saldo límite: 07 de Noviembre</span>
                     </div>
@@ -416,7 +416,7 @@ export const Features = () => {
                   </div>
                 </div>
 
-                <div className="text-[11px] text-[#233D49]/70 text-center">
+                <div className="text-[11px] text-[#233D49]/80 text-center">
                   Total transparencia para el anfitrión. Menos estrés, mayor profesionalismo.
                 </div>
               </div>

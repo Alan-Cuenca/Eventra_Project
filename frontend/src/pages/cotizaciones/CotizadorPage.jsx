@@ -12,6 +12,7 @@ import {
   User, Package, Layers, FileText, Check, ChevronRight, ChevronLeft,
   Sparkles, CalendarDays, Loader2, CheckCircle2, Send, X, AlertCircle,
 } from 'lucide-react';
+import { formatMoney } from '../../utils/format';
 
 // ── Pasos del stepper ────────────────────────────────────────────────────────
 const STEPS = [
@@ -123,8 +124,7 @@ export const CotizadorPage = () => {
   const totalCalculado = costoPaquete + costoServicios;
   const anticipo = totalCalculado * 0.5;
 
-  const fmt = (n) =>
-    new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(n);
+  const fmt = formatMoney;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -462,14 +462,14 @@ export const CotizadorPage = () => {
                           </span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                             {pack.recomendado && (
-                              <span className="badge badge-primary">⭐ Recomendado</span>
+                              <span className="badge badge-primary">Recomendado</span>
                             )}
                             <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--primary)', fontFamily: 'Outfit, sans-serif' }}>
                               ${parseFloat(pack.precio_total).toLocaleString('es-EC')}
                             </span>
                           </div>
                         </div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--warning)', fontWeight: 600, marginBottom: '0.5rem' }}>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--warning-text)', fontWeight: 600, marginBottom: '0.5rem' }}>
                           {pack.descuento}
                         </div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
@@ -534,8 +534,8 @@ export const CotizadorPage = () => {
                                 {srv.nombre}
                               </span>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                {srv.popular && <span className="badge badge-accent">⚡ Popular</span>}
-                                <span style={{ fontWeight: 700, color: 'var(--success)', fontSize: '0.95rem' }}>
+                                {srv.popular && <span className="badge badge-accent">Popular</span>}
+                                <span style={{ fontWeight: 700, color: 'var(--success-text)', fontSize: '0.95rem' }}>
                                   +${srv.precio_base.toLocaleString('es-EC')}{' '}
                                   <span style={{ fontWeight: 500, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                                     / {srv.unidad}
@@ -611,7 +611,7 @@ export const CotizadorPage = () => {
                   {serviciosSeleccionados.map(s => (
                     <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 1rem', borderBottom: '1px solid var(--border-subtle)', fontSize: '0.875rem' }}>
                       <span style={{ color: 'var(--text-secondary)' }}>{s.nombre}</span>
-                      <span style={{ fontWeight: 600, color: 'var(--success)' }}>+${s.precio_base.toLocaleString('es-EC')}</span>
+                      <span style={{ fontWeight: 600, color: 'var(--success-text)' }}>+${s.precio_base.toLocaleString('es-EC')}</span>
                     </div>
                   ))}
                 </div>
@@ -623,8 +623,8 @@ export const CotizadorPage = () => {
                 <PriceLine label={`Servicios adicionales (${serviciosSeleccionados.length})`} value={fmt(costoServicios)} />
                 <PriceLine label="TOTAL ESTIMADO" value={fmt(totalCalculado)} bold big />
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.75rem', padding: '0.625rem 0', borderTop: '1px dashed var(--border-subtle)' }}>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--success)', fontWeight: 600 }}>Anticipo requerido (50%)</span>
-                  <span style={{ fontWeight: 700, color: 'var(--success)', fontSize: '0.9rem' }}>{fmt(anticipo)}</span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--success-text)', fontWeight: 600 }}>Anticipo requerido (50%)</span>
+                  <span style={{ fontWeight: 700, color: 'var(--success-text)', fontSize: '0.9rem' }}>{fmt(anticipo)}</span>
                 </div>
               </div>
             </div>

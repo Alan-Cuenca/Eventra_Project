@@ -249,7 +249,7 @@ export const ConfiguracionSaasPage = () => {
             className="btn btn-secondary"
           >
             <RefreshCw size={15} className={checkingHealth ? 'animate-spin' : ''} />
-            <span>{checkingHealth ? 'Verificando...' : 'Probar Conexión API'}</span>
+            <span>{checkingHealth ? 'Verificando...' : 'Verificar estado del sistema'}</span>
           </button>
 
           <button
@@ -417,7 +417,7 @@ export const ConfiguracionSaasPage = () => {
                   height: 38,
                   borderRadius: 10,
                   background: 'var(--warning-bg)',
-                  color: 'var(--warning)',
+                  color: 'var(--warning-text)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -559,7 +559,7 @@ export const ConfiguracionSaasPage = () => {
                       padding: '0.15rem 0.6rem',
                       borderRadius: 'var(--radius-full)',
                       background: 'var(--bg-card)',
-                      color: 'var(--warning)',
+                      color: 'var(--warning-text)',
                       border: '1px solid rgba(196, 154, 58, 0.3)',
                     }}
                   >
@@ -683,7 +683,7 @@ export const ConfiguracionSaasPage = () => {
                   height: 38,
                   borderRadius: 10,
                   background: 'var(--success-bg)',
-                  color: 'var(--success)',
+                  color: 'var(--success-text)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -785,7 +785,7 @@ export const ConfiguracionSaasPage = () => {
               </div>
               <div>
                 <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                  Políticas de Seguridad y Gobernanza RBAC
+                  Políticas de seguridad
                 </h2>
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>
                   Reglas de aislamiento de datos, colisiones y sesiones JWT
@@ -834,7 +834,7 @@ export const ConfiguracionSaasPage = () => {
                   }
                 />
                 <span>
-                  <strong>Aislamiento Estricto por `empresa_id`:</strong> Bloquear consultas cruzadas entre tenants
+                  <strong>Datos separados por empresa:</strong> Bloquear consultas cruzadas entre tenants
                 </span>
               </label>
 

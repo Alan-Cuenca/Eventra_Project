@@ -223,8 +223,8 @@ export const PagoProcesador = () => {
                 }`}>
                   <Icon size={18} />
                 </div>
-                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                  activo ? 'bg-[#526F7D]/15 text-[#526F7D]' : 'bg-[#FAF8F5] text-[#7D8F97]'
+                <span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                  activo ? 'bg-[#526F7D]/15 text-[#526F7D]' : 'bg-[#FAF8F5] text-[#566D7A]'
                 }`}>
                   {tab.badge}
                 </span>
@@ -233,8 +233,8 @@ export const PagoProcesador = () => {
                 <p className={`text-sm font-extrabold ${activo ? 'text-[#233D49]' : 'text-[#526F7D]'}`}>
                   {tab.label}
                 </p>
-                <p className="text-[11px] text-[#7D8F97] mt-0.5">
-                  {tab.id === 'Deuna' && 'Pago rápido escaneando código QR'}
+                <p className="text-[11px] text-[#566D7A] mt-0.5">
+                  {tab.id === 'Deuna' && 'Pago desde la app de Deuna'}
                   {tab.id === 'Transferencia' && 'Cuentas corrientes verificadas'}
                   {tab.id === 'Efectivo' && 'Registro para pago físico en caja'}
                 </p>
@@ -283,7 +283,7 @@ export const PagoProcesador = () => {
                 Tu organizador aún no ha publicado los datos de pago. Consúltalos con él y luego adjunta el comprobante aquí.
               </p>
             )}
-            <p className="text-[11px] text-[#7D8F97]">
+            <p className="text-[11px] text-[#566D7A]">
               Realiza el pago por el valor exacto y adjunta la captura o el PDF del comprobante más abajo.
             </p>
           </div>
@@ -292,7 +292,7 @@ export const PagoProcesador = () => {
         {/* TAB 3: EFECTIVO */}
         {metodo === 'Efectivo' && (
           <div className="bg-[#FAF8F5] rounded-2xl border-2 border-[#C49A3A]/40 p-6 shadow-sm animate-fade-in space-y-3">
-            <div className="flex items-center gap-2 text-sm font-bold text-[#C49A3A]">
+            <div className="flex items-center gap-2 text-sm font-bold text-[#7A5C14]">
               <Banknote size={18} />
               <span>Instrucciones para Pago Presencial en Efectivo</span>
             </div>
@@ -300,8 +300,8 @@ export const PagoProcesador = () => {
               Acércate a nuestras oficinas centrales en horario de atención (Lunes a Viernes de 08:30 a 17:30). 
               Indica en caja tu <strong>nombre completo</strong> y el <strong>código del evento</strong>.
             </p>
-            <div className="p-3 rounded-xl bg-white border border-[#CBC6B6]/60 text-xs text-[#7D8F97] flex items-center gap-2">
-              <CheckCircle2 size={16} className="text-[#C49A3A] shrink-0" />
+            <div className="p-3 rounded-xl bg-white border border-[#CBC6B6]/60 text-xs text-[#566D7A] flex items-center gap-2">
+              <CheckCircle2 size={16} className="text-[#7A5C14] shrink-0" />
               <span>Este registro creará un ticket en estado <strong>"Pendiente"</strong> que se confirmará una vez recibido el dinero en caja física.</span>
             </div>
           </div>
@@ -318,7 +318,7 @@ export const PagoProcesador = () => {
             {/* Evento */}
             <div>
               <label className="block text-xs font-bold text-[#233D49] mb-1.5">
-                Evento o Recepción <span className="text-[#C95C5C]">*</span>
+                Evento o Recepción <span className="text-[#B04646]">*</span>
               </label>
               {eventosDisponibles.length > 0 ? (
                 <select
@@ -349,7 +349,7 @@ export const PagoProcesador = () => {
             {/* Concepto */}
             <div>
               <label className="block text-xs font-bold text-[#233D49] mb-1.5">
-                Concepto del Pago <span className="text-[#C95C5C]">*</span>
+                Concepto del Pago <span className="text-[#B04646]">*</span>
               </label>
               <select
                 value={concepto}
@@ -366,7 +366,7 @@ export const PagoProcesador = () => {
             {/* Monto */}
             <div className="sm:col-span-2">
               <label className="block text-xs font-bold text-[#233D49] mb-1.5">
-                Monto a Transferir ($ USD) <span className="text-[#C95C5C]">*</span>
+                Monto a Transferir ($ USD) <span className="text-[#B04646]">*</span>
               </label>
               <div className="relative">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-[#526F7D]">
@@ -391,7 +391,7 @@ export const PagoProcesador = () => {
           {metodo !== 'Efectivo' && (
             <div className="pt-2 space-y-2">
               <label className="block text-xs font-bold text-[#233D49]">
-                Adjuntar Comprobante de Pago <span className="text-[#C95C5C]">*</span>
+                Adjuntar Comprobante de Pago <span className="text-[#B04646]">*</span>
               </label>
               
               {!archivo ? (
@@ -412,7 +412,7 @@ export const PagoProcesador = () => {
                       <p className="text-xs font-bold text-[#233D49]">
                         Haz clic o arrastra tu comprobante aquí
                       </p>
-                      <p className="text-[11px] text-[#7D8F97] mt-0.5">
+                      <p className="text-[11px] text-[#566D7A] mt-0.5">
                         Formatos soportados: JPG, PNG o PDF (Máximo 5MB)
                       </p>
                     </div>
@@ -436,7 +436,7 @@ export const PagoProcesador = () => {
                       <p className="text-xs font-bold text-[#233D49] truncate max-w-xs">
                         {archivo.name}
                       </p>
-                      <p className="text-[11px] text-[#7D8F97]">
+                      <p className="text-[11px] text-[#566D7A]">
                         {(archivo.size / 1024).toFixed(1)} KB · Comprobante cargado
                       </p>
                     </div>
@@ -445,7 +445,7 @@ export const PagoProcesador = () => {
                   <button
                     type="button"
                     onClick={removerArchivo}
-                    className="p-1.5 rounded-lg text-[#C95C5C] hover:bg-[#C95C5C]/10 transition-colors"
+                    className="p-1.5 rounded-lg text-[#B04646] hover:bg-[#C95C5C]/10 transition-colors"
                     title="Eliminar archivo"
                   >
                     <X size={16} />

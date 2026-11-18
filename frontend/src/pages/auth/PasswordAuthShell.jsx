@@ -48,7 +48,7 @@ export const PasswordAuthShell = ({ title, subtitle, icon, children }) => {
             <h1 className="text-xl font-extrabold text-[#233D49] tracking-tight font-['Outfit']">
               EVENTRA <span className="text-[#4D7182] font-normal text-sm">| Seguridad</span>
             </h1>
-            <p className="text-xs text-[#7d8f97]">Plataforma de Gestión de Eventos</p>
+            <p className="text-xs text-[#566D7A]">Plataforma de Gestión de Eventos</p>
           </div>
         </div>
 
@@ -59,7 +59,7 @@ export const PasswordAuthShell = ({ title, subtitle, icon, children }) => {
             </div>
           )}
           <h2 className="text-xl font-black text-[#233D49] font-['Outfit']">{title}</h2>
-          {subtitle && <p className="text-xs text-[#7d8f97] mt-1.5 leading-relaxed">{subtitle}</p>}
+          {subtitle && <p className="text-xs text-[#566D7A] mt-1.5 leading-relaxed">{subtitle}</p>}
         </div>
 
         {children}

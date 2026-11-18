@@ -9,6 +9,7 @@ import { Badge } from '../../components/common/Badge';
 import { eventraService } from '../../services/eventraService';
 import { useAuth } from '../../context/AuthContext';
 import { Plus, Search, Loader2, Edit2, Trash2, AlertTriangle, Package, CheckCircle2 } from 'lucide-react';
+import { formatMoney } from '../../utils/format';
 
 export const PaquetesList = () => {
   const { isAdmin, isGerente } = useAuth();
@@ -108,17 +109,17 @@ export const PaquetesList = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)' }}>
                   <div>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Precio Total</span>
-                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent)' }}>
-                      ${parseFloat(p.precio_total).toFixed(2)}
+                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--warning-text)' }}>
+                      {formatMoney(p.precio_total)}
                     </div>
                   </div>
                   {canEdit && (
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <Link to={`/paquetes/editar/${p.id}`} className="btn btn-secondary" style={{ padding: '0.4rem' }}>
+                      <Link to={`/paquetes/editar/${p.id}`} className="btn btn-secondary" style={{ padding: '0.4rem' }} aria-label={`Editar paquete ${p.nombre}`} title="Editar paquete">
                         <Edit2 size={15} />
                       </Link>
                       {p.estado_activo !== false && (
-                        <button className="btn btn-outline" style={{ padding: '0.4rem' }} onClick={() => setDeleteTarget(p)}>
+                        <button className="btn btn-outline" style={{ padding: '0.4rem' }} onClick={() => setDeleteTarget(p)} aria-label={`Desactivar paquete ${p.nombre}`} title="Desactivar paquete">
                           <Trash2 size={15} color="#e27d7c" />
                         </button>
                       )}

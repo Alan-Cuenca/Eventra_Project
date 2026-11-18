@@ -103,22 +103,22 @@ export const SolicitudesCliente = () => {
   const getBadgeStyle = (estado) => {
     switch (estado) {
       case 'Aprobada':
-        return 'bg-[#4D9A72]/15 text-[#4D9A72] border-[#4D9A72]/30';
+        return 'bg-[#4D9A72]/15 text-[#2F7A55] border-[#4D9A72]/30';
       case 'Rechazada':
-        return 'bg-[#C95C5C]/15 text-[#C95C5C] border-[#C95C5C]/30';
+        return 'bg-[#C95C5C]/15 text-[#B04646] border-[#C95C5C]/30';
       default:
-        return 'bg-[#C49A3A]/15 text-[#9A7422] border-[#C49A3A]/30';
+        return 'bg-[#C49A3A]/15 text-[#7A5C14] border-[#C49A3A]/30';
     }
   };
 
   const getBadgeIcon = (estado) => {
     switch (estado) {
       case 'Aprobada':
-        return <CheckCircle2 size={13} className="text-[#4D9A72]" />;
+        return <CheckCircle2 size={13} className="text-[#2F7A55]" />;
       case 'Rechazada':
-        return <XCircle size={13} className="text-[#C95C5C]" />;
+        return <XCircle size={13} className="text-[#B04646]" />;
       default:
-        return <Clock size={13} className="text-[#9A7422]" />;
+        return <Clock size={13} className="text-[#7A5C14]" />;
     }
   };
 
@@ -135,7 +135,7 @@ export const SolicitudesCliente = () => {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-lg font-bold tracking-tight text-[#233D49]">EVENTRA</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#4D7182]/15 text-[#4D7182]">
+              <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#4D7182]/15 text-[#4D7182]">
                 Portal Cliente
               </span>
             </div>
@@ -193,9 +193,9 @@ export const SolicitudesCliente = () => {
             }`}
           >
             {mensaje.tipo === 'exito' ? (
-              <CheckCircle2 size={18} className="text-[#4D9A72] shrink-0 mt-0.5" />
+              <CheckCircle2 size={18} className="text-[#2F7A55] shrink-0 mt-0.5" />
             ) : (
-              <AlertCircle size={18} className="text-[#C95C5C] shrink-0 mt-0.5" />
+              <AlertCircle size={18} className="text-[#B04646] shrink-0 mt-0.5" />
             )}
             <div className="flex-1 font-medium">{mensaje.texto}</div>
             <button
@@ -236,11 +236,11 @@ export const SolicitudesCliente = () => {
                     ))}
                   </select>
                 ) : (
-                  <div className="p-3 bg-[#F9F8F5] border border-[#CEC8B8] rounded-xl text-xs text-[#8A98A0]">
+                  <div className="p-3 bg-[#F9F8F5] border border-[#CEC8B8] rounded-xl text-xs text-[#566D7A]">
                     No se encontraron eventos activos vinculados a tu cuenta.
                   </div>
                 )}
-                <span className="text-[11px] text-[#8A98A0] block">
+                <span className="text-[11px] text-[#566D7A] block">
                   Elige el evento sobre el cual necesitas solicitar la modificación.
                 </span>
               </div>
@@ -248,7 +248,7 @@ export const SolicitudesCliente = () => {
               {/* Tips o Recordatorio */}
               <div className="p-4 rounded-xl bg-[#F9F8F5] border border-[#ECE7D5] space-y-1.5 flex flex-col justify-center">
                 <span className="text-xs font-bold text-[#233D49] flex items-center gap-1.5">
-                  <CheckCircle2 size={14} className="text-[#4D9A72]" /> Tiempos de Respuesta
+                  <CheckCircle2 size={14} className="text-[#2F7A55]" /> Tiempos de Respuesta
                 </span>
                 <p className="text-xs text-[#4D7182] leading-relaxed">
                   Las solicitudes se atienden habitualmente en menos de 24 horas laborables. Para cambios críticos a menos de 48 horas del evento, sugerimos contactar directamente a tu coordinador.
@@ -269,7 +269,7 @@ export const SolicitudesCliente = () => {
                 className="w-full p-4 rounded-xl bg-[#F9F8F5] border border-[#CEC8B8] text-sm text-[#233D49] font-normal placeholder-[#8A98A0] focus:outline-none focus:ring-2 focus:ring-[#4D7182] transition-colors leading-relaxed"
                 required
               />
-              <div className="flex justify-between items-center text-[11px] text-[#8A98A0]">
+              <div className="flex justify-between items-center text-[11px] text-[#566D7A]">
                 <span>Mínimo 10 caracteres.</span>
                 <span>{descripcion.length} caracteres</span>
               </div>
@@ -311,17 +311,17 @@ export const SolicitudesCliente = () => {
           </div>
 
           {loading ? (
-            <div className="py-12 flex flex-col items-center justify-center gap-3 text-sm text-[#8A98A0]">
+            <div className="py-12 flex flex-col items-center justify-center gap-3 text-sm text-[#566D7A]">
               <Loader2 size={24} className="animate-spin text-[#4D7182]" />
               <span>Cargando tus solicitudes registradas...</span>
             </div>
           ) : solicitudes.length === 0 ? (
             <div className="py-16 text-center space-y-3">
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-[#F9F8F5] border border-[#CEC8B8] flex items-center justify-center text-[#8A98A0]">
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-[#F9F8F5] border border-[#CEC8B8] flex items-center justify-center text-[#566D7A]">
                 <Inbox size={28} />
               </div>
               <h3 className="text-base font-bold text-[#233D49]">No hay solicitudes registradas</h3>
-              <p className="text-xs text-[#8A98A0] max-w-sm mx-auto">
+              <p className="text-xs text-[#566D7A] max-w-sm mx-auto">
                 Cuando envíes una solicitud de modificación sobre tus eventos, aparecerá en esta lista con su estado en tiempo real.
               </p>
             </div>
@@ -338,7 +338,7 @@ export const SolicitudesCliente = () => {
                         {sol.evento_titulo || 'Evento Registrado'}
                       </span>
                       {sol.fecha_evento && (
-                        <span className="text-xs text-[#8A98A0] hidden sm:inline">
+                        <span className="text-xs text-[#566D7A] hidden sm:inline">
                           • {new Date(sol.fecha_evento).toLocaleDateString()}
                         </span>
                       )}
@@ -360,7 +360,7 @@ export const SolicitudesCliente = () => {
                     "{sol.descripcion_cambio || sol.descripcion}"
                   </p>
 
-                  <div className="flex items-center justify-between text-xs text-[#8A98A0] pt-1">
+                  <div className="flex items-center justify-between text-xs text-[#566D7A] pt-1">
                     <span className="flex items-center gap-1">
                       <Clock size={12} />
                       Enviada:{' '}

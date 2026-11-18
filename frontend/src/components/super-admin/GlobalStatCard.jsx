@@ -57,7 +57,7 @@ export const GlobalStatCard = ({
               style={{
                 marginLeft: '0.5rem',
                 padding: '0.15rem 0.5rem',
-                fontSize: '0.65rem',
+                fontSize: '0.6875rem',
                 fontWeight: 700,
                 borderRadius: '9999px',
                 background: `${badgeColor || accentColor}18`,

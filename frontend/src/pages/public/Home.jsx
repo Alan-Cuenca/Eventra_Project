@@ -132,7 +132,7 @@ export const Home = () => {
                   href="#bento-grid"
                   className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full ev-liquid-glass text-[var(--ev-text-main)] font-semibold text-base hover:bg-[var(--ev-surface)] active:scale-[0.98] apple-spring shadow-xs"
                 >
-                  <span>Explorar Bento Grid</span>
+                  <span>Ver funcionalidades</span>
                 </a>
               </div>
 
@@ -156,10 +156,10 @@ export const Home = () => {
                 </div>
                 <div>
                   <p className="text-2xl sm:text-3xl font-extrabold text-[var(--ev-text-main)] tabular-nums tracking-tight">
-                    +1,200
+                    4 pasos
                   </p>
                   <p className="text-xs sm:text-sm text-[var(--ev-text-muted)] font-medium mt-0.5">
-                    Eventos orquestados
+                    Para cotizar un evento
                   </p>
                 </div>
               </div>
@@ -182,7 +182,7 @@ export const Home = () => {
                       app.eventra.com/workspace
                     </span>
                   </div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#4D9A72]/15 text-[#4D9A72] text-[10px] font-bold">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#4D9A72]/15 text-[#2F7A55] text-[11px] font-bold">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#4D9A72] animate-pulse" />
                     En vivo
                   </div>
@@ -196,7 +196,7 @@ export const Home = () => {
                       <CalendarCheck className="w-3.5 h-3.5 text-[var(--ev-primary)]" />
                     </div>
                     <div className="text-base font-bold text-[var(--ev-text-main)]">100% Bloqueado</div>
-                    <span className="text-[10px] text-[#4D9A72] font-semibold flex items-center gap-1 mt-0.5">
+                    <span className="text-[11px] text-[#2F7A55] font-semibold flex items-center gap-1 mt-0.5">
                       <ShieldCheck className="w-3 h-3" /> Sin conflicto
                     </span>
                   </div>
@@ -207,7 +207,7 @@ export const Home = () => {
                       <TrendingUp className="w-3.5 h-3.5 text-[var(--ev-primary)]" />
                     </div>
                     <div className="text-base font-bold text-[var(--ev-text-main)]">$38,450</div>
-                    <span className="text-[10px] text-[var(--ev-primary)] font-medium mt-0.5 block">
+                    <span className="text-[11px] text-[var(--ev-primary)] font-medium mt-0.5 block">
                       14 proformas activas
                     </span>
                   </div>
@@ -217,7 +217,7 @@ export const Home = () => {
                 <div className="p-4 rounded-[16px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/70 shadow-xs space-y-3 mb-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--ev-primary)]">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-primary)]">
                         Evento en Curso · Hoy
                       </span>
                       <h4 className="text-sm font-bold text-[var(--ev-text-main)]">
@@ -246,11 +246,11 @@ export const Home = () => {
                   {/* Checklist Rápido de Personal */}
                   <div className="grid grid-cols-2 gap-2 pt-1 text-[11px] text-[var(--ev-text-main)]/80">
                     <div className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#4D9A72]" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#2F7A55]" />
                       <span>Degustación Ok</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#4D9A72]" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#2F7A55]" />
                       <span>Audio y Luces Listo</span>
                     </div>
                   </div>
@@ -266,7 +266,7 @@ export const Home = () => {
                       EVARA AI cotizando catálogo en tiempo real
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold text-[var(--ev-primary)] uppercase tracking-wider">
+                  <span className="text-[11px] font-bold text-[var(--ev-primary)] uppercase tracking-wider">
                     Activa
                   </span>
                 </div>
@@ -275,8 +275,8 @@ export const Home = () => {
 
               {/* Badge Flotante en Liquid Glass con Iluminación Especular Superior */}
               <div className="absolute -bottom-5 -left-5 py-2.5 px-4 rounded-[18px] ev-liquid-glass shadow-lg border border-[var(--ev-border)]/80 flex items-center gap-2.5 text-xs font-semibold text-[var(--ev-text-main)] hidden sm:flex">
-                <ShieldCheck className="w-4 h-4 text-[#4D9A72]" />
-                <span>Zero Double-Booking Garantizado</span>
+                <ShieldCheck className="w-4 h-4 text-[#2F7A55]" />
+                <span>Sin dobles reservas</span>
               </div>
             </div>
 
@@ -313,7 +313,7 @@ export const Home = () => {
             {/* Columna Izquierda: Forma Tradicional */}
             <div className="rounded-[28px] p-7 sm:p-9 bg-[var(--ev-bg-base)]/50 border border-[#C95C5C]/35 shadow-xs relative">
               <div className="flex items-center gap-3 pb-6 border-b border-[var(--ev-border)]/50">
-                <div className="w-10 h-10 rounded-[14px] bg-[#C95C5C]/15 flex items-center justify-center text-[#C95C5C]">
+                <div className="w-10 h-10 rounded-[14px] bg-[#C95C5C]/15 flex items-center justify-center text-[#B04646]">
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div>
@@ -350,7 +350,7 @@ export const Home = () => {
                   }
                 ].map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <XCircle className="w-5 h-5 text-[#C95C5C] shrink-0 mt-0.5" />
+                    <XCircle className="w-5 h-5 text-[#B04646] shrink-0 mt-0.5" />
                     <div>
                       <h4 className="text-sm font-semibold text-[var(--ev-text-main)]">{item.title}</h4>
                       <p className="text-xs text-[var(--ev-text-muted)] leading-relaxed mt-0.5">{item.desc}</p>
@@ -384,7 +384,7 @@ export const Home = () => {
                 {[
                   {
                     title: 'Bloqueo estricto de concurrencia en base de datos',
-                    desc: 'El motor PostgreSQL valida restricciones únicas de salón, fecha y turno en milisegundos. Es matemáticamente imposible un doble turno.'
+                    desc: 'El servidor valida cada reserva contra salón, fecha y horario, y rechaza al instante cualquier cruce.'
                   },
                   {
                     title: 'Cotizador dinámico con cálculo automático',
@@ -404,7 +404,7 @@ export const Home = () => {
                   }
                 ].map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-[#4D9A72] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-[#2F7A55] shrink-0 mt-0.5" />
                     <div>
                       <h4 className="text-sm font-semibold text-[var(--ev-text-main)]">{item.title}</h4>
                       <p className="text-xs text-[var(--ev-text-muted)] leading-relaxed mt-0.5">{item.desc}</p>
@@ -482,7 +482,7 @@ export const Home = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                   {/* Selector de Paquete */}
                   <div className="p-3 rounded-[16px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)]/60">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block mb-1.5">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block mb-1.5">
                       Paquete de Gala
                     </label>
                     <div className="grid grid-cols-2 gap-1.5">
@@ -506,7 +506,7 @@ export const Home = () => {
                   {/* Selector de Comensales (Pax) */}
                   <div className="p-3 rounded-[16px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)]/60">
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)]">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)]">
                         Número de Invitados
                       </label>
                       <span className="text-xs font-extrabold text-[var(--ev-primary)] tabular-nums">
@@ -538,7 +538,7 @@ export const Home = () => {
                 <div className="p-4 rounded-[16px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/70 shadow-sm">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[var(--ev-border)]/40 gap-2">
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--ev-primary)]">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-primary)]">
                         Desglose en Tiempo Real
                       </span>
                       <h4 className="text-sm font-bold text-[var(--ev-text-main)]">
@@ -546,7 +546,7 @@ export const Home = () => {
                       </h4>
                     </div>
                     <div className="text-left sm:text-right">
-                      <span className="text-[10px] text-[var(--ev-text-muted)] font-medium block">Total Estimado</span>
+                      <span className="text-[11px] text-[var(--ev-text-muted)] font-medium block">Total Estimado</span>
                       <span className="text-xl sm:text-2xl font-black text-[var(--ev-text-main)] tabular-nums">
                         ${costoTotal.toLocaleString()}
                       </span>
@@ -555,15 +555,15 @@ export const Home = () => {
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-3 text-[11px]">
                     <div className="p-2 rounded-[10px] bg-[var(--ev-bg-base)]/40">
-                      <span className="text-[10px] text-[var(--ev-text-muted)] block">Tarifa por Invitado</span>
+                      <span className="text-[11px] text-[var(--ev-text-muted)] block">Tarifa por Invitado</span>
                       <span className="font-bold text-[var(--ev-text-main)]">${paqueteActivo.precioPax} / pax</span>
                     </div>
                     <div className="p-2 rounded-[10px] bg-[var(--ev-bg-base)]/40">
-                      <span className="text-[10px] text-[var(--ev-text-muted)] block">Alquiler de Salón</span>
+                      <span className="text-[11px] text-[var(--ev-text-muted)] block">Alquiler de Salón</span>
                       <span className="font-bold text-[var(--ev-text-main)]">${paqueteActivo.salonBase}</span>
                     </div>
                     <div className="p-2 rounded-[10px] bg-[var(--ev-primary)]/10 text-[var(--ev-primary)] col-span-2 sm:col-span-1">
-                      <span className="text-[10px] block font-semibold">Anticipo 50%</span>
+                      <span className="text-[11px] block font-semibold">Anticipo 50%</span>
                       <span className="font-bold">${anticipoRequerido.toLocaleString()}</span>
                     </div>
                   </div>
@@ -603,12 +603,12 @@ export const Home = () => {
                 </div>
 
                 <p className="text-sm text-white/75 leading-relaxed">
-                  Las reservas están protegidas por aislamiento de concurrencia y restricciones <code className="px-1.5 py-0.5 rounded bg-white/15 text-white font-mono text-xs">UNIQUE (salon_id, fecha, turno)</code>. Es computacionalmente imposible confirmar dos eventos en el mismo espacio.
+                  Cada reserva se valida contra el salón, la fecha y el horario. Si hay un cruce, el sistema lo rechaza al instante.
                 </p>
               </div>
 
               <div className="relative z-10 pt-6 mt-6 border-t border-white/15 flex items-center justify-between text-xs">
-                <span className="text-white/70">Aislamiento SERIALIZABLE</span>
+                <span className="text-white/70">Validación en el servidor</span>
                 <span className="inline-flex items-center gap-1.5 text-[#56BA85] font-semibold">
                   <span className="w-2 h-2 rounded-full bg-[#56BA85] animate-pulse" />
                   Activo en Supabase
@@ -626,7 +626,7 @@ export const Home = () => {
                   <span className="text-[11px] uppercase tracking-[0.16em] font-bold text-[var(--ev-primary)]">
                     Inteligencia Artificial Conversacional
                   </span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[var(--ev-primary)]/15 text-[var(--ev-primary)]">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[var(--ev-primary)]/15 text-[var(--ev-primary)]">
                     <Sparkles className="w-3 h-3" />
                     24/7
                   </span>
@@ -700,7 +700,7 @@ export const Home = () => {
                   <span className="text-[11px] uppercase tracking-[0.16em] font-bold text-[var(--ev-primary)]">
                     Seguridad & Multi-Inquilino (RBAC)
                   </span>
-                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#4D9A72]/15 text-[#4D9A72]">
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#4D9A72]/15 text-[#2F7A55]">
                     4 Roles Estrictos
                   </span>
                 </div>
@@ -744,7 +744,7 @@ export const Home = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                     <div className="p-2.5 rounded-[12px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/50">
-                      <div className="flex items-center gap-1.5 text-[#4D9A72] font-bold mb-1">
+                      <div className="flex items-center gap-1.5 text-[#2F7A55] font-bold mb-1">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>Anticipo 50%</span>
                       </div>
@@ -752,7 +752,7 @@ export const Home = () => {
                     </div>
 
                     <div className="p-2.5 rounded-[12px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/50">
-                      <div className="flex items-center gap-1.5 text-[#C49A3A] font-bold mb-1">
+                      <div className="flex items-center gap-1.5 text-[#7A5C14] font-bold mb-1">
                         <Clock className="w-3.5 h-3.5" />
                         <span>Saldo 50%</span>
                       </div>
@@ -906,7 +906,7 @@ export const Home = () => {
                       'Colaboradores ilimitados (Admin, Gerente, Trabajador)',
                       'Asistente comercial EVARA AI 24/7 sin límites',
                       'Marca Blanca completa (logo, slug y paleta propia)',
-                      'Aislamiento PostgreSQL multi-salón blindado',
+                      'Control de reservas por salón y horario',
                       'Portal del Cliente interactivo con seguimiento',
                       'Soporte prioritario y asesoría de onboarding',
                     ].map((feat, i) => (

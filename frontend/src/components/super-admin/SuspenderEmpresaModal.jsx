@@ -129,7 +129,7 @@ export const SuspenderEmpresaModal = ({
                 borderRadius: 'var(--radius-md)',
                 background: 'rgba(201, 92, 92, 0.15)',
                 border: '1px solid rgba(201, 92, 92, 0.3)',
-                color: 'var(--danger)',
+                color: 'var(--danger-text)',
                 fontSize: '0.75rem',
                 fontWeight: 600,
                 display: 'flex',
@@ -151,7 +151,7 @@ export const SuspenderEmpresaModal = ({
                 borderRadius: 'var(--radius-md)',
                 background: 'rgba(77, 154, 114, 0.15)',
                 border: '1px solid rgba(77, 154, 114, 0.3)',
-                color: 'var(--success)',
+                color: 'var(--success-text)',
                 fontSize: '0.75rem',
                 fontWeight: 600,
                 display: 'flex',
@@ -180,12 +180,12 @@ export const SuspenderEmpresaModal = ({
                 gap: '0.4rem',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--danger)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--danger-text)' }}>
                 <AlertTriangle size={16} />
                 <span>Advertencia de Impacto de Acceso</span>
               </div>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-primary)', margin: 0, lineHeight: 1.45 }}>
-                Al suspender a <strong style={{ color: 'var(--danger)' }}>{empresa.nombre_comercial}</strong>,
+                Al suspender a <strong style={{ color: 'var(--danger-text)' }}>{empresa.nombre_comercial}</strong>,
                 todos los administradores, gerentes y trabajadores asignados a esta empresa{' '}
                 <strong>perderán el acceso inmediato al sistema</strong> hasta que sea reactivada.
               </p>
@@ -202,12 +202,12 @@ export const SuspenderEmpresaModal = ({
                 gap: '0.4rem',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--success)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--success-text)' }}>
                 <ShieldAlert size={16} />
                 <span>Restauración de Operaciones</span>
               </div>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-primary)', margin: 0, lineHeight: 1.45 }}>
-                Al reactivar a <strong style={{ color: 'var(--success)' }}>{empresa.nombre_comercial}</strong>,
+                Al reactivar a <strong style={{ color: 'var(--success-text)' }}>{empresa.nombre_comercial}</strong>,
                 se rehabilitará el inicio de sesión y la operativa para todos los usuarios y clientes
                 pertenecientes a este inquilino.
               </p>

@@ -173,7 +173,7 @@ export const AdministradoresTenantPage = () => {
                 border: '1px solid rgba(77, 113, 130, 0.25)',
               }}
             >
-              Gobernanza RBAC (Rol 1)
+              Administradores de empresa (Rol 1)
             </span>
           </div>
           <p>
@@ -408,7 +408,7 @@ export const AdministradoresTenantPage = () => {
                           title="Copiar correo"
                         >
                           {copiedId === adm.id ? (
-                            <Check size={13} style={{ color: 'var(--success)' }} />
+                            <Check size={13} style={{ color: 'var(--success-text)' }} />
                           ) : (
                             <Copy size={13} />
                           )}
@@ -458,7 +458,7 @@ export const AdministradoresTenantPage = () => {
                             fontSize: '0.72rem',
                             fontWeight: 700,
                             background: 'rgba(77, 154, 114, 0.15)',
-                            color: 'var(--success)',
+                            color: 'var(--success-text)',
                           }}
                         >
                           <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)' }} />
@@ -475,7 +475,7 @@ export const AdministradoresTenantPage = () => {
                             fontSize: '0.72rem',
                             fontWeight: 700,
                             background: 'rgba(201, 92, 92, 0.15)',
-                            color: 'var(--danger)',
+                            color: 'var(--danger-text)',
                           }}
                         >
                           <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--danger)' }} />

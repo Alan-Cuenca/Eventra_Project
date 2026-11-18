@@ -202,7 +202,7 @@ export const Navbar = ({ onOpenCommandPalette }) => {
       if (path.includes('/nuevo')) parts.push({ label: 'Nuevo Evento' });
       else if (path.includes('/editar')) parts.push({ label: 'Editar' });
     } else if (path.startsWith('/actividades')) {
-      parts.push({ label: 'Checklist Operativo' });
+      parts.push({ label: 'Actividades' });
     } else if (path.startsWith('/reservas')) {
       parts.push({ label: 'Reservas Anti-Colisión' });
     } else if (path.startsWith('/cotizaciones')) {
@@ -242,13 +242,13 @@ export const Navbar = ({ onOpenCommandPalette }) => {
     <header className="app-header h-16 sticky top-0 z-50 px-4 sm:px-6 backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] flex items-center justify-between transition-colors duration-300">
       
       {/* ── Izquierda: Breadcrumbs Dinámicos Orientados a Ruta ──────────── */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs min-w-0">
         {breadcrumbs.map((crumb, idx) => {
           const isLast = idx === breadcrumbs.length - 1;
           return (
             <React.Fragment key={idx}>
               {idx > 0 && (
-                <ChevronRight size={12} className="text-[var(--ev-border)]" />
+                <ChevronRight size={12} className="hidden lg:block text-[var(--ev-border)]" />
               )}
               {isLast ? (
                 <span className="font-bold text-[var(--ev-text-main)] truncate max-w-[200px]">
@@ -257,7 +257,7 @@ export const Navbar = ({ onOpenCommandPalette }) => {
               ) : (
                 <Link
                   to={crumb.to || '#'}
-                  className="text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] transition-colors truncate max-w-[140px]"
+                  className="hidden lg:inline text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] transition-colors truncate max-w-[140px]"
                 >
                   {crumb.label}
                 </Link>
@@ -274,11 +274,11 @@ export const Navbar = ({ onOpenCommandPalette }) => {
         <button
           type="button"
           onClick={onOpenCommandPalette}
-          className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--ev-surface)] hover:bg-[var(--ev-surface-elevated)] border-0 text-xs text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] shadow-2xs active:scale-[0.98] transition-all duration-150 focus:outline-none"
+          className="hidden md:flex items-center gap-2 whitespace-nowrap px-3.5 py-1.5 rounded-full bg-[var(--ev-surface)] hover:bg-[var(--ev-surface-elevated)] border-0 text-xs text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] shadow-2xs active:scale-[0.98] transition-all duration-150 focus:outline-none"
         >
           <Search size={13} className="text-[var(--ev-primary)]" />
           <span>Buscar o comando...</span>
-          <kbd className="px-1.5 py-0.5 rounded-md bg-[var(--ev-bg-base)] text-[10px] font-mono font-semibold text-[var(--ev-text-muted)] border-0">
+          <kbd className="px-1.5 py-0.5 rounded-md bg-[var(--ev-bg-base)] text-[11px] font-mono font-semibold text-[var(--ev-text-muted)] border-0">
             ⌘K
           </kbd>
         </button>
@@ -288,7 +288,7 @@ export const Navbar = ({ onOpenCommandPalette }) => {
         <Link
           to="/mi-suscripcion"
           title="Ver consumo y detalles de mi suscripción"
-          className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border-0 transition-all hover:opacity-90 active:scale-95 no-underline ${
+          className={`hidden sm:inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-bold border-0 transition-all hover:opacity-90 active:scale-95 no-underline ${
             String(planActivo).toLowerCase().includes('premium')
               ? 'bg-[var(--ev-primary)]/12 text-[var(--ev-primary)]'
               : 'bg-[#CEC8B8]/30 text-[#233D49]'
@@ -302,11 +302,11 @@ export const Navbar = ({ onOpenCommandPalette }) => {
         {/* Estado API Sutil */}
         <div
           className={`api-status-badge ${backendStatus === 'connected' ? 'connected' : 'offline'}`}
-          title={backendStatus === 'connected' ? 'API Express & Supabase Conectadas' : 'Modo Frontend / Sin Conexión'}
+          title={backendStatus === 'connected' ? 'Conectado con el servidor' : 'Sin conexión con el servidor'}
         >
           <span className={`status-dot ${backendStatus === 'connected' ? 'online' : 'offline'}`} />
           <span className="hidden lg:inline">
-            {backendStatus === 'connected' ? 'API Cloud' : 'Offline'}
+            {backendStatus === 'connected' ? 'En línea' : 'Sin conexión'}
           </span>
         </div>
 
@@ -377,7 +377,7 @@ export const Navbar = ({ onOpenCommandPalette }) => {
                       <p className="text-[11px] text-[var(--ev-text-muted)] mt-0.5 leading-snug">
                         {n.desc}
                       </p>
-                      <span className="text-[10px] text-[var(--ev-text-muted)] block mt-1 tabular-nums">
+                      <span className="text-[11px] text-[var(--ev-text-muted)] block mt-1 tabular-nums">
                         {n.time}
                       </span>
                     </div>
@@ -406,7 +406,7 @@ export const Navbar = ({ onOpenCommandPalette }) => {
               <span className="text-xs font-bold text-[var(--ev-text-main)] leading-none truncate max-w-[100px]">
                 {user?.nombre_completo?.split(' ')[0] || 'Usuario'}
               </span>
-              <span className="text-[10px] text-[var(--ev-text-muted)] mt-0.5 font-medium">
+              <span className="text-[11px] text-[var(--ev-text-muted)] mt-0.5 font-medium">
                 {roleConfig?.nombre || 'Rol'}
               </span>
             </div>
@@ -437,10 +437,10 @@ export const Navbar = ({ onOpenCommandPalette }) => {
                   </p>
                 </div>
                 <div className="flex items-center justify-between gap-2">
-                  <Badge variant={roleVariant} style={{ fontSize: '0.62rem', padding: '0.12rem 0.45rem' }}>
+                  <Badge variant={roleVariant} style={{ fontSize: '0.6875rem', padding: '0.12rem 0.45rem' }}>
                     {roleConfig?.nombre || 'Rol'}
                   </Badge>
-                  <span className="text-[10px] text-[var(--ev-text-muted)] font-mono font-medium shrink-0">
+                  <span className="text-[11px] text-[var(--ev-text-muted)] font-mono font-medium shrink-0">
                     Empresa #{user?.empresa_id || 1}
                   </span>
                 </div>

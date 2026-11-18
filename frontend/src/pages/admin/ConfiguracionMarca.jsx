@@ -147,7 +147,7 @@ export const ConfiguracionMarca = () => {
           setLogoPreview(data.logo_url);
           setLogoFile(null);
         }
-        setMensajeExito('✨ ¡Tema cromático generado con éxito a partir de los colores reales del logotipo!');
+        setMensajeExito('¡Tema cromático generado con éxito a partir de los colores reales del logotipo!');
         setTimeout(() => setMensajeExito(''), 5500);
       } else {
         throw new Error(data?.message || 'No se pudo generar la paleta.');
@@ -251,7 +251,7 @@ export const ConfiguracionMarca = () => {
       setLogoFile(null);
       setRestablecerLogo(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
-      setMensajeExito('✅ ¡Nuevo logotipo corporativo guardado y actualizado exitosamente!');
+      setMensajeExito('¡Nuevo logotipo corporativo guardado y actualizado exitosamente!');
       setTimeout(() => setMensajeExito(''), 4500);
     } catch (err) {
       console.error('[ConfiguracionMarca] Error al guardar logotipo:', err);
@@ -340,7 +340,7 @@ export const ConfiguracionMarca = () => {
           <h1 className="text-2xl md:text-3xl font-extrabold text-[#233D49] tracking-tight">
             Identidad Corporativa y Portal de Empresa
           </h1>
-          <p className="text-sm text-[#233D49]/70 mt-1.5 max-w-2xl">
+          <p className="text-sm text-[#233D49]/80 mt-1.5 max-w-2xl">
             Personaliza el logotipo, la paleta cromática completa de tu interfaz y la bienvenida que tus clientes verán en su portal exclusivo.
           </p>
         </div>
@@ -371,14 +371,14 @@ export const ConfiguracionMarca = () => {
       {/* Alertas de Éxito / Error */}
       {mensajeExito && (
         <div className="flex items-center gap-3 p-4 rounded-xl border border-[#4D9A72]/30 bg-[#4D9A72]/10 text-[#243026] text-sm animate-fade-in">
-          <CheckCircle2 size={18} className="text-[#4D9A72] flex-shrink-0" />
+          <CheckCircle2 size={18} className="text-[#2F7A55] flex-shrink-0" />
           <span className="font-medium">{mensajeExito}</span>
         </div>
       )}
 
       {mensajeError && (
         <div className="flex items-center gap-3 p-4 rounded-xl border border-[#C95C5C]/30 bg-[#C95C5C]/10 text-[#233D49] text-sm animate-fade-in">
-          <AlertCircle size={18} className="text-[#C95C5C] flex-shrink-0" />
+          <AlertCircle size={18} className="text-[#B04646] flex-shrink-0" />
           <span className="font-medium">{mensajeError}</span>
         </div>
       )}
@@ -395,7 +395,7 @@ export const ConfiguracionMarca = () => {
                   <FileImage size={18} className="text-[#526F7D]" />
                   Logotipo Corporativo
                 </h2>
-                <p className="text-xs text-[#233D49]/70 mt-0.5">
+                <p className="text-xs text-[#233D49]/80 mt-0.5">
                   Aparece en el menú lateral, membretes de cotizaciones y reportes PDF.
                 </p>
               </div>
@@ -417,7 +417,7 @@ export const ConfiguracionMarca = () => {
                     <span className="text-[11px] font-semibold text-[#526F7D]">Logotipo Activo</span>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center text-[#233D49]/60">
+                  <div className="flex flex-col items-center text-[#233D49]/75">
                     <div className="w-16 h-16 rounded-2xl bg-[#526F7D]/10 flex items-center justify-center text-[#526F7D] mb-2 font-black text-xl">
                       {branding?.nombre_comercial ? branding.nombre_comercial.slice(0, 2).toUpperCase() : 'EV'}
                     </div>
@@ -456,8 +456,8 @@ export const ConfiguracionMarca = () => {
                   <span className="text-xs font-semibold text-[#233D49]">
                     Arrastra tu imagen o haz clic para subir
                   </span>
-                  <span className="text-[11px] text-[#233D49]/60">
-                    Formatos: PNG, JPG, WebP o SVG (Máx. 5 MB)
+                  <span className="text-[11px] text-[#233D49]/75">
+                    Formatos: PNG, JPG o WebP (Máx. 5 MB)
                   </span>
                 </label>
 
@@ -468,7 +468,7 @@ export const ConfiguracionMarca = () => {
                       <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
                       <div className="min-w-0">
                         <p className="font-bold truncate text-[#233D49]">{logoFile.name}</p>
-                        <p className="text-[10px] text-[#233D49]/60">{(logoFile.size / 1024).toFixed(1)} KB — Listo para guardar</p>
+                        <p className="text-[11px] text-[#233D49]/75">{(logoFile.size / 1024).toFixed(1)} KB — Listo para guardar</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -532,7 +532,7 @@ export const ConfiguracionMarca = () => {
                   ) : (
                     <>
                       <Sparkles size={15} className="text-amber-300 fill-amber-300" />
-                      <span>✨ Generar tema con IA</span>
+                      <span>Generar tema con IA</span>
                     </>
                   )}
                 </button>
@@ -541,7 +541,7 @@ export const ConfiguracionMarca = () => {
                   <button
                     type="button"
                     onClick={handleRestablecerAlLogoPorDefecto}
-                    className="w-full text-xs text-[#C95C5C] hover:text-[#C95C5C]/80 font-medium py-1.5 transition-colors text-center"
+                    className="w-full text-xs text-[#B04646] hover:text-[#B04646]/80 font-medium py-1.5 transition-colors text-center"
                   >
                     Restablecer al logotipo oficial de EVENTRA
                   </button>
@@ -555,7 +555,7 @@ export const ConfiguracionMarca = () => {
                 <label htmlFor="switch-marca-agua" className="text-sm font-bold text-[#233D49] cursor-pointer">
                   Marca de Agua Corporativa
                 </label>
-                <p className="text-xs text-[#233D49]/70 mt-0.5">
+                <p className="text-xs text-[#233D49]/80 mt-0.5">
                   Proyecta un sello translúcido sutil al fondo del Dashboard, Portal y Reportes PDF.
                 </p>
               </div>
@@ -587,7 +587,7 @@ export const ConfiguracionMarca = () => {
                   <Sliders size={18} className="text-[#526F7D]" />
                   Paletas Armónicas del Sistema Completo
                 </h2>
-                <p className="text-xs text-[#233D49]/70 mt-0.5">
+                <p className="text-xs text-[#233D49]/80 mt-0.5">
                   Al seleccionar una paleta se transforma en vivo el color completo del sistema (fondos, barra lateral, botones, bordes y textos).
                 </p>
               </div>
@@ -645,7 +645,7 @@ export const ConfiguracionMarca = () => {
                             {iaItem.name || 'Paleta Generada por IA'}
                           </span>
                           <span
-                            className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full flex items-center gap-1"
+                            className="text-[11px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full flex items-center gap-1"
                             style={{
                               backgroundColor: iaItem.primaryLight || '#E4EFF4',
                               color: iaItem.primary,
@@ -674,7 +674,7 @@ export const ConfiguracionMarca = () => {
                                 />
                               ))}
                             </div>
-                            <p className="text-[10px] mt-1" style={{ color: iaItem.text, opacity: 0.65 }}>
+                            <p className="text-[11px] mt-1" style={{ color: iaItem.text, opacity: 0.65 }}>
                               {iaItem.logoColors.length} colores detectados en tu logo
                               {iaItem.source === 'ia' ? ' · roles asignados con IA' : ''}
                             </p>
@@ -745,7 +745,7 @@ export const ConfiguracionMarca = () => {
                             {item.name}
                           </span>
                           <span
-                            className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full"
+                            className="text-[11px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full"
                             style={{
                               backgroundColor: item.primaryLight,
                               color: item.primary,
@@ -791,7 +791,7 @@ export const ConfiguracionMarca = () => {
                 <Globe size={18} className="text-[#526F7D]" />
                 Portal Público del Cliente
               </h2>
-              <p className="text-xs text-[#233D49]/70 mt-0.5">
+              <p className="text-xs text-[#233D49]/80 mt-0.5">
                 Personaliza la pantalla de bienvenida y autoregistro para los anfitriones de tus eventos.
               </p>
             </div>
@@ -820,8 +820,8 @@ export const ConfiguracionMarca = () => {
                 >
                   {enlaceCopiado ? (
                     <>
-                      <Check size={13} className="text-[#4D9A72]" />
-                      <span className="text-xs text-[#4D9A72]">Copiado</span>
+                      <Check size={13} className="text-[#2F7A55]" />
+                      <span className="text-xs text-[#2F7A55]">Copiado</span>
                     </>
                   ) : (
                     <>
@@ -932,7 +932,7 @@ export const ConfiguracionMarca = () => {
                   {/* Secundario y acento del logo aplicados a elementos de apoyo */}
                   <div className="flex items-center justify-center gap-2 flex-wrap">
                     <span
-                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                      className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
                       style={{
                         backgroundColor: activePaletteObj.secondaryLight || activePaletteObj.primaryLight,
                         color: activePaletteObj.secondary || activePaletteObj.primaryHover || activePaletteObj.primary,
@@ -941,7 +941,7 @@ export const ConfiguracionMarca = () => {
                       Bodas
                     </span>
                     <span
-                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                      className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
                       style={{
                         backgroundColor: activePaletteObj.accentLight || activePaletteObj.primaryLight,
                         color: activePaletteObj.accent || activePaletteObj.primary,
@@ -952,7 +952,7 @@ export const ConfiguracionMarca = () => {
                   </div>
 
                   <div
-                    className="text-[9px] tracking-wider uppercase font-medium"
+                    className="text-[11px] tracking-wider uppercase font-medium"
                     style={{ color: activePaletteObj.text, opacity: 0.55 }}
                   >
                     Operado con tecnología EVENTRA

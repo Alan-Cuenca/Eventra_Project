@@ -49,7 +49,7 @@ export const GlobalPlanLimitToast = () => {
                 setAlertData(null);
                 navigate('/mi-suscripcion');
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-[#C95C5C] hover:bg-[#FAF8F5] text-xs font-bold transition-all shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-[#B04646] hover:bg-[#FAF8F5] text-xs font-bold transition-all shadow-sm cursor-pointer"
             >
               <span>Mejorar a Premium</span>
               <ArrowRight size={13} />

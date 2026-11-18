@@ -46,19 +46,19 @@ export const PlanLimitAlert = ({
     >
       {/* Contenido Izquierdo: Icono e Información */}
       <div className="flex items-start sm:items-center gap-3.5 min-w-0">
-        <div className="w-10 h-10 rounded-xl bg-[#C49A3A]/20 flex items-center justify-center shrink-0 text-[#9A7422]">
-          <AlertTriangle size={20} className="text-[#9A7422]" />
+        <div className="w-10 h-10 rounded-xl bg-[#C49A3A]/20 flex items-center justify-center shrink-0 text-[#7A5C14]">
+          <AlertTriangle size={20} className="text-[#7A5C14]" />
         </div>
 
         <div className="min-w-0">
-          <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#9A7422]">
+          <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#7A5C14]">
             <Sparkles size={12} />
             <span>Límite de Suscripción Alcanzado</span>
           </div>
           <p className="text-sm font-semibold text-[#233D49] mt-0.5 leading-snug break-words">
             {message || defaultMessage}
           </p>
-          <p className="text-xs text-[#233D49]/70 mt-0.5">
+          <p className="text-xs text-[#233D49]/80 mt-0.5">
             Pasa al Plan Premium para expandir tu capacidad sin restricciones.
           </p>
         </div>
@@ -81,7 +81,7 @@ export const PlanLimitAlert = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#9A7422] hover:bg-[#C49A3A]/25 transition-colors"
+            className="p-1.5 rounded-lg text-[#7A5C14] hover:bg-[#C49A3A]/25 transition-colors"
             title="Cerrar advertencia"
           >
             <X size={16} />

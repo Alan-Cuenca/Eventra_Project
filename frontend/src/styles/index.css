@@ -25,7 +25,7 @@
   --ev-primary-hover:  #3E5763;
   --ev-text-main:      #233D49;
   --ev-text-main-rgb:  35 61 73;
-  --ev-text-muted:     rgb(var(--ev-text-main-rgb) / 0.68);
+  --ev-text-muted:     rgb(var(--ev-text-main-rgb) / 0.8);   /* contraste >= 5:1 sobre crema */
 
   /* ── Paleta "Sofisticación Sutil" — EXACTA ─────────────────────────────── */
   --cream:          #F3F0E4;   /* Fondo principal crema cálido                */
@@ -61,7 +61,10 @@
   /* Tipografía */
   --text-primary:   #233D49;   /* Azul oscuro — alto contraste               */
   --text-secondary: #4D7182;
-  --text-muted:     #7d8f97;
+  --text-muted:     #566D7A;   /* contraste >= 4.5:1 sobre crema (antes #7d8f97 = 2.9:1) */
+  --warning-text:   #7A5C14;   /* ámbar legible para texto (el #C49A3A solo para rellenos) */
+  --success-text:   #2F7A55;   /* verde legible para texto */
+  --danger-text:    #B04646;   /* rojo legible para texto */
   --text-inverse:   #FFFFFF;
 
   /* Sombras muy suaves (Light Mode) */
@@ -276,24 +279,24 @@ img { max-width: 100%; display: block; }
 }
 
 .btn-danger {
-  background: var(--danger) !important;
+  background: #B04646 !important;   /* contraste 5.5:1 con texto blanco */
   color: #FFFFFF !important;
   border: none !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 .btn-danger:hover:not(:disabled) {
-  background: #b84a4a !important;
+  background: #963a3a !important;
   opacity: 0.95;
 }
 
 .btn-success {
-  background: var(--success) !important;
+  background: #2F7A55 !important;   /* contraste 5.2:1 con texto blanco */
   color: #FFFFFF !important;
   border: none !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 .btn-success:hover:not(:disabled) {
-  background: #3d8860 !important;
+  background: #266647 !important;
   opacity: 0.95;
 }
 
@@ -392,7 +395,7 @@ img { max-width: 100%; display: block; }
 .badge-danger   { background: rgba(201, 92, 92, 0.14);  color: #8a2f2f; border: none !important; }
 .badge-info     { background: rgba(82, 111, 125, 0.14); color: var(--ev-primary, #4D7182); border: none !important; }
 .badge-accent   { background: rgba(206, 200, 184, 0.35); color: var(--ev-text-main, #233D49); border: none !important; }
-.badge-neutral  { background: rgba(203, 198, 182, 0.25); color: var(--ev-text-muted, #7d8f97); border: none !important; }
+.badge-neutral  { background: rgba(203, 198, 182, 0.25); color: var(--ev-text-muted, #566D7A); border: none !important; }
 
 /* ── Tablas ───────────────────────────────────────────────────────────────── */
 .table-container {
@@ -1440,4 +1443,13 @@ img { max-width: 100%; display: block; }
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.7), 0 20px 45px -10px rgba(35, 61, 73, 0.18) !important;
   border-radius: 1rem !important;
   z-index: 9999 !important;
+}
+
+/* ── Accesibilidad: anillo de foco visible para navegación con teclado ────── */
+:focus-visible {
+  outline: 2px solid #4D7182 !important;
+  outline-offset: 2px;
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline-offset: 0;
 }

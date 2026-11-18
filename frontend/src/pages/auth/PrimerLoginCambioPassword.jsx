@@ -122,7 +122,7 @@ export const PrimerLoginCambioPassword = () => {
             <h1 className="text-xl font-extrabold text-[#233D49] tracking-tight font-['Outfit']">
               EVENTRA <span className="text-[#4D7182] font-normal text-sm">| Seguridad</span>
             </h1>
-            <p className="text-xs text-[#7d8f97]">Plataforma de Gestión de Eventos</p>
+            <p className="text-xs text-[#566D7A]">Plataforma de Gestión de Eventos</p>
           </div>
         </div>
 
@@ -134,7 +134,7 @@ export const PrimerLoginCambioPassword = () => {
           <h2 className="text-xl font-black text-[#233D49] font-['Outfit']">
             Cambio Obligatorio de Contraseña
           </h2>
-          <p className="text-xs text-[#7d8f97] mt-1.5 leading-relaxed">
+          <p className="text-xs text-[#566D7A] mt-1.5 leading-relaxed">
             Has iniciado sesión con una <strong>contraseña temporal</strong> generada automáticamente. Por seguridad de tu empresa, debes definir una contraseña personal definitiva antes de continuar.
           </p>
         </div>
@@ -143,7 +143,7 @@ export const PrimerLoginCambioPassword = () => {
         {errorMsg && (
           <div
             role="alert"
-            className="mb-4 p-3 rounded-xl bg-[#C95C5C]/15 border border-[#C95C5C]/30 text-[#C95C5C] text-xs font-semibold flex items-center gap-2"
+            className="mb-4 p-3 rounded-xl bg-[#C95C5C]/15 border border-[#C95C5C]/30 text-[#B04646] text-xs font-semibold flex items-center gap-2"
           >
             <AlertCircle size={16} className="flex-shrink-0" />
             <span>{errorMsg}</span>
@@ -153,7 +153,7 @@ export const PrimerLoginCambioPassword = () => {
         {successMsg && (
           <div
             role="status"
-            className="mb-4 p-3 rounded-xl bg-[#4D9A72]/15 border border-[#4D9A72]/30 text-[#4D9A72] text-xs font-semibold flex items-center gap-2"
+            className="mb-4 p-3 rounded-xl bg-[#4D9A72]/15 border border-[#4D9A72]/30 text-[#2F7A55] text-xs font-semibold flex items-center gap-2"
           >
             <CheckCircle2 size={16} className="flex-shrink-0" />
             <span>{successMsg}</span>
@@ -165,10 +165,10 @@ export const PrimerLoginCambioPassword = () => {
           {/* Contraseña temporal */}
           <div>
             <label className="block text-xs font-bold text-[#233D49] mb-1">
-              Contraseña Temporal Actual <span className="text-[#C95C5C]">*</span>
+              Contraseña Temporal Actual <span className="text-[#B04646]">*</span>
             </label>
             <div className="relative">
-              <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7d8f97]" />
+              <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#566D7A]" />
               <input
                 type={showTemporal ? 'text' : 'password'}
                 name="password_temporal"
@@ -182,7 +182,7 @@ export const PrimerLoginCambioPassword = () => {
               <button
                 type="button"
                 onClick={() => setShowTemporal((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7d8f97] hover:text-[#233D49]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#566D7A] hover:text-[#233D49]"
                 aria-label="Ver contraseña temporal"
               >
                 {showTemporal ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -193,10 +193,10 @@ export const PrimerLoginCambioPassword = () => {
           {/* Nueva contraseña */}
           <div>
             <label className="block text-xs font-bold text-[#233D49] mb-1">
-              Nueva Contraseña Definitiva <span className="text-[#C95C5C]">*</span>
+              Nueva Contraseña Definitiva <span className="text-[#B04646]">*</span>
             </label>
             <div className="relative">
-              <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7d8f97]" />
+              <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#566D7A]" />
               <input
                 type={showNuevo ? 'text' : 'password'}
                 name="password_nuevo"
@@ -210,7 +210,7 @@ export const PrimerLoginCambioPassword = () => {
               <button
                 type="button"
                 onClick={() => setShowNuevo((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7d8f97] hover:text-[#233D49]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#566D7A] hover:text-[#233D49]"
                 aria-label="Ver nueva contraseña"
               >
                 {showNuevo ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -221,10 +221,10 @@ export const PrimerLoginCambioPassword = () => {
           {/* Confirmar contraseña */}
           <div>
             <label className="block text-xs font-bold text-[#233D49] mb-1">
-              Confirmar Nueva Contraseña <span className="text-[#C95C5C]">*</span>
+              Confirmar Nueva Contraseña <span className="text-[#B04646]">*</span>
             </label>
             <div className="relative">
-              <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7d8f97]" />
+              <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#566D7A]" />
               <input
                 type={showConfirmar ? 'text' : 'password'}
                 name="password_confirmar"
@@ -238,7 +238,7 @@ export const PrimerLoginCambioPassword = () => {
               <button
                 type="button"
                 onClick={() => setShowConfirmar((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7d8f97] hover:text-[#233D49]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#566D7A] hover:text-[#233D49]"
                 aria-label="Ver confirmación"
               >
                 {showConfirmar ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -247,21 +247,21 @@ export const PrimerLoginCambioPassword = () => {
           </div>
 
           {/* Checklist de requisitos de seguridad */}
-          <div className="p-3 rounded-xl bg-[#FAFAF7] border border-[#CEC8B8] text-[11px] space-y-1 text-[#7d8f97]">
+          <div className="p-3 rounded-xl bg-[#FAFAF7] border border-[#CEC8B8] text-[11px] space-y-1 text-[#566D7A]">
             <div className="font-bold text-[#233D49] mb-1">Requisitos de seguridad:</div>
-            <div className={`flex items-center gap-1.5 ${tieneMinimo ? 'text-[#4D9A72] font-semibold' : ''}`}>
+            <div className={`flex items-center gap-1.5 ${tieneMinimo ? 'text-[#2F7A55] font-semibold' : ''}`}>
               <CheckCircle2 size={13} />
               <span>Al menos 8 caracteres</span>
             </div>
-            <div className={`flex items-center gap-1.5 ${tieneMayuscula ? 'text-[#4D9A72] font-semibold' : ''}`}>
+            <div className={`flex items-center gap-1.5 ${tieneMayuscula ? 'text-[#2F7A55] font-semibold' : ''}`}>
               <CheckCircle2 size={13} />
               <span>Al menos una letra mayúscula</span>
             </div>
-            <div className={`flex items-center gap-1.5 ${tieneNumero ? 'text-[#4D9A72] font-semibold' : ''}`}>
+            <div className={`flex items-center gap-1.5 ${tieneNumero ? 'text-[#2F7A55] font-semibold' : ''}`}>
               <CheckCircle2 size={13} />
               <span>Al menos un número</span>
             </div>
-            <div className={`flex items-center gap-1.5 ${coinciden ? 'text-[#4D9A72] font-semibold' : ''}`}>
+            <div className={`flex items-center gap-1.5 ${coinciden ? 'text-[#2F7A55] font-semibold' : ''}`}>
               <CheckCircle2 size={13} />
               <span>Las contraseñas coinciden</span>
             </div>
@@ -292,7 +292,7 @@ export const PrimerLoginCambioPassword = () => {
           type="button"
           onClick={() => logout()}
           disabled={loading}
-          className="w-full mt-4 py-2 text-xs font-semibold text-[#7d8f97] hover:text-[#233D49] flex items-center justify-center gap-1.5 transition-colors"
+          className="w-full mt-4 py-2 text-xs font-semibold text-[#566D7A] hover:text-[#233D49] flex items-center justify-center gap-1.5 transition-colors"
         >
           <LogOut size={14} />
           <span>Cerrar sesión y continuar más tarde</span>

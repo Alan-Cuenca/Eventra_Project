@@ -3,6 +3,7 @@ import { eventraService } from '../../services/eventraService';
 import { Calendar, Search, Filter, Plus, User, Phone, Eye, Loader2, Sparkles, AlertCircle, RefreshCw } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { formatMoney } from '../../utils/format';
 
 export const EventsPage = () => {
   const navigate = useNavigate();
@@ -154,10 +155,11 @@ export const EventsPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {filteredEvents.map((evt) => {
             const rawMonto = parseFloat(evt.monto_total ?? evt.total ?? 0);
-            const totalFmt = isNaN(rawMonto) ? '0.00' : rawMonto.toFixed(2);
+            const totalFmt = formatMoney(isNaN(rawMonto) ? 0 : rawMonto);
 
             const rawSaldo = parseFloat(evt.saldo_pendiente ?? evt.saldo ?? 0);
-            const saldoFmt = isNaN(rawSaldo) ? '0.00' : rawSaldo.toFixed(2);
+            const rawSaldoNum = isNaN(rawSaldo) ? 0 : rawSaldo;
+            const saldoFmt = formatMoney(isNaN(rawSaldo) ? 0 : rawSaldo);
 
             const rawProgreso = Number(evt.progreso_porcentaje ?? evt.progreso ?? 0);
             const progreso = isNaN(rawProgreso) ? 0 : Math.min(100, Math.max(0, Math.round(rawProgreso)));
@@ -183,7 +185,7 @@ export const EventsPage = () => {
               ? 'bg-[#4D9A72]/15 text-[#2E6F4E] border-0'
               : isProgress
               ? 'bg-[var(--ev-primary)]/15 text-[var(--ev-primary)] border-0'
-              : 'bg-[#C49A3A]/15 text-[#9A7422] border-0';
+              : 'bg-[#C49A3A]/15 text-[#7A5C14] border-0';
 
             return (
               <div
@@ -195,14 +197,14 @@ export const EventsPage = () => {
                 <div>
                   <div className="flex items-start justify-between gap-3 mb-2.5">
                     <div className="min-w-0 flex-1">
-                      <span className="text-[11px] font-mono text-[var(--ev-text-muted)] block truncate mb-1">
-                        #{evt.id} • {tipoFmt}
+                      <span className="text-[11px] uppercase tracking-wider font-semibold text-[var(--ev-text-muted)] block truncate mb-1">
+                        {tipoFmt}
                       </span>
                       <h3 className="text-base sm:text-lg font-bold text-[var(--ev-text-main)] tracking-tight truncate group-hover:text-[var(--ev-primary)] transition-colors">
                         {evt.titulo || 'Evento sin título'}
                       </h3>
                     </div>
-                    <span className={`shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${badgeStyle}`}>
+                    <span className={`shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border ${badgeStyle}`}>
                       {estadoFmt}
                     </span>
                   </div>
@@ -244,15 +246,15 @@ export const EventsPage = () => {
                 <div className="pt-3.5 border-t border-[var(--ev-border)]/50 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-4">
                     <div>
-                      <span className="text-[10px] uppercase font-semibold text-[var(--ev-text-muted)] block">Total</span>
+                      <span className="text-[11px] uppercase font-semibold text-[var(--ev-text-muted)] block">Total</span>
                       <span className="text-sm font-extrabold text-[var(--ev-text-main)] font-mono tabular-nums">
-                        ${totalFmt}
+                        {totalFmt}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase font-semibold text-[var(--ev-text-muted)] block">Saldo</span>
-                      <span className={`text-sm font-extrabold font-mono tabular-nums ${parseFloat(saldoFmt) > 0 ? 'text-[#C49A3A]' : 'text-[#4D9A72]'}`}>
-                        ${saldoFmt}
+                      <span className="text-[11px] uppercase font-semibold text-[var(--ev-text-muted)] block">Saldo</span>
+                      <span className={`text-sm font-extrabold font-mono tabular-nums ${rawSaldoNum > 0 ? 'text-[#7A5C14]' : 'text-[#2F7A55]'}`}>
+                        {saldoFmt}
                       </span>
                     </div>
                   </div>

@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeBrandingProvider } from './context/ThemeBrandingContext';
 import { AppRoutes } from './routes/AppRoutes';
 import { GlobalPlanLimitToast } from './components/ui/GlobalPlanLimitToast';
+import { AccesibilidadFormularios } from './components/common/AccesibilidadFormularios';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <ThemeProvider>
         <AuthProvider>
           <ThemeBrandingProvider>
+            <AccesibilidadFormularios />
             <GlobalPlanLimitToast />
             <AppRoutes />
           </ThemeBrandingProvider>

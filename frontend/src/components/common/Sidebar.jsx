@@ -102,7 +102,7 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
         section: 'Operación de Pista',
         items: [
           { to: '/eventos', label: isCliente ? 'Mi Evento' : 'Eventos Programados', icon: <CalendarDays size={16} />, visible: isAdmin || isGerente || isTrabajador || isCliente },
-          { to: '/actividades', label: isTrabajador ? 'Mis Actividades' : 'Checklist Operativo', icon: <CheckSquare size={16} />, visible: isAdmin || isGerente || isTrabajador },
+          { to: '/actividades', label: isTrabajador ? 'Mis Actividades' : 'Actividades', icon: <CheckSquare size={16} />, visible: isAdmin || isGerente || isTrabajador },
           { to: '/reservas', label: 'Reservas Anti-Colisión', icon: <CalendarCheck size={16} />, visible: isAdmin || isGerente || isTrabajador || isCliente },
           { to: '/solicitudes', label: 'Solicitudes de Modificación', icon: <FileEdit size={16} />, visible: isAdmin || isGerente || isCliente },
         ],
@@ -222,7 +222,7 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
         {/* Cabecera del Módulo Contextual */}
         <div className="p-4 border-b border-[var(--ev-border)]/50 flex items-center justify-between">
           <div className="min-w-0 flex-1">
-            <span className="text-[10px] uppercase font-bold tracking-widest text-[var(--ev-primary)] block truncate">
+            <span className="text-[11px] uppercase font-bold tracking-widest text-[var(--ev-primary)] block truncate">
               {brandName}
             </span>
             <h2 className="text-sm font-bold text-[var(--ev-text-main)] truncate mt-0.5">
@@ -247,7 +247,7 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
             if (!visibleItems.length) return null;
             return (
               <div key={gIdx} className="space-y-1">
-                <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--ev-text-muted)] px-2 block mb-1">
+                <span className="text-[11px] uppercase font-semibold tracking-wider text-[var(--ev-text-muted)] px-2 block mb-1">
                   {group.section}
                 </span>
                 {visibleItems.map((item) => (
@@ -273,10 +273,7 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
 
         {/* Footer del Secondary Sidebar */}
         <div className="p-3 border-t border-[var(--ev-border)]/50 bg-[var(--ev-surface)]/40 text-[11px] text-[var(--ev-text-muted)] flex items-center justify-between">
-          <span className="truncate">SaaS Multi-tenant</span>
-          <span className="px-1.5 py-0.5 rounded-full bg-[var(--ev-primary)]/10 text-[var(--ev-primary)] font-bold text-[10px]">
-            v2.4
-          </span>
+          <span className="truncate">EVENTRA</span>
         </div>
 
       </div>

@@ -139,7 +139,7 @@ export const TenantAuthLayout = ({ title, subtitle, children }) => {
             </div>
             <div
               style={{
-                fontSize: '0.65rem',
+                fontSize: '0.6875rem',
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 letterSpacing: '0.12em',

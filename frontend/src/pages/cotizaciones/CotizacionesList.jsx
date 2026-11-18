@@ -9,6 +9,7 @@ import { Badge } from '../../components/common/Badge';
 import { eventraService } from '../../services/eventraService';
 import { useAuth } from '../../context/AuthContext';
 import { Plus, Search, Loader2, Calculator, CalendarDays } from 'lucide-react';
+import { formatMoney } from '../../utils/format';
 
 export const CotizacionesList = () => {
   const { isAdmin, isGerente, isCliente, isTrabajador } = useAuth();
@@ -72,7 +73,7 @@ export const CotizacionesList = () => {
       </div>
 
       {error && (
-        <div style={{ padding: '0.85rem 1rem', background: 'var(--danger-light)', color: 'var(--danger)', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.875rem' }}>
+        <div style={{ padding: '0.85rem 1rem', background: 'var(--danger-light)', color: 'var(--danger-text)', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.875rem' }}>
           {error}
         </div>
       )}
@@ -100,7 +101,6 @@ export const CotizacionesList = () => {
             <table className="custom-table">
               <thead>
                 <tr>
-                  <th>ID</th>
                   <th>Cliente</th>
                   <th>Paquete Base</th>
                   <th>Fecha Evento</th>
@@ -112,9 +112,6 @@ export const CotizacionesList = () => {
               <tbody>
                 {filteredCotizaciones.map(cot => (
                   <tr key={cot.id}>
-                    <td style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      {String(cot.id).substring(0, 8).toUpperCase()}
-                    </td>
                     <td style={{ fontWeight: 600 }}>
                       {cot.cliente_nombres} {cot.cliente_apellidos}
                     </td>
@@ -127,8 +124,8 @@ export const CotizacionesList = () => {
                         {new Date(cot.fecha_estimada_evento).toLocaleDateString('es-EC')}
                       </div>
                     </td>
-                    <td style={{ fontWeight: 700, color: 'var(--accent)' }}>
-                      ${parseFloat(cot.total_calculado).toFixed(2)}
+                    <td style={{ fontWeight: 700, color: 'var(--warning-text)' }}>
+                      {formatMoney(cot.total_calculado)}
                     </td>
                     <td>
                       <Badge variant={

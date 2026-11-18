@@ -112,7 +112,7 @@ export const Login = () => {
             </div>
             <div
               style={{
-                fontSize: '0.62rem',
+                fontSize: '0.6875rem',
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 letterSpacing: '0.1em',
@@ -126,7 +126,7 @@ export const Login = () => {
         </div>
 
         {/* Eslogan */}
-        <h1
+        <h2
           style={{
             fontSize: '2.5rem',
             fontWeight: 900,
@@ -138,7 +138,7 @@ export const Login = () => {
         >
           Haz de cada evento{' '}
           <span style={{ color: 'var(--primary)' }}>una experiencia única</span>
-        </h1>
+        </h2>
 
         <p
           style={{
@@ -190,7 +190,7 @@ export const Login = () => {
 
           {/* Header del formulario */}
           <div style={{ marginBottom: '1.75rem' }}>
-            <h2
+            <h1
               style={{
                 fontSize: '1.6rem',
                 fontWeight: 800,
@@ -199,7 +199,7 @@ export const Login = () => {
               }}
             >
               Iniciar sesión
-            </h2>
+            </h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
               Accede a tu panel de gestión de eventos
             </p>
@@ -304,7 +304,7 @@ export const Login = () => {
                   type={showPassword ? 'text' : 'password'}
                   className="form-input"
                   style={{ paddingLeft: '2.65rem', paddingRight: '3rem' }}
-                  placeholder="••••••••"
+                  placeholder="Tu contraseña"
                   value={formData.password}
                   onChange={handleChange}
                   autoComplete="current-password"

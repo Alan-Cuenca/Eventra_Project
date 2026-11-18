@@ -104,11 +104,11 @@ export const GestorSolicitudes = () => {
   const getBadgeStyle = (estado) => {
     switch (estado) {
       case 'Aprobada':
-        return 'bg-[#4D9A72]/15 text-[#4D9A72] border-[#4D9A72]/30';
+        return 'bg-[#4D9A72]/15 text-[#2F7A55] border-[#4D9A72]/30';
       case 'Rechazada':
-        return 'bg-[#C95C5C]/15 text-[#C95C5C] border-[#C95C5C]/30';
+        return 'bg-[#C95C5C]/15 text-[#B04646] border-[#C95C5C]/30';
       default:
-        return 'bg-[#C49A3A]/15 text-[#9A7422] border-[#C49A3A]/30';
+        return 'bg-[#C49A3A]/15 text-[#7A5C14] border-[#C49A3A]/30';
     }
   };
 
@@ -151,9 +151,9 @@ export const GestorSolicitudes = () => {
           }`}
         >
           {mensaje.tipo === 'exito' ? (
-            <CheckCircle2 size={18} className="text-[#4D9A72] shrink-0 mt-0.5" />
+            <CheckCircle2 size={18} className="text-[#2F7A55] shrink-0 mt-0.5" />
           ) : (
-            <AlertCircle size={18} className="text-[#C95C5C] shrink-0 mt-0.5" />
+            <AlertCircle size={18} className="text-[#B04646] shrink-0 mt-0.5" />
           )}
           <span className="flex-1 font-medium">{mensaje.texto}</span>
           <button
@@ -171,19 +171,19 @@ export const GestorSolicitudes = () => {
         {/* Card: Pendientes (Destacada) */}
         <div className="p-6 rounded-2xl bg-white border border-[#C49A3A]/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#9A7422]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#7A5C14]">
               Pendientes
             </span>
-            <div className="w-8 h-8 rounded-lg bg-[#C49A3A]/15 text-[#9A7422] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#C49A3A]/15 text-[#7A5C14] flex items-center justify-center">
               <Clock size={16} />
             </div>
           </div>
           <div className="space-y-1">
             <div className="text-3xl font-extrabold tracking-tight text-[#233D49]">{pendientes}</div>
-            <p className="text-xs text-[#8A98A0]">Peticiones que requieren tu resolución</p>
+            <p className="text-xs text-[#566D7A]">Peticiones que requieren tu resolución</p>
           </div>
           {pendientes > 0 && (
-            <div className="mt-3 pt-3 border-t border-[#ECE7D5] flex items-center gap-1.5 text-xs font-semibold text-[#9A7422]">
+            <div className="mt-3 pt-3 border-t border-[#ECE7D5] flex items-center gap-1.5 text-xs font-semibold text-[#7A5C14]">
               <span className="w-2 h-2 rounded-full bg-[#C49A3A] animate-pulse"></span>
               Atención requerida
             </div>
@@ -196,13 +196,13 @@ export const GestorSolicitudes = () => {
             <span className="text-xs font-bold uppercase tracking-wider text-[#4D7182]">
               Aprobadas
             </span>
-            <div className="w-8 h-8 rounded-lg bg-[#4D9A72]/15 text-[#4D9A72] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#4D9A72]/15 text-[#2F7A55] flex items-center justify-center">
               <CheckCircle2 size={16} />
             </div>
           </div>
           <div className="space-y-1">
             <div className="text-3xl font-extrabold tracking-tight text-[#233D49]">{aprobadas}</div>
-            <p className="text-xs text-[#8A98A0]">Cambios aceptados y vigentes</p>
+            <p className="text-xs text-[#566D7A]">Cambios aceptados y vigentes</p>
           </div>
         </div>
 
@@ -212,13 +212,13 @@ export const GestorSolicitudes = () => {
             <span className="text-xs font-bold uppercase tracking-wider text-[#4D7182]">
               Rechazadas
             </span>
-            <div className="w-8 h-8 rounded-lg bg-[#C95C5C]/15 text-[#C95C5C] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#C95C5C]/15 text-[#B04646] flex items-center justify-center">
               <XCircle size={16} />
             </div>
           </div>
           <div className="space-y-1">
             <div className="text-3xl font-extrabold tracking-tight text-[#233D49]">{rechazadas}</div>
-            <p className="text-xs text-[#8A98A0]">Peticiones no factibles denegadas</p>
+            <p className="text-xs text-[#566D7A]">Peticiones no factibles denegadas</p>
           </div>
         </div>
 
@@ -234,7 +234,7 @@ export const GestorSolicitudes = () => {
           </div>
           <div className="space-y-1">
             <div className="text-3xl font-extrabold tracking-tight text-[#233D49]">{total}</div>
-            <p className="text-xs text-[#8A98A0]">Historial acumulado de la empresa</p>
+            <p className="text-xs text-[#566D7A]">Historial acumulado de la empresa</p>
           </div>
         </div>
       </div>
@@ -242,7 +242,7 @@ export const GestorSolicitudes = () => {
       {/* ── Barra de Búsqueda y Filtros ──────────────────────── */}
       <div className="bg-white rounded-2xl border border-[#ECE7D5] p-4 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8A98A0]" />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#566D7A]" />
           <input
             type="text"
             placeholder="Buscar por cliente, evento o descripción..."
@@ -274,17 +274,17 @@ export const GestorSolicitudes = () => {
       {/* ── Tabla Densa Empresarial ─────────────────────────── */}
       <div className="bg-white rounded-2xl border border-[#ECE7D5] shadow-sm overflow-hidden">
         {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center gap-3 text-sm text-[#8A98A0]">
+          <div className="py-20 flex flex-col items-center justify-center gap-3 text-sm text-[#566D7A]">
             <Loader2 size={24} className="animate-spin text-[#4D7182]" />
             <span>Sincronizando solicitudes...</span>
           </div>
         ) : solicitudesFiltradas.length === 0 ? (
           <div className="py-16 text-center space-y-3">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-[#F9F8F5] border border-[#CEC8B8] flex items-center justify-center text-[#8A98A0]">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-[#F9F8F5] border border-[#CEC8B8] flex items-center justify-center text-[#566D7A]">
               <Inbox size={26} />
             </div>
             <h3 className="text-base font-bold text-[#233D49]">No se encontraron solicitudes</h3>
-            <p className="text-xs text-[#8A98A0] max-w-sm mx-auto">
+            <p className="text-xs text-[#566D7A] max-w-sm mx-auto">
               No hay solicitudes de modificación que coincidan con los criterios de búsqueda o filtro aplicados.
             </p>
           </div>
@@ -323,7 +323,7 @@ export const GestorSolicitudes = () => {
                               })
                             : 'N/A'}
                         </div>
-                        <div className="text-[11px] text-[#8A98A0]">
+                        <div className="text-[11px] text-[#566D7A]">
                           {sol.fecha_solicitud
                             ? new Date(sol.fecha_solicitud).toLocaleTimeString('es-ES', {
                                 hour: '2-digit',
@@ -336,7 +336,7 @@ export const GestorSolicitudes = () => {
                       {/* Cliente */}
                       <td className="py-4 px-4 sm:px-6 text-xs">
                         <div className="font-bold text-[#233D49]">{sol.cliente || 'Cliente'}</div>
-                        <div className="text-[#8A98A0] text-[11px] truncate max-w-[160px]">
+                        <div className="text-[#566D7A] text-[11px] truncate max-w-[160px]">
                           {sol.cliente_email || 'Sin correo registrado'}
                         </div>
                       </td>
@@ -347,7 +347,7 @@ export const GestorSolicitudes = () => {
                           {sol.evento_titulo || 'Evento'}
                         </div>
                         {sol.fecha_evento && (
-                          <div className="text-[#8A98A0] text-[11px] flex items-center gap-1">
+                          <div className="text-[#566D7A] text-[11px] flex items-center gap-1">
                             <Calendar size={11} />
                             {new Date(sol.fecha_evento).toLocaleDateString()}
                           </div>
@@ -419,7 +419,7 @@ export const GestorSolicitudes = () => {
                             </button>
                           </div>
                         ) : (
-                          <span className="text-xs text-[#8A98A0] italic">
+                          <span className="text-xs text-[#566D7A] italic">
                             Resuelta ({estado})
                           </span>
                         )}
@@ -445,7 +445,7 @@ export const GestorSolicitudes = () => {
               <button
                 type="button"
                 onClick={() => setSolicitudSeleccionada(null)}
-                className="p-1 rounded-lg text-[#8A98A0] hover:text-[#233D49] hover:bg-[#F3F0E4] transition-colors cursor-pointer"
+                className="p-1 rounded-lg text-[#566D7A] hover:text-[#233D49] hover:bg-[#F3F0E4] transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -454,14 +454,14 @@ export const GestorSolicitudes = () => {
             <div className="space-y-4 text-xs">
               {/* Evento */}
               <div className="p-3.5 rounded-xl bg-[#F9F8F5] border border-[#ECE7D5] space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#4D7182]">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#4D7182]">
                   Evento Planificado
                 </span>
                 <p className="font-bold text-sm text-[#233D49]">
                   {solicitudSeleccionada.evento_titulo || 'Evento Registrado'}
                 </p>
                 {solicitudSeleccionada.fecha_evento && (
-                  <p className="text-[#8A98A0]">
+                  <p className="text-[#566D7A]">
                     Fecha de la recepción:{' '}
                     {new Date(solicitudSeleccionada.fecha_evento).toLocaleDateString()}
                   </p>
@@ -470,20 +470,20 @@ export const GestorSolicitudes = () => {
 
               {/* Cliente */}
               <div className="p-3.5 rounded-xl bg-[#F9F8F5] border border-[#ECE7D5] space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#4D7182]">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#4D7182]">
                   Solicitado Por
                 </span>
                 <p className="font-semibold text-sm text-[#233D49]">
                   {solicitudSeleccionada.cliente || 'Cliente'}
                 </p>
-                <p className="text-[#8A98A0] flex items-center gap-1.5">
+                <p className="text-[#566D7A] flex items-center gap-1.5">
                   <Mail size={12} /> {solicitudSeleccionada.cliente_email || 'Sin correo asociado'}
                 </p>
               </div>
 
               {/* Contenido Completo del Cambio */}
               <div className="space-y-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#4D7182]">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#4D7182]">
                   Descripción Completa del Cambio
                 </span>
                 <div className="p-4 rounded-xl bg-white border border-[#CEC8B8] text-sm text-[#233D49] leading-relaxed whitespace-pre-wrap max-h-48 overflow-y-auto">
@@ -493,7 +493,7 @@ export const GestorSolicitudes = () => {
 
               {/* Estado actual */}
               <div className="flex items-center justify-between pt-2">
-                <span className="text-xs text-[#8A98A0]">Estado Actual:</span>
+                <span className="text-xs text-[#566D7A]">Estado Actual:</span>
                 <span
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${getBadgeStyle(
                     solicitudSeleccionada.estado

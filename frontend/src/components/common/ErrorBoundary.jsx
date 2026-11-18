@@ -46,7 +46,7 @@ export class ErrorBoundary extends React.Component {
               height: '48px',
               borderRadius: '50%',
               background: 'rgba(201, 92, 92, 0.15)',
-              color: '#C95C5C',
+              color: '#B04646',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

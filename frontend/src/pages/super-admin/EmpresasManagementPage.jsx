@@ -174,7 +174,7 @@ export const EmpresasManagementPage = () => {
 
   const getBadgeColorPorPlan = (plan) => {
     const p = (plan || '').toLowerCase();
-    if (p.includes('premium')) return 'bg-[#C49A3A]/15 text-[#C49A3A] border-[#C49A3A]/30';
+    if (p.includes('premium')) return 'bg-[#C49A3A]/15 text-[#7A5C14] border-[#C49A3A]/30';
     if (p.includes('enterprise')) return 'bg-[#7059a6]/15 text-[#7059a6] border-[#7059a6]/30';
     if (p.includes('profesional')) return 'bg-[#2b78a0]/15 text-[#2b78a0] border-[#2b78a0]/30';
     return 'bg-[#4D7182]/15 text-[#4D7182] border-[#4D7182]/30';
@@ -257,7 +257,7 @@ export const EmpresasManagementPage = () => {
                 height: '42px',
                 borderRadius: 'var(--radius-md)',
                 background: 'rgba(201, 92, 92, 0.15)',
-                color: 'var(--danger)',
+                color: 'var(--danger-text)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -267,7 +267,7 @@ export const EmpresasManagementPage = () => {
               {errorInfo.tipo === 'NETWORK' ? <WifiOff size={20} /> : <ShieldAlert size={20} />}
             </div>
             <div>
-              <h3 style={{ color: 'var(--danger)', fontSize: '0.95rem', fontWeight: 'bold', margin: 0 }}>
+              <h3 style={{ color: 'var(--danger-text)', fontSize: '0.95rem', fontWeight: 'bold', margin: 0 }}>
                 {errorInfo.tipo === 'NETWORK'
                   ? 'Error de Conexión con el Backend'
                   : 'Error al consultar empresas'}
@@ -558,7 +558,7 @@ export const EmpresasManagementPage = () => {
                     {/* Plan */}
                     <td>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getBadgeColorPorPlan(
+                        className={`px-2 py-0.5 rounded-full text-[11px] font-bold border ${getBadgeColorPorPlan(
                           emp.plan_suscripcion
                         )}`}
                       >
@@ -579,7 +579,7 @@ export const EmpresasManagementPage = () => {
                             fontSize: '0.72rem',
                             fontWeight: 700,
                             background: 'rgba(77, 154, 114, 0.15)',
-                            color: 'var(--success)',
+                            color: 'var(--success-text)',
                           }}
                         >
                           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success)' }}></span>
@@ -596,7 +596,7 @@ export const EmpresasManagementPage = () => {
                             fontSize: '0.72rem',
                             fontWeight: 700,
                             background: 'rgba(201, 92, 92, 0.15)',
-                            color: 'var(--danger)',
+                            color: 'var(--danger-text)',
                           }}
                         >
                           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--danger)' }}></span>
@@ -646,7 +646,7 @@ export const EmpresasManagementPage = () => {
                             setIsPlanModalOpen(true);
                           }}
                           className="btn btn-secondary btn-sm"
-                          style={{ padding: '0.35rem 0.5rem', color: 'var(--warning)' }}
+                          style={{ padding: '0.35rem 0.5rem', color: 'var(--warning-text)' }}
                           title="Modificar plan de suscripción"
                           aria-label="Cambiar plan"
                         >

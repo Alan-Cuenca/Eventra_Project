@@ -8,6 +8,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Card } from '../../components/common/Card';
 import { eventraService } from '../../services/eventraService';
 import { Calculator, ArrowLeft, Send, Sparkles, User, CalendarDays, Loader2, CheckCircle2 } from 'lucide-react';
+import { formatMoney } from '../../utils/format';
 
 export const CotizacionForm = () => {
   const navigate = useNavigate();
@@ -190,7 +191,7 @@ export const CotizacionForm = () => {
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                         <span style={{ fontWeight: 600 }}>{pack.nombre}</span>
-                        <span style={{ fontWeight: 700, color: 'var(--accent)' }}>${parseFloat(pack.precio_total).toFixed(2)}</span>
+                        <span style={{ fontWeight: 700, color: 'var(--warning-text)' }}>{formatMoney(pack.precio_total)}</span>
                       </div>
                       <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{pack.descripcion || 'Paquete especial'}</div>
                     </div>
@@ -215,7 +216,7 @@ export const CotizacionForm = () => {
                       </div>
                     </div>
                     <div style={{ fontWeight: 700, color: 'var(--primary)', fontSize: '0.95rem' }}>
-                      +${parseFloat(srv.precio_base).toFixed(2)}
+                      +{formatMoney(srv.precio_base)}
                     </div>
                   </label>
                 );
@@ -234,15 +235,15 @@ export const CotizacionForm = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>Paquete Base ({paqueteSeleccionado?.nombre || 'Ninguno'}):</span>
-                <span>${costoPaquete.toFixed(2)}</span>
+                <span>{formatMoney(costoPaquete)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>Adicionales ({serviciosAdicionalesIds.length}):</span>
-                <span>${costoServiciosAdicionales.toFixed(2)}</span>
+                <span>{formatMoney(costoServiciosAdicionales)}</span>
               </div>
               <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between', fontSize: '1.4rem', fontWeight: 800 }}>
                 <span>Total Estimado:</span>
-                <span style={{ color: 'var(--accent)' }}>${totalCalculado.toFixed(2)}</span>
+                <span style={{ color: 'var(--warning-text)' }}>{formatMoney(totalCalculado)}</span>
               </div>
             </div>
 
@@ -250,11 +251,11 @@ export const CotizacionForm = () => {
             <div style={{ background: 'rgba(23, 36, 46, 0.7)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', border: '1px solid var(--border-subtle)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
                 <span style={{ color: '#5bc286' }}>Anticipo Requerido (50%):</span>
-                <strong style={{ color: '#5bc286' }}>${(totalCalculado * 0.5).toFixed(2)}</strong>
+                <strong style={{ color: '#5bc286' }}>{formatMoney((totalCalculado * 0.5))}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>Saldo Pre-Evento:</span>
-                <strong style={{ color: 'var(--text-primary)' }}>${(totalCalculado * 0.5).toFixed(2)}</strong>
+                <strong style={{ color: 'var(--text-primary)' }}>{formatMoney((totalCalculado * 0.5))}</strong>
               </div>
             </div>
 

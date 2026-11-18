@@ -35,7 +35,7 @@ export const CommandPalette = ({ isOpen, onClose }) => {
     // Secciones Principales
     { id: 'dash', label: 'Panel Principal', path: '/dashboard', icon: <LayoutDashboard size={16} />, category: 'Navegación', visible: true },
     { id: 'events', label: 'Eventos & Calendario', path: '/eventos', icon: <CalendarDays size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isTrabajador || isCliente },
-    { id: 'activities', label: 'Checklist Operativo', path: '/actividades', icon: <CheckSquare size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isTrabajador },
+    { id: 'activities', label: 'Actividades', path: '/actividades', icon: <CheckSquare size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isTrabajador },
     { id: 'reservations', label: 'Reservas Anti-Colisión', path: '/reservas', icon: <CalendarCheck size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isTrabajador || isCliente },
     { id: 'quotes', label: 'Cotizaciones', path: '/cotizaciones', icon: <Calculator size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isTrabajador || isCliente },
     { id: 'quoter', label: 'Cotizador Dinámico', path: '/cotizador', icon: <Sparkles size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isTrabajador },
@@ -166,7 +166,7 @@ export const CommandPalette = ({ isOpen, onClose }) => {
                     <span>{item.label}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] uppercase font-semibold text-[var(--ev-text-muted)]">
+                    <span className="text-[11px] uppercase font-semibold text-[var(--ev-text-muted)]">
                       {item.category}
                     </span>
                     {isSelected && (
@@ -182,9 +182,9 @@ export const CommandPalette = ({ isOpen, onClose }) => {
         {/* Footer con Atajos */}
         <div className="px-4 py-2 border-t border-[var(--ev-border)]/40 bg-[var(--ev-bg-base)]/40 flex items-center justify-between text-[11px] text-[var(--ev-text-muted)]">
           <div className="flex items-center gap-3">
-            <span><kbd className="px-1.5 py-0.5 rounded bg-[var(--ev-surface)] border border-[var(--ev-border)] font-mono text-[10px]">↑</kbd> <kbd className="px-1.5 py-0.5 rounded bg-[var(--ev-surface)] border border-[var(--ev-border)] font-mono text-[10px]">↓</kbd> Navegar</span>
-            <span><kbd className="px-1.5 py-0.5 rounded bg-[var(--ev-surface)] border border-[var(--ev-border)] font-mono text-[10px]">↵</kbd> Seleccionar</span>
-            <span><kbd className="px-1.5 py-0.5 rounded bg-[var(--ev-surface)] border border-[var(--ev-border)] font-mono text-[10px]">esc</kbd> Cerrar</span>
+            <span><kbd className="px-1.5 py-0.5 rounded bg-[var(--ev-surface)] border border-[var(--ev-border)] font-mono text-[11px]">↑</kbd> <kbd className="px-1.5 py-0.5 rounded bg-[var(--ev-surface)] border border-[var(--ev-border)] font-mono text-[11px]">↓</kbd> Navegar</span>
+            <span><kbd className="px-1.5 py-0.5 rounded bg-[var(--ev-surface)] border border-[var(--ev-border)] font-mono text-[11px]">↵</kbd> Seleccionar</span>
+            <span><kbd className="px-1.5 py-0.5 rounded bg-[var(--ev-surface)] border border-[var(--ev-border)] font-mono text-[11px]">esc</kbd> Cerrar</span>
           </div>
         </div>
 

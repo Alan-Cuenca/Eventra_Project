@@ -229,7 +229,7 @@ export const ColaboradoresPage = () => {
           }}
         >
           <div style={{ display: 'flex', gap: '12px' }}>
-            <CheckCircle2 size={22} style={{ color: '#4D9A72', flexShrink: 0, marginTop: '2px' }} />
+            <CheckCircle2 size={22} style={{ color: '#2F7A55', flexShrink: 0, marginTop: '2px' }} />
             <div>
               <strong style={{ color: '#233D49', fontSize: '14px' }}>
                 Invitación despachada a {inviteSuccess.email}
@@ -259,7 +259,7 @@ export const ColaboradoresPage = () => {
           </div>
           <button
             onClick={() => setInviteSuccess(null)}
-            style={{ background: 'none', border: 'none', color: '#7E919C', cursor: 'pointer' }}
+            style={{ background: 'none', border: 'none', color: '#566D7A', cursor: 'pointer' }}
           >
             <X size={18} />
           </button>
@@ -274,7 +274,7 @@ export const ColaboradoresPage = () => {
             border: '1px solid #F8D7D7',
             borderRadius: '10px',
             padding: '14px 18px',
-            color: '#C95C5C',
+            color: '#B04646',
             fontSize: '14px',
             marginBottom: '24px',
             display: 'flex',
@@ -428,7 +428,7 @@ export const ColaboradoresPage = () => {
                         <div style={{ fontWeight: '600', color: '#233D49' }}>
                           {colab.nombre_completo || colab.nombre}
                         </div>
-                        <div style={{ fontSize: '13px', color: '#7E919C', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                        <div style={{ fontSize: '13px', color: '#566D7A', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                           <Mail size={13} /> {colab.email}
                         </div>
                       </td>
@@ -514,7 +514,7 @@ export const ColaboradoresPage = () => {
                               type="button"
                               disabled={accionId === colab.id || !colab.estado_activo}
                               onClick={() => eliminarColaborador(colab)}
-                              style={{ padding: '4px 10px', borderRadius: '8px', border: '1px solid #C95C5C', background: '#fff', color: '#C95C5C', fontSize: '12px', cursor: 'pointer' }}
+                              style={{ padding: '4px 10px', borderRadius: '8px', border: '1px solid #C95C5C', background: '#fff', color: '#B04646', fontSize: '12px', cursor: 'pointer' }}
                             >
                               Eliminar
                             </button>
@@ -570,7 +570,7 @@ export const ColaboradoresPage = () => {
                 top: '20px',
                 background: 'none',
                 border: 'none',
-                color: '#7E919C',
+                color: '#566D7A',
                 cursor: 'pointer',
               }}
             >
@@ -620,7 +620,7 @@ export const ColaboradoresPage = () => {
                   border: '1px solid #F8D7D7',
                   borderRadius: '8px',
                   padding: '10px 14px',
-                  color: '#C95C5C',
+                  color: '#B04646',
                   fontSize: '13px',
                   marginBottom: '16px',
                   display: 'flex',
@@ -640,7 +640,7 @@ export const ColaboradoresPage = () => {
                   Correo Electrónico del Colaborador *
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <Mail size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#7E919C' }} />
+                  <Mail size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#566D7A' }} />
                   <input
                     type="email"
                     required
@@ -667,7 +667,7 @@ export const ColaboradoresPage = () => {
                   Rol a Asignar *
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <Briefcase size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#7E919C' }} />
+                  <Briefcase size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#566D7A' }} />
                   <select
                     value={inviteData.rol_id}
                     onChange={(e) => setInviteData((prev) => ({ ...prev, rol_id: parseInt(e.target.value, 10) }))}
@@ -687,7 +687,7 @@ export const ColaboradoresPage = () => {
                     <option value={2}>Gerente (Gestión de eventos y reportes)</option>
                   </select>
                 </div>
-                <div style={{ fontSize: '11px', color: '#7E919C', marginTop: '6px' }}>
+                <div style={{ fontSize: '11px', color: '#566D7A', marginTop: '6px' }}>
                   * Por seguridad SaaS, no se permite invitar usuarios con privilegios de Administrador ni Clientes.
                 </div>
               </div>

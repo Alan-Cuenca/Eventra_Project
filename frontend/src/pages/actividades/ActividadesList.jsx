@@ -222,7 +222,7 @@ export const ActividadesList = () => {
           style={{
             padding: '1rem',
             background: 'var(--danger-light)',
-            color: 'var(--danger)',
+            color: 'var(--danger-text)',
             borderRadius: 'var(--radius-md)',
             marginBottom: '1.5rem',
             border: '1px solid rgba(201,92,92,0.3)',
@@ -256,11 +256,11 @@ export const ActividadesList = () => {
         <Card style={{ padding: '1.25rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Pendientes</span>
-            <span style={{ padding: '4px', borderRadius: '8px', background: 'var(--warning-light)', color: 'var(--warning)' }}>
+            <span style={{ padding: '4px', borderRadius: '8px', background: 'var(--warning-light)', color: 'var(--warning-text)' }}>
               <AlertCircle size={16} />
             </span>
           </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--warning)', marginTop: '0.25rem' }}>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--warning-text)', marginTop: '0.25rem' }}>
             {pendientesCount}
           </div>
         </Card>
@@ -280,11 +280,11 @@ export const ActividadesList = () => {
         <Card style={{ padding: '1.25rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Completadas</span>
-            <span style={{ padding: '4px', borderRadius: '8px', background: 'var(--success-light)', color: 'var(--success)' }}>
+            <span style={{ padding: '4px', borderRadius: '8px', background: 'var(--success-light)', color: 'var(--success-text)' }}>
               <CheckCircle2 size={16} />
             </span>
           </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--success)', marginTop: '0.25rem' }}>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--success-text)', marginTop: '0.25rem' }}>
             {completadasCount}
           </div>
         </Card>
@@ -581,7 +581,7 @@ export const ActividadesList = () => {
                           <button
                             type="button"
                             className="btn btn-secondary btn-sm btn-icon"
-                            style={{ color: 'var(--danger)' }}
+                            style={{ color: 'var(--danger-text)' }}
                             title="Eliminar actividad"
                             onClick={() => handleDelete(act.id)}
                             disabled={deletingId === act.id}

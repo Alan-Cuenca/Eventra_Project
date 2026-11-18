@@ -103,7 +103,7 @@ export const CompletarRegistro = () => {
               height: '64px',
               borderRadius: '50%',
               backgroundColor: '#FBE8E8',
-              color: '#C95C5C',
+              color: '#B04646',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -168,7 +168,7 @@ export const CompletarRegistro = () => {
               height: '64px',
               borderRadius: '50%',
               backgroundColor: '#E8F5EE',
-              color: '#4D9A72',
+              color: '#2F7A55',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -264,7 +264,7 @@ export const CompletarRegistro = () => {
               border: '1px solid #F8D7D7',
               borderRadius: '8px',
               padding: '12px 16px',
-              color: '#C95C5C',
+              color: '#B04646',
               fontSize: '13px',
               marginBottom: '20px',
               display: 'flex',
@@ -284,7 +284,7 @@ export const CompletarRegistro = () => {
               Nombre Completo *
             </label>
             <div style={{ position: 'relative' }}>
-              <User size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#7E919C' }} />
+              <User size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#566D7A' }} />
               <input
                 type="text"
                 name="nombre_completo"
@@ -336,7 +336,7 @@ export const CompletarRegistro = () => {
               Fecha de Nacimiento
             </label>
             <div style={{ position: 'relative' }}>
-              <Calendar size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#7E919C' }} />
+              <Calendar size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#566D7A' }} />
               <input
                 type="date"
                 name="fecha_nacimiento"
@@ -362,7 +362,7 @@ export const CompletarRegistro = () => {
               Crear Contraseña * (mínimo 6 caracteres)
             </label>
             <div style={{ position: 'relative' }}>
-              <Lock size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#7E919C' }} />
+              <Lock size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#566D7A' }} />
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="password"
@@ -370,7 +370,7 @@ export const CompletarRegistro = () => {
                 minLength={6}
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="••••••••"
+                placeholder="Mínimo 8 caracteres"
                 style={{
                   width: '100%',
                   padding: '10px 40px 10px 40px',
@@ -391,7 +391,7 @@ export const CompletarRegistro = () => {
                   top: '10px',
                   background: 'none',
                   border: 'none',
-                  color: '#7E919C',
+                  color: '#566D7A',
                   cursor: 'pointer',
                   padding: 0,
                 }}
@@ -407,7 +407,7 @@ export const CompletarRegistro = () => {
               Confirmar Contraseña *
             </label>
             <div style={{ position: 'relative' }}>
-              <Lock size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#7E919C' }} />
+              <Lock size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#566D7A' }} />
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
                 name="confirmPassword"
@@ -415,7 +415,7 @@ export const CompletarRegistro = () => {
                 minLength={6}
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="••••••••"
+                placeholder="Mínimo 8 caracteres"
                 style={{
                   width: '100%',
                   padding: '10px 40px 10px 40px',
@@ -436,7 +436,7 @@ export const CompletarRegistro = () => {
                   top: '10px',
                   background: 'none',
                   border: 'none',
-                  color: '#7E919C',
+                  color: '#566D7A',
                   cursor: 'pointer',
                   padding: 0,
                 }}

@@ -432,7 +432,7 @@ export const ClientsPage = () => {
 
           <div className="pt-2 border-t border-[var(--ev-border)]/40 text-[11px] text-[var(--ev-text-muted)] flex items-center justify-between">
             <span className="tabular-nums font-medium">Mostrando {filteredClientes.length} de {clientes.length}</span>
-            <span className="text-[10px] font-semibold text-[var(--ev-primary)]">CRM Multi-tenant</span>
+            <span className="text-[11px] font-semibold text-[var(--ev-primary)]">CRM Multi-tenant</span>
           </div>
 
         </div>
@@ -480,7 +480,7 @@ export const ClientsPage = () => {
                       <button
                         type="button"
                         onClick={() => handleDelete(selectedCliente)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#C95C5C]/10 hover:bg-[#C95C5C]/20 text-[#C95C5C] text-xs font-semibold active:scale-[0.98] transition-transform duration-150"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#C95C5C]/10 hover:bg-[#C95C5C]/20 text-[#B04646] text-xs font-semibold active:scale-[0.98] transition-transform duration-150"
                       >
                         <Trash2 size={13} />
                         <span>Desactivar</span>
@@ -493,7 +493,7 @@ export const ClientsPage = () => {
               {/* Información de Contacto (Radios Concéntricos: R_ext 22px - p-6 = R_int 16px) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-[16px] bg-[var(--ev-bg-base)]/40 border border-[var(--ev-border)]/50 space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block">
                     Correo Electrónico
                   </span>
                   <div className="flex items-center gap-2 text-xs font-semibold text-[var(--ev-text-main)]">
@@ -503,7 +503,7 @@ export const ClientsPage = () => {
                 </div>
 
                 <div className="p-4 rounded-[16px] bg-[var(--ev-bg-base)]/40 border border-[var(--ev-border)]/50 space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block">
                     Teléfono de Contacto
                   </span>
                   <div className="flex items-center gap-2 text-xs font-semibold text-[var(--ev-text-main)] tabular-nums">
@@ -516,37 +516,37 @@ export const ClientsPage = () => {
               {/* Métricas y Estado en el CRM (Toss-Style Bento Row) */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="p-3.5 rounded-[16px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-2xs">
-                  <span className="text-[10px] uppercase font-bold text-[var(--ev-text-muted)] block">
+                  <span className="text-[11px] uppercase font-bold text-[var(--ev-text-muted)] block">
                     Eventos Activos
                   </span>
                   <span className="text-xl font-bold text-[var(--ev-text-main)] tabular-nums tracking-tight mt-1 block">
                     2
                   </span>
-                  <span className="text-[10px] text-[#4D9A72] font-semibold mt-0.5 block">
+                  <span className="text-[11px] text-[#2F7A55] font-semibold mt-0.5 block">
                     Confirmados
                   </span>
                 </div>
 
                 <div className="p-3.5 rounded-[16px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-2xs">
-                  <span className="text-[10px] uppercase font-bold text-[var(--ev-text-muted)] block">
+                  <span className="text-[11px] uppercase font-bold text-[var(--ev-text-muted)] block">
                     Cotizaciones
                   </span>
                   <span className="text-xl font-bold text-[var(--ev-text-main)] tabular-nums tracking-tight mt-1 block">
                     4
                   </span>
-                  <span className="text-[10px] text-[var(--ev-text-muted)] font-medium mt-0.5 block">
+                  <span className="text-[11px] text-[var(--ev-text-muted)] font-medium mt-0.5 block">
                     1 pendiente
                   </span>
                 </div>
 
                 <div className="p-3.5 rounded-[16px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-2xs">
-                  <span className="text-[10px] uppercase font-bold text-[var(--ev-text-muted)] block">
+                  <span className="text-[11px] uppercase font-bold text-[var(--ev-text-muted)] block">
                     Total Facturado
                   </span>
                   <span className="text-xl font-bold text-[var(--ev-text-main)] tabular-nums tracking-tight mt-1 block">
                     $24,500
                   </span>
-                  <span className="text-[10px] text-[#4D9A72] font-semibold mt-0.5 block">
+                  <span className="text-[11px] text-[#2F7A55] font-semibold mt-0.5 block">
                     Al día
                   </span>
                 </div>
@@ -563,7 +563,7 @@ export const ClientsPage = () => {
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[var(--ev-text-muted)]">
-                  <span>Aislamiento multi-empresa:</span>
+                  <span>Datos separados por empresa:</span>
                   <span className="font-mono text-[11px] text-[var(--ev-primary)]">PostgreSQL Tenant Partitioned</span>
                 </div>
               </div>
@@ -592,12 +592,7 @@ export const ClientsPage = () => {
                 </button>
               )}
             </div>
-          )}
-
-          <div className="pt-4 border-t border-[var(--ev-border)]/40 flex items-center justify-between text-xs text-[var(--ev-text-muted)]">
-            <span>Preservación de contexto activa</span>
-            <span className="font-medium text-[var(--ev-primary)]">Split View 35/65</span>
-          </div>
+          )} 
 
         </div>
 
@@ -659,7 +654,7 @@ export const ClientsPage = () => {
               : 'bg-[var(--ev-surface)] text-[var(--ev-text-main)] border-[var(--ev-border)] shadow-md'
           }`}
         >
-          {toast.type === 'error' ? <AlertTriangle size={15} /> : <CheckCircle2 size={15} className="text-[#4D9A72]" />}
+          {toast.type === 'error' ? <AlertTriangle size={15} /> : <CheckCircle2 size={15} className="text-[#2F7A55]" />}
           <span>{toast.message}</span>
         </div>
       )}
