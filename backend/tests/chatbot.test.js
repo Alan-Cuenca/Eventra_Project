@@ -169,7 +169,7 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant con Google Gemini',
 
     expect(res.status).toBe(200);
     expect(res.body.respuesta).toBe('Respuesta del modelo de respaldo');
-    expect(res.body.data.modelo_usado).toBe('gemini-3.5-flash-lite');
+    expect(res.body.data.modelo_usado).toBe('gemini-flash-latest');
     expect(mockGenerateContent).toHaveBeenCalledTimes(2);
   });
 
@@ -260,5 +260,107 @@ describe('EVARA AI — Asistente Conversacional Multi-Tenant con Google Gemini',
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.respuesta).toContain('EVARA');
+  });
+
+  describe('Modo guía del sistema para el personal interno', () => {
+    const tokenRol = (rol_id) =>
+      jwt.sign({ id: `usr-${rol_id}`, empresa_id: 1, rol_id, email: `rol${rol_id}@empresa1.com` }, TEST_SECRET, {
+        expiresIn: '1h',
+      });
+
+    // Catálogo vacío: es el escenario donde antes EVARA repetía siempre el mismo mensaje
+    const mockCatalogoVacio = () => {
+      mockQueryHandler = async (sql) => {
+        if (sql.includes('empresas') && sql.includes('SELECT')) {
+          return { rowCount: 1, rows: [{ id: 1, plan_suscripcion: 'Basico', mensajes_chatbot_mes: 1 }] };
+        }
+        return { rows: [], rowCount: 0 };
+      };
+    };
+
+    it('usa un prompt de guía del sistema con los módulos del Administrador', async () => {
+      mockCatalogoVacio();
+      mockGenerateContent.mockResolvedValueOnce({ text: 'Ve a Identidad y Marca Blanca (/configuracion-marca).' });
+
+      const res = await request(app)
+        .post('/api/chatbot')
+        .set('Authorization', `Bearer ${tokenRol(1)}`)
+        .send({ mensaje: 'quiero cambiarle el tema al portal' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.modo).toBe('guia-sistema');
+      const { config } = mockGenerateContent.mock.calls[0][0];
+      expect(config.systemInstruction).toContain('Identidad y Marca Blanca (/configuracion-marca)');
+      expect(config.systemInstruction).not.toContain('asistente de ventas experto');
+    });
+
+    it('sin IA, orienta al Administrador al módulo correcto en vez del mensaje genérico', async () => {
+      mockCatalogoVacio();
+      mockGenerateContent.mockRejectedValue(new Error('{"error":{"code":503,"status":"UNAVAILABLE"}}'));
+      const errorLog = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      const res = await request(app)
+        .post('/api/chatbot')
+        .set('Authorization', `Bearer ${tokenRol(1)}`)
+        .send({ mensaje: 'quiero cambiarle el tema al portal' });
+
+      expect(res.body.respuesta).toContain('/configuracion-marca');
+      expect(res.body.respuesta).not.toContain('actualizando el catálogo');
+      errorLog.mockRestore();
+      mockGenerateContent.mockReset();
+    });
+
+    it('sin IA, avisa al Trabajador cuando la función no está en su rol', async () => {
+      mockCatalogoVacio();
+      mockGenerateContent.mockRejectedValue(new Error('{"error":{"code":503,"status":"UNAVAILABLE"}}'));
+      const errorLog = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      const res = await request(app)
+        .post('/api/chatbot')
+        .set('Authorization', `Bearer ${tokenRol(3)}`)
+        .send({ mensaje: '¿cómo cambio el logo?' });
+
+      expect(res.body.respuesta).toMatch(/no tiene acceso/i);
+      errorLog.mockRestore();
+      mockGenerateContent.mockReset();
+    });
+
+    it('el cliente sigue recibiendo el asistente de ventas', async () => {
+      mockConsultaAutenticada();
+      mockGenerateContent.mockResolvedValueOnce({ text: 'ok' });
+
+      const res = await request(app)
+        .post('/api/chatbot')
+        .set('Authorization', `Bearer ${TOKEN_CLIENTE_EMPRESA_1}`)
+        .send({ mensaje: 'Hola' });
+
+      expect(res.body.data.modo).toBe('ventas');
+      expect(mockGenerateContent.mock.calls[0][0].config.systemInstruction).toContain('asistente de ventas experto');
+    });
+  });
+
+  it('envía a Gemini un historial que empieza por el usuario y alterna roles', async () => {
+    mockConsultaAutenticada();
+    mockGenerateContent.mockResolvedValueOnce({ text: 'ok' });
+
+    await request(app)
+      .post('/api/chatbot')
+      .set('Authorization', `Bearer ${TOKEN_CLIENTE_EMPRESA_1}`)
+      .send({
+        mensaje: 'no, soy el admin',
+        historial: [
+          { sender: 'evara', text: '¡Hola! Soy EVARA' },
+          { sender: 'user', text: 'quiero cambiar el tema' },
+          { sender: 'evara', text: 'Respuesta 1' },
+          { sender: 'evara', text: 'Respuesta 2' },
+        ],
+      });
+
+    const { contents } = mockGenerateContent.mock.calls[0][0];
+    expect(contents).toEqual([
+      { role: 'user', parts: [{ text: 'quiero cambiar el tema' }] },
+      { role: 'model', parts: [{ text: 'Respuesta 1\nRespuesta 2' }] },
+      { role: 'user', parts: [{ text: 'no, soy el admin' }] },
+    ]);
   });
 });
