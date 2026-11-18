@@ -1,6 +1,6 @@
 import pool from '../config/db.js';
 import { supabase } from '../config/supabase.js';
-import { obtenerConsumoPlanEmpresa } from '../middlewares/planLimitsMiddleware.js';
+import { obtenerConsumoPlanEmpresa, normalizarPlan } from '../middlewares/planLimitsMiddleware.js';
 
 const ESTADOS_VALIDOS = ['En Revisión', 'Aprobado', 'Rechazado'];
 
@@ -30,11 +30,13 @@ export const registrarPagoSuscripcion = async (req, res) => {
       });
     }
 
+    // El plan se normaliza a Basico|Premium (el texto libre del cliente no se guarda tal cual)
+    const planNormalizado = normalizarPlan(plan_nombre);
+
     // Monto predeterminado según plan si no viene explícito
     let montoFinal = Number(monto);
     if (isNaN(montoFinal) || montoFinal <= 0) {
-      const planNorm = String(plan_nombre).toLowerCase();
-      if (planNorm.includes('premium')) {
+      if (planNormalizado === 'Premium') {
         montoFinal = 99.00;
       } else {
         montoFinal = 49.00;
@@ -90,7 +92,7 @@ export const registrarPagoSuscripcion = async (req, res) => {
       `INSERT INTO suscripciones_pagos (empresa_id, plan_nombre, monto, comprobante_url, estado, fecha_pago)
        VALUES ($1, $2, $3, $4, 'En Revisión', CURRENT_DATE)
        RETURNING id, empresa_id, plan_nombre, monto, comprobante_url, estado, fecha_pago, fecha_registro`,
-      [empresa_id, plan_nombre, montoFinal, comprobante_url]
+      [empresa_id, planNormalizado, montoFinal, comprobante_url]
     );
 
     return res.status(201).json({
@@ -239,9 +241,9 @@ export const actualizarEstadoSuscripcion = async (req, res) => {
     if (estado === 'Aprobado') {
       await pool.query(
         `UPDATE empresas
-         SET plan_suscripcion = $1, estado_activo = true, mensajes_chatbot_mes = 0
+         SET plan_suscripcion = $1, mensajes_chatbot_mes = 0, chatbot_mes_ref = date_trunc('month', CURRENT_DATE)::date
          WHERE id = $2`,
-        [pago.plan_nombre, pago.empresa_id]
+        [normalizarPlan(pago.plan_nombre), pago.empresa_id]
       );
     }
 
@@ -252,6 +254,9 @@ export const actualizarEstadoSuscripcion = async (req, res) => {
     });
 
   } catch (error) {
+    if (error.code === '22P02') {
+      return res.status(400).json({ success: false, message: 'Identificador de suscripción inválido.' });
+    }
     console.error('[suscripcionController] Error en actualizarEstadoSuscripcion:', error.message);
     return res.status(500).json({
       success: false,

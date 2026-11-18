@@ -160,22 +160,14 @@ export const MiSuscripcion = () => {
         archivoNombre: archivo.name,
       });
       showToast(
-        `Comprobante enviado. Se enviará un correo a ${emailLimpio} con las credenciales de acceso.`,
+        'Comprobante enviado. Tu plan quedó en revisión y se activará cuando sea aprobado.',
         'success'
       );
       removerArchivo();
       await cargarHistorial();
     } catch (error) {
-      console.error('Error registrando pago:', error);
-      // Mostrar igualmente la confirmación en pantalla si hubo problema de red o mostrar error amigable
-      setModalCorreoAbierto(false);
-      setConfirmacionPantalla({
-        correo: emailLimpio,
-        plan: planSeleccionado,
-        monto: planSeleccionado === 'Premium' ? '99.00' : '49.00',
-        archivoNombre: archivo.name,
-      });
-      removerArchivo();
+      // No se confirma nada en pantalla si el backend rechazó el pago
+      showToast(error?.message || 'No se pudo registrar el pago. Intenta nuevamente.', 'error');
     } finally {
       setEnviando(false);
     }

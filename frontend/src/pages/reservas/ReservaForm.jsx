@@ -31,16 +31,20 @@ export const ReservaForm = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [cotData, srvData] = await Promise.all([
+        const [cotData, srvData, resData] = await Promise.all([
           eventraService.getCotizaciones(),
-          eventraService.getServicios()
+          eventraService.getServicios(),
+          eventraService.getReservas().catch(() => []),
         ]);
-        
-        // Filtramos solo los servicios que son de categoría Espacio/Salón
-        const espacios = (srvData || []).filter(s => s.categoria === 'Espacio y Salón');
-        
+
+        // Sugerencias de salón: lugares ya usados en reservas + servicios del catálogo que parecen espacios
+        const esEspacio = (n) => /sal[oó]n|espacio|terraza|jard[ií]n|hacienda|quinta|local|casa/i.test(n || '');
+        const nombres = new Set();
+        (resData || []).forEach((r) => r.salon && nombres.add(String(r.salon).trim()));
+        (srvData || []).filter((sv) => esEspacio(sv.nombre)).forEach((sv) => nombres.add(String(sv.nombre).trim()));
+
         setCotizaciones(cotData || []);
-        setSalones(espacios);
+        setSalones([...nombres].filter(Boolean).sort().map((nombre) => ({ id: nombre, nombre })));
       } catch (err) {
         setError('Error al cargar datos base. Intenta recargar la página.');
       } finally {
@@ -182,27 +186,23 @@ export const ReservaForm = () => {
                 <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <MapPin size={16} color="var(--primary)" /> Salón o Espacio *
                 </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
-                  {salones.length > 0 ? salones.map(salon => {
-                    const isSelected = form.salon === salon.nombre;
-                    return (
-                      <label key={salon.id} style={{
-                        display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem',
-                        border: `1px solid ${isSelected ? 'var(--primary)' : 'var(--border-subtle)'}`,
-                        borderRadius: '8px', cursor: 'pointer',
-                        background: isSelected ? 'rgba(46,139,87,0.05)' : 'transparent',
-                        transition: 'all 0.2s ease'
-                      }}>
-                        <input type="radio" name="salon" value={salon.nombre} checked={isSelected} onChange={handleChange} required style={{ accentColor: 'var(--primary)' }} />
-                        <span style={{ fontWeight: isSelected ? 600 : 500 }}>{salon.nombre}</span>
-                      </label>
-                    );
-                  }) : (
-                    <div style={{ padding: '1rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                      No hay salones configurados en el catálogo de servicios.
-                    </div>
-                  )}
-                </div>
+                <input
+                  type="text"
+                  name="salon"
+                  className="form-input"
+                  list="salones-sugeridos"
+                  placeholder="Ej: Salón Imperial, Terraza Jardín..."
+                  value={form.salon}
+                  onChange={handleChange}
+                  maxLength={150}
+                  required
+                />
+                <datalist id="salones-sugeridos">
+                  {salones.map((sl) => <option key={sl.id} value={sl.nombre} />)}
+                </datalist>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem', display: 'block' }}>
+                  Escribe el nombre del salón o elige uno de los ya usados en tu empresa.
+                </span>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>

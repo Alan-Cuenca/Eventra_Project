@@ -114,6 +114,13 @@ export const consultarEvara = async (req, res) => {
   const { mensaje, slug, historial = [] } = req.body;
 
   // 1. Validar que el mensaje exista y no esté en blanco
+  if (typeof mensaje === 'string' && mensaje.length > 1000) {
+    return res.status(400).json({
+      success: false,
+      message: 'El mensaje es demasiado largo (máximo 1000 caracteres).',
+    });
+  }
+
   if (!mensaje || String(mensaje).trim() === '') {
     return res.status(400).json({
       success: false,
@@ -258,7 +265,12 @@ Sé persuasivo, amable, conciso y profesional en todo momento.`;
 
     // 6. Incrementar contador de mensajes de chatbot de la empresa para control de cuotas SaaS
     await pool.query(
-      'UPDATE empresas SET mensajes_chatbot_mes = COALESCE(mensajes_chatbot_mes, 0) + 1 WHERE id = $1',
+      `UPDATE empresas
+       SET mensajes_chatbot_mes = CASE
+             WHEN chatbot_mes_ref IS DISTINCT FROM date_trunc('month', CURRENT_DATE)::date THEN 1
+             ELSE COALESCE(mensajes_chatbot_mes, 0) + 1 END,
+           chatbot_mes_ref = date_trunc('month', CURRENT_DATE)::date
+       WHERE id = $1`,
       [empresa_id]
     ).catch((err) => console.warn('[chatbotController] No se pudo incrementar mensajes_chatbot_mes:', err.message));
 

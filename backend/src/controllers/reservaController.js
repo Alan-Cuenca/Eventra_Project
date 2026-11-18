@@ -29,7 +29,7 @@ const CONTAR_SOLAPAMIENTOS_SQL = `
     AND ($6::uuid IS NULL OR id <> $6::uuid)
     AND fecha_evento BETWEEN ($3::date - 1) AND ($3::date + 1)
     AND (fecha_evento + hora_inicio) <
-        (($3::date + $5::time) + CASE WHEN $5::time > $4::time THEN ($5::time - $4::time) ELSE ($5::time - $4::time + INTERVAL '24 hours') END)
+        (($3::date + $4::time) + CASE WHEN $5::time > $4::time THEN ($5::time - $4::time) ELSE ($5::time - $4::time + INTERVAL '24 hours') END)
     AND ($3::date + $4::time) <
         ((fecha_evento + hora_inicio) + CASE WHEN hora_fin > hora_inicio THEN (hora_fin - hora_inicio) ELSE (hora_fin - hora_inicio + INTERVAL '24 hours') END)
 `;

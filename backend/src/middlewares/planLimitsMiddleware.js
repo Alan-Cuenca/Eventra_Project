@@ -89,6 +89,19 @@ export const getLimitesActivos = async (planNombre) => {
  *
  * @param {'usuarios' | 'clientes' | 'servicios' | 'chatbot'} recurso
  */
+/**
+ * Normaliza cualquier nombre de plan ("premium", "Plan Premium (Corporativo + IA)",
+ * "Enterprise", "Profesional"...) a uno de los dos planes con límites definidos.
+ */
+export const normalizarPlan = (nombre) => {
+  const n = String(nombre || '').toLowerCase();
+  return /premium|enterprise|profesional/.test(n) ? 'Premium' : 'Basico';
+};
+
+/** Fragmento SQL: uso del chatbot del mes en curso (0 si el contador es de un mes anterior). */
+const CHATBOT_USO_MES_SQL =
+  "CASE WHEN chatbot_mes_ref IS DISTINCT FROM date_trunc('month', CURRENT_DATE)::date THEN 0 ELSE COALESCE(mensajes_chatbot_mes, 0) END";
+
 export const verificarLimitePlan = (recurso) => {
   return async (req, res, next) => {
     try {
@@ -141,7 +154,7 @@ export const verificarLimitePlan = (recurso) => {
 
       // 3. Consultar los datos de suscripción de la empresa
       const empRes = await pool.query(
-        'SELECT plan_suscripcion, COALESCE(mensajes_chatbot_mes, 0) AS mensajes_chatbot_mes FROM empresas WHERE id = $1',
+        `SELECT plan_suscripcion, ${CHATBOT_USO_MES_SQL} AS mensajes_chatbot_mes FROM empresas WHERE id = $1`,
         [empresa_id]
       );
 
@@ -156,7 +169,7 @@ export const verificarLimitePlan = (recurso) => {
         });
       }
 
-      const planNombre = empRes.rows[0].plan_suscripcion === 'Premium' ? 'Premium' : 'Basico';
+      const planNombre = normalizarPlan(empRes.rows[0].plan_suscripcion);
       const limitesPlan = await getLimitesActivos(planNombre);
       const maximo = limitesPlan[recurso];
 
@@ -169,7 +182,7 @@ export const verificarLimitePlan = (recurso) => {
 
       if (recurso === 'usuarios') {
         const countRes = await pool.query(
-          'SELECT COUNT(*) FROM usuarios WHERE empresa_id = $1 AND estado_activo = true',
+          'SELECT COUNT(*) FROM usuarios WHERE empresa_id = $1 AND estado_activo = true AND rol_id IN (1, 2, 3)',
           [empresa_id]
         );
         usoActual = countRes?.rows?.[0]?.count ? parseInt(countRes.rows[0].count, 10) : 0;
@@ -238,8 +251,8 @@ export const verificarLimitePlan = (recurso) => {
  */
 export const obtenerConsumoPlanEmpresa = async (empresa_id) => {
   const [empRes, usrRes, cliRes, srvRes] = await Promise.all([
-    pool.query('SELECT plan_suscripcion, COALESCE(mensajes_chatbot_mes, 0) AS chatbot_uso FROM empresas WHERE id = $1', [empresa_id]),
-    pool.query('SELECT COUNT(*) FROM usuarios WHERE empresa_id = $1 AND estado_activo = true', [empresa_id]),
+    pool.query(`SELECT plan_suscripcion, ${CHATBOT_USO_MES_SQL} AS chatbot_uso FROM empresas WHERE id = $1`, [empresa_id]),
+    pool.query('SELECT COUNT(*) FROM usuarios WHERE empresa_id = $1 AND estado_activo = true AND rol_id IN (1, 2, 3)', [empresa_id]),
     pool.query('SELECT COUNT(*) FROM clientes WHERE empresa_id = $1 AND estado_activo = true', [empresa_id]),
     pool.query('SELECT COUNT(*) FROM servicios WHERE empresa_id = $1 AND estado_activo = true', [empresa_id]),
   ]);
@@ -248,7 +261,7 @@ export const obtenerConsumoPlanEmpresa = async (empresa_id) => {
     throw new Error('Empresa no encontrada');
   }
 
-  const plan = empRes.rows[0].plan_suscripcion === 'Premium' ? 'Premium' : 'Basico';
+  const plan = normalizarPlan(empRes.rows[0].plan_suscripcion);
   const limites = await getLimitesActivos(plan);
 
   return {

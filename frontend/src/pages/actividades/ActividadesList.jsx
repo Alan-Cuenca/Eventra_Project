@@ -90,10 +90,7 @@ export const ActividadesList = () => {
     const nuevoEstado = isCompleted ? 'Pendiente' : 'Completada';
 
     try {
-      await eventraService.updateActividad(act.id, {
-        ...act,
-        estado: nuevoEstado,
-      });
+      await eventraService.updateEstadoActividad(act.id, nuevoEstado);
       setActividades((prev) =>
         prev.map((item) => (item.id === act.id ? { ...item, estado: nuevoEstado } : item))
       );

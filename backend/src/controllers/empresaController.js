@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import { normalizarPlan } from '../middlewares/planLimitsMiddleware.js';
 import bcrypt from 'bcrypt';
 import { supabase } from '../config/supabase.js';
 import { generarPasswordTemporal } from '../utils/passwordGenerator.js';
@@ -63,14 +64,11 @@ export const obtenerEmpresas = async (req, res) => {
            e.plan_suscripcion, 
            e.estado_activo, 
            e.fecha_registro,
-           COUNT(DISTINCT u.id)  AS total_usuarios,
-           COUNT(DISTINCT ev.id) AS total_eventos,
-           COALESCE(SUM(p.monto) FILTER (WHERE p.estado IN ('Aprobado', 'Completado')), 0) AS total_ingresos
+           (SELECT COUNT(*) FROM usuarios u WHERE u.empresa_id = e.id) AS total_usuarios,
+           (SELECT COUNT(*) FROM eventos ev WHERE ev.empresa_id = e.id) AS total_eventos,
+           COALESCE((SELECT SUM(p.monto) FROM pagos p
+                     WHERE p.empresa_id = e.id AND p.estado IN ('Aprobado', 'Completado')), 0) AS total_ingresos
          FROM empresas e
-         LEFT JOIN usuarios u  ON u.empresa_id = e.id
-         LEFT JOIN eventos ev  ON ev.empresa_id = e.id
-         LEFT JOIN pagos p     ON p.empresa_id = e.id
-         GROUP BY e.id, e.nombre_comercial, e.slug, e.ruc, e.plan_suscripcion, e.estado_activo, e.fecha_registro
          ORDER BY e.fecha_registro DESC`
       : `SELECT 
            e.id, 
@@ -80,14 +78,11 @@ export const obtenerEmpresas = async (req, res) => {
            e.plan_suscripcion, 
            e.estado_activo, 
            e.fecha_registro,
-           COUNT(DISTINCT u.id)  AS total_usuarios,
-           COUNT(DISTINCT ev.id) AS total_eventos,
-           COALESCE(SUM(p.monto) FILTER (WHERE p.estado IN ('Aprobado', 'Completado')), 0) AS total_ingresos
+           (SELECT COUNT(*) FROM usuarios u WHERE u.empresa_id = e.id) AS total_usuarios,
+           (SELECT COUNT(*) FROM eventos ev WHERE ev.empresa_id = e.id) AS total_eventos,
+           COALESCE((SELECT SUM(p.monto) FROM pagos p
+                     WHERE p.empresa_id = e.id AND p.estado IN ('Aprobado', 'Completado')), 0) AS total_ingresos
          FROM empresas e
-         LEFT JOIN usuarios u  ON u.empresa_id = e.id
-         LEFT JOIN eventos ev  ON ev.empresa_id = e.id
-         LEFT JOIN pagos p     ON p.empresa_id = e.id
-         GROUP BY e.id, e.nombre_comercial, e.ruc, e.plan_suscripcion, e.estado_activo, e.fecha_registro
          ORDER BY e.fecha_registro DESC`;
 
     const result = await pool.query(querySql);
@@ -298,7 +293,7 @@ export const actualizarPlanEmpresa = async (req, res) => {
        SET plan_suscripcion = $1
        WHERE id = $2
        RETURNING id, nombre_comercial, ruc, plan_suscripcion, estado_activo`,
-      [plan_suscripcion, id]
+      [normalizarPlan(plan_suscripcion), id]
     );
 
     if (result.rowCount === 0) {

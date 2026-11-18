@@ -41,9 +41,16 @@ export const registrarPago = async (req, res) => {
 
     // --- Blindaje SaaS Multi-tenant (Anti-IDOR) ---
     // Validar que el evento pertenezca estrictamente a la empresa en sesión
+    // Rol Cliente (4): además el evento debe ser suyo (se vincula por el email del cliente)
+    const emailCliente = Number(req.user.rol_id) === 4 ? req.user.email : null;
     const eventoCheck = await pool.query(
-      'SELECT id FROM eventos WHERE id = $1 AND empresa_id = $2',
-      [evento_id, empresa_id]
+      `SELECT e.id FROM eventos e
+       INNER JOIN reservas r ON e.reserva_id = r.id
+       INNER JOIN cotizaciones c ON r.cotizacion_id = c.id
+       INNER JOIN clientes cl ON c.cliente_id = cl.id
+       WHERE e.id = $1 AND e.empresa_id = $2
+         AND ($3::text IS NULL OR LOWER(cl.email) = LOWER($3))`,
+      [evento_id, empresa_id, emailCliente]
     );
 
     if (eventoCheck.rowCount === 0) {

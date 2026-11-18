@@ -2,6 +2,10 @@ import express from 'express';
 import { consultarEvara } from '../controllers/chatbotController.js';
 import { optionalVerifyToken } from '../middlewares/authMiddleware.js';
 import { verificarLimitePlan } from '../middlewares/planLimitsMiddleware.js';
+import { crearRateLimit } from '../middlewares/rateLimit.js';
+
+// Endpoint público que consume cuota de IA: 20 consultas por minuto y por IP
+const limitarChatbot = crearRateLimit({ ventanaMs: 60_000, max: 20 });
 
 const router = express.Router();
 
@@ -14,6 +18,6 @@ const router = express.Router();
  *          - Validación de cuota mensual según plan (300 Básico, 1500 Premium).
  * @access  Public / Authenticated (optionalVerifyToken)
  */
-router.post('/', optionalVerifyToken, verificarLimitePlan('chatbot'), consultarEvara);
+router.post('/', limitarChatbot, optionalVerifyToken, verificarLimitePlan('chatbot'), consultarEvara);
 
 export default router;
