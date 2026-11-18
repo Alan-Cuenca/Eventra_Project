@@ -17,4 +17,11 @@ export default defineConfig({
       },
     },
   },
+  // Vitest: solo los archivos *.spec.* (los *.test.js existentes usan node:test)
+  test: {
+    environment: 'jsdom',
+    include: ['src/**/*.spec.{js,jsx}'],
+    setupFiles: ['./src/test/setupVitest.js'],
+    globals: true,
+  },
 });
