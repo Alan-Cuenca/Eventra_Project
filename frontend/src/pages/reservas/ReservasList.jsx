@@ -17,6 +17,37 @@ export const ReservasList = () => {
   const [reservas, setReservas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState('');
+  const [updatingId, setUpdatingId] = useState(null);
+  const puedeGestionar = isAdmin || isGerente;
+
+  const cancelarReserva = async (reserva) => {
+    if (!window.confirm('¿Cancelar esta reserva? El salón quedará libre para esa fecha y horario.')) return;
+    setUpdatingId(reserva.id);
+    setError('');
+    try {
+      await eventraService.deleteReserva(reserva.id);
+      setReservas((prev) => prev.map((r) => (r.id === reserva.id ? { ...r, estado: 'Cancelada' } : r)));
+    } catch (err) {
+      setError(err.message || 'No se pudo cancelar la reserva.');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const reactivarReserva = async (reserva) => {
+    setUpdatingId(reserva.id);
+    setError('');
+    try {
+      await eventraService.updateReserva(reserva.id, { estado: 'Confirmada' });
+      setReservas((prev) => prev.map((r) => (r.id === reserva.id ? { ...r, estado: 'Confirmada' } : r)));
+    } catch (err) {
+      // 409: otro evento ocupó el salón mientras estuvo cancelada
+      setError(err.message || 'No se pudo reactivar la reserva.');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   const loadReservas = useCallback(async () => {
     setLoading(true);
@@ -24,7 +55,7 @@ export const ReservasList = () => {
       const data = await eventraService.getReservas();
       setReservas(data || []);
     } catch (err) {
-      console.error('Error cargando reservas', err);
+      setError(err.message || 'No se pudieron cargar las reservas.');
     } finally {
       setLoading(false);
     }
@@ -58,6 +89,12 @@ export const ReservasList = () => {
           </Link>
         )}
       </div>
+
+      {error && (
+        <div style={{ padding: '0.85rem 1rem', background: 'var(--danger-light)', color: 'var(--danger)', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.875rem' }}>
+          {error}
+        </div>
+      )}
 
       <Card style={{ marginBottom: '1.5rem', padding: '1rem' }}>
         <div style={{ position: 'relative' }}>
@@ -95,6 +132,7 @@ export const ReservasList = () => {
                   <th>Horario</th>
                   <th>Salón</th>
                   <th>Estado</th>
+                  {puedeGestionar && <th>Acciones</th>}
                 </tr>
               </thead>
               <tbody>
@@ -133,6 +171,19 @@ export const ReservasList = () => {
                         {reserva.estado || 'Confirmada'}
                       </Badge>
                     </td>
+                    {puedeGestionar && (
+                      <td>
+                        {reserva.estado === 'Cancelada' ? (
+                          <button className="btn btn-sm btn-secondary" disabled={updatingId === reserva.id} onClick={() => reactivarReserva(reserva)}>
+                            Reactivar
+                          </button>
+                        ) : (
+                          <button className="btn btn-sm btn-secondary" disabled={updatingId === reserva.id} onClick={() => cancelarReserva(reserva)}>
+                            Cancelar
+                          </button>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

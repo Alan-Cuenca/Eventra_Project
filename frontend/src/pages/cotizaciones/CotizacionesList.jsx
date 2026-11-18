@@ -15,11 +15,27 @@ export const CotizacionesList = () => {
   // Según el RBAC en routes, admin, gerente y trabajador pueden crear, 
   // pero el requerimiento menciona "si tu lógica de negocio lo dicta, para Clientes"
   // Asumiremos que el botón de nueva cotización lo ven los roles internos y clientes
-  const canCreate = true; 
+  const canCreate = !isCliente;
 
   const [cotizaciones, setCotizaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState('');
+  const [updatingId, setUpdatingId] = useState(null);
+  const puedeGestionar = isAdmin || isGerente;
+
+  const cambiarEstado = async (cot, nuevoEstado) => {
+    setUpdatingId(cot.id);
+    setError('');
+    try {
+      await eventraService.updateEstadoCotizacion(cot.id, nuevoEstado);
+      setCotizaciones((prev) => prev.map((c) => (c.id === cot.id ? { ...c, estado: nuevoEstado } : c)));
+    } catch (err) {
+      setError(err.message || 'No se pudo actualizar la cotización.');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   const loadCotizaciones = useCallback(async () => {
     setLoading(true);
@@ -27,7 +43,7 @@ export const CotizacionesList = () => {
       const data = await eventraService.getCotizaciones();
       setCotizaciones(data || []);
     } catch (err) {
-      console.error('Error cargando cotizaciones', err);
+      setError(err.message || 'No se pudieron cargar las cotizaciones.');
     } finally {
       setLoading(false);
     }
@@ -54,6 +70,12 @@ export const CotizacionesList = () => {
           </Link>
         )}
       </div>
+
+      {error && (
+        <div style={{ padding: '0.85rem 1rem', background: 'var(--danger-light)', color: 'var(--danger)', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.875rem' }}>
+          {error}
+        </div>
+      )}
 
       <Card style={{ marginBottom: '1.5rem', padding: '1rem' }}>
         <div style={{ position: 'relative' }}>
@@ -84,6 +106,7 @@ export const CotizacionesList = () => {
                   <th>Fecha Evento</th>
                   <th>Monto Total</th>
                   <th>Estado</th>
+                  {puedeGestionar && <th>Acciones</th>}
                 </tr>
               </thead>
               <tbody>
@@ -115,6 +138,27 @@ export const CotizacionesList = () => {
                         {cot.estado || 'Pendiente'}
                       </Badge>
                     </td>
+                    {puedeGestionar && (
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                          {(cot.estado || 'Pendiente') === 'Pendiente' && (
+                            <button className="btn btn-sm btn-success" disabled={updatingId === cot.id} onClick={() => cambiarEstado(cot, 'Aprobada')}>
+                              Aprobar
+                            </button>
+                          )}
+                          {cot.estado === 'Aprobada' && (
+                            <button className="btn btn-sm btn-primary" disabled={updatingId === cot.id} onClick={() => cambiarEstado(cot, 'Completada')}>
+                              Completar
+                            </button>
+                          )}
+                          {['Pendiente', 'Aprobada', undefined, null].includes(cot.estado) && (
+                            <button className="btn btn-sm btn-secondary" disabled={updatingId === cot.id} onClick={() => cambiarEstado(cot, 'Rechazada')}>
+                              Rechazar
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

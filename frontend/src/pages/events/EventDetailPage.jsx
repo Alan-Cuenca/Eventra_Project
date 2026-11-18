@@ -53,13 +53,33 @@ export const EventDetailPage = ({ eventoId: propId }) => {
   const fmt = (n) =>
     new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(n);
 
-  const toggleActividad = async (act) => {
-    const nuevoEstado = act.estado === 'Completado' ? 'Pendiente' : 'Completado';
+  const ESTADOS_EVENTO = ['En Planificación', 'En Progreso', 'Finalizado', 'Cancelado'];
+  const puedeCambiarEstado = isAdmin || isGerente || isTrabajador;
+
+  const cambiarEstadoEvento = async (nuevoEstado) => {
     try {
-      await eventraService.updateActividad(act.id, {
-        ...act,
-        estado: nuevoEstado,
-      });
+      await eventraService.updateEstadoEvento(evento.id, nuevoEstado);
+      setEvento((prev) => ({ ...prev, estado: nuevoEstado, estado_progreso: nuevoEstado }));
+      setToast({ msg: `Estado del evento actualizado a "${nuevoEstado}".`, type: 'success' });
+    } catch (err) {
+      setToast({ msg: err.message || 'No se pudo actualizar el estado del evento.', type: 'error' });
+    }
+  };
+
+  const eliminarEventoActual = async () => {
+    if (!window.confirm('¿Eliminar este evento? Se eliminarán también sus actividades y pagos asociados. Esta acción no se puede deshacer.')) return;
+    try {
+      await eventraService.deleteEvento(evento.id);
+      navigate('/eventos', { replace: true });
+    } catch (err) {
+      setToast({ msg: err.message || 'No se pudo eliminar el evento.', type: 'error' });
+    }
+  };
+
+  const toggleActividad = async (act) => {
+    const nuevoEstado = act.estado === 'Completada' ? 'Pendiente' : 'Completada';
+    try {
+      await eventraService.updateEstadoActividad(act.id, nuevoEstado);
       setEvento((prev) => ({
         ...prev,
         actividades: (prev.actividades || []).map((a) =>
@@ -67,7 +87,7 @@ export const EventDetailPage = ({ eventoId: propId }) => {
         ),
       }));
       setToast({
-        msg: nuevoEstado === 'Completado' ? 'Actividad completada ✓' : 'Actividad reabierta.',
+        msg: nuevoEstado === 'Completada' ? 'Actividad completada ✓' : 'Actividad reabierta.',
         type: 'success',
       });
     } catch (err) {
@@ -84,7 +104,7 @@ export const EventDetailPage = ({ eventoId: propId }) => {
 
     setEnviandoSolicitud(true);
     try {
-      await eventraService.createSolicitud({
+      await eventraService.crearSolicitud({
         evento_id: evento.id,
         descripcion: descripcionSolicitud.trim(),
       });
@@ -105,8 +125,8 @@ export const EventDetailPage = ({ eventoId: propId }) => {
   };
 
   const actEstadoBadge = (e) => {
-    if (e === 'Completado') return 'success';
-    if (e === 'En progreso') return 'primary';
+    if (e === 'Completada') return 'success';
+    if (e === 'En Progreso') return 'primary';
     return 'neutral';
   };
 
@@ -242,7 +262,24 @@ export const EventDetailPage = ({ eventoId: propId }) => {
             </span>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          {puedeCambiarEstado && (
+            <select
+              className="form-input"
+              style={{ width: 'auto', minWidth: '10rem', padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
+              value={ESTADOS_EVENTO.includes(evento.estado_progreso) ? evento.estado_progreso : ''}
+              onChange={(e) => e.target.value && cambiarEstadoEvento(e.target.value)}
+              aria-label="Cambiar estado del evento"
+            >
+              <option value="" disabled>Cambiar estado…</option>
+              {ESTADOS_EVENTO.map((st) => <option key={st} value={st}>{st}</option>)}
+            </select>
+          )}
+          {canEditDirectly && (
+            <button type="button" className="btn btn-secondary btn-sm" onClick={eliminarEventoActual}>
+              Eliminar
+            </button>
+          )}
           {canEditDirectly ? (
             <Link
               to={`/eventos/editar/${evento.id}`}
@@ -383,13 +420,15 @@ export const EventDetailPage = ({ eventoId: propId }) => {
                     <td style={{ fontSize: '0.875rem', whiteSpace: 'nowrap' }}>{act.fecha}</td>
                     <td><Badge variant={actEstadoBadge(act.estado)}>{act.estado}</Badge></td>
                     <td>
-                      <button
-                        className={`btn btn-sm ${act.estado === 'Completado' ? 'btn-secondary' : 'btn-success'}`}
-                        onClick={() => toggleActividad(act)}
-                        id={`toggle-actividad-${act.id}`}
-                      >
-                        {act.estado === 'Completado' ? <><X size={13} /> Reabrir</> : <><Check size={13} /> Completar</>}
-                      </button>
+                      {!isCliente && (
+                        <button
+                          className={`btn btn-sm ${act.estado === 'Completada' ? 'btn-secondary' : 'btn-success'}`}
+                          onClick={() => toggleActividad(act)}
+                          id={`toggle-actividad-${act.id}`}
+                        >
+                          {act.estado === 'Completada' ? <><X size={13} /> Reabrir</> : <><Check size={13} /> Completar</>}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

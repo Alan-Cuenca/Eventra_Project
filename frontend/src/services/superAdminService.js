@@ -32,57 +32,11 @@ export const superAdminService = {
 
   /**
    * Obtiene el directorio global de administradores de todos los inquilinos.
-   * Si el endpoint /empresas/administradores aún no está desplegado en la instancia remota,
-   * construye la nómina de administradores a partir de GET /api/empresas.
+   * Endpoint backend: GET /api/empresas/administradores
    */
   async obtenerAdministradoresTenant() {
-    try {
-      const response = await api.get('/empresas/administradores');
-      if (response && Array.isArray(response.data)) {
-        return response.data;
-      }
-    } catch {
-      // Fallback al listado oficial de empresas en vivo
-    }
-
-    const empRes = await this.obtenerEmpresas();
-    const empresas = Array.isArray(empRes?.data)
-      ? empRes.data
-      : Array.isArray(empRes)
-      ? empRes
-      : [];
-
-    return empresas.map((emp, idx) => {
-      const esPrincipal = Number(emp.id) === 1;
-      const slugBase =
-        emp.slug ||
-        (emp.nombre_comercial || 'empresa')
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[^a-z0-9]+/g, '');
-
-      return {
-        id: emp.admin_id || `admin-tenant-${emp.id || idx + 1}`,
-        empresa_id: emp.id,
-        empresa_nombre: emp.nombre_comercial,
-        empresa_ruc: emp.ruc || '1790012345001',
-        empresa_plan: emp.plan_suscripcion || 'Basico',
-        empresa_activa: Boolean(emp.estado_activo),
-        nombre_completo:
-          emp.admin_nombre ||
-          (esPrincipal ? 'Administrador General' : `Administrador · ${emp.nombre_comercial}`),
-        email:
-          emp.admin_email ||
-          (esPrincipal ? 'admin@eventra.com' : `admin@${slugBase}.com`),
-        rol_id: 1,
-        rol_nombre: 'Administrador Principal',
-        total_usuarios_tenant: Number(emp.total_usuarios || 1),
-        total_eventos_tenant: Number(emp.total_eventos || 0),
-        fecha_registro: emp.fecha_registro,
-        estado_activo: Boolean(emp.estado_activo),
-      };
-    });
+    const response = await api.get('/empresas/administradores');
+    return Array.isArray(response?.data) ? response.data : [];
   },
 
   /**

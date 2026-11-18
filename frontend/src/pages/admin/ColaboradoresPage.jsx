@@ -26,11 +26,39 @@ import {
 } from 'lucide-react';
 
 export const ColaboradoresPage = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
 
   const [colaboradores, setColaboradores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [accionId, setAccionId] = useState(null);
+
+  const actualizarColaborador = async (colab, cambios, mensajeError) => {
+    setAccionId(colab.id);
+    setError('');
+    try {
+      await api.put(`/usuarios/${colab.id}`, cambios);
+      setColaboradores((prev) => prev.map((c) => (c.id === colab.id ? { ...c, ...cambios } : c)));
+    } catch (err) {
+      setError(err.message || mensajeError);
+    } finally {
+      setAccionId(null);
+    }
+  };
+
+  const eliminarColaborador = async (colab) => {
+    if (!window.confirm(`¿Desactivar y retirar a ${colab.nombre_completo || colab.nombre} de la empresa?`)) return;
+    setAccionId(colab.id);
+    setError('');
+    try {
+      await api.delete(`/usuarios/${colab.id}`);
+      setColaboradores((prev) => prev.map((c) => (c.id === colab.id ? { ...c, estado_activo: false } : c)));
+    } catch (err) {
+      setError(err.message || 'No se pudo eliminar al colaborador.');
+    } finally {
+      setAccionId(null);
+    }
+  };
 
   // Estados del modal de invitación
   const [modalOpen, setModalOpen] = useState(false);
@@ -382,6 +410,7 @@ export const ColaboradoresPage = () => {
                   <th style={{ padding: '14px 20px' }}>Rol en la Empresa</th>
                   <th style={{ padding: '14px 20px' }}>Estado</th>
                   <th style={{ padding: '14px 24px' }}>Fecha de Ingreso</th>
+                  <th style={{ padding: '14px 24px' }}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -454,6 +483,43 @@ export const ColaboradoresPage = () => {
                               year: 'numeric',
                             })
                           : '—'}
+                      </td>
+
+                      <td style={{ padding: '16px 24px' }}>
+                        {String(colab.id) === String(user?.id) ? (
+                          <span style={{ fontSize: '12px', color: '#4D7182' }}>Tu cuenta</span>
+                        ) : (
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <select
+                              value={colab.rol_id}
+                              disabled={accionId === colab.id}
+                              onChange={(e) => actualizarColaborador(colab, { rol_id: Number(e.target.value) }, 'No se pudo cambiar el rol.')}
+                              aria-label="Cambiar rol"
+                              style={{ padding: '4px 8px', borderRadius: '8px', border: '1px solid #CEC8B8', fontSize: '12px', background: '#fff', color: '#233D49' }}
+                            >
+                              <option value={1}>Administrador</option>
+                              <option value={2}>Gerente</option>
+                              <option value={3}>Trabajador</option>
+                              <option value={4}>Cliente</option>
+                            </select>
+                            <button
+                              type="button"
+                              disabled={accionId === colab.id}
+                              onClick={() => actualizarColaborador(colab, { estado_activo: !colab.estado_activo }, 'No se pudo cambiar el estado.')}
+                              style={{ padding: '4px 10px', borderRadius: '8px', border: '1px solid #CEC8B8', background: '#fff', color: '#233D49', fontSize: '12px', cursor: 'pointer' }}
+                            >
+                              {colab.estado_activo ? 'Desactivar' : 'Activar'}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={accionId === colab.id || !colab.estado_activo}
+                              onClick={() => eliminarColaborador(colab)}
+                              style={{ padding: '4px 10px', borderRadius: '8px', border: '1px solid #C95C5C', background: '#fff', color: '#C95C5C', fontSize: '12px', cursor: 'pointer' }}
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );

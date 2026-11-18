@@ -58,7 +58,9 @@ apiClient.interceptors.response.use(
   (response) => response.data,          // devuelve directamente el body
   (error) => {
     // ── Manejo crítico: token expirado o inválido (401 Unauthorized) ─────────
-    if (error.response?.status === 401) {
+    const urlPeticion = String(error.config?.url || '');
+    const esEndpointDeLogin = /\/auth\/(login|recuperar-credencial|completar-registro|registro-cliente)/.test(urlPeticion);
+    if (error.response?.status === 401 && !esEndpointDeLogin) {
       console.warn('[api] Token expirado o inválido — cerrando sesión...');
       // Limpiar todas las claves de sesión del localStorage
       localStorage.removeItem('token');
@@ -115,10 +117,29 @@ apiClient.interceptors.response.use(
     }
     // ─────────────────────────────────────────────────────────────────
 
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      'Error al conectar con el servidor';
+    const status = error.response?.status ?? null;
+    const MENSAJES_POR_ESTADO = {
+      400: 'Los datos enviados no son válidos. Revisa el formulario e intenta de nuevo.',
+      401: 'Tu sesión expiró. Inicia sesión nuevamente.',
+      403: 'No tienes permisos para realizar esta acción.',
+      404: 'No se encontró la información solicitada.',
+      409: 'La operación entra en conflicto con datos existentes.',
+      413: 'El archivo es demasiado grande.',
+      429: 'Demasiadas solicitudes. Espera un momento e intenta de nuevo.',
+    };
+    // Prioridad: mensaje del backend (ya en español) → mensaje por código → mensaje de red
+    let message = error.response?.data?.message;
+    if (!message) {
+      if (status && status >= 500) {
+        message = 'Ocurrió un problema en el servidor. Intenta nuevamente en unos minutos.';
+      } else if (status && MENSAJES_POR_ESTADO[status]) {
+        message = MENSAJES_POR_ESTADO[status];
+      } else if (error.code === 'ECONNABORTED') {
+        message = 'El servidor tardó demasiado en responder. Intenta nuevamente.';
+      } else {
+        message = 'No se pudo conectar con el servidor. Verifica tu conexión a internet.';
+      }
+    }
 
     const normalized = new Error(message);
     normalized.status      = error.response?.status ?? null;
@@ -134,6 +155,7 @@ export const api = {
   get:    (endpoint, config = {})       => apiClient.get(endpoint, config),
   post:   (endpoint, body, config = {}) => apiClient.post(endpoint, body, config),
   put:    (endpoint, body, config = {}) => apiClient.put(endpoint, body, config),
+  patch:  (endpoint, body, config = {}) => apiClient.patch(endpoint, body, config),
   delete: (endpoint, config = {})       => apiClient.delete(endpoint, config),
 };
 

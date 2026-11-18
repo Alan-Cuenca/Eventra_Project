@@ -122,7 +122,7 @@ export const AdministradoresTenantPage = () => {
       await cargarAdministradores();
     } catch (err) {
       mostrarToast(
-        err?.response?.data?.message || 'Error al modificar el estado del administrador.',
+        err?.message || 'Error al modificar el estado del administrador.',
         'error'
       );
     } finally {

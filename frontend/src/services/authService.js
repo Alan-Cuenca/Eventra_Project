@@ -5,7 +5,6 @@
  */
 
 import { api } from './api';
-import { DEMO_USERS } from './mockData';
 
 const TOKEN_KEY    = 'token';
 const USER_KEY     = 'eventra_user';
@@ -45,32 +44,9 @@ export const authService = {
       }
       throw new Error('Respuesta inválida del servidor');
     } catch (error) {
-      // Si fue error HTTP del servidor (401, 403, 404, 500…) → lo propagamos tal cual
-      if (error.status) {
-        throw error;
-      }
-
-      // Solo fallback si fue error de red (sin status, backend inaccesible)
-      console.warn('[authService] Backend no accesible, usando demo:', error.message);
-
-      const demoUser = DEMO_USERS.find(
-        (u) =>
-          u.email.toLowerCase() === email.toLowerCase() &&
-          u.password === password
-      );
-
-      // Los usuarios demo solo son para roles locales (1 a 4). Ningún demo es Super_Admin.
-      if (demoUser && demoUser.rol_id !== 5) {
-        const mockToken = `mock-jwt-demo-role${demoUser.rol_id}-${Date.now()}`;
-        const { password: _, ...userData } = demoUser;
-        localStorage.setItem(TOKEN_KEY,     mockToken);
-        localStorage.setItem(USER_KEY,      JSON.stringify(userData));
-        localStorage.setItem(ROL_ID_KEY,    String(demoUser.rol_id));
-        localStorage.setItem(ROL_NOMBRE_KEY, ROLES_NOMBRES[demoUser.rol_id] ?? 'Desconocido');
-        return { user: userData, token: mockToken, isRealBackend: false };
-      }
-
-      throw new Error('No se pudo conectar al servidor y las credenciales no coinciden con ningún usuario demo');
+      // Sin backend no hay acceso: se propaga un mensaje amigable (sin sesión simulada)
+      if (error.status) throw error;
+      throw new Error('No se pudo conectar con el servidor. Verifica tu conexión e intenta nuevamente.');
     }
   },
 
@@ -97,23 +73,8 @@ export const authService = {
       // 201 Created → response.data contiene el usuario creado
       return { success: true, user: response.data, isRealBackend: true };
     } catch (error) {
-      // Error HTTP real → propagar (ej: 409 email duplicado)
-      if (error.status) {
-        throw error;
-      }
-
-      // Fallback de red (solo para pruebas sin backend)
-      console.warn('[authService] Registro en modo offline/demo:', error.message);
-      const newUser = {
-        id: `usr-mock-${Date.now()}`,
-        nombre_completo: userData.nombre_completo,
-        email: userData.email,
-        rol_id: userData.rol_id,
-        empresa_id: userData.empresa_id,
-        estado_activo: true,
-        fecha_creacion: new Date().toISOString(),
-      };
-      return { success: true, user: newUser, isRealBackend: false };
+      if (error.status) throw error;
+      throw new Error('No se pudo conectar con el servidor. Intenta nuevamente.');
     }
   },
 

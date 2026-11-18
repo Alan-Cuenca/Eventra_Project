@@ -44,13 +44,13 @@ export const MisActividades = () => {
   const toggleStatus = async (actividad) => {
     if (updatingId) return;
     setUpdatingId(actividad.id);
-    const newStatus = actividad.estado === 'Completado' ? 'Pendiente' : 'Completado';
+    const newStatus = actividad.estado === 'Completada' ? 'Pendiente' : 'Completada';
     try {
-      await eventraService.updateActividad(actividad.id, { ...actividad, estado: newStatus });
+      await eventraService.updateEstadoActividad(actividad.id, newStatus);
       setActividades((prev) =>
         prev.map((a) => (a.id === actividad.id ? { ...a, estado: newStatus } : a))
       );
-      showToast(newStatus === 'Completado' ? 'Tarea completada con éxito' : 'Tarea reabierta como pendiente');
+      showToast(newStatus === 'Completada' ? 'Tarea completada con éxito' : 'Tarea reabierta como pendiente');
     } catch (err) {
       showToast('Error al actualizar el estado: ' + err.message, 'error');
     } finally {
@@ -84,7 +84,7 @@ export const MisActividades = () => {
   }, {});
 
   const totalTareas = actividades.length;
-  const completadas = actividades.filter(a => a.estado === 'Completado').length;
+  const completadas = actividades.filter(a => a.estado === 'Completada').length;
   const porcentajeGlobal = totalTareas > 0 ? Math.round((completadas / totalTareas) * 100) : 0;
 
   return (
@@ -149,7 +149,7 @@ export const MisActividades = () => {
         <div className="space-y-6">
           {Object.entries(grouped).map(([eventoTitulo, tareas]) => {
             const tareasTotal = tareas.length;
-            const tareasDone = tareas.filter(t => t.estado === 'Completado').length;
+            const tareasDone = tareas.filter(t => t.estado === 'Completada').length;
             const pct = Math.round((tareasDone / tareasTotal) * 100);
 
             return (
@@ -184,7 +184,7 @@ export const MisActividades = () => {
                 {/* Lista de Tareas Interactivas */}
                 <div className="space-y-2.5">
                   {tareas.map((tarea) => {
-                    const isDone = tarea.estado === 'Completado';
+                    const isDone = tarea.estado === 'Completada';
                     const isUpdating = updatingId === tarea.id;
 
                     return (
@@ -236,7 +236,7 @@ export const MisActividades = () => {
                             ? 'bg-[#4D9A72]/15 text-[#4D9A72] border border-[#4D9A72]/30'
                             : 'bg-[#C49A3A]/15 text-[#C49A3A] border border-[#C49A3A]/30'
                         }`}>
-                          {isDone ? 'Completado' : 'Pendiente'}
+                          {isDone ? 'Completada' : 'Pendiente'}
                         </span>
                       </div>
                     );

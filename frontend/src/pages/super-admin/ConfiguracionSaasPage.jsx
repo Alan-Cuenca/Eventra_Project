@@ -113,13 +113,11 @@ export const ConfiguracionSaasPage = () => {
     try {
       const [empresasRes] = await Promise.all([
         superAdminService.obtenerEmpresas(),
-        api.get('/health').catch(() => ({ status: 'ok' })),
+        api.get('/health'),
       ]);
       const elapsed = Math.max(12, Math.round(performance.now() - startTime));
-      const lista = Array.isArray(empresasRes?.empresas) ? empresasRes.empresas : [];
-      const activas = lista.filter(
-        (e) => (e.estado_suscripcion || '').toUpperCase() === 'ACTIVA'
-      ).length;
+      const lista = Array.isArray(empresasRes?.data) ? empresasRes.data : [];
+      const activas = lista.filter((e) => e.estado_activo).length;
 
       setHealthStatus({
         apiOnline: true,

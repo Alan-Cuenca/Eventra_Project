@@ -1,52 +1,12 @@
 import { api } from './api';
-import {
-  DEMO_USERS,
-  MOCK_SERVICIOS,
-  MOCK_PAQUETES,
-  MOCK_EVENTOS,
-  MOCK_SOLICITUDES_CAMBIO,
-  MOCK_METRICAS_SAAS,
-  MOCK_RESERVAS,
-} from './mockData';
-
-const FALLBACK_STAFF_USERS = [
-  { id: 'usr-trabajador-01', nombre_completo: 'Coordinador de Montaje', rol_id: 3, email: 'operaciones@eventra.com' },
-  { id: 'usr-gerente-01', nombre_completo: 'Gerente de Eventos', rol_id: 2, email: 'gerencia@eventra.com' },
-  { id: 'usr-trabajador-03', nombre_completo: 'Especialista en Decoración', rol_id: 3, email: 'decoracion@eventra.com' },
-  { id: 'usr-gerente-02', nombre_completo: 'Supervisor de Logística', rol_id: 2, email: 'logistica@eventra.com' },
-  { id: 'usr-admin-01', nombre_completo: 'Administrador Demo', rol_id: 1, email: 'admin@eventra.com' },
-  { id: 'usr-cliente-04', nombre_completo: 'Cliente Demo', rol_id: 4, email: 'cliente@eventra.com' },
-];
 
 export const eventraService = {
   // ==========================================
   // CLIENTES (/api/clientes)
   // ==========================================
   async getClientes() {
-    try {
-      const response = await api.get('/clientes');
-      if (response && response.data && response.data.length > 0) {
-        return response.data;
-      }
-      return MOCK_EVENTOS.map((e) => ({
-        id: e.id,
-        nombres: e.cliente_nombre.split(' ')[0],
-        apellidos: e.cliente_nombre.split(' ').slice(1).join(' ') || 'Cliente',
-        email: e.cliente_email,
-        telefono: e.cliente_telefono,
-        estado_activo: true,
-      }));
-    } catch (err) {
-      console.warn('[eventraService] getClientes fallback:', err.message);
-      return MOCK_EVENTOS.map((e) => ({
-        id: e.id,
-        nombres: e.cliente_nombre.split(' ')[0],
-        apellidos: e.cliente_nombre.split(' ').slice(1).join(' ') || 'Cliente',
-        email: e.cliente_email,
-        telefono: e.cliente_telefono,
-        estado_activo: true,
-      }));
-    }
+    const response = await api.get('/clientes');
+    return response?.data || [];
   },
 
   async createCliente(clienteData) {
@@ -134,19 +94,16 @@ export const eventraService = {
     try {
       const response = await api.get('/usuarios');
       const list = Array.isArray(response) ? response : (response?.data && Array.isArray(response.data) ? response.data : []);
-      if (list && list.length > 0) {
-        const mapped = list.map((u) => ({
-          id: u.id,
-          nombre_completo: u.nombre_completo || u.nombre || `${u.nombres || ''} ${u.apellidos || ''}`.trim() || 'Trabajador',
-          email: u.email,
-          rol_id: u.rol_id,
-        }));
-        return [...mapped, ...FALLBACK_STAFF_USERS];
-      }
-      return FALLBACK_STAFF_USERS;
+      return list.map((u) => ({
+        id: u.id,
+        nombre_completo: u.nombre_completo || u.nombre || `${u.nombres || ''} ${u.apellidos || ''}`.trim() || 'Colaborador',
+        email: u.email,
+        rol_id: u.rol_id,
+      }));
     } catch (err) {
-      console.warn('[eventraService] getUsuarios fallback:', err.message);
-      return FALLBACK_STAFF_USERS;
+      // Solo el Administrador puede listar usuarios; para otros roles la lista queda vacía
+      console.warn('[eventraService] getUsuarios:', err.message);
+      return [];
     }
   },
 
@@ -187,16 +144,8 @@ export const eventraService = {
   // SERVICIOS & PAQUETES (/api/servicios, /api/paquetes)
   // ==========================================
   async getServicios() {
-    try {
-      const response = await api.get('/servicios');
-      if (response && response.data && response.data.length > 0) {
-        return response.data;
-      }
-      return MOCK_SERVICIOS;
-    } catch (err) {
-      console.warn('[eventraService] getServicios fallback:', err.message);
-      return MOCK_SERVICIOS;
-    }
+    const response = await api.get('/servicios');
+    return response?.data || [];
   },
 
   async createServicio(servicioData) {
@@ -215,16 +164,8 @@ export const eventraService = {
   },
 
   async getPaquetes() {
-    try {
-      const response = await api.get('/paquetes');
-      if (response && response.data && response.data.length > 0) {
-        return response.data;
-      }
-      return MOCK_PAQUETES;
-    } catch (err) {
-      console.warn('[eventraService] getPaquetes fallback:', err.message);
-      return MOCK_PAQUETES;
-    }
+    const response = await api.get('/paquetes');
+    return response?.data || [];
   },
 
   async createPaquete(paqueteData) {
@@ -246,31 +187,17 @@ export const eventraService = {
   // EVENTOS (/api/eventos)
   // ==========================================
   async getEventos() {
-    try {
-      const response = await api.get('/eventos');
-      const list = Array.isArray(response)
-        ? response
-        : (response?.data && Array.isArray(response.data) ? response.data : []);
-      if (list && list.length > 0) {
-        return list;
-      }
-      return MOCK_EVENTOS;
-    } catch (err) {
-      console.warn('[eventraService] getEventos fallback to mock:', err.message);
-      return MOCK_EVENTOS;
-    }
+    const response = await api.get('/eventos');
+    return Array.isArray(response)
+      ? response
+      : (response?.data && Array.isArray(response.data) ? response.data : []);
   },
 
   async getEvento(id) {
-    try {
-      const response = await api.get(`/eventos/${id}`);
-      const data = response?.data || response;
-      if (data && (data.id || data.titulo)) return data;
-      return MOCK_EVENTOS.find(e => String(e.id) === String(id)) || MOCK_EVENTOS[0];
-    } catch (err) {
-      console.warn('[eventraService] getEvento fallback to mock:', err.message);
-      return MOCK_EVENTOS.find(e => String(e.id) === String(id)) || MOCK_EVENTOS[0];
-    }
+    const response = await api.get(`/eventos/${id}`);
+    const data = response?.data || response;
+    if (!data || !(data.id || data.titulo)) throw new Error('Evento no encontrado.');
+    return data;
   },
 
   async createEvento(eventoData) {
@@ -289,16 +216,8 @@ export const eventraService = {
   },
 
   async updateEstadoEvento(eventoId, nuevoEstado) {
-    try {
-      const response = await api.request(`/eventos/${eventoId}/estado`, {
-        method: 'PATCH',
-        body: JSON.stringify({ estado_progreso: nuevoEstado }),
-      });
-      return response.data;
-    } catch (err) {
-      console.warn('[eventraService] updateEstadoEvento fallback:', err.message);
-      return { id: eventoId, estado_progreso: nuevoEstado };
-    }
+    const response = await api.patch(`/eventos/${eventoId}/estado`, { estado_progreso: nuevoEstado });
+    return response.data;
   },
 
   // ==========================================
@@ -309,22 +228,19 @@ export const eventraService = {
     return response.data || [];
   },
 
+  async updateEstadoCotizacion(id, estado) {
+    const response = await api.patch(`/cotizaciones/${id}/estado`, { estado });
+    return response?.data || response;
+  },
+
   async createCotizacion(cotizacionData) {
     const response = await api.post('/cotizaciones', cotizacionData);
     return response.data;
   },
 
   async getReservas() {
-    try {
-      const response = await api.get('/reservas');
-      if (response && response.data && response.data.length > 0) {
-        return response.data;
-      }
-      return MOCK_RESERVAS;
-    } catch (err) {
-      console.warn('[eventraService] getReservas fallback:', err.message);
-      return MOCK_RESERVAS;
-    }
+    const response = await api.get('/reservas');
+    return response?.data || [];
   },
 
   async createReserva(reservaData) {
@@ -348,44 +264,20 @@ export const eventraService = {
   // SOLICITUDES DE MODIFICACIÓN (/api/solicitudes)
   // ==========================================
   async getSolicitudes() {
-    try {
-      const response = await api.get('/solicitudes');
-      if (response && response.data && response.data.length > 0) {
-        return response.data;
-      }
-      return MOCK_SOLICITUDES_CAMBIO;
-    } catch (err) {
-      console.warn('[eventraService] getSolicitudes fallback:', err.message);
-      return MOCK_SOLICITUDES_CAMBIO;
-    }
+    const response = await api.get('/solicitudes');
+    return response?.data || [];
   },
 
   async updateEstadoSolicitud(solicitudId, estado) {
-    try {
-      return await api.request(`/solicitudes/${solicitudId}/estado`, {
-        method: 'PATCH',
-        body: JSON.stringify({ estado }),
-      });
-    } catch (err) {
-      console.warn('[eventraService] updateEstadoSolicitud fallback:', err.message);
-      return { success: true, id: solicitudId, estado };
-    }
+    return await api.patch(`/solicitudes/${solicitudId}/estado`, { estado });
   },
 
   // ==========================================
   // DASHBOARD EJECUTIVO (/api/dashboard/admin)
   // ==========================================
   async getDashboardAdmin() {
-    try {
-      const response = await api.get('/dashboard/admin');
-      if (response && response.data) {
-        return response.data;
-      }
-      return MOCK_METRICAS_SAAS;
-    } catch (err) {
-      console.warn('[eventraService] getDashboardAdmin fallback:', err.message);
-      return MOCK_METRICAS_SAAS;
-    }
+    const response = await api.get('/dashboard/admin');
+    return response?.data || response;
   },
 
   // ==========================================

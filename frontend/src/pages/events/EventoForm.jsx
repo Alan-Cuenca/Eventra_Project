@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { Card } from '../../components/common/Card';
 import { PlanLimitAlert } from '../../components/ui/PlanLimitAlert';
 import { eventraService } from '../../services/eventraService';
-import { Save, X, Loader2, ArrowLeft, Calendar, Users, Package } from 'lucide-react';
+import { Save, X, Loader2, ArrowLeft, Calendar } from 'lucide-react';
 
 export const EventoForm = () => {
   const { id } = useParams();
@@ -12,15 +12,11 @@ export const EventoForm = () => {
 
   const [form, setForm] = useState({
     titulo: '',
-    cliente_id: '',
-    fecha: '',
-    invitados: '',
-    paquete_id: '',
-    estado: 'Registrado',
+    descripcion: '',
+    reserva_id: '',
   });
 
-  const [clientes, setClientes] = useState([]);
-  const [paquetes, setPaquetes] = useState([]);
+  const [reservas, setReservas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -29,26 +25,19 @@ export const EventoForm = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [clientesData, paquetesData] = await Promise.all([
-          eventraService.getClientes(),
-          eventraService.getPaquetes(),
-        ]);
-        setClientes(clientesData || []);
-        setPaquetes(paquetesData || []);
-
         if (isEditing) {
           const evento = await eventraService.getEvento(id);
           setForm({
             titulo: evento.titulo || evento.nombre || '',
-            cliente_id: evento.cliente_id || '',
-            fecha: evento.fecha ? evento.fecha.split('T')[0] : '', // simple date input formatting
-            invitados: evento.invitados || '',
-            paquete_id: evento.paquete_id || '',
-            estado: evento.estado || 'Registrado',
+            descripcion: evento.descripcion || '',
+            reserva_id: evento.reserva_id || '',
           });
+        } else {
+          const reservasData = await eventraService.getReservas();
+          setReservas(reservasData || []);
         }
       } catch (err) {
-        setError('Error al cargar datos: ' + err.message);
+        setError('No se pudieron cargar los datos. Intenta de nuevo.');
       } finally {
         setLoading(false);
       }
@@ -68,9 +57,13 @@ export const EventoForm = () => {
 
     try {
       if (isEditing) {
-        await eventraService.updateEvento(id, form);
+        await eventraService.updateEvento(id, { titulo: form.titulo, descripcion: form.descripcion });
       } else {
-        await eventraService.createEvento(form);
+        await eventraService.createEvento({
+          reserva_id: form.reserva_id,
+          titulo: form.titulo,
+          descripcion: form.descripcion,
+        });
       }
       navigate('/eventos');
     } catch (err) {
@@ -120,52 +113,29 @@ export const EventoForm = () => {
             <input type="text" className="form-input" name="titulo" value={form.titulo} onChange={handleChange} required placeholder="Ej. Boda Civil García" />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          {!isEditing && (
             <div className="form-group">
-              <label className="form-label">Cliente Asociado *</label>
-              <select className="form-input" name="cliente_id" value={form.cliente_id} onChange={handleChange} required>
-                <option value="">-- Seleccionar Cliente --</option>
-                {clientes.map((c) => (
-                  <option key={c.id} value={c.id}>{`${c.nombres || ''} ${c.apellidos || ''}`}</option>
+              <label className="form-label"><Calendar size={14} style={{ display: 'inline', marginRight: '4px' }} /> Reserva asociada *</label>
+              <select className="form-input" name="reserva_id" value={form.reserva_id} onChange={handleChange} required>
+                <option value="">-- Seleccionar Reserva --</option>
+                {reservas.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {`${r.salon || r.salon_o_lugar || 'Reserva'} · ${String(r.fecha || r.fecha_evento || '').split('T')[0]}`}
+                  </option>
                 ))}
               </select>
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label"><Calendar size={14} style={{ display: 'inline', marginRight: '4px' }} /> Fecha del Evento *</label>
-              <input type="date" className="form-input" name="fecha" value={form.fecha} onChange={handleChange} required />
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div className="form-group">
-              <label className="form-label"><Users size={14} style={{ display: 'inline', marginRight: '4px' }} /> Cantidad de Invitados *</label>
-              <input type="number" className="form-input" name="invitados" value={form.invitados} onChange={handleChange} required min="1" />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label"><Package size={14} style={{ display: 'inline', marginRight: '4px' }} /> Paquete / Cotización *</label>
-              <select className="form-input" name="paquete_id" value={form.paquete_id} onChange={handleChange} required>
-                <option value="">-- Seleccionar Paquete --</option>
-                {paquetes.map((p) => (
-                  <option key={p.id} value={p.id}>{p.nombre}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {isEditing && (
-            <div className="form-group">
-              <label className="form-label">Estado Organizativo</label>
-              <select className="form-input" name="estado" value={form.estado} onChange={handleChange}>
-                <option value="Registrado">Registrado</option>
-                <option value="En preparación">En preparación</option>
-                <option value="Confirmado">Confirmado</option>
-                <option value="Finalizado">Finalizado</option>
-                <option value="Cancelado">Cancelado</option>
-              </select>
+              {reservas.length === 0 && (
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
+                  No hay reservas disponibles. Crea primero una reserva.
+                </p>
+              )}
             </div>
           )}
+
+          <div className="form-group">
+            <label className="form-label">Descripción</label>
+            <textarea className="form-input" name="descripcion" value={form.descripcion} onChange={handleChange} rows={3} placeholder="Detalles del evento (opcional)" />
+          </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-subtle)' }}>
             <Link to="/eventos" className="btn btn-outline">
