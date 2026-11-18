@@ -80,7 +80,7 @@ import PagosList from '../pages/pagos/PagosList';
 
 // ── Suscripciones SaaS ────────────────────────────────────────────────────────
 import MiSuscripcion from '../pages/admin/MiSuscripcion';
-import FacturacionSuperAdmin from '../pages/superadmin/FacturacionSuperAdmin';
+import FacturacionSuperAdmin from '../pages/super-admin/FacturacionSuperAdmin';
 
 import { useAuth } from '../context/AuthContext';
 
@@ -125,7 +125,7 @@ export const AppRoutes = () => {
       <Route path="/primer-acceso/cambiar-password" element={<PrimerLoginCambioPassword />} />
 
       {/* ── Portal Cliente exclusivo (rol 4) ──────────────────────────────── */}
-      <Route element={<ProtectedRoute />}>
+      <Route element={<ProtectedRoute allowedRoles={[ROLES.CLIENTE]} />}>
         <Route path="/portal-cliente" element={<PortalClientePage />} />
         <Route path="/portal-cliente/solicitudes" element={<SolicitudesCliente />} />
       </Route>
@@ -145,7 +145,7 @@ export const AppRoutes = () => {
       </Route>
 
       {/* ── Panel Interno — roles 1, 2, 3 ─────────────────────────────────── */}
-      <Route element={<ProtectedRoute />}>
+      <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR, ROLES.CLIENTE]} />}>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
 
@@ -158,11 +158,15 @@ export const AppRoutes = () => {
           <Route path="/eventos/:id"      element={<EventDetailPage />} />
 
           {/* Actividades (Routing según rol) */}
-          <Route path="/actividades"      element={<ActividadesRouter />} />
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR]} />}>
+            <Route path="/actividades"      element={<ActividadesRouter />} />
+          </Route>
 
           {/* Cotizaciones */}
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR, ROLES.CLIENTE]} />}>
             <Route path="/cotizaciones"       element={<CotizacionesList />} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR]} />}>
             <Route path="/cotizaciones/nueva" element={<CotizacionForm />} />
             <Route path="/cotizador"          element={<CotizadorPage />} />
           </Route>
@@ -170,6 +174,8 @@ export const AppRoutes = () => {
           {/* Reservas */}
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR, ROLES.CLIENTE]} />}>
             <Route path="/reservas"       element={<ReservasList />} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR]} />}>
             <Route path="/reservas/nueva" element={<ReservaForm />} />
           </Route>
 

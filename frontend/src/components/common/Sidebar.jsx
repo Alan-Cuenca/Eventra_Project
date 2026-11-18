@@ -61,7 +61,7 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
       icon: <Calculator size={20} />,
       basePath: '/cotizaciones',
       matches: ['/cotizaciones', '/cotizador', '/pagos'],
-      visible: isAdmin || isGerente || isCliente,
+      visible: isAdmin || isGerente || isTrabajador || isCliente,
     },
     {
       id: 'crm',
@@ -104,7 +104,7 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
           { to: '/eventos', label: isCliente ? 'Mi Evento' : 'Eventos Programados', icon: <CalendarDays size={16} />, visible: isAdmin || isGerente || isTrabajador || isCliente },
           { to: '/actividades', label: isTrabajador ? 'Mis Actividades' : 'Checklist Operativo', icon: <CheckSquare size={16} />, visible: isAdmin || isGerente || isTrabajador },
           { to: '/reservas', label: 'Reservas Anti-Colisión', icon: <CalendarCheck size={16} />, visible: isAdmin || isGerente || isTrabajador || isCliente },
-          { to: '/solicitudes', label: 'Solicitudes de Modificación', icon: <FileEdit size={16} />, visible: isAdmin || isGerente || isCliente },
+          { to: '/solicitudes', label: 'Solicitudes de Modificación', icon: <FileEdit size={16} />, visible: isAdmin || isGerente || isTrabajador },
         ],
       },
     ],
@@ -112,8 +112,8 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
       {
         section: 'Área Comercial',
         items: [
-          { to: '/cotizaciones', label: 'Lista de Cotizaciones', icon: <Calculator size={16} />, visible: isAdmin || isGerente || isCliente },
-          { to: '/cotizador', label: 'Cotizador Dinámico', icon: <Sparkles size={16} />, visible: isAdmin || isGerente || isCliente },
+          { to: '/cotizaciones', label: 'Lista de Cotizaciones', icon: <Calculator size={16} />, visible: isAdmin || isGerente || isTrabajador || isCliente },
+          { to: '/cotizador', label: 'Cotizador Dinámico', icon: <Sparkles size={16} />, visible: isAdmin || isGerente || isTrabajador },
           { to: '/pagos', label: 'Gestión de Pagos & Abonos', icon: <CreditCard size={16} />, visible: isAdmin || isGerente || isTrabajador },
           { to: '/pagos/procesar', label: 'Realizar Pago', icon: <CreditCard size={16} />, visible: isCliente },
         ],

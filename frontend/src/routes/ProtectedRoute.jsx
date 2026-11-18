@@ -27,6 +27,7 @@ export const ProtectedRoute = ({ allowedRoles = [] }) => {
   }
 
   if (allowedRoles.length > 0 && !allowedRoles.includes(roleId)) {
+    if (Number(roleId) === 5) return <Navigate to="/super-admin/dashboard" replace />;
     return <Navigate to="/dashboard" replace />;
   }
 
