@@ -87,6 +87,11 @@
   --sidebar-width: 272px;
   --header-height: 70px;
   --accent:         #C49A3A;   /* Acento dorado                                */
+  --accent-light:   #F4E6C8;
+  /* Secundario de marca (se sobrescribe con el 2.º color real del logo)       */
+  --secondary:       #385563;
+  --secondary-hover: #2C4550;
+  --secondary-light: #E4EFF4;
 }
 
 /* ==========================================================================

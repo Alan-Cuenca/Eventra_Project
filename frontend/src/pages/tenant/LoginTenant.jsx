@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useOutletContext, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { authService } from '../../services/authService';
 import { TenantAuthLayout } from './TenantAuthLayout';
 import {
   Lock,
@@ -40,7 +39,6 @@ export const LoginTenant = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [infoMsg, setInfoMsg] = useState('');
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -97,17 +95,6 @@ export const LoginTenant = () => {
       title="Iniciar sesión"
       subtitle="Accede a tu panel de gestión de eventos"
     >
-      {infoMsg && (
-        <div
-          role="status"
-          style={{
-            padding: '0.75rem 1rem', marginBottom: '1rem', borderRadius: '12px',
-            background: 'rgba(77,154,114,0.12)', color: '#2a7050', fontSize: '0.85rem', fontWeight: 600,
-          }}
-        >
-          {infoMsg}
-        </div>
-      )}
       {/* Mensaje de Error (Idéntico a Login.jsx) */}
       {error && (
         <div
@@ -178,23 +165,9 @@ export const LoginTenant = () => {
             <label className="form-label" htmlFor="tenant-password" style={{ margin: 0 }}>
               Contraseña
             </label>
-            <a
-              href="#recuperar"
-              onClick={async (e) => {
-                e.preventDefault();
-                setInfoMsg('');
-                if (!formData.email.trim()) {
-                  setError('Escribe tu correo electrónico y vuelve a pulsar "¿Olvidaste tu contraseña?".');
-                  return;
-                }
-                try {
-                  const r = await authService.solicitarRecuperacionCredencial(formData.email.trim());
-                  setError('');
-                  setInfoMsg(r?.message || 'Si el correo está registrado, recibirás una contraseña temporal.');
-                } catch (err) {
-                  setError(err.message || 'No se pudo procesar la solicitud. Intenta nuevamente.');
-                }
-              }}
+            <Link
+              to={`/portal/${slug}/recuperar-password`}
+              id="tenant-forgot-password-link"
               style={{
                 fontSize: '0.75rem',
                 color: 'var(--primary)',
@@ -203,7 +176,7 @@ export const LoginTenant = () => {
               }}
             >
               ¿Olvidaste tu contraseña?
-            </a>
+            </Link>
           </div>
 
           <div style={{ position: 'relative' }}>

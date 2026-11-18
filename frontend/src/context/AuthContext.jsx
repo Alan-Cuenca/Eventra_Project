@@ -26,6 +26,19 @@ export const AuthProvider = ({ children }) => {
     return result;
   };
 
+  /**
+   * Cambia la contraseña temporal y refresca la sesión (nuevo JWT sin la marca
+   * debe_cambiar_password) para que las rutas protegidas vuelvan a estar disponibles.
+   */
+  const cambiarPasswordObligatorio = async (payload) => {
+    const response = await authService.cambiarPasswordObligatorio(payload);
+    if (response?.token) {
+      setToken(response.token);
+      setUser(response.data);
+    }
+    return response;
+  };
+
   const register = async (userData) => {
     return await authService.register(userData);
   };
@@ -97,7 +110,9 @@ export const AuthProvider = ({ children }) => {
     isGerente: Number(user?.rol_id) === ROLES.GERENTE,
     isTrabajador: Number(user?.rol_id) === ROLES.TRABAJADOR,
     isCliente: Number(user?.rol_id) === ROLES.CLIENTE,
+    debeCambiarPassword: user?.debe_cambiar_password === true,
     login,
+    cambiarPasswordObligatorio,
     register,
     logout,
     refreshSession,

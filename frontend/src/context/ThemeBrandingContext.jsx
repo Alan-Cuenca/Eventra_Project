@@ -215,6 +215,19 @@ export const ThemeBrandingProvider = ({ children }) => {
     if (paleta.accent) {
       root.style.setProperty('--accent', paleta.accent);
     }
+
+    // Colores adicionales de la paleta completa del logo (las paletas predefinidas
+    // no tienen secundario: se usa un tono hermano del primario)
+    const secondary = paleta.secondary || paleta.primaryHover || paleta.primary;
+    const accent = paleta.accent || paleta.primary;
+    root.style.setProperty('--secondary', secondary);
+    root.style.setProperty('--secondary-hover', paleta.secondaryHover || secondary);
+    root.style.setProperty('--secondary-light', paleta.secondaryLight || paleta.primaryLight || paleta.bg);
+    root.style.setProperty('--accent-light', paleta.accentLight || paleta.primaryLight || paleta.bg);
+    root.style.setProperty('--ev-secondary', secondary);
+    root.style.setProperty('--ev-accent', accent);
+    root.style.setProperty('--brand-secondary', secondary);
+    root.style.setProperty('--brand-accent', accent);
   }, [customPaleta, branding?.paleta_personalizada]);
 
   // Cargar branding desde la API cuando el usuario esté autenticado

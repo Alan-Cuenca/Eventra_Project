@@ -18,6 +18,8 @@ import { Login } from '../pages/auth/Login';
 import { PortalRedirect } from '../pages/auth/PortalRedirect';
 import { CompletarRegistro } from '../pages/auth/CompletarRegistro';
 import { PrimerLoginCambioPassword } from '../pages/auth/PrimerLoginCambioPassword';
+import { RecuperarPassword } from '../pages/auth/RecuperarPassword';
+import { RestablecerPassword } from '../pages/auth/RestablecerPassword';
 import { ColaboradoresPage } from '../pages/admin/ColaboradoresPage';
 import { ConfiguracionMarca } from '../pages/admin/ConfiguracionMarca';
 import { PortalTenantLayout } from '../layouts/PortalTenantLayout';
@@ -114,7 +116,11 @@ export const AppRoutes = () => {
         <Route index element={<Navigate to="login" replace />} />
         <Route path="registro" element={<RegistroTenant />} />
         <Route path="login" element={<LoginTenant />} />
+        <Route path="recuperar-password" element={<RecuperarPassword />} />
+        <Route path="restablecer-password" element={<RestablecerPassword />} />
       </Route>
+      <Route path="/recuperar-password"     element={<RecuperarPassword />} />
+      <Route path="/restablecer-password"   element={<RestablecerPassword />} />
       <Route path="/completar-registro"     element={<CompletarRegistro />} />
       <Route path="/primer-acceso/cambiar-password" element={<PrimerLoginCambioPassword />} />
 

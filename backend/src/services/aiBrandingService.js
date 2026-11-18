@@ -1,298 +1,110 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
-import { decodePngRgb } from '../utils/pngDecoder.js';
+import { decodePng } from '../utils/pngDecoder.js';
+import {
+  extractSwatches,
+  normalizeSwatches,
+  buildTheme,
+  isValidHex,
+  hexToRgb,
+  adjustBrightness,
+} from '../utils/paletteEngine.js';
 
 /**
  * =============================================================================
  * SERVICIO: aiBrandingService.js
  * =============================================================================
- * Análisis visual de logotipos corporativos mediante Google Gemini (Vision)
- * basado en las directrices maestras de diseño de 'ai-branding-designer.md'.
- * 
- * Genera una paleta de 5 colores esenciales (bg, surface, border, primary, text)
- * respetando el estándar de "Sofisticación Sutil" (fusión Helados La Catedral &
- * Eventos Imperial).
+ * Genera el tema de marca blanca a partir de la PALETA COMPLETA del logotipo.
+ *
+ * Arquitectura híbrida (la IA nunca inventa colores):
+ *   1. Extracción determinista: el motor `paletteEngine` obtiene todos los
+ *      colores reales del logo (k-means en OKLab) desde el PNG en el servidor
+ *      o desde la paleta que ya calculó el navegador (Canvas).
+ *   2. Dirección de arte con IA (opcional): Gemini / GPT-4o ven el logo y la
+ *      lista de colores reales y SOLO deciden qué color cumple cada rol
+ *      (primario, secundario, acento, texto). Cualquier HEX que no exista en
+ *      el logo se descarta.
+ *   3. Calibración: `buildTheme` ajusta contraste WCAG, evita neón y genera
+ *      los tokens "Sofisticación Sutil".
+ * Si la IA falla o no hay claves, el paso 2 se resuelve algorítmicamente.
  * =============================================================================
  */
 
-export const SYSTEM_PROMPT = `Actúa como el diseñador definido en 'ai-branding-designer.md'. Analiza los colores de este logotipo y genera un JSON estricto con 5 claves (bg, surface, border, primary, text). El 'primary' debe ser el acento del logo sin ser neón; el 'bg' un derivado muy claro/pastel; y el 'text' oscuro legible. Respeta la armonía visual.
+export const SYSTEM_PROMPT = `Actúa como el diseñador definido en 'ai-branding-designer.md' (estilo "Sofisticación Sutil": light mode, minimalista, sin neón).
+Recibirás un logotipo y la lista COMPLETA de colores reales detectados en él, con su porcentaje de presencia.
+Tu tarea es decidir el rol de cada color dentro de la interfaz de un SaaS de gestión de eventos:
+- primary: el color más icónico de la marca (botones, estados activos).
+- secondary: el segundo color de marca que acompañe al primario (o null si el logo solo tiene uno).
+- accent: un color para destacar precios, íconos y badges, distinto de los anteriores (o null).
+- text: el color oscuro del logo que sirva de base para el texto (o null si no hay ninguno oscuro).
+Reglas: usa EXCLUSIVAMENTE códigos HEX de la lista recibida, no inventes ni modifiques colores. No uses el blanco del fondo como primary.
+Además propone "nombre" (máx. 4 palabras, en español) y "descripcion" (una frase) para el tema.
+Responde solo un objeto JSON: {"primary":"#RRGGBB","secondary":"#RRGGBB"|null,"accent":"#RRGGBB"|null,"text":"#RRGGBB"|null,"nombre":"...","descripcion":"..."}`;
 
-Reglas críticas de diseño:
-- bg: Tonos perla, marfil o crema ultra claros y desaturados derivados del logo (nunca blanco puro #FFFFFF).
-- surface: Siempre #FFFFFF.
-- border: Tono neutro o apastelado muy suave derivado del logo.
-- primary: El color más icónico del logo, calibrado para no ser neón ni saturado en exceso.
-- text: Tono índigo oscuro o gris carbón profundo con tinte del logo (ESTRICTAMENTE PROHIBIDO #000000).`;
+const SYSTEM_PROMPT_SIN_LISTA = `Actúa como el diseñador definido en 'ai-branding-designer.md'.
+Enumera TODOS los colores distintos que aparecen en este logotipo (máximo 8, sin contar un fondo blanco o transparente), con su porcentaje aproximado de presencia, y asigna roles.
+Responde solo un objeto JSON: {"colores":[{"hex":"#RRGGBB","porcentaje":40}],"primary":"#RRGGBB","secondary":"#RRGGBB"|null,"accent":"#RRGGBB"|null,"text":"#RRGGBB"|null,"nombre":"...","descripcion":"..."}`;
 
-/**
- * Convierte un color HEX (#RRGGBB) a [R, G, B]
- */
-export const hexToRgb = (hex, fallback = [77, 113, 130]) => {
-  if (!hex || typeof hex !== 'string') return fallback;
-  let clean = hex.replace('#', '').trim();
-  if (clean.length === 3) clean = clean.split('').map((c) => c + c).join('');
-  if (clean.length !== 6) return fallback;
-  const num = parseInt(clean, 16);
-  if (Number.isNaN(num)) return fallback;
-  return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
-};
-
-/**
- * Oscurece o aclara un color HEX porcentualmente (-1 a 1)
- */
-export const adjustBrightness = (hex, percent) => {
-  const [r, g, b] = hexToRgb(hex);
-  const adjust = (c) => {
-    const val = percent > 0 ? c + (255 - c) * percent : c * (1 + percent);
-    return Math.min(255, Math.max(0, Math.round(val)))
-      .toString(16)
-      .padStart(2, '0');
-  };
-  return `#${adjust(r)}${adjust(g)}${adjust(b)}`.toUpperCase();
-};
-
-/**
- * Valida y normaliza un código HEX
- */
-const isValidHex = (hex) => typeof hex === 'string' && /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(hex.trim());
+export { hexToRgb, adjustBrightness };
 
 /**
  * Limpia y parsea la respuesta JSON proveniente de modelos de IA
  */
 const parseJsonResponse = (rawText) => {
   if (!rawText) return null;
-  let cleaned = rawText.trim();
-  if (cleaned.startsWith('```json')) {
-    cleaned = cleaned.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
-  } else if (cleaned.startsWith('```')) {
-    cleaned = cleaned.replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
-  }
-
+  const cleaned = rawText.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
   try {
     return JSON.parse(cleaned);
-  } catch (err) {
+  } catch {
     const match = cleaned.match(/\{[\s\S]*\}/);
     if (match) {
       try {
         return JSON.parse(match[0]);
-      } catch {}
+      } catch {
+        return null;
+      }
     }
     return null;
   }
 };
 
-/**
- * Fallback heurístico inteligente: extrae colores de la muestra binaria de la imagen
- * o utiliza la paleta cromática real analizada, garantizando cero caídas ante fallos de red.
- */
-export const generarPaletaFallback = (imageBuffer, clientPalette = null) => {
-  if (clientPalette && clientPalette.primary) {
-    return normalizarPaleta(clientPalette);
-  }
+const isRealKey = (key) => Boolean(key) && !key.includes('tu_clave') && !key.includes('placeholder');
 
-  let seedR = 82, seedG = 111, seedB = 125; // Azul pizarra sobrio
-
-  if (Buffer.isBuffer(imageBuffer) && imageBuffer.length > 64) {
-    // 1. Intentar decodificación exacta de píxeles PNG
-    const pngPixels = decodePngRgb(imageBuffer);
-    if (pngPixels && pngPixels.length > 0) {
-      const buckets = new Map();
-      for (const { r, g, b, a } of pngPixels) {
-        if (a < 50) continue;
-        const max = Math.max(r, g, b);
-        const min = Math.min(r, g, b);
-        const delta = max - min;
-        const l = (max + min) / (2 * 255);
-        const s = max === 0 ? 0 : delta / max;
-
-        // Filtrar blancos, negros y grises neutros
-        if (l > 0.08 && l < 0.90 && s > 0.18) {
-          const qr = Math.round(r / 16) * 16;
-          const qg = Math.round(g / 16) * 16;
-          const qb = Math.round(b / 16) * 16;
-          const key = `${qr},${qg},${qb}`;
-          const current = buckets.get(key) || { count: 0, weight: 0, r, g, b };
-          current.count += 1;
-          current.weight += (1 + s * 4);
-          buckets.set(key, current);
-        }
-      }
-
-      let best = null;
-      let maxWeight = -1;
-      for (const bucket of buckets.values()) {
-        if (bucket.weight > maxWeight) {
-          maxWeight = bucket.weight;
-          best = bucket;
-        }
-      }
-      if (best) {
-        seedR = best.r;
-        seedG = best.g;
-        seedB = best.b;
-      }
-    }
-  }
-
-  // Primario representativo no neón
-  const primaryHex = `#${seedR.toString(16).padStart(2, '0')}${seedG.toString(16).padStart(2, '0')}${seedB.toString(16).padStart(2, '0')}`.toUpperCase();
-
-  // Fondo pastel ultra claro (96-98% luminosidad, nunca #FFFFFF)
-  const bgR = Math.min(255, Math.round(247 + (seedR * 0.03)));
-  const bgG = Math.min(255, Math.round(247 + (seedG * 0.03)));
-  const bgB = Math.min(255, Math.round(247 + (seedB * 0.03)));
-  const bgHex = `#${bgR.toString(16).padStart(2, '0')}${bgG.toString(16).padStart(2, '0')}${bgB.toString(16).padStart(2, '0')}`.toUpperCase();
-
-  // Borde muy suave
-  const borderR = Math.min(255, Math.round(215 + (seedR * 0.06)));
-  const borderG = Math.min(255, Math.round(215 + (seedG * 0.06)));
-  const borderB = Math.min(255, Math.round(215 + (seedB * 0.06)));
-  const borderHex = `#${borderR.toString(16).padStart(2, '0')}${borderG.toString(16).padStart(2, '0')}${borderB.toString(16).padStart(2, '0')}`.toUpperCase();
-
-  // Texto índigo/carbón tintado (prohibido #000000)
-  const textR = Math.max(18, Math.min(42, Math.round(seedR * 0.16)));
-  const textG = Math.max(22, Math.min(48, Math.round(seedG * 0.16)));
-  const textB = Math.max(26, Math.min(54, Math.round(seedB * 0.20)));
-  const textHex = `#${textR.toString(16).padStart(2, '0')}${textG.toString(16).padStart(2, '0')}${textB.toString(16).padStart(2, '0')}`.toUpperCase();
-
-  return normalizarPaleta({
-    bg: bgHex,
-    surface: '#FFFFFF',
-    border: borderHex,
-    primary: primaryHex,
-    text: textHex,
-  });
-};
+const safeText = (value, max) =>
+  typeof value === 'string' ? value.replace(/[<>]/g, '').trim().slice(0, max) || undefined : undefined;
 
 /**
- * Normaliza y enriquece la paleta de 5 colores para integrarla directamente
- * en los tokens del Design System de EVENTRA
+ * Llama a un modelo de visión (Gemini → OpenAI) y devuelve el JSON parseado o null.
+ * Desacoplado: cualquier fallo del proveedor devuelve null sin propagar errores.
  */
-export const normalizarPaleta = (rawPaleta) => {
-  // Asegurar que bg no sea blanco puro #FFFFFF
-  let bg = isValidHex(rawPaleta?.bg) ? rawPaleta.bg.toUpperCase() : '#F5F2EB';
-  if (bg === '#FFFFFF' || bg === '#FFF') {
-    bg = '#F6F3EC';
-  }
-
-  const surface = '#FFFFFF';
-  const border = isValidHex(rawPaleta?.border) ? rawPaleta.border.toUpperCase() : '#CEC8B8';
-  const primary = isValidHex(rawPaleta?.primary) ? rawPaleta.primary.toUpperCase() : '#4D7182';
-  
-  // Garantizar que text no sea negro absoluto (#000000 ni #000)
-  let text = isValidHex(rawPaleta?.text) ? rawPaleta.text.toUpperCase() : '#1D333E';
-  if (text === '#000000' || text === '#000') {
-    text = adjustBrightness(primary, -0.75);
-  }
-
-  const primaryHover = adjustBrightness(primary, -0.15);
-  const primaryLight = adjustBrightness(primary, 0.78);
-  const textSecondary = adjustBrightness(text, 0.35);
-
-  const rgbPrimary = hexToRgb(primary);
-  const rgbBg = hexToRgb(bg);
-  const rgbBorder = hexToRgb(border);
-  const rgbText = hexToRgb(text);
-
-  return {
-    key: 'custom_ia',
-    name: 'Paleta Generada por IA',
-    category: 'Inteligencia Visual (Sofisticación Sutil)',
-    desc: 'Paleta armónica extraída dinámicamente de la identidad gráfica del logotipo con Google Gemini.',
-    bg,
-    surface,
-    border,
-    primary,
-    primaryHover,
-    primaryLight,
-    text,
-    textSecondary,
-    accent: primary,
-    inputBg: adjustBrightness(bg, 0.4),
-    rgbPrimary,
-    rgbBg,
-    rgbBorder,
-    rgbText,
-  };
-};
-
-/**
- * Analiza un logotipo (Buffer o Data URL) utilizando Google Gemini Vision
- * (@google/genai con gemini-1.5-flash / gemini-2.5-flash).
- *
- * @param {Object} params
- * @param {Buffer} [params.buffer] - Buffer de la imagen cargada
- * @param {string} [params.mimetype] - Tipo MIME (image/png, image/jpeg, etc.)
- * @param {string} [params.dataUrl] - Imagen ya formateada como Data URL (base64)
- * @returns {Promise<Object>} Paleta enriquecida de 5 colores listos para CSS injection
- */
-export const analizarLogotipoConIA = async ({ buffer, mimetype = 'image/png', dataUrl, clientPalette }) => {
-  let base64Data = '';
-  let fullDataUrl = '';
-  let finalMime = mimetype;
-
-  if (buffer) {
-    base64Data = buffer.toString('base64');
-    fullDataUrl = `data:${mimetype};base64,${base64Data}`;
-  } else if (dataUrl && typeof dataUrl === 'string') {
-    fullDataUrl = dataUrl;
-    if (dataUrl.includes(';base64,')) {
-      const parts = dataUrl.split(';base64,');
-      finalMime = parts[0].replace('data:', '') || 'image/png';
-      base64Data = parts[1];
-    }
-  }
-
-  // Si el cliente ya analizó la imagen vía Canvas y no hay claves de IA externas operativas,
-  // priorizar la paleta cromática real del cliente directamente
-  const hasGemini = process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.includes('tu_clave') && !process.env.GEMINI_API_KEY.includes('placeholder');
-  const hasOpenai = process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.includes('tu_clave') && !process.env.OPENAI_API_KEY.includes('placeholder');
-
-  // ── 1. Inferencia Principal: Google Gemini Vision (@google/genai) ─────────
-  const geminiKey = process.env.GEMINI_API_KEY;
-  if (hasGemini) {
+const consultarVisionIA = async ({ systemPrompt, userText, base64Data, mime, dataUrl }) => {
+  if (isRealKey(process.env.GEMINI_API_KEY)) {
     try {
-      const ai = new GoogleGenAI({ apiKey: geminiKey });
-      const promptText = `Actúa como el diseñador definido en 'ai-branding-designer.md'. Analiza los colores de este logotipo y genera un JSON estricto con 5 claves (bg, surface, border, primary, text). El 'primary' debe ser el acento del logo sin ser neón; el 'bg' un derivado muy claro/pastel; y el 'text' oscuro legible. Respeta la armonía visual. Responde estrictamente un objeto JSON con las 5 claves.`;
-
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const contents = [
         {
           role: 'user',
           parts: [
-            { text: promptText },
-            ...(base64Data
-              ? [
-                  {
-                    inlineData: {
-                      mimeType: finalMime,
-                      data: base64Data,
-                    },
-                  },
-                ]
-              : []),
+            { text: `${systemPrompt}\n\n${userText}` },
+            ...(base64Data ? [{ inlineData: { mimeType: mime, data: base64Data } }] : []),
           ],
         },
       ];
-
-      // Probar prioritariamente gemini-1.5-flash o gemini-2.5-flash
-      const visionModels = ['gemini-1.5-flash', 'gemini-2.5-flash', 'gemini-flash-latest'];
-      for (const model of visionModels) {
+      for (const model of ['gemini-2.5-flash', 'gemini-flash-latest']) {
         try {
           const response = await ai.models.generateContent({
             model,
             contents,
             config: {
+              responseMimeType: 'application/json',
+              temperature: 0.2,
               abortSignal: AbortSignal.timeout(12000),
             },
           });
-
-          const raw = (response?.text ?? '').trim();
-          const parsed = parseJsonResponse(raw);
-          if (parsed && parsed.primary) {
-            return normalizarPaleta(parsed);
-          }
-        } catch (mErr) {
-          // Continuar al siguiente modelo de visión si este falló
+          const parsed = parseJsonResponse((response?.text ?? '').trim());
+          if (parsed) return parsed;
+        } catch {
+          // Probar el siguiente modelo
         }
       }
     } catch (err) {
@@ -300,50 +112,159 @@ export const analizarLogotipoConIA = async ({ buffer, mimetype = 'image/png', da
     }
   }
 
-  // ── 2. Inferencia Secundaria de Respaldo: OpenAI GPT-4o Vision ───────────
-  const openaiKey = process.env.OPENAI_API_KEY;
-  if (hasOpenai) {
+  if (isRealKey(process.env.OPENAI_API_KEY)) {
     try {
-      const openai = new OpenAI({ apiKey: openaiKey });
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 15000 });
+      const content = [{ type: 'text', text: userText }];
+      if (dataUrl && dataUrl.startsWith('data:')) {
+        content.push({ type: 'image_url', image_url: { url: dataUrl, detail: 'low' } });
+      }
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o',
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: 'Analiza este logotipo y extrae la paleta de 5 colores en JSON estricto sin explicaciones:',
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: fullDataUrl,
-                  detail: 'low',
-                },
-              },
-            ],
-          },
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content },
         ],
         response_format: { type: 'json_object' },
         temperature: 0.2,
-        max_tokens: 400,
+        max_tokens: 500,
       });
-
-      const raw = completion.choices[0]?.message?.content;
-      const parsed = parseJsonResponse(raw);
-      if (parsed && parsed.primary) {
-        return normalizarPaleta(parsed);
-      }
+      const parsed = parseJsonResponse(completion.choices[0]?.message?.content);
+      if (parsed) return parsed;
     } catch (err) {
       console.warn('[aiBrandingService] OpenAI Vision falló:', err.message);
     }
   }
 
-  // ── 3. Extracción Cromática Real Determinística (Garantía de Cero Caídas) ─────────
-  console.log('[aiBrandingService] Empleando motor de análisis cromático real para extracción del logo.');
+  return null;
+};
+
+/**
+ * Obtiene la paleta completa real del logo: primero del PNG en el servidor,
+ * luego de la paleta calculada por el navegador.
+ */
+const obtenerSwatches = (buffer, clientPalette) => {
+  if (Buffer.isBuffer(buffer)) {
+    const img = decodePng(buffer, { maxSide: 128 });
+    if (img) {
+      const { swatches, background } = extractSwatches(img);
+      if (swatches.length) return { swatches, background };
+    }
+  }
+  const fromClient = normalizeSwatches(clientPalette?.logoColors);
+  return { swatches: fromClient, background: null };
+};
+
+/**
+ * Normaliza una paleta heredada (formato de 5 colores) garantizando todas las
+ * claves que consume ThemeBrandingContext. Se usa para paletas antiguas o
+ * cuando no hay ningún color del logo disponible.
+ */
+export const normalizarPaleta = (rawPaleta) => {
+  const pick = (key) => (isValidHex(rawPaleta?.[key]) ? rawPaleta[key] : null);
+  const primary = pick('primary');
+  const seeds = [primary, pick('secondary'), pick('accent'), pick('text')].filter(Boolean);
+  const tema = buildTheme(normalizeSwatches(seeds), {
+    roles: { primary, secondary: pick('secondary'), accent: pick('accent'), text: pick('text') },
+    source: rawPaleta?.source || 'algoritmo',
+    name: safeText(rawPaleta?.name, 60),
+    desc: safeText(rawPaleta?.desc, 200),
+  });
+  if (Array.isArray(rawPaleta?.logoColors)) {
+    tema.logoColors = normalizeSwatches(rawPaleta.logoColors).map((s) => ({
+      hex: s.hex,
+      population: Math.round(s.population * 1000) / 1000,
+      role: ['primary', 'secondary', 'accent', 'text'].find((r) => rawPaleta[r] === s.hex) || null,
+    }));
+  }
+  return tema;
+};
+
+/**
+ * Fallback determinista sin IA (garantía de cero caídas).
+ */
+export const generarPaletaFallback = (imageBuffer, clientPalette = null) => {
+  const { swatches, background } = obtenerSwatches(imageBuffer, clientPalette);
+  if (swatches.length) return buildTheme(swatches, { background });
+  if (clientPalette && isValidHex(clientPalette.primary)) return normalizarPaleta(clientPalette);
+  return buildTheme([]);
+};
+
+/**
+ * Analiza un logotipo y devuelve el tema completo.
+ *
+ * @param {Object} params
+ * @param {Buffer} [params.buffer] - Imagen subida
+ * @param {string} [params.mimetype]
+ * @param {string} [params.dataUrl] - Imagen como Data URL (base64) o URL pública
+ * @param {Object} [params.clientPalette] - Tema calculado por el navegador (incluye logoColors)
+ */
+export const analizarLogotipoConIA = async ({ buffer, mimetype = 'image/png', dataUrl, clientPalette }) => {
+  let base64Data = '';
+  let mime = mimetype;
+  let fullDataUrl = '';
+
+  if (buffer) {
+    base64Data = buffer.toString('base64');
+    fullDataUrl = `data:${mimetype};base64,${base64Data}`;
+  } else if (typeof dataUrl === 'string' && dataUrl.startsWith('data:') && dataUrl.includes(';base64,')) {
+    const [head, data] = dataUrl.split(';base64,');
+    mime = head.replace('data:', '') || 'image/png';
+    base64Data = data;
+    fullDataUrl = dataUrl;
+  }
   const effectiveBuffer = buffer || (base64Data ? Buffer.from(base64Data, 'base64') : null);
+
+  // 1. Paleta completa real del logo
+  const { swatches, background } = obtenerSwatches(effectiveBuffer, clientPalette);
+
+  // 2. Dirección de arte con IA (solo asigna roles sobre colores reales)
+  if (swatches.length) {
+    const lista = swatches.map((s) => `${s.hex} (${Math.round(s.population * 100)}%)`).join(', ');
+    const ia = await consultarVisionIA({
+      systemPrompt: SYSTEM_PROMPT,
+      userText: `Colores reales detectados en el logotipo: ${lista}. Asigna los roles en JSON.`,
+      base64Data,
+      mime,
+      dataUrl: fullDataUrl,
+    });
+    if (ia && isValidHex(ia.primary)) {
+      return buildTheme(swatches, {
+        background,
+        roles: ia,
+        source: 'ia',
+        name: safeText(ia.nombre, 60),
+        desc: safeText(ia.descripcion, 200),
+      });
+    }
+    return buildTheme(swatches, { background });
+  }
+
+  // Sin colores calculables (ej. JPG/SVG sin paleta del navegador): la IA enumera los colores
+  if (base64Data) {
+    const ia = await consultarVisionIA({
+      systemPrompt: SYSTEM_PROMPT_SIN_LISTA,
+      userText: 'Analiza este logotipo y responde el JSON solicitado.',
+      base64Data,
+      mime,
+      dataUrl: fullDataUrl,
+    });
+    const colores = Array.isArray(ia?.colores)
+      ? ia.colores.map((c) => ({ hex: c?.hex, population: Number(c?.porcentaje) / 100 }))
+      : [];
+    const iaSwatches = normalizeSwatches(colores);
+    if (iaSwatches.length) {
+      return buildTheme(iaSwatches, {
+        roles: ia,
+        source: 'ia',
+        name: safeText(ia.nombre, 60),
+        desc: safeText(ia.descripcion, 200),
+      });
+    }
+  }
+
+  // 3. Respaldo determinista
+  console.log('[aiBrandingService] Empleando motor de análisis cromático real para extracción del logo.');
   return generarPaletaFallback(effectiveBuffer, clientPalette);
 };
 

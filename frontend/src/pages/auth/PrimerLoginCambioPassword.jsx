@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { authService } from '../../services/authService';
 import { ThemeToggle } from '../../components/common/ThemeToggle';
 
 import {
@@ -14,6 +13,7 @@ import {
   ShieldCheck,
   ArrowRight,
   Loader2,
+  LogOut,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
@@ -26,7 +26,7 @@ import logoImg from '../../assets/logo.png';
  * =============================================================================
  */
 export const PrimerLoginCambioPassword = () => {
-  const { user } = useAuth();
+  const { user, token, loading: authLoading, cambiarPasswordObligatorio, logout } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -77,7 +77,7 @@ export const PrimerLoginCambioPassword = () => {
     setLoading(true);
 
     try {
-      const response = await authService.cambiarPasswordObligatorio({
+      const response = await cambiarPasswordObligatorio({
         password_temporal: formData.password_temporal,
         password_nuevo: formData.password_nuevo,
         password_confirmar: formData.password_confirmar,
@@ -95,11 +95,18 @@ export const PrimerLoginCambioPassword = () => {
         }
       }, 1200);
     } catch (err) {
-      setErrorMsg(err?.response?.data?.message || err?.message || 'Error al actualizar la contraseña.');
+      setErrorMsg(err?.data?.message || err?.message || 'No fue posible actualizar la contraseña. Intenta nuevamente.');
     } finally {
       setLoading(false);
     }
   };
+
+  if (authLoading) return null;
+
+  // Sin sesión activa: el cambio obligatorio requiere haber iniciado sesión con la contraseña temporal
+  if (!token || !user) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-[#F3F0E4] flex flex-col items-center justify-center p-4 font-['Plus_Jakarta_Sans',sans-serif] relative">
@@ -282,6 +289,16 @@ export const PrimerLoginCambioPassword = () => {
             )}
           </button>
         </form>
+
+        <button
+          type="button"
+          onClick={() => logout()}
+          disabled={loading}
+          className="w-full mt-4 py-2 text-xs font-semibold text-[#7d8f97] hover:text-[#233D49] flex items-center justify-center gap-1.5 transition-colors"
+        >
+          <LogOut size={14} />
+          <span>Cerrar sesión y continuar más tarde</span>
+        </button>
       </div>
     </div>
   );

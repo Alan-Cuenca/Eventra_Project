@@ -124,9 +124,9 @@ const HOST = '0.0.0.0';
 const isTestEnv = Boolean(process.env.JEST_WORKER_ID) || (process.env.NODE_ENV === 'test' && !process.env.RENDER);
 
 if (!isTestEnv) {
+
   app.listen(PORT, HOST, () => {
     console.log(`Server is running on http://${HOST}:${PORT}`);
   });
 }
-
 

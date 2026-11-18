@@ -24,7 +24,9 @@ export const ROL_CLIENTE       = 4;
  * @param {import('express').Response} res
  * @param {import('express').NextFunction} next
  */
-export const verifyToken = (req, res, next) => {
+export const CODIGO_CAMBIO_PASSWORD = 'PASSWORD_CHANGE_REQUIRED';
+
+const autenticar = (req, res, next, { permitirCambioPendiente = false } = {}) => {
   const authHeader = req.headers.authorization;
 
   // Verificar que el header existe y tiene el formato "Bearer <token>"
@@ -37,26 +39,48 @@ export const verifyToken = (req, res, next) => {
 
   const token = authHeader.split(' ')[1];
 
+  let decoded;
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Inyecta el payload normalizado asegurando empresa_id y rol_id
-    req.user = {
-      ...decoded,
-      id: decoded.id,
-      rol_id: decoded.rol_id !== undefined ? Number(decoded.rol_id) : undefined,
-      empresa_id: decoded.empresa_id !== undefined && decoded.empresa_id !== null ? Number(decoded.empresa_id) : null,
-      email: decoded.email,
-    };
-
-    next();
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
   } catch (error) {
     return res.status(401).json({
       success: false,
       message: 'Token inválido o expirado.',
     });
   }
+
+  // Inyecta el payload normalizado asegurando empresa_id y rol_id
+  req.user = {
+    ...decoded,
+    id: decoded.id,
+    rol_id: decoded.rol_id !== undefined ? Number(decoded.rol_id) : undefined,
+    empresa_id: decoded.empresa_id !== undefined && decoded.empresa_id !== null ? Number(decoded.empresa_id) : null,
+    email: decoded.email,
+  };
+
+  // Cuentas con contraseña temporal: solo pueden acceder al flujo de cambio de contraseña
+  if (decoded.debe_cambiar_password === true && !permitirCambioPendiente) {
+    return res.status(403).json({
+      success: false,
+      error: CODIGO_CAMBIO_PASSWORD,
+      message: 'Debes actualizar tu contraseña temporal antes de continuar.',
+    });
+  }
+
+  next();
 };
+
+export const verifyToken = (req, res, next) => autenticar(req, res, next);
+
+/**
+ * Middleware: verifyTokenPermitirCambioPendiente
+ * -----------------------------------------------------------------------
+ * Igual que verifyToken, pero permite el paso a usuarios que aún deben
+ * cambiar su contraseña temporal. Usar EXCLUSIVAMENTE en las rutas del
+ * flujo de cambio obligatorio de contraseña y en /auth/me.
+ */
+export const verifyTokenPermitirCambioPendiente = (req, res, next) =>
+  autenticar(req, res, next, { permitirCambioPendiente: true });
 
 /**
  * Middleware: optionalVerifyToken
@@ -76,6 +100,8 @@ export const optionalVerifyToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Sesiones con contraseña temporal pendiente se tratan como visitante público
+    if (decoded.debe_cambiar_password === true) return next();
     req.user = {
       ...decoded,
       id: decoded.id,
