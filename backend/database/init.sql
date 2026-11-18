@@ -368,9 +368,8 @@ CREATE TABLE IF NOT EXISTS reservas (
     estado          VARCHAR(20)  DEFAULT 'Confirmada',
     fecha_creacion  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
 
-    -- Doble protección: BD rechaza duplicados aunque la app falle
-    CONSTRAINT uq_reserva_salon_fecha
-        UNIQUE (empresa_id, salon_o_lugar, fecha_evento),
+    -- La doble protección en BD es un índice único parcial (ver más abajo):
+    -- las reservas Canceladas no bloquean el salón.
 
     CONSTRAINT fk_reservas_empresa
         FOREIGN KEY (empresa_id)
@@ -382,6 +381,14 @@ CREATE TABLE IF NOT EXISTS reservas (
         REFERENCES cotizaciones(id)
         ON DELETE CASCADE
 );
+
+
+-- Índice único parcial: impide dos reservas ACTIVAS idénticas (salón + fecha + hora de
+-- inicio, sin distinguir mayúsculas) aunque la app falle por condición de carrera.
+-- Las reservas 'Cancelada' no participan, de modo que liberan el salón.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_reserva_salon_fecha_activa
+    ON reservas (empresa_id, LOWER(TRIM(salon_o_lugar)), fecha_evento, hora_inicio)
+    WHERE estado <> 'Cancelada';
 
 
 -- =============================================================================
@@ -659,3 +666,33 @@ CREATE TABLE IF NOT EXISTS suscripciones_pagos (
 CREATE INDEX IF NOT EXISTS idx_suscripciones_pagos_empresa ON suscripciones_pagos(empresa_id);
 
 
+
+
+-- =============================================================================
+-- Paleta personalizada de marca blanca y configuración global SaaS
+-- (antes solo existían en el auto-DDL de src/config/db.js)
+-- =============================================================================
+ALTER TABLE empresas ADD COLUMN IF NOT EXISTS paleta_personalizada JSONB;
+
+CREATE TABLE IF NOT EXISTS configuracion_saas (
+    clave       VARCHAR(100) PRIMARY KEY,
+    valor       JSONB        NOT NULL,
+    updated_at  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- =============================================================================
+-- TABLA: solicitudes_registro_plan
+-- Solicitudes de contratación de plan hechas desde la landing pública (sin cuenta).
+-- El Super_Admin revisa el comprobante y crea la empresa manualmente.
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS solicitudes_registro_plan (
+    id               UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    plan_nombre      VARCHAR(30)  NOT NULL,
+    ciclo            VARCHAR(10)  NOT NULL DEFAULT 'mensual',
+    correo_contacto  VARCHAR(150) NOT NULL,
+    nombre_empresa   VARCHAR(150) NOT NULL,
+    comprobante_url  TEXT         NOT NULL,
+    estado           VARCHAR(20)  NOT NULL DEFAULT 'Pendiente',
+    fecha_solicitud  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+);
