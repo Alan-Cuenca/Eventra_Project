@@ -50,7 +50,7 @@ export const obtenerResumenAdmin = async (req, res) => {
         `SELECT COALESCE(SUM(monto), 0) AS ingresos_totales
          FROM pagos
          WHERE empresa_id = $1
-           AND estado     = 'Completado'`,
+           AND estado     IN ('Aprobado', 'Completado')`,
         [empresa_id]
       ),
 

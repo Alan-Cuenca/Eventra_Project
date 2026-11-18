@@ -166,6 +166,7 @@ export const actualizarEstadoActividad = async (req, res) => {
   const empresa_id = req.user.empresa_id;
   const { id } = req.params;
   const { estado } = req.body;
+  const esTrabajador = Number(req.user.rol_id) === 3;
 
   try {
     // --- Validar estado recibido ---
@@ -189,8 +190,9 @@ export const actualizarEstadoActividad = async (req, res) => {
        SET estado = $1
        WHERE id = $2
          AND empresa_id = $3
+         AND ($4::uuid IS NULL OR responsable_id = $4::uuid)
        RETURNING id, titulo, estado, responsable_id, empresa_id`,
-      [estado, id, empresa_id]
+      [estado, id, empresa_id, esTrabajador ? req.user.id : null]
     );
 
     if (result.rowCount === 0) {

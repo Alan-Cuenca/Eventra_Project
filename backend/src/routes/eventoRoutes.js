@@ -1,6 +1,7 @@
 import express from 'express';
 import { crearEvento, obtenerEventos, actualizarEstadoEvento, obtenerEventoPorId, actualizarEvento, eliminarEvento } from '../controllers/eventoController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+import { verificarLimitePlan } from '../middlewares/planLimitsMiddleware.js';
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ const router = express.Router();
  *   "descripcion": "Evento de 200 personas en salón principal"
  * }
  */
-router.post('/', verifyToken, authorizeRoles([1, 2]), crearEvento);
+router.post('/', verifyToken, authorizeRoles([1, 2]), verificarLimitePlan('eventos'), crearEvento);
 
 /**
  * @route  GET /api/eventos

@@ -68,6 +68,10 @@ export const crearUsuario = async (req, res) => {
     });
   }
 
+  if (![1, 2, 3, 4, 5].includes(Number(rol_id))) {
+    return res.status(400).json({ success: false, message: 'El rol_id debe ser 1, 2, 3 o 4.' });
+  }
+
   if (Number(rol_id) === ROL_SUPER_ADMIN) {
     return res.status(403).json({
       success: false,
@@ -132,6 +136,18 @@ export const actualizarUsuario = async (req, res) => {
   }
 
   const nombreFinal = nombre_completo || nombre || null;
+
+  // Un administrador no puede quitarse su propio rol ni desactivarse (evita bloquear la empresa)
+  if (String(id) === String(req.user.id) && ((rol_id && Number(rol_id) !== Number(req.user.rol_id)) || estado_activo === false)) {
+    return res.status(400).json({
+      success: false,
+      message: 'No puedes cambiar tu propio rol ni desactivar tu propia cuenta.',
+    });
+  }
+
+  if (rol_id && ![1, 2, 3, 4].includes(Number(rol_id))) {
+    return res.status(400).json({ success: false, message: 'El rol_id debe ser 1, 2, 3 o 4.' });
+  }
 
   try {
     let passwordHash = null;

@@ -52,6 +52,10 @@ export const invitarUsuario = async (req, res) => {
     }
 
     // Un admin de tenant no puede invitar a un Super Admin (5)
+    if (![1, 2, 3, 4, 5].includes(Number(rol_id))) {
+      return res.status(400).json({ success: false, message: 'El rol_id debe ser 1, 2, 3 o 4.' });
+    }
+
     if (Number(rol_id) === ROL_SUPER_ADMIN) {
       return res.status(403).json({
         success: false,

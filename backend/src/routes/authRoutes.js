@@ -342,4 +342,5 @@ router.get('/me', verifyTokenPermitirCambioPendiente, (req, res) => {
   });
 });
 
+
 export default router;
