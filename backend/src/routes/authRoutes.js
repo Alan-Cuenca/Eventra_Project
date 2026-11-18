@@ -12,6 +12,12 @@ import {
 } from '../controllers/authController.js';
 import { verifyToken, verifyTokenPermitirCambioPendiente, authorizeRoles } from '../middlewares/authMiddleware.js';
 import { verificarLimitePlan } from '../middlewares/planLimitsMiddleware.js';
+import { crearRateLimit } from '../middlewares/rateLimit.js';
+
+// Protección contra fuerza bruta / abuso en endpoints públicos de autenticación
+const limitarLogin = crearRateLimit({ ventanaMs: 15 * 60_000, max: 20, mensaje: 'Demasiados intentos de acceso. Intenta de nuevo en unos minutos.' });
+const limitarRecuperacion = crearRateLimit({ ventanaMs: 15 * 60_000, max: 5, mensaje: 'Demasiadas solicitudes de recuperación. Intenta de nuevo más tarde.' });
+const limitarRegistro = crearRateLimit({ ventanaMs: 60 * 60_000, max: 20, mensaje: 'Demasiados registros desde esta red. Intenta más tarde.' });
 
 const router = express.Router();
 
@@ -105,7 +111,7 @@ router.post('/invitar', verifyToken, authorizeRoles([1]), verificarLimitePlan('u
  *       409:
  *         description: La invitación ya fue utilizada previamente
  */
-router.post('/completar-registro', completarRegistro);
+router.post('/completar-registro', limitarRegistro, completarRegistro);
 
 /**
  * @openapi
@@ -169,7 +175,7 @@ router.post('/register', registerUser);
  *       409:
  *         description: El email ya se encuentra registrado
  */
-router.post('/registro-cliente', verificarLimitePlan('clientes'), registrarClientePortal);
+router.post('/registro-cliente', limitarRegistro, verificarLimitePlan('clientes'), registrarClientePortal);
 
 /**
  * @openapi
@@ -231,7 +237,7 @@ router.get('/portal/:slug', obtenerInfoPortalEmpresa);
  *       404:
  *         description: Usuario no encontrado
  */
-router.post('/login', loginUser);
+router.post('/login', limitarLogin, loginUser);
 
 /**
  * @openapi
@@ -289,7 +295,7 @@ router.post('/cambiar-password-obligatorio', verifyTokenPermitirCambioPendiente,
  *       400:
  *         description: Correo inválido
  */
-router.post('/recuperar-password', solicitarRecuperacionPassword);
+router.post('/recuperar-password', limitarRecuperacion, solicitarRecuperacionPassword);
 
 /**
  * @openapi
@@ -315,7 +321,7 @@ router.post('/recuperar-password', solicitarRecuperacionPassword);
  *       400:
  *         description: Token inválido/expirado o contraseña no válida
  */
-router.post('/restablecer-password', restablecerPassword);
+router.post('/restablecer-password', limitarRecuperacion, restablecerPassword);
 
 /**
  * @openapi

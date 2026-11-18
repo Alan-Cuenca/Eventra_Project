@@ -1,5 +1,6 @@
 import express from 'express';
 import multer from 'multer';
+import { crearRateLimit } from '../middlewares/rateLimit.js';
 import {
   registrarPagoSuscripcion,
   obtenerSuscripciones,
@@ -18,9 +19,16 @@ import {
   ROL_GERENTE,
 } from '../middlewares/authMiddleware.js';
 
+const TIPOS_COMPROBANTE = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max
+  fileFilter: (req, file, cb) => {
+    if (TIPOS_COMPROBANTE.includes(file.mimetype)) return cb(null, true);
+    const err = new Error('El comprobante debe ser una imagen (JPG, PNG, WEBP) o un PDF.');
+    err.status = 400;
+    return cb(err);
+  },
 });
 
 const uploadPdfPublico = multer({
@@ -37,7 +45,7 @@ const uploadPdfPublico = multer({
 const router = express.Router();
 
 /** POST /api/suscripciones/solicitud-publica — solicitud de plan desde la landing (público). */
-router.post('/solicitud-publica', uploadPdfPublico.single('comprobante'), crearSolicitudRegistroPlan);
+router.post('/solicitud-publica', crearRateLimit({ ventanaMs: 60 * 60_000, max: 5, mensaje: 'Demasiadas solicitudes desde esta red. Intenta más tarde.' }), uploadPdfPublico.single('comprobante'), crearSolicitudRegistroPlan);
 
 /** GET /api/suscripciones/solicitudes-publicas — solicitudes pendientes de revisión (Super_Admin). */
 router.get('/solicitudes-publicas', verifyToken, authorizeSuperAdmin, listarSolicitudesRegistroPlan);

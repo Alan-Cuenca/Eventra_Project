@@ -239,8 +239,9 @@ export const DashboardPage = () => {
   const completedCount = checklist.filter(c => c.done).length;
 
   const estadoBadge = (estado) => {
-    if (estado === 'Confirmado') return 'success';
-    if (estado === 'En preparación') return 'primary';
+    if (estado === 'Finalizado') return 'success';
+    if (estado === 'En Progreso') return 'primary';
+    if (estado === 'Cancelado') return 'danger';
     return 'warning';
   };
 

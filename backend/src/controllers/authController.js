@@ -3,7 +3,8 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import { ROL_SUPER_ADMIN, ROL_ADMINISTRADOR } from '../middlewares/authMiddleware.js';
-import { getMailTransporter, sendPasswordResetEmail } from '../services/emailService.js';
+import { getMailTransporter, sendPasswordResetEmail, sendMail } from '../services/emailService.js';
+import { hayCupoUsuarios } from '../middlewares/planLimitsMiddleware.js';
 
 /**
  * =============================================================================
@@ -99,10 +100,8 @@ export const invitarUsuario = async (req, res) => {
     );
     const nombreEmpresa = empresaRes.rows[0]?.nombre_comercial || 'EVENTRA';
 
-    // 6. Envío de correo mediante Nodemailer
-    const transporter = createMailTransporter();
+    // 6. Envío de correo mediante el servicio centralizado (SMTP / Brevo / Resend con respaldo)
     const mailOptions = {
-      from: process.env.SMTP_FROM || `"EVENTRA SaaS" <no-reply@eventra.com>`,
       to: email.toLowerCase().trim(),
       subject: `Invitación para unirte al equipo de ${nombreEmpresa} en EVENTRA`,
       text: `Hola,\n\nHas sido invitado a formar parte del equipo de ${nombreEmpresa} en EVENTRA.\n\nPara activar tu cuenta y configurar tu contraseña, ingresa al siguiente enlace (válido por 48 horas):\n${enlaceRegistro}\n\nSi no esperabas este correo, puedes ignorarlo con total seguridad.`,
@@ -137,17 +136,19 @@ export const invitarUsuario = async (req, res) => {
       `,
     };
 
-    let previewUrl = null;
-    try {
-      const info = await transporter.sendMail(mailOptions);
-      previewUrl = nodemailer.getTestMessageUrl ? nodemailer.getTestMessageUrl(info) : null;
-    } catch (mailError) {
-      console.warn('[authController] Envío de correo no disponible o simulado:', mailError.message);
+    const previewUrl = null;
+    const envio = await sendMail(mailOptions);
+    const correoEnviado = Boolean(envio?.success);
+    if (!correoEnviado) {
+      console.error('[authController] No se pudo enviar la invitación:', envio?.error);
     }
 
     return res.status(200).json({
       success: true,
-      message: 'Invitación enviada exitosamente por correo electrónico.',
+      correo_enviado: correoEnviado,
+      message: correoEnviado
+        ? 'Invitación enviada exitosamente por correo electrónico.'
+        : 'La invitación se creó, pero no se pudo enviar el correo. Comparte el enlace de registro manualmente.',
       data: {
         email: email.toLowerCase().trim(),
         rol_id: Number(rol_id),
@@ -206,6 +207,14 @@ export const completarRegistro = async (req, res) => {
 
     const { email, rol_id, empresa_id } = decoded;
 
+    // Solo se aceptan tokens emitidos como invitación (no cualquier JWT firmado con el mismo secreto)
+    if (decoded.tipo !== 'invitacion') {
+      return res.status(400).json({
+        success: false,
+        message: 'El token de invitación es inválido o ha expirado. Solicite una nueva invitación a su Administrador.',
+      });
+    }
+
     if (!email || !rol_id || !empresa_id) {
       return res.status(400).json({
         success: false,
@@ -220,6 +229,18 @@ export const completarRegistro = async (req, res) => {
         success: false,
         message: 'Esta invitación ya fue utilizada. El usuario ya se encuentra registrado.',
       });
+    }
+
+    // 3b. El personal (roles 1-3) consume cupo del plan: se revalida al completar el registro
+    if (Number(rol_id) !== 4) {
+      const cupo = await hayCupoUsuarios(Number(empresa_id));
+      if (!cupo.ok) {
+        return res.status(403).json({
+          success: false,
+          error: 'PLAN_LIMIT_EXCEEDED',
+          message: `La empresa alcanzó el límite de ${cupo.maximo} colaboradores de su plan ${cupo.plan}. Pide al administrador que actualice el plan.`,
+        });
+      }
     }
 
     // 4. Encriptar la contraseña con bcrypt
@@ -243,6 +264,19 @@ export const completarRegistro = async (req, res) => {
     );
 
     const nuevoUsuario = result.rows[0];
+
+    // Un Cliente invitado debe tener su ficha en clientes (los filtros del rol 4 se vinculan por email)
+    if (Number(rol_id) === 4) {
+      const partes = nombre_completo.trim().split(/\s+/);
+      const nombres = partes.shift() || nombre_completo.trim();
+      const apellidos = partes.join(' ') || '-';
+      await pool.query(
+        `INSERT INTO clientes (empresa_id, nombres, apellidos, email)
+         SELECT $1, $2, $3, $4
+         WHERE NOT EXISTS (SELECT 1 FROM clientes WHERE empresa_id = $1 AND LOWER(email) = LOWER($4))`,
+        [Number(empresa_id), nombres, apellidos, email.toLowerCase().trim()]
+      ).catch((err) => console.error('[authController] No se pudo crear la ficha de cliente:', err.message));
+    }
 
     return res.status(201).json({
       success: true,
@@ -558,7 +592,7 @@ export const loginUser = async (req, res) => {
 
   try {
     // --- Validación de campos obligatorios ---
-    if (!email || !password) {
+    if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
       return res.status(400).json({
         success: false,
         message: 'Los campos email y password son obligatorios.',
@@ -582,9 +616,10 @@ export const loginUser = async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({
+      // Misma respuesta que contraseña incorrecta: no revela si el correo existe
+      return res.status(401).json({
         success: false,
-        message: 'Usuario no encontrado.',
+        message: 'Credenciales inválidas.',
       });
     }
 

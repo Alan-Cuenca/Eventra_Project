@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { AlertTriangle, Sparkles, ArrowRight, X } from 'lucide-react';
 
 /**
@@ -26,6 +27,7 @@ export const PlanLimitAlert = ({
   className = '',
 }) => {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   const handleUpgrade = () => {
     if (typeof onUpgrade === 'function') {
@@ -64,6 +66,7 @@ export const PlanLimitAlert = ({
 
       {/* Acciones Derecha: Botón Upgrade y Cerrar */}
       <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+        {isAdmin && (
         <button
           type="button"
           onClick={handleUpgrade}
@@ -72,6 +75,7 @@ export const PlanLimitAlert = ({
           <span>Mejorar a Premium</span>
           <ArrowRight size={14} />
         </button>
+        )}
 
         {onClose && (
           <button

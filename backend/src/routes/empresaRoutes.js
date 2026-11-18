@@ -9,6 +9,7 @@ import {
   obtenerMiBranding,
   actualizarMiBranding,
   analizarLogoIA,
+  actualizarMisDatosPago,
 } from '../controllers/empresaController.js';
 import {
   verifyToken,
@@ -24,6 +25,13 @@ import {
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 25 * 1024 * 1024 }, // 25 MB max para admitir imágenes de alta resolución
+  fileFilter: (req, file, cb) => {
+    // Solo imágenes de logotipo; se rechazan SVG/HTML y cualquier otro tipo
+    if (['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) return cb(null, true);
+    const err = new Error('El logotipo debe ser una imagen JPG, PNG o WEBP.');
+    err.status = 400;
+    return cb(err);
+  },
 });
 
 const router = express.Router();
@@ -93,6 +101,13 @@ router.put(
  *       400:
  *         description: No se proporcionó imagen
  */
+router.put(
+  '/mi-datos-pago',
+  verifyToken,
+  authorizeRoles([ROL_ADMINISTRADOR, ROL_GERENTE]),
+  actualizarMisDatosPago
+);
+
 router.post(
   '/analizar-logo-ia',
   verifyToken,

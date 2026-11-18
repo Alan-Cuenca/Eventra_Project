@@ -98,6 +98,24 @@ export const normalizarPlan = (nombre) => {
   return /premium|enterprise|profesional/.test(n) ? 'Premium' : 'Basico';
 };
 
+/**
+ * Indica si la empresa aún tiene cupo de personal (roles 1-3) según su plan.
+ * Se usa fuera del middleware (completar registro, reactivar usuarios).
+ * @returns {Promise<{ ok: boolean, maximo: number, uso: number, plan: string }>}
+ */
+export const hayCupoUsuarios = async (empresa_id) => {
+  const emp = await pool.query('SELECT plan_suscripcion FROM empresas WHERE id = $1', [empresa_id]);
+  const plan = normalizarPlan(emp?.rows?.[0]?.plan_suscripcion);
+  const limites = await getLimitesActivos(plan);
+  const maximo = limites.usuarios;
+  const cuenta = await pool.query(
+    'SELECT COUNT(*) FROM usuarios WHERE empresa_id = $1 AND estado_activo = true AND rol_id IN (1, 2, 3)',
+    [empresa_id]
+  );
+  const uso = parseInt(cuenta?.rows?.[0]?.count || '0', 10);
+  return { ok: maximo === undefined || uso < maximo, maximo, uso, plan };
+};
+
 /** Fragmento SQL: uso del chatbot del mes en curso (0 si el contador es de un mes anterior). */
 const CHATBOT_USO_MES_SQL =
   "CASE WHEN chatbot_mes_ref IS DISTINCT FROM date_trunc('month', CURRENT_DATE)::date THEN 0 ELSE COALESCE(mensajes_chatbot_mes, 0) END";

@@ -63,7 +63,7 @@ export const registrarPagoSuscripcion = async (req, res) => {
       const file = req.file;
 
       if (supabase) {
-        const fileExt = file.originalname.split('.').pop();
+        const fileExt = (String(file.originalname || '').split('.').pop() || 'bin').replace(/[^a-zA-Z0-9]/g, '').slice(0, 5) || 'bin';
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
         const filePath = `suscripciones/${empresa_id}/${fileName}`;
 
@@ -76,14 +76,19 @@ export const registrarPagoSuscripcion = async (req, res) => {
 
         if (uploadError) {
           console.error('[suscripcionController] Error subiendo comprobante a Supabase:', uploadError.message);
-          comprobante_url = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+          return res.status(502).json({
+            success: false,
+            message: 'No se pudo almacenar el comprobante. Intenta nuevamente en unos minutos.',
+          });
         } else {
           const { data: publicUrlData } = supabase.storage.from('comprobantes').getPublicUrl(filePath);
           comprobante_url = publicUrlData.publicUrl;
         }
       } else {
-        // Fallback resiliente para entornos sin Supabase Storage
-        comprobante_url = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+        return res.status(503).json({
+          success: false,
+          message: 'El almacenamiento de comprobantes no está disponible. Contacta al administrador.',
+        });
       }
     }
 

@@ -8,9 +8,9 @@ const router = express.Router();
 /**
  * @route  GET /api/usuarios
  * @desc   Retorna todos los usuarios de la empresa del admin
- * @access Private — Solo Administrador (1)
+ * @access Private — Administrador (1) y Gerente (2, para asignar responsables)
  */
-router.get('/', verifyToken, authorizeRoles([1]), obtenerUsuarios);
+router.get('/', verifyToken, authorizeRoles([1, 2]), obtenerUsuarios);
 
 /**
  * @route  POST /api/usuarios

@@ -104,7 +104,7 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
           { to: '/eventos', label: isCliente ? 'Mi Evento' : 'Eventos Programados', icon: <CalendarDays size={16} />, visible: isAdmin || isGerente || isTrabajador || isCliente },
           { to: '/actividades', label: isTrabajador ? 'Mis Actividades' : 'Checklist Operativo', icon: <CheckSquare size={16} />, visible: isAdmin || isGerente || isTrabajador },
           { to: '/reservas', label: 'Reservas Anti-Colisión', icon: <CalendarCheck size={16} />, visible: isAdmin || isGerente || isTrabajador || isCliente },
-          { to: '/solicitudes', label: 'Solicitudes de Modificación', icon: <FileEdit size={16} />, visible: isAdmin || isGerente || isTrabajador },
+          { to: '/solicitudes', label: 'Solicitudes de Modificación', icon: <FileEdit size={16} />, visible: isAdmin || isGerente || isCliente },
         ],
       },
     ],

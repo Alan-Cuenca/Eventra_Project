@@ -398,8 +398,9 @@ export const eliminarEvento = async (req, res) => {
   const empresa_id = req.user.empresa_id;
 
   try {
+    // Cancelación lógica: conserva pagos, actividades y solicitudes (historial financiero)
     const result = await pool.query(
-      `DELETE FROM eventos WHERE id = $1 AND empresa_id = $2 RETURNING id`,
+      `UPDATE eventos SET estado_progreso = 'Cancelado' WHERE id = $1 AND empresa_id = $2 RETURNING id`,
       [id, empresa_id]
     );
 
@@ -407,8 +408,11 @@ export const eliminarEvento = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Evento no encontrado.' });
     }
 
-    return res.status(200).json({ success: true, message: 'Evento eliminado.' });
+    return res.status(200).json({ success: true, message: 'Evento cancelado. Su historial de pagos y actividades se conserva.' });
   } catch (error) {
+    if (error.code === '22P02') {
+      return res.status(400).json({ success: false, message: 'Identificador de evento inválido.' });
+    }
     console.error('[eventoController] Error en eliminarEvento:', error.message);
     return res.status(500).json({ success: false, message: 'Error interno al eliminar.' });
   }

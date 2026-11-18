@@ -18,8 +18,6 @@ const TABS = [
   { id: 'resumen',     label: 'Resumen',     icon: <CalendarDays size={15} /> },
   { id: 'actividades', label: 'Actividades', icon: <CheckCircle2 size={15} /> },
   { id: 'pagos',       label: 'Pagos',       icon: <DollarSign size={15} /> },
-  { id: 'archivos',    label: 'Archivos',    icon: <FileText size={15} /> },
-  { id: 'historial',   label: 'Historial',   icon: <History size={15} /> },
 ];
 
 
@@ -67,12 +65,12 @@ export const EventDetailPage = ({ eventoId: propId }) => {
   };
 
   const eliminarEventoActual = async () => {
-    if (!window.confirm('¿Eliminar este evento? Se eliminarán también sus actividades y pagos asociados. Esta acción no se puede deshacer.')) return;
+    if (!window.confirm('¿Cancelar este evento? Pasará al estado Cancelado y se conservará su historial de pagos y actividades.')) return;
     try {
       await eventraService.deleteEvento(evento.id);
       navigate('/eventos', { replace: true });
     } catch (err) {
-      setToast({ msg: err.message || 'No se pudo eliminar el evento.', type: 'error' });
+      setToast({ msg: err.message || 'No se pudo cancelar el evento.', type: 'error' });
     }
   };
 
@@ -253,8 +251,12 @@ export const EventDetailPage = ({ eventoId: propId }) => {
           </button>
           <h1 style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>{evento.titulo || evento.nombre || `Evento #${evento.id}`}</h1>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <Badge variant={evento.estado === 'Confirmado' || evento.estado_progreso === 'Confirmado' ? 'success' : evento.estado === 'En preparación' || evento.estado_progreso === 'En preparación' ? 'primary' : 'warning'}>
-              {evento.estado || evento.estado_progreso || 'Registrado'}
+            <Badge variant={
+              (evento.estado_progreso || evento.estado) === 'Finalizado' ? 'success'
+              : (evento.estado_progreso || evento.estado) === 'En Progreso' ? 'primary'
+              : (evento.estado_progreso || evento.estado) === 'Cancelado' ? 'danger'
+              : 'warning'}>
+              {evento.estado_progreso || evento.estado || 'En Planificación'}
             </Badge>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>·</span>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -277,7 +279,7 @@ export const EventDetailPage = ({ eventoId: propId }) => {
           )}
           {canEditDirectly && (
             <button type="button" className="btn btn-secondary btn-sm" onClick={eliminarEventoActual}>
-              Eliminar
+              Cancelar evento
             </button>
           )}
           {canEditDirectly ? (
@@ -463,7 +465,7 @@ export const EventDetailPage = ({ eventoId: propId }) => {
                       <td style={{ fontWeight: 800, color: 'var(--primary-dark)', fontFamily: 'Outfit, sans-serif' }}>{fmt(p.monto)}</td>
                       <td style={{ fontSize: '0.875rem', whiteSpace: 'nowrap' }}>{p.fecha}</td>
                       <td style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{p.metodo}</td>
-                      <td><Badge variant={p.estado === 'Completado' ? 'success' : 'warning'}>{p.estado}</Badge></td>
+                      <td><Badge variant={['Aprobado', 'Completado'].includes(p.estado) ? 'success' : p.estado === 'Rechazado' ? 'danger' : 'warning'}>{p.estado}</Badge></td>
                     </tr>
                   ))}
                 </tbody>

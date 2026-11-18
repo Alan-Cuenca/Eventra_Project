@@ -70,7 +70,7 @@ export const FacturacionSuperAdmin = () => {
       await cargarSuscripciones();
     } catch (error) {
       console.error('Error actualizando suscripción:', error);
-      showToast(error.response?.data?.message || 'Error al actualizar suscripción.', 'error');
+      showToast(error.message || 'Error al actualizar suscripción.', 'error');
     } finally {
       setProcesando(false);
     }

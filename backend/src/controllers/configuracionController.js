@@ -107,7 +107,6 @@ export const guardarConfiguracionGlobal = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Error al persistir la configuración en la base de datos.',
-      error: error.message,
     });
   }
 };

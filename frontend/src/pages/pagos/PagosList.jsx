@@ -74,7 +74,7 @@ export const PagosList = () => {
       await cargarPagos();
     } catch (error) {
       console.error('Error actualizando pago:', error);
-      showToast(error.response?.data?.message || 'No se pudo actualizar el estado del pago', 'error');
+      showToast(error.message || 'No se pudo actualizar el estado del pago', 'error');
     } finally {
       setProcesandoAccion(false);
     }

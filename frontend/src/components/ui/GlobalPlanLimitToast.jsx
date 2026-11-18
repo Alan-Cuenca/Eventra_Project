@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { AlertCircle, ArrowRight, X, Sparkles } from 'lucide-react';
 
 export const GlobalPlanLimitToast = () => {
   const [alertData, setAlertData] = useState(null);
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     const handlePlanLimit = (event) => {
@@ -40,6 +42,7 @@ export const GlobalPlanLimitToast = () => {
             {alertData.message}
           </p>
           <div className="mt-2.5 flex items-center gap-2">
+            {isAdmin && (
             <button
               type="button"
               onClick={() => {
@@ -51,6 +54,7 @@ export const GlobalPlanLimitToast = () => {
               <span>Mejorar a Premium</span>
               <ArrowRight size={13} />
             </button>
+            )}
 
             <button
               type="button"

@@ -1,3 +1,4 @@
+import { hayCupoUsuarios } from '../middlewares/planLimitsMiddleware.js';
 import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
 import { ROL_SUPER_ADMIN } from '../middlewares/authMiddleware.js';
@@ -50,7 +51,8 @@ export const obtenerUsuarios = async (req, res) => {
  */
 export const crearUsuario = async (req, res) => {
   const empresa_id = req.user.empresa_id;
-  const { rol_id, nombre_completo, nombre, email, password } = req.body;
+  const { rol_id, nombre_completo, nombre, password } = req.body;
+  const email = typeof req.body.email === 'string' ? req.body.email.toLowerCase().trim() : req.body.email;
 
   if (!empresa_id) {
     return res.status(403).json({
@@ -119,7 +121,8 @@ export const crearUsuario = async (req, res) => {
 export const actualizarUsuario = async (req, res) => {
   const empresa_id = req.user.empresa_id;
   const { id } = req.params;
-  const { rol_id, nombre_completo, nombre, email, password, estado_activo } = req.body;
+  const { rol_id, nombre_completo, nombre, password, estado_activo } = req.body;
+  const email = typeof req.body.email === 'string' ? req.body.email.toLowerCase().trim() : req.body.email;
 
   if (!empresa_id) {
     return res.status(403).json({
@@ -150,6 +153,22 @@ export const actualizarUsuario = async (req, res) => {
   }
 
   try {
+    // Reactivar a un colaborador vuelve a consumir cupo del plan
+    if (estado_activo === true) {
+      const previo = await pool.query('SELECT estado_activo, rol_id FROM usuarios WHERE id = $1 AND empresa_id = $2', [id, empresa_id]);
+      const fila = previo?.rows?.[0];
+      if (fila && fila.estado_activo === false && Number(rol_id || fila.rol_id) !== 4) {
+        const cupo = await hayCupoUsuarios(empresa_id);
+        if (!cupo.ok) {
+          return res.status(403).json({
+            success: false,
+            error: 'PLAN_LIMIT_EXCEEDED',
+            message: `Alcanzaste el límite de ${cupo.maximo} colaboradores de tu plan ${cupo.plan}.`,
+          });
+        }
+      }
+    }
+
     let passwordHash = null;
     if (password) {
       const salt = await bcrypt.genSalt(10);

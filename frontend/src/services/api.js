@@ -59,7 +59,7 @@ apiClient.interceptors.response.use(
   (error) => {
     // ── Manejo crítico: token expirado o inválido (401 Unauthorized) ─────────
     const urlPeticion = String(error.config?.url || '');
-    const esEndpointDeLogin = /\/auth\/(login|recuperar-credencial|completar-registro|registro-cliente)/.test(urlPeticion);
+    const esEndpointDeLogin = /\/(auth\/(login|recuperar-password|restablecer-password|cambiar-password-obligatorio|completar-registro|registro-cliente)|clientes\/registro-publico)/.test(urlPeticion);
     if (error.response?.status === 401 && !esEndpointDeLogin) {
       console.warn('[api] Token expirado o inválido — cerrando sesión...');
       // Limpiar todas las claves de sesión del localStorage
@@ -90,12 +90,9 @@ apiClient.interceptors.response.use(
     let isPlanLimit = false;
     if (error.response?.status === 403 && !requiereCambioPassword) {
       const errorData = error.response?.data;
-      isPlanLimit =
-        errorData?.error === 'PLAN_LIMIT_EXCEEDED' ||
-        (typeof errorData?.message === 'string' &&
-          (errorData.message.toLowerCase().includes('límite') ||
-           errorData.message.toLowerCase().includes('limite') ||
-           errorData.message.toLowerCase().includes('plan')));
+      // Solo el código explícito del backend cuenta como límite de plan (evita falsos
+      // positivos con mensajes que contengan "plan", como "planificación").
+      isPlanLimit = errorData?.error === 'PLAN_LIMIT_EXCEEDED';
 
       if (isPlanLimit) {
         console.warn('[api] Límite de plan SaaS alcanzado:', errorData?.message);

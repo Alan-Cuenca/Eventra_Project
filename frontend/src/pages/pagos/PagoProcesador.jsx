@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { eventraService } from '../../services/eventraService';
+import { api } from '../../services/api';
 import { 
   CreditCard, 
   Banknote, 
@@ -35,6 +36,21 @@ export const PagoProcesador = () => {
   const [loading, setLoading] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [toast, setToast] = useState(null);
+  const [datosPago, setDatosPago] = useState({});
+
+  useEffect(() => {
+    api.get('/empresas/mi-branding')
+      .then((res) => setDatosPago(res?.data?.datos_pago || {}))
+      .catch(() => {});
+  }, []);
+
+  const ETIQUETAS_PAGO = {
+    banco: 'Institución bancaria', tipo_cuenta: 'Tipo de cuenta', numero_cuenta: 'Número de cuenta',
+    titular: 'Titular', identificacion: 'RUC / Cédula', correo: 'Correo de notificación', deuna: 'Deuna',
+  };
+  const datosPagoLista = Object.entries(ETIQUETAS_PAGO)
+    .filter(([clave]) => datosPago?.[clave])
+    .map(([clave, etiqueta]) => [etiqueta, datosPago[clave]]);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -135,7 +151,7 @@ export const PagoProcesador = () => {
     } catch (error) {
       console.error('Error al registrar pago:', error);
       showToast(
-        error.response?.data?.message || 'Error al procesar el pago. Por favor intenta de nuevo.',
+        error.message || 'Error al procesar el pago. Por favor intenta de nuevo.',
         'error'
       );
     } finally {
@@ -233,113 +249,43 @@ export const PagoProcesador = () => {
         
         {/* Contenido Condicional por Pestaña */}
         
-        {/* TAB 1: DEUNA */}
-        {metodo === 'Deuna' && (
-          <div className="bg-white rounded-2xl border border-[#CBC6B6] p-6 shadow-sm animate-fade-in space-y-4">
-            <div className="flex items-center gap-2 text-sm font-bold text-[#233D49]">
-              <QrCode size={18} className="text-[#526F7D]" />
-              <span>Escanea el Código QR Deuna</span>
-            </div>
-
-            <div className="flex flex-col md:flex-row items-center gap-6 p-4 rounded-xl bg-[#FAF8F5] border border-[#CBC6B6]/60">
-              {/* QR Estático de Prueba */}
-              <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-[#526F7D]/40 shadow-sm flex flex-col items-center">
-                <svg
-                  className="w-40 h-40"
-                  viewBox="0 0 100 100"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  {/* Patrón estilizado de QR para pruebas */}
-                  <rect width="100" height="100" rx="8" fill="#FFFFFF" />
-                  <rect x="10" y="10" width="25" height="25" rx="3" fill="#233D49" />
-                  <rect x="14" y="14" width="17" height="17" rx="2" fill="#FFFFFF" />
-                  <rect x="18" y="18" width="9" height="9" fill="#526F7D" />
-
-                  <rect x="65" y="10" width="25" height="25" rx="3" fill="#233D49" />
-                  <rect x="69" y="14" width="17" height="17" rx="2" fill="#FFFFFF" />
-                  <rect x="73" y="18" width="9" height="9" fill="#526F7D" />
-
-                  <rect x="10" y="65" width="25" height="25" rx="3" fill="#233D49" />
-                  <rect x="14" y="69" width="17" height="17" rx="2" fill="#FFFFFF" />
-                  <rect x="18" y="73" width="9" height="9" fill="#526F7D" />
-
-                  <rect x="42" y="15" width="8" height="8" rx="1" fill="#526F7D" />
-                  <rect x="52" y="25" width="6" height="6" rx="1" fill="#233D49" />
-                  <rect x="42" y="38" width="16" height="16" rx="3" fill="#4D9A72" />
-                  <rect x="25" y="45" width="8" height="8" rx="1" fill="#233D49" />
-                  <rect x="45" y="65" width="10" height="10" rx="2" fill="#233D49" />
-                  <rect x="65" y="45" width="12" height="12" rx="2" fill="#526F7D" />
-                  <rect x="65" y="68" width="22" height="8" rx="2" fill="#233D49" />
-                  <rect x="78" y="80" width="10" height="8" rx="2" fill="#526F7D" />
-                </svg>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#526F7D] mt-2">
-                  DEUNA QR OFICIAL
-                </span>
-              </div>
-
-              <div className="space-y-2 text-xs text-[#233D49]/90 text-center md:text-left">
-                <p className="font-bold text-sm text-[#233D49]">
-                  Pasos para abonar mediante Deuna:
-                </p>
-                <ol className="list-decimal list-inside space-y-1.5 text-xs text-[#233D49]/80">
-                  <li>Abre tu aplicación bancaria móvil (Banco Pichincha o Deuna App).</li>
-                  <li>Selecciona la opción <strong>"Escanear QR"</strong> y apunta al código.</li>
-                  <li>Ingresa el valor exacto de tu anticipo o saldo acordado.</li>
-                  <li>Toma una <strong>captura de pantalla</strong> del comprobante exitoso y adjúntala a continuación.</li>
-                </ol>
-                <p className="text-[11px] text-[#7D8F97] pt-1">
-                  Comercio Afiliado: <strong>EVENTRA EVENTOS S.A.S. (Cod: EV-8891)</strong>
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 2: TRANSFERENCIA BANCARIA */}
-        {metodo === 'Transferencia' && (
+        {/* TAB 1 y 2: DEUNA / TRANSFERENCIA — datos de cobro definidos por la empresa */}
+        {(metodo === 'Deuna' || metodo === 'Transferencia') && (
           <div className="bg-white rounded-2xl border border-[#CBC6B6] p-6 shadow-sm animate-fade-in space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-bold text-[#233D49]">
                 <Building2 size={18} className="text-[#526F7D]" />
-                <span>Datos Bancarios Oficiales</span>
+                <span>{metodo === 'Deuna' ? 'Datos para pagar por Deuna' : 'Datos bancarios para la transferencia'}</span>
               </div>
-              <button
-                type="button"
-                onClick={() => copiarAlPortapapeles("Banco: Banco Pichincha | Cuenta Corriente: 2100458921 | Titular: EVENTRA S.A.S. | RUC: 1793145678001")}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FAF8F5] hover:bg-[#F3F0E4] border border-[#CBC6B6] text-xs font-bold text-[#526F7D] transition-colors"
-              >
-                <Copy size={13} />
-                <span>{copiado ? '¡Copiado!' : 'Copiar Datos'}</span>
-              </button>
+              {datosPagoLista.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => copiarAlPortapapeles(datosPagoLista.map(([k, v]) => `${k}: ${v}`).join(' | '))}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FAF8F5] hover:bg-[#F3F0E4] border border-[#CBC6B6] text-xs font-bold text-[#526F7D] transition-colors"
+                >
+                  <Copy size={13} />
+                  <span>{copiado ? '¡Copiado!' : 'Copiar Datos'}</span>
+                </button>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-[#FAF8F5] border border-[#CBC6B6]/60 text-xs">
-              <div>
-                <span className="text-[#526F7D] font-semibold">Institución Bancaria:</span>
-                <p className="font-extrabold text-[#233D49] text-sm">Banco Pichincha</p>
+            {datosPagoLista.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-[#FAF8F5] border border-[#CBC6B6]/60 text-xs">
+                {datosPagoLista.map(([k, v]) => (
+                  <div key={k}>
+                    <span className="text-[#526F7D] font-semibold">{k}:</span>
+                    <p className="font-extrabold text-[#233D49] text-sm break-words">{v}</p>
+                  </div>
+                ))}
               </div>
-              <div>
-                <span className="text-[#526F7D] font-semibold">Tipo de Cuenta:</span>
-                <p className="font-extrabold text-[#233D49] text-sm">Cuenta Corriente</p>
-              </div>
-              <div>
-                <span className="text-[#526F7D] font-semibold">Número de Cuenta:</span>
-                <p className="font-extrabold text-[#233D49] text-sm font-mono tracking-wider">2100458921</p>
-              </div>
-              <div>
-                <span className="text-[#526F7D] font-semibold">Beneficiario / Titular:</span>
-                <p className="font-extrabold text-[#233D49] text-sm">EVENTRA S.A.S.</p>
-              </div>
-              <div>
-                <span className="text-[#526F7D] font-semibold">RUC Institucional:</span>
-                <p className="font-bold text-[#233D49]">1793145678001</p>
-              </div>
-              <div>
-                <span className="text-[#526F7D] font-semibold">Correo de Notificación:</span>
-                <p className="font-bold text-[#233D49]">pagos@eventra.ec</p>
-              </div>
-            </div>
+            ) : (
+              <p className="text-xs text-[#526F7D] p-4 rounded-xl bg-[#FAF8F5] border border-[#CBC6B6]/60">
+                Tu organizador aún no ha publicado los datos de pago. Consúltalos con él y luego adjunta el comprobante aquí.
+              </p>
+            )}
+            <p className="text-[11px] text-[#7D8F97]">
+              Realiza el pago por el valor exacto y adjunta la captura o el PDF del comprobante más abajo.
+            </p>
           </div>
         )}
 

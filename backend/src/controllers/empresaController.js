@@ -220,7 +220,7 @@ export const crearEmpresa = async (req, res) => {
     console.error('[empresaController] Error en crearEmpresa:', error.message);
     return res.status(500).json({
       success: false,
-      message: `Error interno del servidor al crear la empresa y su administrador inicial: ${error.message}`,
+      message: 'Error interno del servidor al crear la empresa y su administrador inicial.',
     });
   } finally {
     client.release();
@@ -462,7 +462,8 @@ export const obtenerMiBranding = async (req, res) => {
          paleta_personalizada,
          COALESCE(marca_agua_activa, true) AS marca_agua_activa, 
          portal_titulo, 
-         portal_descripcion
+         portal_descripcion,
+         datos_pago
        FROM empresas
        WHERE id = $1`,
       [empresa_id]
@@ -532,7 +533,7 @@ export const actualizarMiBranding = async (req, res) => {
     if (req.file) {
       const file = req.file;
       if (supabase) {
-        const fileExt = file.originalname ? file.originalname.split('.').pop() : 'png';
+        const fileExt = (String(file.originalname || '').split('.').pop() || 'bin').replace(/[^a-zA-Z0-9]/g, '').slice(0, 5) || 'bin';
         const fileName = `logo_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
         const filePath = `logos/${empresa_id}/${fileName}`;
 
@@ -704,7 +705,7 @@ export const analizarLogoIA = async (req, res) => {
     let nuevoLogoGuardado = undefined;
     if (req.file) {
       if (supabase) {
-        const fileExt = req.file.originalname ? req.file.originalname.split('.').pop() : 'png';
+        const fileExt = (String(req.file.originalname || '').split('.').pop() || 'bin').replace(/[^a-zA-Z0-9]/g, '').slice(0, 5) || 'bin';
         const fileName = `logo_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
         const filePath = `logos/${empresa_id}/${fileName}`;
         try {
@@ -794,5 +795,38 @@ export const obtenerAdministradoresTenant = async (req, res) => {
   } catch (error) {
     console.error('[empresaController] Error en obtenerAdministradoresTenant:', error.message);
     return res.status(500).json({ success: false, message: 'Error interno al obtener administradores.' });
+  }
+};
+
+
+/**
+ * PUT /api/empresas/mi-datos-pago  (Administrador y Gerente)
+ * Guarda los datos de cobro de la empresa que ven sus clientes al pagar.
+ */
+export const actualizarMisDatosPago = async (req, res) => {
+  const empresa_id = req.user?.empresa_id;
+  if (!empresa_id) {
+    return res.status(403).json({ success: false, message: 'Usuario sin empresa asignada.' });
+  }
+
+  const CAMPOS = ['banco', 'tipo_cuenta', 'numero_cuenta', 'titular', 'identificacion', 'correo', 'deuna'];
+  const datos = {};
+  for (const campo of CAMPOS) {
+    const valor = req.body?.[campo];
+    if (typeof valor === 'string' && valor.trim()) datos[campo] = valor.trim().slice(0, 120);
+  }
+
+  try {
+    const result = await pool.query(
+      'UPDATE empresas SET datos_pago = $1 WHERE id = $2 RETURNING datos_pago',
+      [JSON.stringify(datos), empresa_id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Empresa no encontrada.' });
+    }
+    return res.status(200).json({ success: true, data: result.rows[0].datos_pago });
+  } catch (error) {
+    console.error('[empresaController] Error en actualizarMisDatosPago:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno al guardar los datos de pago.' });
   }
 };

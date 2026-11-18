@@ -81,7 +81,7 @@ export const registrarPago = async (req, res) => {
       const file = req.file;
 
       if (supabase) {
-        const fileExt = file.originalname.split('.').pop();
+        const fileExt = (String(file.originalname || '').split('.').pop() || 'bin').replace(/[^a-zA-Z0-9]/g, '').slice(0, 5) || 'bin';
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
         const filePath = `${empresa_id}/${fileName}`;
 

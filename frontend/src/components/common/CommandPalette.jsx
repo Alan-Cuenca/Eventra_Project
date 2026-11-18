@@ -41,8 +41,9 @@ export const CommandPalette = ({ isOpen, onClose }) => {
     { id: 'events', label: 'Eventos & Calendario', path: '/eventos', icon: <CalendarDays size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isTrabajador || isCliente },
     { id: 'activities', label: 'Checklist Operativo', path: '/actividades', icon: <CheckSquare size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isTrabajador },
     { id: 'reservations', label: 'Reservas Anti-Colisión', path: '/reservas', icon: <CalendarCheck size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isTrabajador || isCliente },
-    { id: 'quotes', label: 'Cotizaciones', path: '/cotizaciones', icon: <Calculator size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isTrabajador },
-    { id: 'quoter', label: 'Cotizador Dinámico', path: '/cotizador', icon: <Sparkles size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isCliente },
+    { id: 'quotes', label: 'Cotizaciones', path: '/cotizaciones', icon: <Calculator size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isTrabajador || isCliente },
+    { id: 'quoter', label: 'Cotizador Dinámico', path: '/cotizador', icon: <Sparkles size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isTrabajador },
+    { id: 'pay', label: 'Realizar Pago', path: '/pagos/procesar', icon: <CreditCard size={16} />, category: 'Navegación', visible: isCliente },
     { id: 'payments', label: 'Gestión de Pagos & Anticipos', path: '/pagos', icon: <CreditCard size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isTrabajador },
     { id: 'requests', label: 'Solicitudes de Modificación', path: '/solicitudes', icon: <FileEdit size={16} />, category: 'Navegación', visible: isAdmin || isGerente || isCliente },
     // Catálogo & CRM

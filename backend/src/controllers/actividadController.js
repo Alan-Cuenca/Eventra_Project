@@ -226,8 +226,22 @@ export const actualizarActividad = async (req, res) => {
   const { titulo, descripcion, fecha_vencimiento, responsable_id } = req.body;
 
   try {
+    // El responsable debe ser un usuario de la misma empresa (igual que al crear)
+    if (responsable_id) {
+      const resp = await pool.query(
+        'SELECT id FROM usuarios WHERE id = $1 AND empresa_id = $2',
+        [responsable_id, empresa_id]
+      );
+      if (resp.rowCount === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'El colaborador responsable especificado no pertenece a su empresa.',
+        });
+      }
+    }
+
     const result = await pool.query(
-      `UPDATE actividades 
+      `UPDATE actividades
        SET titulo = COALESCE($1, titulo),
            descripcion = COALESCE($2, descripcion),
            fecha_vencimiento = COALESCE($3, fecha_vencimiento),

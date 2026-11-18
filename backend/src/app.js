@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swagger.js';
@@ -26,9 +27,26 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+// Detrás del proxy de Render: necesario para que req.ip sea la IP real del cliente
+app.set('trust proxy', 1);
+
+// Cabeceras de seguridad. La API solo sirve JSON, por lo que la CSP no aplica a /api-docs (Swagger)
+app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+
+// CORS: lista de orígenes permitidos en CORS_ORIGINS (separados por coma). Sin definir, queda abierto.
+const origenesPermitidos = (process.env.CORS_ORIGINS || '').split(',').map((o) => o.trim()).filter(Boolean);
+app.use(cors(origenesPermitidos.length > 0
+  ? { origin: (origin, cb) => (!origin || origenesPermitidos.includes(origin) ? cb(null, true) : cb(new Error('Origen no permitido por CORS'))) }
+  : undefined));
+
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
+
+// Express 5 deja req.body en undefined si no hay cuerpo parseable: se normaliza a {}
+app.use((req, res, next) => {
+  if (req.body === undefined) req.body = {};
+  next();
+});
 
 // --- Documentación interactiva de la API (Swagger UI) ---
 // Accesible en: http://localhost:3000/api-docs
@@ -111,6 +129,22 @@ app.use((req, res) => {
       estado: 'Error',
       mensaje: 'Ruta no encontrada. Por favor, verifica la URL.'
   });
+});
+
+// Manejador global de errores: nunca devuelve stack traces ni HTML al cliente
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  const status = err.status || err.statusCode || (err.type === 'entity.parse.failed' ? 400 : 500);
+  if (status >= 500) console.error('[app] Error no controlado:', err.message);
+  const mensajes = {
+    400: err.type === 'entity.parse.failed' ? 'El cuerpo de la solicitud no es un JSON válido.' : (err.message || 'Solicitud inválida.'),
+    403: 'Origen no permitido.',
+    413: 'El archivo o los datos enviados son demasiado grandes.',
+  };
+  const mensaje = err.code === 'LIMIT_FILE_SIZE'
+    ? 'El archivo supera el tamaño máximo permitido.'
+    : (mensajes[status] || (status >= 500 ? 'Error interno del servidor.' : err.message));
+  res.status(err.code === 'LIMIT_FILE_SIZE' ? 413 : status).json({ success: false, message: mensaje });
 });
 
 // Exporta la instancia Express para que los tests (supertest) puedan

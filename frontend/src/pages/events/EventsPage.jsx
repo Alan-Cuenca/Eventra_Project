@@ -120,10 +120,10 @@ export const EventsPage = () => {
             onChange={(e) => setFilterStatus(e.target.value)}
           >
             <option value="all">Todos los Estados</option>
-            <option value="confirmado">Confirmados</option>
-            <option value="preparación">En preparación</option>
-            <option value="cotización">Cotización</option>
+            <option value="planificación">En Planificación</option>
             <option value="progreso">En Progreso</option>
+            <option value="finalizado">Finalizados</option>
+            <option value="cancelado">Cancelados</option>
           </select>
         </div>
       </div>
@@ -174,7 +174,7 @@ export const EventsPage = () => {
             const clienteFmt = evt.cliente_nombre || (evt.cliente ? `${evt.cliente.nombres || ''} ${evt.cliente.apellidos || ''}`.trim() : 'Cliente Registrado');
             const telefonoFmt = evt.cliente_telefono || evt.cliente?.telefono || 'No registrado';
             const tipoFmt = evt.tipo || evt.salon_o_lugar || 'Evento Social';
-            const estadoFmt = evt.estado || evt.estado_progreso || evt.reserva_estado || 'Confirmado';
+            const estadoFmt = evt.estado || evt.estado_progreso || evt.reserva_estado || 'En Planificación';
 
             const isSuccess = estadoFmt.toLowerCase().includes('confirmado') || estadoFmt.toLowerCase().includes('finalizado');
             const isProgress = estadoFmt.toLowerCase().includes('progreso') || estadoFmt.toLowerCase().includes('preparación');

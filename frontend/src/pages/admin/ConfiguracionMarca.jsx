@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useBranding, PALETAS } from '../../context/ThemeBrandingContext';
 import { eventraService } from '../../services/eventraService';
+import { DatosPagoCard } from '../../components/admin/DatosPagoCard';
 import { extractPaletteFromImage } from '../../utils/imageColorExtractor';
 import {
   Palette,
@@ -962,6 +963,7 @@ export const ConfiguracionMarca = () => {
           </section>
         </div>
       </div>
+      <DatosPagoCard />
     </div>
   );
 };

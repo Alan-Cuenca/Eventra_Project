@@ -85,16 +85,16 @@ describe('Módulo de Autenticación y Seguridad JWT — EVENTRA', () => {
       expect(resSinEmail.body.success).toBe(false);
     });
 
-    it('404 — rechaza con 404 si el usuario no existe en la base de datos', async () => {
+    it('401 — usuario inexistente responde igual que contraseña mala (sin enumerar cuentas)', async () => {
       mockQueryHandler = async () => ({ rows: [], rowCount: 0 });
 
       const res = await request(app)
         .post('/api/auth/login')
         .send({ email: 'inexistente@eventra.com', password: 'Password123!' });
 
-      expect(res.statusCode).toBe(404);
+      expect(res.statusCode).toBe(401);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toMatch(/no encontrado/i);
+      expect(res.body.message).toMatch(/Credenciales inválidas/i);
     });
 
     it('401 — rechaza con 401 si las credenciales son incorrectas (contraseña inválida)', async () => {
