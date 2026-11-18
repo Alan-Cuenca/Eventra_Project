@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import { validarFecha, validarMonto } from '../utils/validaciones.js';
 
 /**
  * Crea una nueva cotización para un cliente de la empresa autenticada.
@@ -11,7 +12,7 @@ import pool from '../config/db.js';
  */
 export const crearCotizacion = async (req, res) => {
   const empresa_id = req.user.empresa_id;
-  const { cliente_id, paquete_id, fecha_estimada_evento, total_calculado } = req.body;
+  const { cliente_id, paquete_id, fecha_estimada_evento, total_calculado, servicios_ids, tipo_evento, num_invitados } = req.body;
 
   try {
     // --- Validación de campos obligatorios ---
@@ -22,18 +23,29 @@ export const crearCotizacion = async (req, res) => {
       });
     }
 
+    const errorFecha = validarFecha(fecha_estimada_evento, 'fecha estimada del evento');
+    if (errorFecha) {
+      return res.status(400).json({ success: false, message: errorFecha });
+    }
+
     const tieneTotal = total_calculado !== undefined && total_calculado !== null && total_calculado !== '';
-    if (tieneTotal && (isNaN(total_calculado) || Number(total_calculado) < 0)) {
+    const errorTotal = tieneTotal ? validarMonto(total_calculado, { permitirCero: true, etiqueta: 'total_calculado' }) : null;
+    if (errorTotal) {
+      return res.status(400).json({ success: false, message: errorTotal });
+    }
+    const idsServicios = Array.isArray(servicios_ids) ? [...new Set(servicios_ids.map(String))] : [];
+    if (idsServicios.length > 50) {
+      return res.status(400).json({ success: false, message: 'Una cotización admite hasta 50 servicios.' });
+    }
+    if (!paquete_id && !tieneTotal && idsServicios.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'El total_calculado debe ser un número positivo.',
+        message: 'Debes indicar un paquete_id, servicios o un total_calculado.',
       });
     }
-    if (!paquete_id && !tieneTotal) {
-      return res.status(400).json({
-        success: false,
-        message: 'Debes indicar un paquete_id o un total_calculado.',
-      });
+    const invitados = num_invitados === undefined || num_invitados === null || num_invitados === '' ? null : Number(num_invitados);
+    if (invitados !== null && (!Number.isInteger(invitados) || invitados < 1 || invitados > 100000)) {
+      return res.status(400).json({ success: false, message: 'El número de invitados debe ser un entero entre 1 y 100000.' });
     }
 
     // --- Blindaje SaaS Multi-tenant (Anti-IDOR) ---
@@ -52,6 +64,7 @@ export const crearCotizacion = async (req, res) => {
 
     // 2. Si se especifica paquete_id, validar que pertenezca a la empresa en sesión
     let totalFinal = tieneTotal ? Number(total_calculado) : 0;
+    let precioPaquete = 0;
     if (paquete_id) {
       const paqueteCheck = await pool.query(
         'SELECT id, precio_total FROM paquetes WHERE id = $1 AND empresa_id = $2',
@@ -65,19 +78,46 @@ export const crearCotizacion = async (req, res) => {
         });
       }
       // El total nunca puede ser menor al precio del paquete: lo fija el servidor.
-      const precioPaquete = Number(paqueteCheck.rows[0].precio_total) || 0;
+      precioPaquete = Number(paqueteCheck.rows[0].precio_total) || 0;
       totalFinal = Math.max(totalFinal, precioPaquete);
+    }
+
+    // 3. Servicios elegidos: deben ser de la empresa y el total lo calcula el servidor
+    //    (precio del paquete + precio_base de cada servicio), ignorando el total del cliente.
+    let serviciosFilas = [];
+    if (idsServicios.length > 0) {
+      const serviciosCheck = await pool.query(
+        'SELECT id, precio_base FROM servicios WHERE id = ANY($1::uuid[]) AND empresa_id = $2 AND estado_activo = true',
+        [idsServicios, empresa_id]
+      );
+      serviciosFilas = serviciosCheck.rows || [];
+      if (serviciosFilas.length !== idsServicios.length) {
+        return res.status(404).json({
+          success: false,
+          message: 'Alguno de los servicios seleccionados no existe, está inactivo o no pertenece a su empresa.',
+        });
+      }
+      totalFinal = precioPaquete + serviciosFilas.reduce((suma, s) => suma + (Number(s.precio_base) || 0), 0);
     }
 
     // --- Insertar cotización (SQL parametrizado) ---
     // paquete_id puede ser null (cotización sin paquete base)
     const result = await pool.query(
-      `INSERT INTO cotizaciones (empresa_id, cliente_id, paquete_id, fecha_estimada_evento, total_calculado)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO cotizaciones (empresa_id, cliente_id, paquete_id, fecha_estimada_evento, total_calculado, tipo_evento, num_invitados)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id, empresa_id, cliente_id, paquete_id, fecha_estimada_evento,
-                 total_calculado, estado, fecha_creacion`,
-      [empresa_id, cliente_id, paquete_id || null, fecha_estimada_evento, totalFinal]
+                 total_calculado, estado, fecha_creacion, tipo_evento, num_invitados`,
+      [empresa_id, cliente_id, paquete_id || null, fecha_estimada_evento, totalFinal,
+       typeof tipo_evento === 'string' && tipo_evento.trim() ? tipo_evento.trim().slice(0, 60) : null, invitados]
     );
+
+    // Guardar los servicios elegidos con su precio al momento de cotizar
+    for (const s of serviciosFilas) {
+      await pool.query(
+        'INSERT INTO cotizacion_servicios (cotizacion_id, servicio_id, precio_unitario) VALUES ($1, $2, $3)',
+        [result.rows[0].id, s.id, s.precio_base]
+      );
+    }
 
     return res.status(201).json({
       success: true,
@@ -124,6 +164,11 @@ export const obtenerCotizaciones = async (req, res) => {
          c.total_calculado,
          c.estado,
          c.fecha_creacion,
+         c.tipo_evento,
+         c.num_invitados,
+         COALESCE((SELECT json_agg(json_build_object('id', sv.id, 'nombre', sv.nombre, 'precio', cs.precio_unitario))
+                   FROM cotizacion_servicios cs JOIN servicios sv ON sv.id = cs.servicio_id
+                   WHERE cs.cotizacion_id = c.id), '[]'::json) AS servicios,
          -- Datos del cliente
          cl.id           AS cliente_id,
          cl.nombres      AS cliente_nombres,
@@ -170,6 +215,10 @@ export const obtenerCotizacionPorId = async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT c.id, c.empresa_id, c.fecha_estimada_evento, c.total_calculado, c.estado, c.fecha_creacion,
+              c.tipo_evento, c.num_invitados,
+              COALESCE((SELECT json_agg(json_build_object('id', sv.id, 'nombre', sv.nombre, 'precio', cs.precio_unitario))
+                        FROM cotizacion_servicios cs JOIN servicios sv ON sv.id = cs.servicio_id
+                        WHERE cs.cotizacion_id = c.id), '[]'::json) AS servicios,
               cl.id AS cliente_id, cl.nombres AS cliente_nombres, cl.apellidos AS cliente_apellidos,
               cl.email AS cliente_email,
               p.id AS paquete_id, p.nombre AS paquete_nombre, p.precio_total AS paquete_precio_total

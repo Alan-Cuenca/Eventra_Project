@@ -29,7 +29,7 @@ describe('Reservas — solapamiento horario', () => {
   const body = { cotizacion_id: ID, salon_o_lugar: 'Salón Imperial', fecha_evento: '2027-03-10', hora_inicio: '10:00', hora_fin: '12:00' };
 
   const handler = (totalSolapes) => async (sql) => {
-    if (/FROM cotizaciones WHERE id/.test(sql)) return { rows: [{ id: ID }], rowCount: 1 };
+    if (/FROM cotizaciones c WHERE c.id/.test(sql)) return { rows: [{ id: ID, estado: 'Aprobada', tiene_reserva: false }], rowCount: 1 };
     if (/COUNT\(\*\) AS total/.test(sql)) return { rows: [{ total: String(totalSolapes) }], rowCount: 1 };
     if (/INSERT INTO reservas/.test(sql)) return { rows: [{ id: 'r1' }], rowCount: 1 };
     return { rows: [], rowCount: 0 };

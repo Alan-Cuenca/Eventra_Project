@@ -1,3 +1,4 @@
+import { validarMonto } from '../utils/validaciones.js';
 import pool from '../config/db.js';
 
 /**
@@ -26,12 +27,11 @@ export const crearServicio = async (req, res) => {
       });
     }
 
-    if (isNaN(precio_base) || Number(precio_base) < 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'El precio_base debe ser un número positivo.',
-      });
+    const errorPrecio = validarMonto(precio_base, { permitirCero: true, etiqueta: 'precio_base' });
+    if (errorPrecio) {
+      return res.status(400).json({ success: false, message: errorPrecio });
     }
+
 
     // --- Insertar servicio (SQL parametrizado) ---
     const result = await pool.query(

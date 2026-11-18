@@ -145,7 +145,7 @@ describe('Módulo de Pagos y Anticipos — EVENTRA', () => {
       pool.query.mockResolvedValueOnce({
         rowCount: 1,
         rows: [{
-          id: 'pago-uuid-2',
+          id: 'f0000000-0000-0000-0000-0000000000b2',
           empresa_id: 1,
           evento_id: 'evento-valido-uuid',
           monto: 350.00,
@@ -176,11 +176,11 @@ describe('Módulo de Pagos y Anticipos — EVENTRA', () => {
     it('debe permitir a Administrador actualizar estado a "Aprobado"', async () => {
       pool.query.mockResolvedValueOnce({
         rowCount: 1,
-        rows: [{ id: 'pago-uuid-2', estado: 'Aprobado' }]
+        rows: [{ id: 'f0000000-0000-0000-0000-0000000000b2', estado: 'Aprobado' }]
       });
 
       const res = await request(app)
-        .put('/api/pagos/pago-uuid-2/estado')
+        .put('/api/pagos/f0000000-0000-0000-0000-0000000000b2/estado')
         .set('Authorization', `Bearer ${TOKEN_ADMIN_EMPRESA_1}`)
         .send({ estado: 'Aprobado' });
 
@@ -191,7 +191,7 @@ describe('Módulo de Pagos y Anticipos — EVENTRA', () => {
 
     it('debe bloquear con 403 a Trabajadores (rol_id = 3) al intentar aprobar pagos', async () => {
       const res = await request(app)
-        .put('/api/pagos/pago-uuid-2/estado')
+        .put('/api/pagos/f0000000-0000-0000-0000-0000000000b2/estado')
         .set('Authorization', `Bearer ${TOKEN_TRABAJADOR_EMPRESA_1}`)
         .send({ estado: 'Aprobado' });
 
@@ -204,7 +204,7 @@ describe('Módulo de Pagos y Anticipos — EVENTRA', () => {
   // SUITE 3: Reducción Matemática de Saldo Pendiente (Scope: Pablo)
   // ───────────────────────────────────────────────────────────────────────────
   describe('Cálculo y Reducción Matemática del Saldo Pendiente de la Cotización', () => {
-    const EVENTO_ID = 'evento-balance-test-uuid';
+    const EVENTO_ID = 'e0000000-0000-0000-0000-0000000000b4';
     const COTIZACION_TOTAL = 2500.00;
 
     it('debe aprobar el pago exitosamente y reflejar la reducción matemática en el saldo pendiente', async () => {
@@ -217,7 +217,7 @@ describe('Módulo de Pagos y Anticipos — EVENTRA', () => {
         .mockResolvedValueOnce({
           rowCount: 1,
           rows: [{
-            id: 'pago-01',
+            id: 'f0000000-0000-0000-0000-0000000000b3',
             empresa_id: 1,
             evento_id: EVENTO_ID,
             monto: PAGO_1_MONTO,
@@ -235,7 +235,7 @@ describe('Módulo de Pagos y Anticipos — EVENTRA', () => {
         });
 
       const resAprobacion = await request(app)
-        .put('/api/pagos/pago-01/estado')
+        .put('/api/pagos/f0000000-0000-0000-0000-0000000000b3/estado')
         .set('Authorization', `Bearer ${TOKEN_ADMIN_EMPRESA_1}`)
         .send({ estado: 'Aprobado' });
 
@@ -249,7 +249,7 @@ describe('Módulo de Pagos y Anticipos — EVENTRA', () => {
         .mockResolvedValueOnce({
           rowCount: 1,
           rows: [{
-            id: 'pago-01',
+            id: 'f0000000-0000-0000-0000-0000000000b3',
             monto: PAGO_1_MONTO,
             estado: 'Aprobado',
             concepto: 'Anticipo',
@@ -290,7 +290,7 @@ describe('Módulo de Pagos y Anticipos — EVENTRA', () => {
         .mockResolvedValueOnce({
           rowCount: 2,
           rows: [
-            { id: 'pago-01', monto: PAGO_1_MONTO, estado: 'Aprobado' },
+            { id: 'f0000000-0000-0000-0000-0000000000b3', monto: PAGO_1_MONTO, estado: 'Aprobado' },
             { id: 'pago-02', monto: PAGO_2_MONTO, estado: 'Aprobado' },
           ],
         })
@@ -323,7 +323,7 @@ describe('Módulo de Pagos y Anticipos — EVENTRA', () => {
         .mockResolvedValueOnce({
           rowCount: 2,
           rows: [
-            { id: 'pago-01', monto: PAGO_APROBADO, estado: 'Aprobado' },
+            { id: 'f0000000-0000-0000-0000-0000000000b3', monto: PAGO_APROBADO, estado: 'Aprobado' },
             { id: 'pago-02', monto: PAGO_RECHAZADO, estado: 'Rechazado' },
           ],
         })

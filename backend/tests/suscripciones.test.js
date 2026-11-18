@@ -82,7 +82,7 @@ describe('Módulo de Suscripciones y Facturación SaaS — EVENTRA', () => {
       pool.query.mockResolvedValueOnce({
         rowCount: 1,
         rows: [{
-          id: 'susc-uuid-1',
+          id: 'a0000000-0000-0000-0000-0000000000b1',
           empresa_id: 1,
           plan_nombre: 'Premium',
           monto: 99.00,
@@ -162,13 +162,13 @@ describe('Módulo de Suscripciones y Facturación SaaS — EVENTRA', () => {
       // 1. SELECT suscripciones_pagos
       pool.query.mockResolvedValueOnce({
         rowCount: 1,
-        rows: [{ id: 'susc-uuid-1', empresa_id: 1, plan_nombre: 'Premium', monto: 99.00 }]
+        rows: [{ id: 'a0000000-0000-0000-0000-0000000000b1', empresa_id: 1, plan_nombre: 'Premium', monto: 99.00 }]
       });
 
       // 2. UPDATE suscripciones_pagos
       pool.query.mockResolvedValueOnce({
         rowCount: 1,
-        rows: [{ id: 'susc-uuid-1', estado: 'Aprobado', plan_nombre: 'Premium' }]
+        rows: [{ id: 'a0000000-0000-0000-0000-0000000000b1', estado: 'Aprobado', plan_nombre: 'Premium' }]
       });
 
       // 3. UPDATE empresas
@@ -178,7 +178,7 @@ describe('Módulo de Suscripciones y Facturación SaaS — EVENTRA', () => {
       });
 
       const res = await request(app)
-        .put('/api/suscripciones/susc-uuid-1/estado')
+        .put('/api/suscripciones/a0000000-0000-0000-0000-0000000000b1/estado')
         .set('Authorization', `Bearer ${TOKEN_SUPER_ADMIN}`)
         .send({ estado: 'Aprobado' });
 
@@ -193,7 +193,7 @@ describe('Módulo de Suscripciones y Facturación SaaS — EVENTRA', () => {
 
     it('Bloquea con 401/403 a usuarios que no sean Super_Admin', async () => {
       const res = await request(app)
-        .put('/api/suscripciones/susc-uuid-1/estado')
+        .put('/api/suscripciones/a0000000-0000-0000-0000-0000000000b1/estado')
         .set('Authorization', `Bearer ${TOKEN_ADMIN_EMPRESA_1}`)
         .send({ estado: 'Aprobado' });
 

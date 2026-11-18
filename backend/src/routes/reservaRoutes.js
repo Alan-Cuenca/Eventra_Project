@@ -1,8 +1,10 @@
 import express from 'express';
+import { registrarValidacionIds } from '../middlewares/validarParams.js';
 import { crearReserva, obtenerReservas, actualizarReserva, eliminarReserva } from '../controllers/reservaController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
+registrarValidacionIds(router);
 
 /**
  * @route  POST /api/reservas

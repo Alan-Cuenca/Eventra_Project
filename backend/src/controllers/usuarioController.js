@@ -1,3 +1,4 @@
+import { validarEmailOpcional, validarPassword } from '../utils/validaciones.js';
 import { hayCupoUsuarios } from '../middlewares/planLimitsMiddleware.js';
 import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
@@ -68,6 +69,11 @@ export const crearUsuario = async (req, res) => {
       success: false,
       message: 'Todos los campos son obligatorios: nombre_completo, email, password, rol_id.',
     });
+  }
+
+  const errorEntrada = validarEmailOpcional(email) || validarPassword(password);
+  if (errorEntrada) {
+    return res.status(400).json({ success: false, message: errorEntrada });
   }
 
   if (![1, 2, 3, 4, 5].includes(Number(rol_id))) {
@@ -150,6 +156,11 @@ export const actualizarUsuario = async (req, res) => {
 
   if (rol_id && ![1, 2, 3, 4].includes(Number(rol_id))) {
     return res.status(400).json({ success: false, message: 'El rol_id debe ser 1, 2, 3 o 4.' });
+  }
+
+  const errorActualizacion = validarEmailOpcional(email) || (password ? validarPassword(password) : null);
+  if (errorActualizacion) {
+    return res.status(400).json({ success: false, message: errorActualizacion });
   }
 
   try {

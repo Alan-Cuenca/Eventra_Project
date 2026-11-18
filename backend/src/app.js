@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import { modoMantenimiento } from './middlewares/configuracionPlataforma.js';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swagger.js';
@@ -41,6 +42,9 @@ app.use(cors(origenesPermitidos.length > 0
 
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
+
+// Modo mantenimiento (interruptor del Super Admin): 503 para todo menos Super Admin, auth y salud
+app.use(modoMantenimiento);
 
 // Express 5 deja req.body en undefined si no hay cuerpo parseable: se normaliza a {}
 app.use((req, res, next) => {

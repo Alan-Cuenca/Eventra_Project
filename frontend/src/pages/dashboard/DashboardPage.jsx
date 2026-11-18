@@ -127,10 +127,10 @@ export const DashboardPage = () => {
   useEffect(() => {
     eventraService.getEventos()
       .then(data => { if (Array.isArray(data)) setEventos(data); })
-      .catch(() => {});
+      .catch(() => setApiOnline(false));
     eventraService.getSolicitudes()
       .then(data => { if (data && data.length > 0) setSolicitudes(data); })
-      .catch(() => {});
+      .catch(() => setApiOnline(false));
     if (isAdmin) {
       eventraService.getConsumoSuscripcion()
         .then(data => { if (data && data.limites && data.uso) setConsumoSaas(data); })
@@ -232,7 +232,13 @@ export const DashboardPage = () => {
     if (target?.isReal) {
       try {
         await eventraService.updateEstadoActividad(id, nextDone ? 'Completada' : 'Pendiente');
-      } catch (_) {}
+      } catch (err) {
+        // Se revierte el cambio optimista y se avisa al usuario
+        setChecklist(prev =>
+          prev.map(item => item.id === id ? { ...item, done: !nextDone } : item)
+        );
+        setToast({ msg: 'No se pudo actualizar la actividad: ' + (err.message || 'Error del servidor'), type: 'danger' });
+      }
     }
   };
 

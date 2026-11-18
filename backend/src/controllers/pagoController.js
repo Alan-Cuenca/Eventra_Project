@@ -1,3 +1,4 @@
+import { validarMonto } from '../utils/validaciones.js';
 import { obtenerProveedorPago, procesarPagoConProveedor } from '../services/paymentGateway.js';
 import pool from '../config/db.js';
 import { supabase } from '../config/supabase.js';
@@ -29,12 +30,18 @@ export const registrarPago = async (req, res) => {
       });
     }
 
-    if (isNaN(monto) || Number(monto) <= 0) {
+    if (!CONCEPTOS_VALIDOS.includes(concepto)) {
       return res.status(400).json({
         success: false,
-        message: 'El monto debe ser un número positivo mayor a cero.',
+        message: `El concepto debe ser uno de: ${CONCEPTOS_VALIDOS.join(', ')}.`,
       });
     }
+
+    const errorMonto = validarMonto(monto);
+    if (errorMonto) {
+      return res.status(400).json({ success: false, message: errorMonto });
+    }
+
 
     const metodoNormalizado = metodo_pago ? String(metodo_pago).trim() : 'Efectivo';
     const proveedor = obtenerProveedorPago(metodoNormalizado);
@@ -303,7 +310,7 @@ export const actualizarEstadoPago = async (req, res) => {
   const { estado } = req.body;
 
   try {
-    if (!estado || !['Aprobado', 'Rechazado', 'Pendiente', 'En Revisión'].includes(estado)) {
+    if (!estado || !ESTADOS_VALIDOS.includes(estado)) {
       return res.status(400).json({
         success: false,
         message: 'Estado inválido. Los valores permitidos son: Aprobado, Rechazado, Pendiente, En Revisión.'

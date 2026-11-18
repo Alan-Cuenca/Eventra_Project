@@ -74,8 +74,8 @@ describe('Motor Anti-Colisiones de Reservas — EVENTRA (Scope: Pablo)', () => {
         const queryStr = typeof sql === 'string' ? sql : sql?.text || '';
 
         // 1. Verificación IDOR de cotización
-        if (queryStr.includes('FROM cotizaciones WHERE id = $1')) {
-          return { rows: [{ id: COTIZACION_ID, empresa_id: 1 }], rowCount: 1 };
+        if (queryStr.includes('FROM cotizaciones c WHERE c.id = $1')) {
+          return { rows: [{ id: COTIZACION_ID, empresa_id: 1, estado: 'Aprobada', tiene_reserva: false }], rowCount: 1 };
         }
 
         // 2. Control de concurrencia: disponibilidad del salón (0 colisiones)
@@ -127,8 +127,8 @@ describe('Motor Anti-Colisiones de Reservas — EVENTRA (Scope: Pablo)', () => {
         const queryStr = typeof sql === 'string' ? sql : sql?.text || '';
 
         // 1. Cotización válida
-        if (queryStr.includes('FROM cotizaciones WHERE id = $1')) {
-          return { rows: [{ id: 'cot-uuid-segunda', empresa_id: 1 }], rowCount: 1 };
+        if (queryStr.includes('FROM cotizaciones c WHERE c.id = $1')) {
+          return { rows: [{ id: 'cot-uuid-segunda', empresa_id: 1, estado: 'Aprobada', tiene_reserva: false }], rowCount: 1 };
         }
 
         // 2. Control de colisión: ya existe 1 reserva confirmada para este salón y fecha
@@ -164,8 +164,8 @@ describe('Motor Anti-Colisiones de Reservas — EVENTRA (Scope: Pablo)', () => {
       mockQueryHandler = async (sql) => {
         const queryStr = typeof sql === 'string' ? sql : sql?.text || '';
 
-        if (queryStr.includes('FROM cotizaciones WHERE id = $1')) {
-          return { rows: [{ id: COTIZACION_ID, empresa_id: 1 }], rowCount: 1 };
+        if (queryStr.includes('FROM cotizaciones c WHERE c.id = $1')) {
+          return { rows: [{ id: COTIZACION_ID, empresa_id: 1, estado: 'Aprobada', tiene_reserva: false }], rowCount: 1 };
         }
 
         // Simula que la verificación previa no vio conflicto (carrera entre microsegundos)
@@ -211,8 +211,8 @@ describe('Motor Anti-Colisiones de Reservas — EVENTRA (Scope: Pablo)', () => {
 
       mockQueryHandler = async (sql, params) => {
         const queryStr = typeof sql === 'string' ? sql : sql?.text || '';
-        if (queryStr.includes('FROM cotizaciones WHERE id = $1')) {
-          return { rows: [{ id: 'cot-uuid-03', empresa_id: 1 }], rowCount: 1 };
+        if (queryStr.includes('FROM cotizaciones c WHERE c.id = $1')) {
+          return { rows: [{ id: 'cot-uuid-03', empresa_id: 1, estado: 'Aprobada', tiene_reserva: false }], rowCount: 1 };
         }
         if (queryStr.includes('FROM reservas') && queryStr.includes('COUNT(*)')) {
           return { rows: [{ total: '0' }], rowCount: 1 };
@@ -253,8 +253,8 @@ describe('Motor Anti-Colisiones de Reservas — EVENTRA (Scope: Pablo)', () => {
 
       mockQueryHandler = async (sql, params) => {
         const queryStr = typeof sql === 'string' ? sql : sql?.text || '';
-        if (queryStr.includes('FROM cotizaciones WHERE id = $1')) {
-          return { rows: [{ id: 'cot-uuid-04', empresa_id: 1 }], rowCount: 1 };
+        if (queryStr.includes('FROM cotizaciones c WHERE c.id = $1')) {
+          return { rows: [{ id: 'cot-uuid-04', empresa_id: 1, estado: 'Aprobada', tiene_reserva: false }], rowCount: 1 };
         }
         if (queryStr.includes('FROM reservas') && queryStr.includes('COUNT(*)')) {
           return { rows: [{ total: '0' }], rowCount: 1 };
@@ -311,7 +311,7 @@ describe('Motor Anti-Colisiones de Reservas — EVENTRA (Scope: Pablo)', () => {
     it('404 — Rechaza si la cotización no pertenece a la empresa del usuario (Anti-IDOR)', async () => {
       mockQueryHandler = async (sql) => {
         const queryStr = typeof sql === 'string' ? sql : sql?.text || '';
-        if (queryStr.includes('FROM cotizaciones WHERE id = $1')) {
+        if (queryStr.includes('FROM cotizaciones c WHERE c.id = $1')) {
           return { rows: [], rowCount: 0 }; // No encontrada o de otra empresa
         }
         return { rows: [], rowCount: 0 };

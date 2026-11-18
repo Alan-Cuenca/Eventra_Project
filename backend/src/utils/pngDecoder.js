@@ -72,7 +72,9 @@ export function decodePng(buffer, { maxSide = 128 } = {}) {
 
   let raw;
   try {
-    raw = zlib.inflateSync(Buffer.concat(idatChunks));
+    // Máximo esperado: (stride + 1) bytes por fila; evita bombas de descompresión
+    const maximoEsperado = (width * channels + 1) * height;
+    raw = zlib.inflateSync(Buffer.concat(idatChunks), { maxOutputLength: maximoEsperado + 1024 });
   } catch {
     return null;
   }

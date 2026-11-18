@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import { validarFecha, validarHora } from '../utils/validaciones.js';
 
 /**
  * Crea una nueva reserva de salón/lugar para un evento.
@@ -40,6 +41,17 @@ export const crearReserva = async (req, res) => {
 
   try {
     // --- Validación de campos obligatorios ---
+    const errorFormato = (fecha_evento && validarFecha(fecha_evento)) || (hora_inicio && validarHora(hora_inicio, 'hora de inicio')) || (hora_fin && validarHora(hora_fin, 'hora de fin'));
+    if (errorFormato) {
+      return res.status(400).json({ success: false, message: errorFormato });
+    }
+    if (typeof salon_o_lugar === 'string' && salon_o_lugar.length > 150) {
+      return res.status(400).json({ success: false, message: 'El nombre del salón no puede superar los 150 caracteres.' });
+    }
+    if (fecha_evento && String(fecha_evento).slice(0, 10) < new Date().toISOString().slice(0, 10)) {
+      return res.status(400).json({ success: false, message: 'La fecha del evento no puede estar en el pasado.' });
+    }
+
     if (!cotizacion_id || !salon_o_lugar || !fecha_evento || !hora_inicio || !hora_fin) {
       return res.status(400).json({
         success: false,
@@ -50,7 +62,9 @@ export const crearReserva = async (req, res) => {
     // --- Blindaje SaaS Multi-tenant (Anti-IDOR) ---
     // Validar que la cotización pertenezca estrictamente a la empresa en sesión
     const cotizacionCheck = await pool.query(
-      'SELECT id FROM cotizaciones WHERE id = $1 AND empresa_id = $2',
+      `SELECT c.id, c.estado,
+              EXISTS (SELECT 1 FROM reservas r WHERE r.cotizacion_id = c.id AND r.estado <> 'Cancelada') AS tiene_reserva
+       FROM cotizaciones c WHERE c.id = $1 AND c.empresa_id = $2`,
       [cotizacion_id, empresa_id]
     );
 
@@ -58,6 +72,21 @@ export const crearReserva = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'La cotización especificada no existe o no pertenece a su empresa.',
+      });
+    }
+
+    // Regla de negocio: solo se reserva sobre una cotización aprobada y que aún no tenga reserva activa
+    const cot = cotizacionCheck.rows[0];
+    if (cot.estado !== 'Aprobada') {
+      return res.status(409).json({
+        success: false,
+        message: `La cotización debe estar Aprobada para reservar (estado actual: ${cot.estado || 'Pendiente'}).`,
+      });
+    }
+    if (cot.tiene_reserva) {
+      return res.status(409).json({
+        success: false,
+        message: 'Esta cotización ya tiene una reserva activa. Cancélala antes de crear otra.',
       });
     }
 
@@ -274,7 +303,14 @@ export const eliminarReserva = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Reserva no encontrada.' });
     }
 
-    return res.status(200).json({ success: true, message: 'Reserva cancelada.' });
+    // Coherencia: cancelar la reserva cancela su evento (salvo que ya esté finalizado)
+    await pool.query(
+      `UPDATE eventos SET estado_progreso = 'Cancelado'
+       WHERE reserva_id = $1 AND empresa_id = $2 AND estado_progreso NOT IN ('Finalizado', 'Cancelado')`,
+      [id, empresa_id]
+    ).catch((err) => console.error('[reservaController] No se pudo cancelar el evento de la reserva:', err.message));
+
+    return res.status(200).json({ success: true, message: 'Reserva cancelada. Su evento, si existía, quedó cancelado.' });
   } catch (error) {
     console.error('[reservaController] Error en eliminarReserva:', error.message);
     return res.status(500).json({ success: false, message: 'Error interno al cancelar la reserva.' });

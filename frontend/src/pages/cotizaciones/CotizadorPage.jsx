@@ -104,16 +104,16 @@ export const CotizadorPage = () => {
   useEffect(() => {
     eventraService.getClientes()
       .then(cls => setClientes((cls || []).filter(c => c.estado_activo !== false)))
-      .catch(() => setClientes([]))
+      .catch((err) => { setClientes([]); setError(err.message || 'No se pudieron cargar los clientes.'); })
       .finally(() => setLoadingClientes(false));
 
     eventraService.getPaquetes()
       .then(pqs => { if (pqs && pqs.length > 0) setPaquetes(pqs); })
-      .catch(() => {});
+      .catch((err) => setError(err.message || 'No se pudieron cargar los paquetes.'));
 
     eventraService.getServicios()
       .then(srvs => { if (srvs && srvs.length > 0) setServicios(srvs); })
-      .catch(() => {});
+      .catch((err) => setError(err.message || 'No se pudieron cargar los servicios.'));
   }, []);
 
   const paqueteSeleccionado = paquetes.find(p => String(p.id) === String(form.paquete_id));
@@ -174,6 +174,10 @@ export const CotizadorPage = () => {
         cliente_id: form.cliente_id,
         fecha_estimada_evento: form.fecha_estimada,
         paquete_id: form.paquete_id || null,
+        servicios_ids: form.servicios_ids,
+        tipo_evento: form.tipo_evento,
+        num_invitados: form.num_invitados ? Number(form.num_invitados) : null,
+        // Referencia: el servidor recalcula el total con los precios reales
         total_calculado: totalCalculado,
       });
       setSubmitted(true);
@@ -496,13 +500,13 @@ export const CotizadorPage = () => {
               </p>
 
               {/* Agrupar por categoría */}
-              {[...new Set(servicios.map(s => s.categoria))].map((cat) => (
+              {[...new Set(servicios.map(s => s.categoria || 'Servicios disponibles'))].map((cat) => (
                 <div key={cat} style={{ marginBottom: '1.25rem' }}>
                   <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.625rem' }}>
                     {cat}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {servicios.filter(s => s.categoria === cat).map((srv) => {
+                    {servicios.filter(s => (s.categoria || 'Servicios disponibles') === cat).map((srv) => {
                       const isSelected = form.servicios_ids.includes(srv.id);
                       return (
                         <label

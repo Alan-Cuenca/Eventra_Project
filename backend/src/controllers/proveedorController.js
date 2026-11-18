@@ -1,3 +1,4 @@
+import { validarEmailOpcional } from '../utils/validaciones.js';
 import pool from '../config/db.js';
 
 /**
@@ -20,6 +21,11 @@ export const crearProveedor = async (req, res) => {
         success: false,
         message: 'Los campos nombre_empresa_o_contacto y especialidad son obligatorios.',
       });
+    }
+
+    const errorEmail = validarEmailOpcional(email);
+    if (errorEmail) {
+      return res.status(400).json({ success: false, message: errorEmail });
     }
 
     // --- Insertar proveedor (SQL parametrizado) ---

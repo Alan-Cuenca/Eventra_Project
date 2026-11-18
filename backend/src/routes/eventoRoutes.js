@@ -1,9 +1,11 @@
 import express from 'express';
+import { registrarValidacionIds } from '../middlewares/validarParams.js';
 import { crearEvento, obtenerEventos, actualizarEstadoEvento, obtenerEventoPorId, actualizarEvento, eliminarEvento } from '../controllers/eventoController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 import { verificarLimitePlan } from '../middlewares/planLimitsMiddleware.js';
 
 const router = express.Router();
+registrarValidacionIds(router);
 
 /**
  * @route  POST /api/eventos

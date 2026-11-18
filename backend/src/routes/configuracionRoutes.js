@@ -3,7 +3,7 @@ import {
   obtenerConfiguracionGlobal,
   guardarConfiguracionGlobal,
 } from '../controllers/configuracionController.js';
-import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+import { verifyToken, authorizeRoles, optionalVerifyToken } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ const router = express.Router();
  * @desc    Obtiene la configuración global SaaS (Planes, Límites, Datos Bancarios).
  * @access  Public / Authenticated
  */
-router.get('/', obtenerConfiguracionGlobal);
+router.get('/', optionalVerifyToken, obtenerConfiguracionGlobal);
 
 /**
  * @route   PUT /api/configuracion

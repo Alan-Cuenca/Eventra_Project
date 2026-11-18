@@ -130,7 +130,7 @@ describe('Suscripciones — plan normalizado', () => {
   it('POST /pagar guarda el plan normalizado, no el texto libre', async () => {
     mockPool.query.mockImplementation(async (sql) => {
       if (/FROM empresas WHERE id/.test(sql)) return { rows: [{ id: 1, nombre_comercial: 'X', plan_suscripcion: 'Basico' }], rowCount: 1 };
-      if (/INSERT INTO suscripciones_pagos/.test(sql)) return { rows: [{ id: 's1' }], rowCount: 1 };
+      if (/INSERT INTO suscripciones_pagos/.test(sql)) return { rows: [{ id: 'a0000000-0000-0000-0000-0000000000c1' }], rowCount: 1 };
       return { rows: [], rowCount: 0 };
     });
     const res = await request(app).post('/api/suscripciones/pagar').set(auth(1)).send({ plan_nombre: 'plan PREMIUM corporativo', monto: 99 });
@@ -141,11 +141,11 @@ describe('Suscripciones — plan normalizado', () => {
 
   it('aprobar un pago normaliza el plan, reinicia el chatbot y NO reactiva la empresa', async () => {
     mockPool.query.mockImplementation(async (sql) => {
-      if (/FROM suscripciones_pagos WHERE id/.test(sql)) return { rows: [{ id: 's1', empresa_id: 7, plan_nombre: 'Enterprise', monto: '99', estado: 'En Revisión' }], rowCount: 1 };
-      if (/UPDATE suscripciones_pagos/.test(sql)) return { rows: [{ id: 's1', estado: 'Aprobado' }], rowCount: 1 };
+      if (/FROM suscripciones_pagos WHERE id/.test(sql)) return { rows: [{ id: 'a0000000-0000-0000-0000-0000000000c1', empresa_id: 7, plan_nombre: 'Enterprise', monto: '99', estado: 'En Revisión' }], rowCount: 1 };
+      if (/UPDATE suscripciones_pagos/.test(sql)) return { rows: [{ id: 'a0000000-0000-0000-0000-0000000000c1', estado: 'Aprobado' }], rowCount: 1 };
       return { rows: [], rowCount: 0 };
     });
-    const res = await request(app).put('/api/suscripciones/s1/estado').set(auth(5)).send({ estado: 'Aprobado' });
+    const res = await request(app).put('/api/suscripciones/a0000000-0000-0000-0000-0000000000c1/estado').set(auth(5)).send({ estado: 'Aprobado' });
     expect(res.statusCode).toBe(200);
     const upd = mockPool.query.mock.calls.find(([sql]) => /UPDATE empresas/.test(sql));
     expect(upd[0]).not.toMatch(/estado_activo/);
@@ -211,7 +211,7 @@ describe('Solicitud pública de plan (landing)', () => {
   });
 
   it('PATCH estado de solicitud: valida el valor y existencia', async () => {
-    expect((await request(app).patch('/api/suscripciones/solicitudes-publicas/s1/estado').set(auth(5)).send({ estado: 'X' })).statusCode).toBe(400);
-    expect((await request(app).patch('/api/suscripciones/solicitudes-publicas/s1/estado').set(auth(5)).send({ estado: 'Atendida' })).statusCode).toBe(404);
+    expect((await request(app).patch('/api/suscripciones/solicitudes-publicas/a0000000-0000-0000-0000-0000000000c2/estado').set(auth(5)).send({ estado: 'X' })).statusCode).toBe(400);
+    expect((await request(app).patch('/api/suscripciones/solicitudes-publicas/a0000000-0000-0000-0000-0000000000c2/estado').set(auth(5)).send({ estado: 'Atendida' })).statusCode).toBe(404);
   });
 });

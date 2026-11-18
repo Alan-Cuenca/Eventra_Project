@@ -1,4 +1,5 @@
 import express from 'express';
+import { validarIdEntero } from '../middlewares/validarParams.js';
 import multer from 'multer';
 import {
   obtenerEmpresas,
@@ -35,6 +36,7 @@ const upload = multer({
 });
 
 const router = express.Router();
+router.param('id', validarIdEntero);
 
 /**
  * =============================================================================

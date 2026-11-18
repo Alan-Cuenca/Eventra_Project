@@ -13,14 +13,17 @@ const pool = new Pool({
   max: 5,
   idleTimeoutMillis: 5000,
   connectionTimeoutMillis: 10000,
+  // Supabase exige SSL. La verificación estricta del certificado se activa con
+  // DB_SSL_REJECT_UNAUTHORIZED=true (requiere el CA de Supabase en NODE_EXTRA_CA_CERTS).
   ssl: {
-    rejectUnauthorized: false
+    rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true'
   }
 });
 
-pool.on('error', (err, client) => {
-  console.error('Unexpected error on idle client', err);
-  process.exit(-1);
+// Un cliente inactivo que se cierra (reinicio del pooler de Supabase) no debe tumbar el servidor:
+// pg descarta ese cliente y la siguiente consulta abre una conexión nueva.
+pool.on('error', (err) => {
+  console.error('[db] Error en un cliente inactivo del pool (se descarta y continúa):', err.message);
 });
 
 // El esquema se gestiona con migraciones versionadas: ver scripts/migrate.js y database/migrations/.

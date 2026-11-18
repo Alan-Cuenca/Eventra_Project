@@ -91,7 +91,7 @@ describe('Módulo de Solicitudes de Modificación y Notificaciones Automáticas'
       pool.query.mockResolvedValueOnce({
         rowCount: 1,
         rows: [{
-          id: 's0000000-0000-0000-0000-000000000001',
+          id: 'a0000000-0000-0000-0000-000000000001',
           empresa_id: 1,
           evento_id: eventoId,
           cliente_id: 'c0000000-0000-0000-0000-000000000001',
@@ -121,7 +121,7 @@ describe('Módulo de Solicitudes de Modificación y Notificaciones Automáticas'
       pool.query.mockResolvedValueOnce({
         rowCount: 1,
         rows: [{
-          id: 's0000000-0000-0000-0000-000000000001',
+          id: 'a0000000-0000-0000-0000-000000000001',
           empresa_id: 1,
           descripcion_cambio: 'Cambio de mantelería a tono dorado',
           descripcion: 'Cambio de mantelería a tono dorado',
@@ -146,7 +146,7 @@ describe('Módulo de Solicitudes de Modificación y Notificaciones Automáticas'
   describe('PUT /api/solicitudes/:id/estado', () => {
     it('rechaza si el estado no es válido', async () => {
       const res = await request(app)
-        .put('/api/solicitudes/s0000000-0000-0000-0000-000000000001/estado')
+        .put('/api/solicitudes/a0000000-0000-0000-0000-000000000001/estado')
         .set('Authorization', `Bearer ${TOKEN_ADMIN}`)
         .send({ estado: 'EstadoInexistente' });
 
@@ -155,7 +155,7 @@ describe('Módulo de Solicitudes de Modificación y Notificaciones Automáticas'
     });
 
     it('actualiza el estado a Aprobada y despacha notificación', async () => {
-      const solicitudId = 's0000000-0000-0000-0000-000000000001';
+      const solicitudId = 'a0000000-0000-0000-0000-000000000001';
 
       // Mock UPDATE
       pool.query.mockResolvedValueOnce({

@@ -1,3 +1,4 @@
+import { validarPassword } from '../utils/validaciones.js';
 import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -187,6 +188,11 @@ export const completarRegistro = async (req, res) => {
 
   try {
     // 1. Validar campos obligatorios
+    const errorPasswordRegistro = password ? validarPassword(password) : null;
+    if (errorPasswordRegistro) {
+      return res.status(400).json({ success: false, message: errorPasswordRegistro });
+    }
+
     if (!token || !nombre_completo || !password) {
       return res.status(400).json({
         success: false,
@@ -359,11 +365,9 @@ export const registrarClientePortal = async (req, res) => {
     });
   }
 
-  if (!password || password.length < 6) {
-    return res.status(400).json({
-      success: false,
-      message: 'La contraseña es obligatoria y debe tener al menos 6 caracteres.',
-    });
+  const errorPassword = validarPassword(password);
+  if (errorPassword) {
+    return res.status(400).json({ success: false, message: errorPassword });
   }
 
   const client = await pool.connect();

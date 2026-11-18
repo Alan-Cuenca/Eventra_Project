@@ -231,17 +231,31 @@ export const actualizarEstadoEvento = async (req, res) => {
     }
 
     // --- Actualizar (filtra por id + empresa_id para seguridad SaaS) ---
+    // Administrador y Gerente (1, 2) pueden cualquier transición. El Trabajador (3) no puede
+    // cancelar un evento ni reabrir uno Finalizado o Cancelado.
+    const esDireccion = [1, 2].includes(Number(req.user.rol_id));
     const result = await pool.query(
       `UPDATE eventos
        SET estado_progreso = $1
        WHERE id = $2
          AND empresa_id = $3
+         AND ($4::boolean OR ($1 <> 'Cancelado' AND estado_progreso NOT IN ('Finalizado', 'Cancelado')))
        RETURNING id, titulo, estado_progreso, empresa_id`,
-      [estado_progreso, id, empresa_id]
+      [estado_progreso, id, empresa_id, esDireccion]
     );
 
-    // Si no se encontró el evento (id incorrecto o de otra empresa)
     if (result.rowCount === 0) {
+      // Distinguir "no existe" de "existe pero el rol no puede hacer esa transición"
+      const existe = esDireccion ? { rowCount: 0 } : await pool.query(
+        'SELECT 1 FROM eventos WHERE id = $1 AND empresa_id = $2',
+        [id, empresa_id]
+      );
+      if (existe.rowCount > 0) {
+        return res.status(403).json({
+          success: false,
+          message: 'Tu rol no puede cancelar un evento ni reabrir uno finalizado o cancelado. Consulta con un Gerente.',
+        });
+      }
       return res.status(404).json({
         success: false,
         message: 'Evento no encontrado o no pertenece a tu empresa.',

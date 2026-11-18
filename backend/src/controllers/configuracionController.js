@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 import { actualizarLimitesEnMemoria } from '../middlewares/planLimitsMiddleware.js';
+import { invalidarCachePlataforma } from '../middlewares/configuracionPlataforma.js';
 
 export const DEFAULT_CONFIG = {
   plataforma: {
@@ -43,6 +44,16 @@ export const DEFAULT_CONFIG = {
   },
 };
 
+/**
+ * El público (landing, pago de plan) solo necesita planes, datos de transferencia y el
+ * estado de la plataforma. La sección de seguridad solo se entrega al Super Admin.
+ */
+const vistaSegunRol = (config, req) => {
+  if (Number(req.user?.rol_id) === 5) return config;
+  const { seguridad, ...publica } = config; // eslint-disable-line no-unused-vars
+  return publica;
+};
+
 export const obtenerConfiguracionGlobal = async (req, res) => {
   try {
     const result = await pool.query("SELECT valor FROM configuracion_saas WHERE clave = 'global'");
@@ -56,19 +67,19 @@ export const obtenerConfiguracionGlobal = async (req, res) => {
       };
       return res.status(200).json({
         success: true,
-        data: merged,
+        data: vistaSegunRol(merged, req),
       });
     }
 
     return res.status(200).json({
       success: true,
-      data: DEFAULT_CONFIG,
+      data: vistaSegunRol(DEFAULT_CONFIG, req),
     });
   } catch (error) {
     console.error('[configuracionController] Error en obtenerConfiguracionGlobal:', error.message);
     return res.status(200).json({
       success: true,
-      data: DEFAULT_CONFIG,
+      data: vistaSegunRol(DEFAULT_CONFIG, req),
     });
   }
 };
@@ -97,6 +108,7 @@ export const guardarConfiguracionGlobal = async (req, res) => {
       actualizarLimitesEnMemoria(payload.planes);
     }
 
+    invalidarCachePlataforma();
     return res.status(200).json({
       success: true,
       message: 'Configuración global guardada y sincronizada correctamente en PostgreSQL.',

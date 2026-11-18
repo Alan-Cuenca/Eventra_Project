@@ -13,6 +13,7 @@ import {
 import { verifyToken, verifyTokenPermitirCambioPendiente, authorizeRoles } from '../middlewares/authMiddleware.js';
 import { verificarLimitePlan } from '../middlewares/planLimitsMiddleware.js';
 import { crearRateLimit } from '../middlewares/rateLimit.js';
+import { requerirRegistroPublico } from '../middlewares/configuracionPlataforma.js';
 
 // Protección contra fuerza bruta / abuso en endpoints públicos de autenticación
 const limitarLogin = crearRateLimit({ ventanaMs: 15 * 60_000, max: 20, mensaje: 'Demasiados intentos de acceso. Intenta de nuevo en unos minutos.' });
@@ -175,7 +176,7 @@ router.post('/register', registerUser);
  *       409:
  *         description: El email ya se encuentra registrado
  */
-router.post('/registro-cliente', limitarRegistro, verificarLimitePlan('clientes'), registrarClientePortal);
+router.post('/registro-cliente', requerirRegistroPublico, limitarRegistro, verificarLimitePlan('clientes'), registrarClientePortal);
 
 /**
  * @openapi

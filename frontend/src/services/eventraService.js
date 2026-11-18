@@ -35,16 +35,10 @@ export const eventraService = {
   // ACTIVIDADES (/api/actividades)
   // ==========================================
   async getActividades(params = {}) {
-    try {
-      const query = new URLSearchParams(params).toString();
-      const url = query ? `/actividades?${query}` : '/actividades';
-      const response = await api.get(url);
-      const list = Array.isArray(response) ? response : (response?.data && Array.isArray(response.data) ? response.data : []);
-      return list;
-    } catch (err) {
-      console.warn('[eventraService] getActividades error:', err.message);
-      return [];
-    }
+    const query = new URLSearchParams(params).toString();
+    const url = query ? `/actividades?${query}` : '/actividades';
+    const response = await api.get(url);
+    return Array.isArray(response) ? response : (response?.data && Array.isArray(response.data) ? response.data : []);
   },
 
   async createActividad(actividadData) {
@@ -111,13 +105,8 @@ export const eventraService = {
   // PROVEEDORES (/api/proveedores)
   // ==========================================
   async getProveedores() {
-    try {
-      const response = await api.get('/proveedores');
-      return response.data;
-    } catch (err) {
-      console.warn('[eventraService] getProveedores fallback:', err.message);
-      return [];
-    }
+    const response = await api.get('/proveedores');
+    return response?.data || [];
   },
 
   async getProveedor(id) {
@@ -299,15 +288,9 @@ export const eventraService = {
   // PAGOS (/api/pagos)
   // ==========================================
   async getPagos() {
-    try {
-      const response = await api.get('/pagos');
-      if (Array.isArray(response)) return response;
-      if (response && Array.isArray(response.data)) return response.data;
-      return [];
-    } catch (err) {
-      console.warn('[eventraService] getPagos error:', err.message);
-      return [];
-    }
+    const response = await api.get('/pagos');
+    if (Array.isArray(response)) return response;
+    return response && Array.isArray(response.data) ? response.data : [];
   },
 
   async uploadPago(formData) {
@@ -337,15 +320,9 @@ export const eventraService = {
   // SUSCRIPCIONES SAAS (/api/suscripciones)
   // ==========================================
   async getSuscripciones() {
-    try {
-      const response = await api.get('/suscripciones');
-      if (Array.isArray(response)) return response;
-      if (response && Array.isArray(response.data)) return response.data;
-      return [];
-    } catch (err) {
-      console.warn('[eventraService] getSuscripciones error:', err.message);
-      return [];
-    }
+    const response = await api.get('/suscripciones');
+    if (Array.isArray(response)) return response;
+    return response && Array.isArray(response.data) ? response.data : [];
   },
 
   async pagarSuscripcion(formData) {

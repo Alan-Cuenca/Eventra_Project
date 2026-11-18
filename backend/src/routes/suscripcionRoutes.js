@@ -1,6 +1,8 @@
 import express from 'express';
+import { registrarValidacionIds } from '../middlewares/validarParams.js';
 import multer from 'multer';
 import { crearRateLimit } from '../middlewares/rateLimit.js';
+import { requerirRegistroPublico } from '../middlewares/configuracionPlataforma.js';
 import {
   registrarPagoSuscripcion,
   obtenerSuscripciones,
@@ -43,9 +45,10 @@ const uploadPdfPublico = multer({
 });
 
 const router = express.Router();
+registrarValidacionIds(router);
 
 /** POST /api/suscripciones/solicitud-publica — solicitud de plan desde la landing (público). */
-router.post('/solicitud-publica', crearRateLimit({ ventanaMs: 60 * 60_000, max: 5, mensaje: 'Demasiadas solicitudes desde esta red. Intenta más tarde.' }), uploadPdfPublico.single('comprobante'), crearSolicitudRegistroPlan);
+router.post('/solicitud-publica', requerirRegistroPublico, crearRateLimit({ ventanaMs: 60 * 60_000, max: 5, mensaje: 'Demasiadas solicitudes desde esta red. Intenta más tarde.' }), uploadPdfPublico.single('comprobante'), crearSolicitudRegistroPlan);
 
 /** GET /api/suscripciones/solicitudes-publicas — solicitudes pendientes de revisión (Super_Admin). */
 router.get('/solicitudes-publicas', verifyToken, authorizeSuperAdmin, listarSolicitudesRegistroPlan);

@@ -1,8 +1,10 @@
 import express from 'express';
+import { registrarValidacionIds } from '../middlewares/validarParams.js';
 import { crearPaquete, obtenerPaquetes, actualizarPaquete, eliminarPaquete } from '../controllers/paqueteController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
+registrarValidacionIds(router);
 
 /**
  * @route  GET /api/paquetes

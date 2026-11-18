@@ -1,3 +1,4 @@
+import { validarEmailOpcional } from '../utils/validaciones.js';
 import pool from '../config/db.js';
 
 /**
@@ -21,6 +22,11 @@ export const crearCliente = async (req, res) => {
         success: false,
         message: 'Los campos nombres y apellidos son obligatorios.',
       });
+    }
+
+    const errorEmail = validarEmailOpcional(email);
+    if (errorEmail) {
+      return res.status(400).json({ success: false, message: errorEmail });
     }
 
     // --- Insertar cliente (SQL parametrizado) ---

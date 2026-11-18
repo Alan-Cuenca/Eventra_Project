@@ -1,4 +1,5 @@
 import express from 'express';
+import { registrarValidacionIds } from '../middlewares/validarParams.js';
 import {
   crearProveedor,
   obtenerProveedores,
@@ -9,6 +10,7 @@ import {
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
+registrarValidacionIds(router);
 
 /**
  * @route  POST /api/proveedores

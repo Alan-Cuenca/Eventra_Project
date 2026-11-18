@@ -793,6 +793,10 @@ export const ConfiguracionSaasPage = () => {
               </div>
             </div>
 
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'var(--cream)', padding: '0.6rem 0.8rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem' }}>
+              Informativo: el aislamiento por empresa, el bloqueo anticolisión y el cambio de clave en el primer acceso están siempre activos en la plataforma. La sesión JWT dura 24 horas.
+            </p>
+
             <div className="form-group">
               <label className="form-label">Tiempo de Expiración de Sesión JWT (Horas)</label>
               <input

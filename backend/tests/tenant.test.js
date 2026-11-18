@@ -84,7 +84,7 @@ describe('Seguridad Multi-Tenant y Protección Anti-IDOR (Scope: Jorge)', () => 
   describe('Aislamiento en Módulo de Eventos (/api/eventos)', () => {
 
     it('IDOR Check: Admin Empresa 1 no puede consultar el detalle de un evento de Empresa 2', async () => {
-      const EVENTO_ID_EMPRESA_2 = 'evento-uuid-tenant-2';
+      const EVENTO_ID_EMPRESA_2 = 'e0000000-0000-0000-0000-0000000000a2';
 
       mockQueryHandler = async (sql, params) => {
         const queryStr = typeof sql === 'string' ? sql : sql?.text || '';
@@ -112,7 +112,7 @@ describe('Seguridad Multi-Tenant y Protección Anti-IDOR (Scope: Jorge)', () => 
     });
 
     it('IDOR Check: Admin Empresa 1 no puede modificar el estado de un evento de Empresa 2', async () => {
-      const EVENTO_ID_EMPRESA_2 = 'evento-uuid-tenant-2';
+      const EVENTO_ID_EMPRESA_2 = 'e0000000-0000-0000-0000-0000000000a2';
 
       mockQueryHandler = async (sql, params) => {
         const queryStr = typeof sql === 'string' ? sql : sql?.text || '';
@@ -144,7 +144,7 @@ describe('Seguridad Multi-Tenant y Protección Anti-IDOR (Scope: Jorge)', () => 
   describe('Aislamiento en Módulo de Clientes (/api/clientes)', () => {
 
     it('IDOR Check: Admin Empresa 1 no puede modificar los datos de un cliente de Empresa 2', async () => {
-      const CLIENTE_ID_EMPRESA_2 = 'cliente-uuid-tenant-2';
+      const CLIENTE_ID_EMPRESA_2 = 'c0000000-0000-0000-0000-0000000000a2';
 
       mockQueryHandler = async (sql, params) => {
         const queryStr = typeof sql === 'string' ? sql : sql?.text || '';
@@ -208,7 +208,7 @@ describe('Seguridad Multi-Tenant y Protección Anti-IDOR (Scope: Jorge)', () => 
   describe('Aislamiento en Módulo de Pagos (/api/pagos)', () => {
 
     it('IDOR Check: Admin Empresa 1 no puede registrar un pago en un evento ajeno', async () => {
-      const EVENTO_ID_EMPRESA_2 = 'evento-uuid-tenant-2';
+      const EVENTO_ID_EMPRESA_2 = 'e0000000-0000-0000-0000-0000000000a2';
 
       mockQueryHandler = async (sql, params) => {
         const queryStr = typeof sql === 'string' ? sql : sql?.text || '';
@@ -238,7 +238,7 @@ describe('Seguridad Multi-Tenant y Protección Anti-IDOR (Scope: Jorge)', () => 
     });
 
     it('IDOR Check: Admin Empresa 1 no puede aprobar ni alterar el estado de un pago de Empresa 2', async () => {
-      const PAGO_ID_EMPRESA_2 = 'pago-uuid-tenant-2';
+      const PAGO_ID_EMPRESA_2 = 'f0000000-0000-0000-0000-0000000000a2';
 
       mockQueryHandler = async (sql, params) => {
         const queryStr = typeof sql === 'string' ? sql : sql?.text || '';

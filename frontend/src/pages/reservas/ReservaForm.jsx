@@ -43,7 +43,8 @@ export const ReservaForm = () => {
         (resData || []).forEach((r) => r.salon && nombres.add(String(r.salon).trim()));
         (srvData || []).filter((sv) => esEspacio(sv.nombre)).forEach((sv) => nombres.add(String(sv.nombre).trim()));
 
-        setCotizaciones(cotData || []);
+        // Solo se puede reservar sobre cotizaciones aprobadas
+        setCotizaciones((cotData || []).filter((c) => c.estado === 'Aprobada'));
         setSalones([...nombres].filter(Boolean).sort().map((nombre) => ({ id: nombre, nombre })));
       } catch (err) {
         setError('Error al cargar datos base. Intenta recargar la página.');
@@ -176,7 +177,7 @@ export const ReservaForm = () => {
                   ))}
                 </select>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem', display: 'block' }}>
-                  La reserva se vincula a una cotización existente de tu empresa.
+                  Solo aparecen cotizaciones Aprobadas que aún no tienen reserva. Apruébala primero en Cotizaciones.
                 </span>
               </div>
 
