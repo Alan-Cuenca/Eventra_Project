@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { revalidarSesionesActivo, cargarSesion, evaluarSesion } from '../services/sesionService.js';
 
 // Constantes de Roles estándar de EVENTRA
 export const ROL_SUPER_ADMIN   = 5;
@@ -26,7 +27,7 @@ export const ROL_CLIENTE       = 4;
  */
 export const CODIGO_CAMBIO_PASSWORD = 'PASSWORD_CHANGE_REQUIRED';
 
-const autenticar = (req, res, next, { permitirCambioPendiente = false } = {}) => {
+const autenticar = async (req, res, next, { permitirCambioPendiente = false } = {}) => {
   const authHeader = req.headers.authorization;
 
   // Verificar que el header existe y tiene el formato "Bearer <token>"
@@ -57,6 +58,24 @@ const autenticar = (req, res, next, { permitirCambioPendiente = false } = {}) =>
     empresa_id: decoded.empresa_id !== undefined && decoded.empresa_id !== null ? Number(decoded.empresa_id) : null,
     email: decoded.email,
   };
+
+  // Revalidación contra la BD: usuario desactivado/eliminado, empresa suspendida o rol cambiado
+  if (revalidarSesionesActivo()) {
+    try {
+      const evaluacion = evaluarSesion(await cargarSesion(String(decoded.id)));
+      if (!evaluacion.ok) {
+        return res.status(evaluacion.status).json({ success: false, message: evaluacion.message });
+      }
+      // El rol y la empresa vigentes en la BD mandan sobre los del token
+      req.user.rol_id = Number(evaluacion.sesion.rol_id);
+      req.user.empresa_id = evaluacion.sesion.empresa_id !== null && evaluacion.sesion.empresa_id !== undefined
+        ? Number(evaluacion.sesion.empresa_id)
+        : null;
+    } catch (error) {
+      console.error('[authMiddleware] No se pudo revalidar la sesión:', error.message);
+      return res.status(503).json({ success: false, message: 'No se pudo validar tu sesión. Intenta nuevamente en unos segundos.' });
+    }
+  }
 
   // Cuentas con contraseña temporal: solo pueden acceder al flujo de cambio de contraseña
   if (decoded.debe_cambiar_password === true && !permitirCambioPendiente) {
@@ -89,7 +108,7 @@ export const verifyTokenPermitirCambioPendiente = (req, res, next) =>
  * Si no está presente, permite que la petición continúe (ej. para consultas
  * públicas de clientes en la landing page del inquilino).
  */
-export const optionalVerifyToken = (req, res, next) => {
+export const optionalVerifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -109,8 +128,22 @@ export const optionalVerifyToken = (req, res, next) => {
       empresa_id: decoded.empresa_id !== undefined && decoded.empresa_id !== null ? Number(decoded.empresa_id) : null,
       email: decoded.email,
     };
+
+    // Si la sesión ya no es válida en la BD, se trata como visitante público
+    if (revalidarSesionesActivo()) {
+      const evaluacion = evaluarSesion(await cargarSesion(String(decoded.id)));
+      if (!evaluacion.ok) {
+        req.user = undefined;
+      } else {
+        req.user.rol_id = Number(evaluacion.sesion.rol_id);
+        req.user.empresa_id = evaluacion.sesion.empresa_id !== null && evaluacion.sesion.empresa_id !== undefined
+          ? Number(evaluacion.sesion.empresa_id)
+          : null;
+      }
+    }
   } catch (error) {
-    // Si el token es inválido o expiró, simplemente se ignora y continúa como visitante público
+    // Si el token es inválido o expiró (o la BD no responde), se ignora y continúa como visitante público
+    req.user = undefined;
   }
 
   next();

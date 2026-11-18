@@ -1,3 +1,4 @@
+import { invalidarSesionesEmpresa } from '../services/sesionService.js';
 import pool from '../config/db.js';
 import { normalizarPlan } from '../middlewares/planLimitsMiddleware.js';
 import bcrypt from 'bcrypt';
@@ -346,6 +347,7 @@ export const suspenderEmpresa = async (req, res) => {
 
     const accion = nuevoEstado ? 'reactivada' : 'suspendida';
 
+    invalidarSesionesEmpresa(id); // la suspensión/reactivación rige de inmediato
     return res.status(200).json({
       success: true,
       message: `Empresa ${accion} exitosamente.`,

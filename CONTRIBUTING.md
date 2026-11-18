@@ -115,3 +115,9 @@ Todas las suites deben pasar con éxito y sin advertencias críticas de compilac
 - La BD de integración usa un puerto libre, un directorio temporal y se borra al terminar. **Nunca toca Supabase.**
 - Para apuntar a un Postgres local propio (sin SSL) usa `DB_SSL=false` junto con las variables `DB_*`.
 - Si una ejecución se interrumpe, puede quedar un proceso `postgres` huérfano; ciérralo desde el Administrador de tareas.
+
+## Sesiones JWT
+
+El middleware `verifyToken` revalida cada sesión contra la BD (`backend/src/services/sesionService.js`, caché de 15 s por instancia): un usuario desactivado/eliminado recibe 401, una empresa suspendida 403 y el **rol vigente en la BD manda sobre el del token**. Desactivar, eliminar o cambiar el rol de un usuario, y suspender una empresa, invalidan la caché de inmediato.
+
+En `NODE_ENV=test` la revalidación está apagada (los tests unitarios simulan `pool.query` por orden de llamada); actívala en un test con `process.env.REVALIDAR_SESIONES = 'true'`.

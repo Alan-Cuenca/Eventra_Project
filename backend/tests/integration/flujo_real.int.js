@@ -15,6 +15,7 @@ import { iniciarBdPrueba } from './pgTest.js';
 process.env.JWT_SECRET = 'integration_secret_eventra_0123456789';
 process.env.NODE_ENV = 'test';
 process.env.PORT = '0';
+process.env.REVALIDAR_SESIONES = 'true'; // revalidación de JWT contra la BD (desactivada por defecto en tests unitarios)
 
 jest.setTimeout(120_000);
 
@@ -25,6 +26,7 @@ const { pool } = bd;
 // 2) La app usa este pool real en lugar del de Supabase
 jest.unstable_mockModule('../../src/config/db.js', () => ({ default: pool }));
 const { default: app } = await import('../../src/app.js');
+const sesiones = await import('../../src/services/sesionService.js');
 
 afterAll(async () => { await bd.detener(); });
 
@@ -376,16 +378,101 @@ describe('Planes, límites y chatbot (SQL real)', () => {
   });
 });
 
-describe('Tokens y sesiones', () => {
-  it('un JWT válido de un usuario ahora desactivado sigue funcionando (limitación conocida: sin revalidación)', async () => {
+describe('Revalidación de sesiones JWT (BD real)', () => {
+  const usuarioNuevo = async (empresa, rol, email) => {
+    const hash = await bcrypt.hash(PASS, 4);
+    const r = await pool.query(
+      `INSERT INTO usuarios (empresa_id, rol_id, nombre_completo, email, password_hash, estado_activo, debe_cambiar_password)
+       VALUES ($1, $2, $3, $4, $5, true, false) RETURNING id`, [empresa, rol, email, email, hash]);
+    return r.rows[0].id;
+  };
+
+  beforeEach(() => sesiones.limpiarCacheSesiones());
+
+  it('un usuario desactivado por SQL pierde el acceso con su token anterior (401) y no puede iniciar sesión', async () => {
+    const id = await usuarioNuevo(2, 3, 'desactivado@e2.com');
+    const cab = await login('desactivado@e2.com');
+    expect((await request(app).get('/api/actividades').set(cab)).statusCode).toBe(200);
+
+    await pool.query('UPDATE usuarios SET estado_activo = false WHERE id = $1', [id]);
+    sesiones.limpiarCacheSesiones();
+    const res = await request(app).get('/api/actividades').set(cab);
+    expect(res.statusCode).toBe(401);
+    expect(res.body.message).toMatch(/sesión ya no es válida/i);
+    expect((await request(app).post('/api/auth/login').send({ email: 'desactivado@e2.com', password: PASS })).statusCode).toBe(403);
+  });
+
+  it('desactivar a un colaborador desde la API le corta la sesión de inmediato (sin esperar la caché)', async () => {
+    const id = await usuarioNuevo(2, 3, 'corte@e2.com');
+    const cab = await login('corte@e2.com');
+    expect((await request(app).get('/api/actividades').set(cab)).statusCode).toBe(200); // queda en caché
+
+    const des = await request(app).put(`/api/usuarios/${id}`).set(E2.admin).send({ estado_activo: false });
+    expect(des.statusCode).toBe(200);
+    expect((await request(app).get('/api/actividades').set(cab)).statusCode).toBe(401);
+  });
+
+  it('eliminar a un colaborador también cierra su sesión', async () => {
+    const id = await usuarioNuevo(2, 3, 'eliminado@e2.com');
+    const cab = await login('eliminado@e2.com');
+    await request(app).get('/api/actividades').set(cab);
+    expect((await request(app).delete(`/api/usuarios/${id}`).set(E2.admin)).statusCode).toBe(200);
+    expect((await request(app).get('/api/actividades').set(cab)).statusCode).toBe(401);
+  });
+
+  it('un cambio de rol rige de inmediato aunque el token diga otra cosa', async () => {
+    const id = await usuarioNuevo(2, 2, 'gerente2@e2.com');
+    const cab = await login('gerente2@e2.com');
+    // Como Gerente puede listar usuarios
+    expect((await request(app).get('/api/usuarios').set(cab)).statusCode).toBe(200);
+
+    expect((await request(app).put(`/api/usuarios/${id}`).set(E2.admin).send({ rol_id: 3 })).statusCode).toBe(200);
+    // El token sigue diciendo rol 2, pero la BD manda: ahora es Trabajador
+    expect((await request(app).get('/api/usuarios').set(cab)).statusCode).toBe(403);
+  });
+
+  it('suspender una empresa bloquea a todos sus usuarios (403) y reactivarla los devuelve', async () => {
+    const cab = await login('admin2@test.com');
+    expect((await request(app).get('/api/clientes').set(cab)).statusCode).toBe(200);
+
+    const susp = await request(app).put('/api/empresas/2/suspender').set(A.super).send({ estado_activo: false });
+    expect(susp.statusCode).toBe(200);
+    const bloqueado = await request(app).get('/api/clientes').set(cab);
+    expect(bloqueado.statusCode).toBe(403);
+    expect(bloqueado.body.message).toMatch(/suspendida/i);
+
+    // El Super Admin no se ve afectado por la suspensión de ninguna empresa
+    expect((await request(app).get('/api/empresas').set(A.super)).statusCode).toBe(200);
+
+    const react = await request(app).put('/api/empresas/2/suspender').set(A.super).send({ estado_activo: true });
+    expect(react.statusCode).toBe(200);
+    expect((await request(app).get('/api/clientes').set(cab)).statusCode).toBe(200);
+  });
+
+  it('un token de un usuario que ya no existe es rechazado (401)', async () => {
+    const id = await usuarioNuevo(2, 3, 'borrado@e2.com');
+    const cab = await login('borrado@e2.com');
+    await pool.query('DELETE FROM usuarios WHERE id = $1', [id]);
+    sesiones.limpiarCacheSesiones();
+    expect((await request(app).get('/api/actividades').set(cab)).statusCode).toBe(401);
+  });
+
+  it('un Cliente desactivado deja de ver sus datos aunque conserve el token (antes seguía viéndolos 24 h)', async () => {
     const lista = await request(app).get('/api/usuarios').set(A.admin);
     const beto = lista.body.data.find((u) => u.email === 'beto@cliente.com');
-    await pool.query('UPDATE usuarios SET estado_activo = false WHERE id = $1', [beto.id]);
-    const res = await request(app).get('/api/eventos').set(A.beto);
-    // Documenta el comportamiento actual: el token sigue válido hasta expirar (24 h)
-    expect(res.statusCode).toBe(200);
-    // Pero un nuevo login sí es rechazado
-    const nuevo = await request(app).post('/api/auth/login').send({ email: 'beto@cliente.com', password: PASS });
-    expect(nuevo.statusCode).toBe(403);
+    expect((await request(app).get('/api/eventos').set(A.beto)).statusCode).toBe(200);
+    await request(app).put(`/api/usuarios/${beto.id}`).set(A.admin).send({ estado_activo: false });
+    expect((await request(app).get('/api/eventos').set(A.beto)).statusCode).toBe(401);
+    expect((await request(app).post('/api/auth/login').send({ email: 'beto@cliente.com', password: PASS })).statusCode).toBe(403);
+  });
+
+  it('los endpoints públicos con token inválido siguen funcionando como visitante (chatbot / configuración)', async () => {
+    const id = await usuarioNuevo(2, 3, 'visitante@e2.com');
+    const cab = await login('visitante@e2.com');
+    await pool.query('UPDATE usuarios SET estado_activo = false WHERE id = $1', [id]);
+    sesiones.limpiarCacheSesiones();
+    const cfg = await request(app).get('/api/configuracion').set(cab);
+    expect(cfg.statusCode).toBe(200);
+    expect(cfg.body.data).not.toHaveProperty('seguridad');
   });
 });

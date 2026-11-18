@@ -1,3 +1,4 @@
+import { invalidarSesionUsuario } from '../services/sesionService.js';
 import { validarEmailOpcional, validarPassword } from '../utils/validaciones.js';
 import { hayCupoUsuarios } from '../middlewares/planLimitsMiddleware.js';
 import pool from '../config/db.js';
@@ -206,6 +207,7 @@ export const actualizarUsuario = async (req, res) => {
       });
     }
 
+    invalidarSesionUsuario(id); // el cambio de rol/estado rige de inmediato
     return res.status(200).json({
       success: true,
       message: 'Usuario actualizado exitosamente.',
@@ -266,6 +268,7 @@ export const eliminarUsuario = async (req, res) => {
       });
     }
 
+    invalidarSesionUsuario(id);
     return res.status(200).json({
       success: true,
       message: 'Usuario eliminado exitosamente.',
