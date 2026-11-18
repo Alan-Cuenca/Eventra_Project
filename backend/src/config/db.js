@@ -15,7 +15,8 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000,
   // Supabase exige SSL. La verificación estricta del certificado se activa con
   // DB_SSL_REJECT_UNAUTHORIZED=true (requiere el CA de Supabase en NODE_EXTRA_CA_CERTS).
-  ssl: {
+  // DB_SSL=false desactiva SSL (Postgres local o de pruebas sin certificado)
+  ssl: process.env.DB_SSL === 'false' ? false : {
     rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true'
   }
 });

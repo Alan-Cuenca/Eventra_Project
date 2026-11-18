@@ -104,3 +104,14 @@ npm --prefix frontend run build
 ```
 
 Todas las suites deben pasar con éxito y sin advertencias críticas de compilación.
+
+## Pruebas del backend
+
+| Comando (desde `backend/`) | Qué ejecuta |
+|---|---|
+| `npm test` | Tests unitarios y de API con la BD simulada (rápidos, sin dependencias externas). |
+| `npm run test:integration` | Tests de integración contra un **Postgres 18 real y descartable** (embebido con `embedded-postgres`, sin Docker ni instalación). Aplica `init.sql` y todas las migraciones, ejecuta el SQL de verdad (solapamiento de reservas, filtro por email del Cliente, aislamiento entre empresas, límites de plan, chatbot mensual) y prueba el runner `scripts/migrate.js`. Tarda ~1 min. |
+
+- La BD de integración usa un puerto libre, un directorio temporal y se borra al terminar. **Nunca toca Supabase.**
+- Para apuntar a un Postgres local propio (sin SSL) usa `DB_SSL=false` junto con las variables `DB_*`.
+- Si una ejecución se interrumpe, puede quedar un proceso `postgres` huérfano; ciérralo desde el Administrador de tareas.

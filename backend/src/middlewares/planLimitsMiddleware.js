@@ -128,6 +128,11 @@ export const verificarLimitePlan = (recurso) => {
         return next();
       }
 
+      // Los usuarios con rol Cliente (4) no consumen el cupo de personal del plan
+      if (recurso === 'usuarios' && Number(req.body?.rol_id) === 4) {
+        return next();
+      }
+
       // 2. Extraer y determinar el tenant (empresa_id)
       let empresa_id = req.user?.empresa_id;
 
