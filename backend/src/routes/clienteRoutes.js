@@ -2,6 +2,10 @@ import express from 'express';
 import { registrarValidacionIds } from '../middlewares/validarParams.js';
 import { crearCliente, obtenerClientes, obtenerClientePorId, actualizarCliente, eliminarCliente } from '../controllers/clienteController.js';
 import { registrarClientePortal } from '../controllers/authController.js';
+import { requerirRegistroPublico } from '../middlewares/configuracionPlataforma.js';
+import { crearRateLimit } from '../middlewares/rateLimit.js';
+
+const limitarRegistro = crearRateLimit({ ventanaMs: 60 * 60_000, max: 20, mensaje: 'Demasiados registros desde esta red. Intenta más tarde.' });
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 import { verificarLimitePlan } from '../middlewares/planLimitsMiddleware.js';
 
@@ -13,7 +17,7 @@ registrarValidacionIds(router);
  * @desc   Autoregistro seguro de clientes finales desde el portal de una empresa (marca blanca)
  * @access Public — validación de cuota de plan SaaS
  */
-router.post('/registro-publico', verificarLimitePlan('clientes'), registrarClientePortal);
+router.post('/registro-publico', requerirRegistroPublico, limitarRegistro, verificarLimitePlan('clientes'), registrarClientePortal);
 
 /**
  * @route  POST /api/clientes

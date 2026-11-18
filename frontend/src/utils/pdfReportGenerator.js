@@ -131,7 +131,7 @@ const dibujarMembrete = (doc, membrete = {}, tituloReporte = 'Reporte Corporativ
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(...paleta.text);
-  doc.text(`RUC: ${membrete.ruc || '1799999999001'}  •  Plan ${membrete.plan_suscripcion || 'Empresarial'}`, textX, startY + 12);
+  doc.text(`RUC: ${membrete.ruc || 'N/D'}  •  Plan ${membrete.plan_suscripcion || 'Empresarial'}`, textX, startY + 12);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);

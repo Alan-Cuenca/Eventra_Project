@@ -1,7 +1,6 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { TenantAuthLayout } from '../tenant/TenantAuthLayout';
-import { ThemeToggle } from '../../components/common/ThemeToggle';
 import logoImg from '../../assets/logo.png';
 
 /**
@@ -37,7 +36,6 @@ export const PasswordAuthShell = ({ title, subtitle, icon, children }) => {
 
   return (
     <div className="min-h-screen bg-[#F3F0E4] flex flex-col items-center justify-center p-4 font-['Plus_Jakarta_Sans',sans-serif] relative">
-      <ThemeToggle floating />
 
       <div className="w-full max-w-md bg-white rounded-2xl border border-[#CEC8B8] shadow-xl p-8 animate-fade-in my-6">
         <div className="flex items-center gap-3 mb-6">

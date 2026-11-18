@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import { exigirEntornoValido } from './config/validarEntorno.js';
 import { modoMantenimiento } from './middlewares/configuracionPlataforma.js';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
@@ -162,6 +163,7 @@ const HOST = '0.0.0.0';
 const isTestEnv = Boolean(process.env.JEST_WORKER_ID) || (process.env.NODE_ENV === 'test' && !process.env.RENDER);
 
 if (!isTestEnv) {
+  exigirEntornoValido();
 
   app.listen(PORT, HOST, () => {
     console.log(`Server is running on http://${HOST}:${PORT}`);

@@ -72,10 +72,6 @@ export const eventraService = {
     return response?.data || response;
   },
 
-  async actualizarEstadoActividad(id, estado) {
-    return this.updateEstadoActividad(id, estado);
-  },
-
   async deleteActividad(id) {
     await api.delete(`/actividades/${id}`);
     return true;
@@ -250,38 +246,11 @@ export const eventraService = {
   },
 
   // ==========================================
-  // SOLICITUDES DE MODIFICACIÓN (/api/solicitudes)
-  // ==========================================
-  async getSolicitudes() {
-    const response = await api.get('/solicitudes');
-    return response?.data || [];
-  },
-
-  async updateEstadoSolicitud(solicitudId, estado) {
-    return await api.patch(`/solicitudes/${solicitudId}/estado`, { estado });
-  },
-
-  // ==========================================
   // DASHBOARD EJECUTIVO (/api/dashboard/admin)
   // ==========================================
   async getDashboardAdmin() {
     const response = await api.get('/dashboard/admin');
     return response?.data || response;
-  },
-
-  // ==========================================
-  // ASISTENTE VIRTUAL EVARA / CHATBOT (/api/chatbot)
-  // ==========================================
-  async enviarMensajeChatbot(mensaje) {
-    try {
-      const response = await api.post('/chatbot', { mensaje });
-      return response.respuesta ? response : (response.data || response);
-    } catch (err) {
-      console.warn('[eventraService] Chatbot API fallback:', err.message);
-      return {
-        respuesta: `Hola, soy el asistente virtual EVARA de EVENTRA. Estoy preparado para orientarte en bodas, quinceañeras y recepciones. Recibí tu consulta: "${mensaje}". Actualmente te recomiendo revisar nuestros paquetes prediseñados en la sección de Servicios.`,
-      };
-    }
   },
 
   // ==========================================

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
 import { useBranding } from '../../context/ThemeBrandingContext';
 import { WatermarkOverlay } from '../../components/common/WatermarkOverlay';
 import { eventraService } from '../../services/eventraService';
@@ -16,15 +15,12 @@ import {
   ShieldCheck,
   Building2,
   CalendarCheck,
-  Moon,
-  Sun,
   FileEdit,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
 export const PortalClientePage = () => {
   const { user, logout } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
   const { branding } = useBranding();
   const navigate = useNavigate();
 
@@ -162,17 +158,6 @@ export const PortalClientePage = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            id="portal-theme-toggle-btn"
-            onClick={toggleTheme}
-            className="p-2 rounded-xl bg-white border border-[#CEC8B8] text-[#4D7182] hover:text-[#233D49] transition-colors shadow-sm flex items-center justify-center cursor-pointer"
-            title={isDark ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
-            aria-label="Alternar tema visual"
-          >
-            {isDark ? <Moon size={16} color="var(--primary)" /> : <Sun size={16} color="#C49A3A" />}
-          </button>
-
           <div className="text-right hidden sm:block">
             <p className="text-sm font-bold text-[#233D49] leading-tight">
               {nombre}

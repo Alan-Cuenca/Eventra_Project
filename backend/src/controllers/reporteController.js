@@ -180,12 +180,8 @@ export const obtenerResumenReportes = async (req, res) => {
       ruc: '0000000000001',
       slug: 'empresa',
       plan_suscripcion: 'Basico',
-      logo_url: '/logo_Helados_Catedral.jpg',
+      logo_url: null,
     };
-
-    if (!empresaData.logo_url) {
-      empresaData.logo_url = '/logo_Helados_Catedral.jpg';
-    }
 
     // Totales calculados
     const saldosRows = saldosResult.rows;

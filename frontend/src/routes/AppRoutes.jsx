@@ -84,7 +84,7 @@ import FacturacionSuperAdmin from '../pages/super-admin/FacturacionSuperAdmin';
 
 import { useAuth } from '../context/AuthContext';
 
-import { ROLES } from '../services/mockData';
+import { ROLES } from '../constants/roles';
 
 const ActividadesRouter = () => {
   const { isTrabajador } = useAuth();

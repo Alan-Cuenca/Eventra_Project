@@ -422,7 +422,7 @@ export const SolicitudesIngresoPage = () => {
                       </td>
 
                       <td style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                        {sol.empresa_ruc || '1790012345001'}
+                        {sol.empresa_ruc || 'N/D'}
                       </td>
 
                       <td>

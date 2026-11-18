@@ -30,10 +30,10 @@ const DEFAULT_SAAS_CONFIG = {
     registro_publico_activo: true,
   },
   transferencia: {
-    titular: 'EVENTRA SaaS Corp',
-    numero_cuenta: '0011223344',
-    cedula: '1790011223001',
-    correo_notificacion: 'transferencias@eventra.com',
+    titular: '',
+    numero_cuenta: '',
+    cedula: '',
+    correo_notificacion: '',
     entidad_bancaria: 'Banco Pichincha / Transferencia Interbancaria',
   },
   planes: {

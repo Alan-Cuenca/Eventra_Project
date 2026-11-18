@@ -141,7 +141,7 @@ export const authorizeRoles = (allowedRoles) => {
  * Middleware: authorizeSuperAdmin
  * -----------------------------------------------------------------------
  * Control de acceso exclusivo para el Super Administrador global de EVENTRA.
- * Valida estrictamente que el usuario autenticado posea el rol de Super_Admin (rol_id 5 o 0).
+ * Valida estrictamente que el usuario autenticado posea el rol de Super_Admin (rol_id 5).
  * Es el único rol autorizado para gestionar empresas / inquilinos globales sin empresa_id.
  *
  * @param {import('express').Request}  req
@@ -158,7 +158,6 @@ export const authorizeSuperAdmin = (req, res, next) => {
 
   const isSuperAdmin =
     Number(req.user.rol_id) === ROL_SUPER_ADMIN ||
-    Number(req.user.rol_id) === 0 ||
     req.user.rol === 'Super_Admin' ||
     req.user.rol_nombre === 'Super_Admin';
 
@@ -169,25 +168,6 @@ export const authorizeSuperAdmin = (req, res, next) => {
     });
   }
 
-  next();
-};
-
-/**
- * Middleware: requireTenantScope
- * -----------------------------------------------------------------------
- * Garantiza que la petición esté asociada a una empresa válida (inquilino SaaS).
- *
- * @param {import('express').Request}  req
- * @param {import('express').Response} res
- * @param {import('express').NextFunction} next
- */
-export const requireTenantScope = (req, res, next) => {
-  if (!req.user || req.user.empresa_id === null || req.user.empresa_id === undefined) {
-    return res.status(403).json({
-      success: false,
-      message: 'Acceso denegado. Se requiere un inquilino (empresa_id) válido asignado.',
-    });
-  }
   next();
 };
 

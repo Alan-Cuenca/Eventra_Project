@@ -103,7 +103,7 @@ export const PALETAS = {
 const DEFAULT_BRANDING = {
   id: null,
   nombre_comercial: 'EVENTRA',
-  ruc: '1799999999001',
+  ruc: '',
   slug: 'eventra',
   logo_url: null,
   paleta_colores: 'sofisticacion_sutil',

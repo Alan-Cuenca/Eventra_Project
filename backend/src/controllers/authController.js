@@ -2,8 +2,7 @@ import { validarPassword } from '../utils/validaciones.js';
 import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import nodemailer from 'nodemailer';
-import { ROL_SUPER_ADMIN, ROL_ADMINISTRADOR } from '../middlewares/authMiddleware.js';
+import { ROL_SUPER_ADMIN } from '../middlewares/authMiddleware.js';
 import { getMailTransporter, sendPasswordResetEmail, sendMail } from '../services/emailService.js';
 import { hayCupoUsuarios } from '../middlewares/planLimitsMiddleware.js';
 

@@ -220,7 +220,7 @@ export const SuperAdminHeader = ({ onToggleSidebar }) => {
                     {user?.nombre_completo || 'Super Administrador'}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', wordBreak: 'break-all' }}>
-                    {user?.email || 'superadmin@eventra.com'}
+                    {user?.email || ''}
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.4rem' }}>

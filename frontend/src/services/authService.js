@@ -63,21 +63,6 @@ export const authService = {
     }
   },
 
-  /**
-   * POST /auth/register
-   * Si el backend no está disponible por red, simula registro exitoso (solo dev).
-   */
-  async register(userData) {
-    try {
-      const response = await api.post('/auth/register', userData);
-      // 201 Created → response.data contiene el usuario creado
-      return { success: true, user: response.data, isRealBackend: true };
-    } catch (error) {
-      if (error.status) throw error;
-      throw new Error('No se pudo conectar con el servidor. Intenta nuevamente.');
-    }
-  },
-
   logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
@@ -154,25 +139,5 @@ export const authService = {
     return response.data || response;
   },
 
-  /**
-   * POST /api/auth/registro-cliente
-   * Registra a un cliente final en el portal de una empresa específica.
-   */
-  async registrarClientePortal(payload) {
-    const response = await api.post('/auth/registro-cliente', payload);
-    if (response && response.token) {
-      localStorage.setItem(TOKEN_KEY, response.token);
-      localStorage.setItem(USER_KEY, JSON.stringify(response.data.usuario));
-      localStorage.setItem(ROL_ID_KEY, String(response.data.usuario.rol_id || 4));
-      localStorage.setItem(ROL_NOMBRE_KEY, 'Cliente');
-      return {
-        user: response.data.usuario,
-        token: response.token,
-        cliente: response.data.cliente,
-        empresa: response.data.empresa,
-      };
-    }
-    return response;
-  },
 };
 

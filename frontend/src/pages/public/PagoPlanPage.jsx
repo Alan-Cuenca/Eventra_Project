@@ -18,7 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { api } from '../../services/api';
-import { DATOS_TRANSFERENCIA_EVENTRA } from '../../components/public/ModalPagoPlanTransferencia';
+import { eventraService } from '../../services/eventraService';
 
 export const PagoPlanPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -43,6 +43,22 @@ export const PagoPlanPage = () => {
   const [pagoFinalizado, setPagoFinalizado] = useState(false);
 
   const fileInputRef = useRef(null);
+
+  // Datos de transferencia de EVENTRA: vienen de la configuración global (los define el Super Admin)
+  const [datosTransf, setDatosTransf] = useState({ nombre: '—', cuenta: '—', cedula: '—', correo: '—' });
+  useEffect(() => {
+    eventraService.getConfiguracionGlobal()
+      .then((cfg) => {
+        const t = cfg?.transferencia || {};
+        setDatosTransf({
+          nombre: t.titular || '—',
+          cuenta: t.numero_cuenta || '—',
+          cedula: t.cedula || '—',
+          correo: t.correo_notificacion || '—',
+        });
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     document.title = 'Pago por Transferencia · Planes EVENTRA';
@@ -81,7 +97,7 @@ export const PagoPlanPage = () => {
   };
 
   const handleCopyAll = () => {
-    const texto = `Nombre: ${DATOS_TRANSFERENCIA_EVENTRA.nombre}\nCuenta: ${DATOS_TRANSFERENCIA_EVENTRA.cuenta}\nCédula: ${DATOS_TRANSFERENCIA_EVENTRA.cedula}\nCorreo: ${DATOS_TRANSFERENCIA_EVENTRA.correo}`;
+    const texto = `Nombre: ${datosTransf.nombre}\nCuenta: ${datosTransf.cuenta}\nCédula: ${datosTransf.cedula}\nCorreo: ${datosTransf.correo}`;
     handleCopy('all', texto);
   };
 
@@ -327,12 +343,12 @@ export const PagoPlanPage = () => {
                       Nombre del Titular
                     </span>
                     <span className="text-sm sm:text-base font-extrabold text-[#233D49]">
-                      {DATOS_TRANSFERENCIA_EVENTRA.nombre}
+                      {datosTransf.nombre}
                     </span>
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleCopy('nombre', DATOS_TRANSFERENCIA_EVENTRA.nombre)}
+                    onClick={() => handleCopy('nombre', datosTransf.nombre)}
                     className="p-2 rounded-lg bg-[#F3F0E4] hover:bg-[#CEC8B8]/60 text-[#233D49] transition-colors cursor-pointer"
                     title="Copiar Nombre"
                   >
@@ -347,12 +363,12 @@ export const PagoPlanPage = () => {
                       Número de Cuenta
                     </span>
                     <span className="text-sm sm:text-base font-mono font-extrabold text-[#233D49]">
-                      {DATOS_TRANSFERENCIA_EVENTRA.cuenta}
+                      {datosTransf.cuenta}
                     </span>
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleCopy('cuenta', DATOS_TRANSFERENCIA_EVENTRA.cuenta)}
+                    onClick={() => handleCopy('cuenta', datosTransf.cuenta)}
                     className="p-2 rounded-lg bg-[#F3F0E4] hover:bg-[#CEC8B8]/60 text-[#233D49] transition-colors cursor-pointer"
                     title="Copiar Cuenta"
                   >
@@ -367,12 +383,12 @@ export const PagoPlanPage = () => {
                       Cédula de Identidad
                     </span>
                     <span className="text-sm sm:text-base font-mono font-extrabold text-[#233D49]">
-                      {DATOS_TRANSFERENCIA_EVENTRA.cedula}
+                      {datosTransf.cedula}
                     </span>
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleCopy('cedula', DATOS_TRANSFERENCIA_EVENTRA.cedula)}
+                    onClick={() => handleCopy('cedula', datosTransf.cedula)}
                     className="p-2 rounded-lg bg-[#F3F0E4] hover:bg-[#CEC8B8]/60 text-[#233D49] transition-colors cursor-pointer"
                     title="Copiar Cédula"
                   >
@@ -387,12 +403,12 @@ export const PagoPlanPage = () => {
                       Correo de Notificación
                     </span>
                     <span className="text-xs sm:text-sm font-mono font-extrabold text-[#233D49] truncate block">
-                      {DATOS_TRANSFERENCIA_EVENTRA.correo}
+                      {datosTransf.correo}
                     </span>
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleCopy('correo', DATOS_TRANSFERENCIA_EVENTRA.correo)}
+                    onClick={() => handleCopy('correo', datosTransf.correo)}
                     className="p-2 rounded-lg bg-[#F3F0E4] hover:bg-[#CEC8B8]/60 text-[#233D49] transition-colors shrink-0 cursor-pointer"
                     title="Copiar Correo"
                   >

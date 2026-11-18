@@ -64,7 +64,7 @@ export const ReportesPage = () => {
       const membreteCompleto = {
         ...membrete,
         nombre_comercial: membrete?.nombre_comercial || branding?.nombre_comercial || 'EVENTRA',
-        ruc: membrete?.ruc || branding?.ruc || '1799999999001',
+        ruc: membrete?.ruc || branding?.ruc || 'N/D',
         logo_url: membrete?.logo_url || branding?.logo_url || null,
         paleta_colores: membrete?.paleta_colores || branding?.paleta_colores || 'sofisticacion_sutil',
       };
@@ -103,7 +103,7 @@ export const ReportesPage = () => {
   const eventosListado = reporteData?.reporte_eventos?.listado || [];
   const saldosListado = reporteData?.reporte_saldos?.listado || [];
 
-  const rucVisible = membrete.ruc || branding?.ruc || '1799999999001';
+  const rucVisible = membrete.ruc || branding?.ruc || 'N/D';
   const nombreVisible = membrete.nombre_comercial || branding?.nombre_comercial || 'Reportes Corporativos';
   const logoVisible = membrete.logo_url || branding?.logo_url || '/logo_Helados_Catedral.jpg';
 

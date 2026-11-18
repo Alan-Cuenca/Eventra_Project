@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { eventraService } from '../../services/eventraService';
-import { DATOS_TRANSFERENCIA_EVENTRA } from '../../components/public/ModalPagoPlanTransferencia';
 import {
   CreditCard,
   ShieldCheck,
@@ -87,10 +86,10 @@ export const MiSuscripcion = () => {
   };
 
   const datosTransferencia = {
-    nombre: saasConfig?.transferencia?.titular || DATOS_TRANSFERENCIA_EVENTRA.nombre,
-    cuenta: saasConfig?.transferencia?.numero_cuenta || DATOS_TRANSFERENCIA_EVENTRA.cuenta,
-    cedula: saasConfig?.transferencia?.cedula || DATOS_TRANSFERENCIA_EVENTRA.cedula,
-    correo: saasConfig?.transferencia?.correo_notificacion || DATOS_TRANSFERENCIA_EVENTRA.correo,
+    nombre: saasConfig?.transferencia?.titular || '—',
+    cuenta: saasConfig?.transferencia?.numero_cuenta || '—',
+    cedula: saasConfig?.transferencia?.cedula || '—',
+    correo: saasConfig?.transferencia?.correo_notificacion || '—',
   };
 
   const precioBasico = Number(saasConfig?.planes?.basico_precio) || 49;

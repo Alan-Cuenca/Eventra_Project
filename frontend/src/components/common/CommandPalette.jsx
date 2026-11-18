@@ -18,18 +18,14 @@ import {
   UserCheck,
   ShieldCheck,
   Palette,
-  Moon,
-  Sun,
   X,
   CornerDownLeft,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
 
 export const CommandPalette = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const { isAdmin, isGerente, isTrabajador, isCliente } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
 
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -190,17 +186,6 @@ export const CommandPalette = ({ isOpen, onClose }) => {
             <span><kbd className="px-1.5 py-0.5 rounded bg-[var(--ev-surface)] border border-[var(--ev-border)] font-mono text-[10px]">↵</kbd> Seleccionar</span>
             <span><kbd className="px-1.5 py-0.5 rounded bg-[var(--ev-surface)] border border-[var(--ev-border)] font-mono text-[10px]">esc</kbd> Cerrar</span>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              toggleTheme();
-              onClose();
-            }}
-            className="inline-flex items-center gap-1 hover:text-[var(--ev-text-main)]"
-          >
-            {isDark ? <Sun size={12} /> : <Moon size={12} />}
-            <span>Alternar Modo {isDark ? 'Claro' : 'Oscuro'}</span>
-          </button>
         </div>
 
       </div>

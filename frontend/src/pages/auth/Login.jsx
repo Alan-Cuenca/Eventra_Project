@@ -6,7 +6,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { ThemeToggle } from '../../components/common/ThemeToggle';
 import {
   Lock, Mail, ArrowRight, Eye, EyeOff, Loader2,
   CalendarDays, Shield, Sparkles, AlertCircle, ArrowLeft,

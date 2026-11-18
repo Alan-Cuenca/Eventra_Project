@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authService } from '../services/authService';
-import { ROLES, ROLES_CONFIG } from '../services/mockData';
+import { ROLES, ROLES_CONFIG } from '../constants/roles';
 
 const AuthContext = createContext(null);
 
@@ -37,10 +37,6 @@ export const AuthProvider = ({ children }) => {
       setUser(response.data);
     }
     return response;
-  };
-
-  const register = async (userData) => {
-    return await authService.register(userData);
   };
 
   const logout = (customRedirect) => {
@@ -113,7 +109,6 @@ export const AuthProvider = ({ children }) => {
     debeCambiarPassword: user?.debe_cambiar_password === true,
     login,
     cambiarPasswordObligatorio,
-    register,
     logout,
     refreshSession,
   };

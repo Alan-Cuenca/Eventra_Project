@@ -397,5 +397,3 @@ function generarRespuestaContextual(mensaje, paquetes, servicios, historial = []
   return `¡Hola! Soy EVARA, asistente de ventas de esta empresa. Te recomiendo especialmente nuestro paquete "${nombreP}" ($${precioP}) con ${serviciosP}.\n\nPuedes indicarme tu fecha estimada para recomendarte disponibilidad o ingresar directamente al Cotizador (/cotizador) para ver el contrato legal. ¿En qué fecha tienes planificado tu evento?`;
 }
 
-// Alias para compatibilidad con código existente
-export const consultarAsistente = consultarEvara;

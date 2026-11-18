@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { ThemeToggle } from '../../components/common/ThemeToggle';
 
 import {
   KeyRound,
@@ -110,7 +109,6 @@ export const PrimerLoginCambioPassword = () => {
 
   return (
     <div className="min-h-screen bg-[#F3F0E4] flex flex-col items-center justify-center p-4 font-['Plus_Jakarta_Sans',sans-serif] relative">
-      <ThemeToggle floating />
 
       <div className="w-full max-w-md bg-white rounded-2xl border border-[#CEC8B8] shadow-xl p-8 animate-fade-in my-6">
         {/* Branding */}

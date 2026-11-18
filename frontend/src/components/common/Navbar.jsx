@@ -433,7 +433,7 @@ export const Navbar = ({ onOpenCommandPalette }) => {
                     {user?.nombre_completo || 'Usuario'}
                   </p>
                   <p className="text-[11px] text-[var(--ev-text-muted)] truncate mt-0.5">
-                    {user?.email || 'usuario@eventra.com'}
+                    {user?.email || ''}
                   </p>
                 </div>
                 <div className="flex items-center justify-between gap-2">

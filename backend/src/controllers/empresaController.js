@@ -360,55 +360,6 @@ export const suspenderEmpresa = async (req, res) => {
   }
 };
 
-/**
- * Consulta pública de datos básicos de una empresa por slug para su portal.
- * Permite al frontend validar que la empresa exista y esté activa antes de registrar clientes.
- *
- * @param {import('express').Request}  req
- * @param {import('express').Response} res
- */
-export const obtenerEmpresaPublicaPorSlug = async (req, res) => {
-  const { slug } = req.params;
-
-  try {
-    if (!slug) {
-      return res.status(400).json({
-        success: false,
-        message: 'El parámetro slug es obligatorio.',
-      });
-    }
-
-    const result = await pool.query(
-      `SELECT id, nombre_comercial, slug, plan_suscripcion, estado_activo,
-              logo_url, paleta_colores, paleta_personalizada, marca_agua_activa, portal_titulo, portal_descripcion
-       FROM empresas
-       WHERE LOWER(slug) = LOWER($1)
-          OR (LOWER($1) = 'la-catedral' AND LOWER(slug) = 'helados-la-catedral')
-          OR (LOWER($1) IN ('recepciones-eventos-imperial-1', 'eventos-imperial') AND LOWER(slug) IN ('recepciones-eventos-imperial-1', 'eventos-imperial'))
-       LIMIT 1`,
-      [slug.trim()]
-    );
-
-    if (result.rowCount === 0 || !result.rows[0].estado_activo) {
-      return res.status(404).json({
-        success: false,
-        message: 'Portal de empresa no encontrado o temporalmente inactivo.',
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: result.rows[0],
-    });
-  } catch (error) {
-    console.error('[empresaController] Error en obtenerEmpresaPublicaPorSlug:', error.message);
-    return res.status(500).json({
-      success: false,
-      message: 'Error al consultar los datos del portal.',
-    });
-  }
-};
-
 export const PALETAS_VALIDAS = [
   'sofisticacion_sutil',
   'bosque_olivo',
@@ -440,7 +391,7 @@ export const obtenerMiBranding = async (req, res) => {
         data: {
           id: null,
           nombre_comercial: 'EVENTRA',
-          ruc: '1799999999001',
+          ruc: null,
           slug: 'eventra',
           logo_url: null,
           paleta_colores: 'sofisticacion_sutil',
