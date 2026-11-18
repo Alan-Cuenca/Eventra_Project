@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   X,
 } from 'lucide-react';
+import { api } from '../../services/api';
 import { DATOS_TRANSFERENCIA_EVENTRA } from '../../components/public/ModalPagoPlanTransferencia';
 
 export const PagoPlanPage = () => {
@@ -119,7 +120,7 @@ export const PagoPlanPage = () => {
     if (file) handlePdfSelect(file);
   };
 
-  const handleFinalizarSolicitud = (e) => {
+  const handleFinalizarSolicitud = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -131,8 +132,28 @@ export const PagoPlanPage = () => {
       return;
     }
 
-    setModalCorreoAbierto(false);
-    setPagoFinalizado(true);
+    if (!nombreEmpresa.trim()) {
+      setErrorMsg('Ingresa el nombre de tu empresa.');
+      return;
+    }
+    if (!pdfFile) {
+      setErrorMsg('Debes adjuntar el comprobante de transferencia en PDF.');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('plan_nombre', selectedPlan);
+      formData.append('ciclo', billingCycle === 'annual' ? 'anual' : 'mensual');
+      formData.append('correo_contacto', correoLimpio);
+      formData.append('nombre_empresa', nombreEmpresa.trim());
+      formData.append('comprobante', pdfFile);
+      await api.post('/suscripciones/solicitud-publica', formData);
+      setModalCorreoAbierto(false);
+      setPagoFinalizado(true);
+    } catch (err) {
+      setErrorMsg(err.message || 'No se pudo enviar tu solicitud. Intenta nuevamente.');
+    }
   };
 
   return (
