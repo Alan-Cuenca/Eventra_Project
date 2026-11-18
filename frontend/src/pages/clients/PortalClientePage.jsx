@@ -67,14 +67,14 @@ export const PortalClientePage = () => {
       mainEvent?.total_calculado ??
       mainEvent?.total ??
       mainEvent?.presupuesto_estimado ??
-      8500
+      0
   );
   const pagado = Number(
     mainEvent?.anticipo_pagado ??
       mainEvent?.pagado ??
       (mainEvent?.saldo_pendiente !== undefined
         ? Math.max(0, totalEvento - Number(mainEvent.saldo_pendiente))
-        : 5500)
+        : 0)
   );
   const saldoPendiente = Number(
     mainEvent?.saldo_pendiente ?? Math.max(0, totalEvento - pagado)
@@ -87,7 +87,7 @@ export const PortalClientePage = () => {
     mainEvent?.salon_o_lugar ||
     mainEvent?.salon_nombre ||
     mainEvent?.salon ||
-    'Salón Cristal Imperial';
+    'Por definir';
   const invitadosDisplay =
     mainEvent?.num_invitados || mainEvent?.invitados || 150;
 
@@ -222,7 +222,7 @@ export const PortalClientePage = () => {
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-[#233D49]">
-                {mainEvent?.titulo || mainEvent?.nombre_evento || mainEvent?.nombre || 'Recepción Familiar San Andrés'}
+                {mainEvent?.titulo || mainEvent?.nombre_evento || mainEvent?.nombre || 'Tu evento'}
               </h2>
               <div className="flex flex-wrap items-center gap-4 text-xs text-[#233D49]/80 font-medium">
                 <span className="flex items-center gap-1">

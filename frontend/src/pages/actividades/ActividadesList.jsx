@@ -20,35 +20,6 @@ import {
 } from 'lucide-react';
 import { ActividadForm } from './ActividadForm';
 
-// Mapeo amigable de respaldo para personal conocido
-const STAFF_FALLBACK_MAP = {
-  'e684387c-a94a-41c1-82c7-b94c31eff638': {
-    nombre: 'Coordinador Operativo',
-    rol: 'Coordinador Operativo',
-    iniciales: 'CO',
-  },
-  '19201cfb-3d6c-4af4-b551-0af21d75890c': {
-    nombre: 'Gerente Operativo',
-    rol: 'Gerente Operativo',
-    iniciales: 'GO',
-  },
-  'usr-trabajador-03': {
-    nombre: 'Coordinador Operativo',
-    rol: 'Coordinador Operativo',
-    iniciales: 'CO',
-  },
-  'usr-gerente-02': {
-    nombre: 'Gerencia Operativa',
-    rol: 'Gerente Operativo',
-    iniciales: 'GO',
-  },
-  'usr-admin-01': {
-    nombre: 'Administración SaaS',
-    rol: 'Administrador SaaS',
-    iniciales: 'AS',
-  },
-};
-
 export const ActividadesList = () => {
   const [actividades, setActividades] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
@@ -153,19 +124,6 @@ export const ActividadesList = () => {
         nombre: fullName,
         rol: 'Equipo Interno',
         iniciales: initials || 'EQ',
-      };
-    }
-
-    if (STAFF_FALLBACK_MAP[id]) {
-      return STAFF_FALLBACK_MAP[id];
-    }
-
-    // Si tiene un id pero no está mapeado, asignar rotación elegante del equipo
-    if (id) {
-      return {
-        nombre: 'Coordinador Operativo',
-        rol: 'Coordinador Operativo',
-        iniciales: 'CO',
       };
     }
 

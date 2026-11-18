@@ -12,12 +12,12 @@ import { CalendarCheck, ArrowLeft, Send, Loader2, AlertCircle, CheckCircle2, Clo
 export const ReservaForm = () => {
   const navigate = useNavigate();
 
-  const [eventos, setEventos] = useState([]);
+  const [cotizaciones, setCotizaciones] = useState([]);
   const [salones, setSalones] = useState([]);
   const [loadingInit, setLoadingInit] = useState(true);
   
   const [form, setForm] = useState({
-    evento_id: '',
+    cotizacion_id: '',
     salon: '',
     fecha: '',
     horario: '19:00 - 02:00', // Valor por defecto
@@ -31,15 +31,15 @@ export const ReservaForm = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [evtData, srvData] = await Promise.all([
-          eventraService.getEventos(),
+        const [cotData, srvData] = await Promise.all([
+          eventraService.getCotizaciones(),
           eventraService.getServicios()
         ]);
         
         // Filtramos solo los servicios que son de categoría Espacio/Salón
         const espacios = (srvData || []).filter(s => s.categoria === 'Espacio y Salón');
         
-        setEventos(evtData || []);
+        setCotizaciones(cotData || []);
         setSalones(espacios);
       } catch (err) {
         setError('Error al cargar datos base. Intenta recargar la página.');
@@ -62,7 +62,7 @@ export const ReservaForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.evento_id || !form.salon || !form.fecha || !form.horario) {
+    if (!form.cotizacion_id || !form.salon || !form.fecha || !form.horario) {
       setError('Por favor, completa todos los campos requeridos.');
       return;
     }
@@ -72,38 +72,21 @@ export const ReservaForm = () => {
     setSubmitting(true);
 
     try {
-      // Mock de validación de conflicto para testing en frontend si usamos mockData
-      // En un entorno real, el backend (POST /reservas) devolvería un 409 o 400.
-      const reservasActuales = await eventraService.getReservas();
-      const isConflict = reservasActuales.some(
-        r => r.salon === form.salon && r.fecha === form.fecha && r.horario === form.horario
-      );
-
-      if (isConflict) {
-        // Simulamos el error 409 Conflict
-        const conflictErr = new Error('Conflicto de reserva');
-        conflictErr.status = 409;
-        throw conflictErr;
-      }
-
-      // Buscar info del evento para guardarlo
-      const eventoSeleccionado = eventos.find(ev => ev.id === form.evento_id);
+      const [hora_inicio, hora_fin] = form.horario.split(' - ').map((h) => h.trim());
 
       await eventraService.createReserva({
-        evento_id: form.evento_id,
-        evento_titulo: eventoSeleccionado ? eventoSeleccionado.titulo : 'Evento Personalizado',
-        cliente_nombre: eventoSeleccionado ? eventoSeleccionado.cliente_nombre : 'Cliente Genérico',
-        salon: form.salon,
-        fecha: form.fecha,
-        horario: form.horario,
-        estado: 'Confirmada'
+        cotizacion_id: form.cotizacion_id,
+        salon_o_lugar: form.salon,
+        fecha_evento: form.fecha,
+        hora_inicio,
+        hora_fin,
       });
-      
+
       setSuccess(true);
       setTimeout(() => navigate('/reservas', { replace: true }), 1800);
 
     } catch (err) {
-      if (err.status === 409 || err.status === 400 || err.message === 'Conflicto de reserva') {
+      if (err.status === 409) {
         setConflictError(true);
         setError('El salón seleccionado ya está reservado en esa fecha y horario. Por favor, elige otro salón u otra fecha/horario.');
       } else {
@@ -178,18 +161,18 @@ export const ReservaForm = () => {
               
               <div className="form-group">
                 <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <PartyPopper size={16} color="var(--accent)" /> Evento a vincular *
+                  <PartyPopper size={16} color="var(--accent)" /> Cotización a vincular *
                 </label>
-                <select name="evento_id" className="form-select" value={form.evento_id} onChange={handleChange} required>
-                  <option value="">-- Selecciona el Evento Confirmado --</option>
-                  {eventos.map(ev => (
-                    <option key={ev.id} value={ev.id}>
-                      {ev.titulo} ({ev.cliente_nombre})
+                <select name="cotizacion_id" className="form-select" value={form.cotizacion_id} onChange={handleChange} required>
+                  <option value="">-- Selecciona la Cotización --</option>
+                  {cotizaciones.map(c => (
+                    <option key={c.id} value={c.id}>
+                      {`${c.cliente_nombres || ''} ${c.cliente_apellidos || ''}`.trim() || 'Cliente'} · {String(c.fecha_estimada_evento || '').split('T')[0]} · ${Number(c.total_calculado || 0).toFixed(2)}
                     </option>
                   ))}
                 </select>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem', display: 'block' }}>
-                  Solo se listan eventos y cotizaciones en estado Confirmado/Aprobado.
+                  La reserva se vincula a una cotización existente de tu empresa.
                 </span>
               </div>
 

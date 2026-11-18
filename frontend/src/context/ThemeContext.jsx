@@ -8,15 +8,8 @@ const ThemeContext = createContext({
 });
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(() => {
-    try {
-      const saved = localStorage.getItem('eventra_theme');
-      if (saved === 'dark' || saved === 'light') return saved;
-    } catch {
-      // Fallback si localStorage falla
-    }
-    return 'light';
-  });
+  // AGENTS.md §5: el sistema es estrictamente Light Mode (un tema 'dark' guardado se ignora)
+  const [theme, setTheme] = useState('light');
 
   useEffect(() => {
     const root = document.documentElement;
@@ -38,9 +31,7 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
-  };
+  const toggleTheme = () => setTheme('light');
 
   const isDark = theme === 'dark';
 

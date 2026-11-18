@@ -57,6 +57,7 @@ export const AuditoriaLogsPage = () => {
         : [];
       const suscripciones = Array.isArray(suscData) ? suscData : [];
 
+      // Bitácora derivada únicamente de registros reales (empresas y pagos de suscripción)
       const eventosGenerados = [];
 
       // 1. Eventos reales por cada empresa registrada en PostgreSQL
@@ -69,10 +70,10 @@ export const AuditoriaLogsPage = () => {
           accion: emp.estado_activo ? 'TENANT_ACTIVO_VERIFICADO' : 'TENANT_SUSPENDIDO',
           actor: 'Super_Admin (Rol 5)',
           recurso: `${emp.nombre_comercial} (ID #${emp.id})`,
-          detalle: `Inquilino con RUC ${emp.ruc || '1790012345001'} operando bajo Plan ${
+          detalle: `Inquilino con RUC ${emp.ruc || 'N/D'} operando bajo Plan ${
             emp.plan_suscripcion || 'Básico'
           } (${emp.total_usuarios || 0} usuarios, ${emp.total_eventos || 0} eventos).`,
-          ip: 'TLS 1.3 · Render Cloud',
+          ip: '—',
         });
       });
 
@@ -92,36 +93,9 @@ export const AuditoriaLogsPage = () => {
           actor: susc.empresa_nombre || `Tenant #${susc.empresa_id}`,
           recurso: `Plan ${susc.plan_nombre} ($${Number(susc.monto || 0).toFixed(2)} USD)`,
           detalle: `Registro de pago de suscripción SaaS en estado "${susc.estado}". Almacenado en Supabase Storage.`,
-          ip: 'Supabase Storage API',
+          ip: '—',
         });
       });
-
-      // 3. Eventos de gobernanza y seguridad del motor SaaS
-      const ahora = new Date();
-      eventosGenerados.push(
-        {
-          id: 'log-sec-rbac',
-          timestamp: ahora.toISOString(),
-          categoria: 'SECURITY',
-          severidad: 'SUCCESS',
-          accion: 'SESION_SUPER_ADMIN_VERIFICADA',
-          actor: 'superadmin@eventra.com',
-          recurso: 'Consola Global Multi-Tenant',
-          detalle: 'Token JWT validado con privilegios de nivel 5 (authorizeSuperAdmin + Anti-IDOR activo).',
-          ip: 'HTTPS / TLS 1.3',
-        },
-        {
-          id: 'log-sys-unique',
-          timestamp: new Date(ahora.getTime() - 1000 * 60 * 15).toISOString(),
-          categoria: 'SYSTEM',
-          severidad: 'INFO',
-          accion: 'POSTGRES_UNIQUE_GUARD_OK',
-          actor: 'Motor PostgreSQL (Supabase)',
-          recurso: 'Índice Anti-Colisión de Salones',
-          detalle: 'Restricción UNIQUE de reservas por salón, fecha y jornada verificada sin conflictos (0 colisiones).',
-          ip: 'Supabase Pooler',
-        }
-      );
 
       // Ordenar del más reciente al más antiguo
       eventosGenerados.sort(

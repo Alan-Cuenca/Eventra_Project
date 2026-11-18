@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
 import { Badge } from '../common/Badge';
 import {
   Menu,
@@ -9,8 +8,6 @@ import {
   ShieldCheck,
   Server,
   ChevronDown,
-  Moon,
-  Sun,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
 
@@ -25,7 +22,6 @@ import logoImg from '../../assets/logo.png';
  */
 export const SuperAdminHeader = ({ onToggleSidebar }) => {
   const { user, logout } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileCoords, setProfileCoords] = useState(null);
   const profileRef = useRef(null);
@@ -235,37 +231,6 @@ export const SuperAdminHeader = ({ onToggleSidebar }) => {
                     Gobernanza Global
                   </span>
                 </div>
-              </div>
-
-              {/* Sección de Preferencias / Tema */}
-              <div className="profile-dropdown-section">
-                <button
-                  type="button"
-                  id="superadmin-toggle-theme-btn"
-                  className="profile-dropdown-item"
-                  onClick={toggleTheme}
-                  title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    {isDark ? (
-                      <Moon size={16} color="var(--primary)" />
-                    ) : (
-                      <Sun size={16} color="var(--warning)" />
-                    )}
-                    <span>{isDark ? 'Modo Oscuro' : 'Modo Claro'}</span>
-                  </div>
-
-                  {/* Switch iOS/SaaS estilizado */}
-                  <div className={"theme-switch-track " + (isDark ? 'active' : '')} aria-hidden="true">
-                    <div className={"theme-switch-thumb " + (isDark ? 'active' : '')}>
-                      {isDark ? (
-                        <Moon size={11} color="#6594AA" />
-                      ) : (
-                        <Sun size={11} color="#C49A3A" />
-                      )}
-                    </div>
-                  </div>
-                </button>
               </div>
 
               <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0 0.5rem' }} />

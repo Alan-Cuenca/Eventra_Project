@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { eventraService } from '../../services/eventraService';
+import { api } from '../../services/api';
 import {
   X,
   Building2,
@@ -134,7 +135,7 @@ export const ModalPagoPlanTransferencia = ({
     }
   };
 
-  const handleFinalizar = (e) => {
+  const handleFinalizar = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -146,11 +147,29 @@ export const ModalPagoPlanTransferencia = ({
       return;
     }
 
+    if (!nombreEmpresa.trim()) {
+      setErrorMsg('Ingresa el nombre de tu empresa.');
+      return;
+    }
+    if (!pdfFile) {
+      setErrorMsg('Debes adjuntar el comprobante de transferencia en PDF.');
+      return;
+    }
+
     setProcesando(true);
-    setTimeout(() => {
-      setProcesando(false);
+    try {
+      const formData = new FormData();
+      formData.append('plan_nombre', selectedPlan);
+      formData.append('correo_contacto', emailLimpio);
+      formData.append('nombre_empresa', nombreEmpresa.trim());
+      formData.append('comprobante', pdfFile);
+      await api.post('/suscripciones/solicitud-publica', formData);
       setStep('finalizado');
-    }, 500);
+    } catch (err) {
+      setErrorMsg(err.message || 'No se pudo enviar tu solicitud. Intenta nuevamente.');
+    } finally {
+      setProcesando(false);
+    }
   };
 
   return (

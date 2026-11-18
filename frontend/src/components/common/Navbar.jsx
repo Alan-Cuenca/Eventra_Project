@@ -2,47 +2,42 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
 import { Badge } from './Badge';
 import {
-  Bell, LogOut, Search, User, CheckCircle2, Clock, AlertCircle, X, ChevronDown, Moon, Sun, ChevronRight, Sparkles, Command
+  Bell, LogOut, Search, User, CheckCircle2, Clock, AlertCircle, X, ChevronDown, ChevronRight, Sparkles, Command
 } from 'lucide-react';
 import { api } from '../../services/api';
 
-const MOCK_NOTIFS = [
-  {
-    id: 1,
-    icon: <CheckCircle2 size={14} />,
-    color: '#4D9A72',
-    title: 'Cotización aprobada',
-    desc: 'Mis XV Años — Valentina fue confirmada.',
-    time: 'Hace 5 min',
-    unread: true,
-  },
-  {
-    id: 2,
-    icon: <AlertCircle size={14} />,
-    color: '#C49A3A',
-    title: 'Solicitud de modificación',
-    desc: 'Cliente solicita +15 comensales.',
-    time: 'Hace 1 h',
-    unread: true,
-  },
-  {
-    id: 3,
-    icon: <Clock size={14} />,
-    color: '#4D7182',
-    title: 'Evento próximo',
-    desc: 'Boda Alejandra & Carlos — 24 Nov 2026.',
-    time: 'Hace 3 h',
-    unread: false,
-  },
-];
+const formatearHace = (fechaIso) => {
+  const t = new Date(fechaIso).getTime();
+  if (!Number.isFinite(t)) return '';
+  const min = Math.max(0, Math.round((Date.now() - t) / 60000));
+  if (min < 1) return 'Ahora';
+  if (min < 60) return `Hace ${min} min`;
+  if (min < 1440) return `Hace ${Math.round(min / 60)} h`;
+  return `Hace ${Math.round(min / 1440)} d`;
+};
+
+/** Convierte las solicitudes de modificación reales en notificaciones según el rol. */
+const construirNotificaciones = (solicitudes, rolId) => {
+  const esStaff = [1, 2].includes(rolId);
+  return (solicitudes || [])
+    .filter((s) => (esStaff ? s.estado === 'Pendiente' : s.estado !== 'Pendiente'))
+    .slice(0, 8)
+    .map((s) => ({
+      id: s.id,
+      icon: esStaff ? <AlertCircle size={14} /> : <CheckCircle2 size={14} />,
+      color: esStaff ? '#C49A3A' : (String(s.estado).startsWith('Aprob') ? '#4D9A72' : '#C95C5C'),
+      title: esStaff ? 'Solicitud de modificación' : `Solicitud ${String(s.estado).toLowerCase()}`,
+      desc: s.descripcion || s.descripcion_cambio || 'Solicitud de cambio',
+      time: formatearHace(s.fecha_solicitud),
+      unread: true,
+    }));
+};
 
 export const Navbar = ({ onOpenCommandPalette }) => {
   const location = useLocation();
   const { user, roleConfig, logout } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
 
   const [backendStatus, setBackendStatus] = useState('checking');
   const [planActivo, setPlanActivo] = useState(() => {
@@ -50,8 +45,9 @@ export const Navbar = ({ onOpenCommandPalette }) => {
   });
 
   useEffect(() => {
-    if (user?.empresa_id) {
-      api.get('/suscripciones/mi-consumo')
+    // El endpoint de consumo es exclusivo de Administrador (1) y Gerente (2)
+    if (user?.empresa_id && [1, 2].includes(Number(user?.rol_id))) {
+      api.get('/suscripciones/consumo')
         .then((res) => {
           const plan = res?.data?.plan || res?.plan || user?.plan_suscripcion;
           if (plan) setPlanActivo(plan);
@@ -63,7 +59,20 @@ export const Navbar = ({ onOpenCommandPalette }) => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifCoords, setNotifCoords] = useState(null);
   const [profileCoords, setProfileCoords] = useState(null);
-  const [unreadCount, setUnreadCount] = useState(2);
+  const [notifs, setNotifs] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const rolId = Number(user?.rol_id);
+    if (![1, 2, 4].includes(rolId)) return;
+    api.get('/solicitudes')
+      .then((res) => {
+        const lista = construirNotificaciones(res?.data, rolId);
+        setNotifs(lista);
+        setUnreadCount(lista.length);
+      })
+      .catch(() => {});
+  }, [user?.rol_id]);
   const notifRef = useRef(null);
   const notifMenuRef = useRef(null);
   const profileRef = useRef(null);
@@ -275,6 +284,7 @@ export const Navbar = ({ onOpenCommandPalette }) => {
         </button>
 
         {/* Badge de Plan Activo */}
+        {Number(user?.rol_id) === 1 && (
         <Link
           to="/mi-suscripcion"
           title="Ver consumo y detalles de mi suscripción"
@@ -287,6 +297,7 @@ export const Navbar = ({ onOpenCommandPalette }) => {
           <Sparkles size={11} className={String(planActivo).toLowerCase().includes('premium') ? 'text-[var(--ev-primary)]' : 'text-[#8C6D32]'} />
           <span>Plan {String(planActivo).toLowerCase().includes('premium') ? 'Premium' : 'Básico'}</span>
         </Link>
+        )}
 
         {/* Estado API Sutil */}
         <div
@@ -341,7 +352,12 @@ export const Navbar = ({ onOpenCommandPalette }) => {
               </div>
 
               <div className="max-h-72 overflow-y-auto divide-y divide-[var(--ev-border)]/30">
-                {MOCK_NOTIFS.map((n) => (
+                {notifs.length === 0 && (
+                  <p className="p-4 text-center text-xs text-[var(--ev-text-muted)]">
+                    No tienes notificaciones nuevas.
+                  </p>
+                )}
+                {notifs.map((n) => (
                   <div
                     key={n.id}
                     className={`p-3 flex items-start gap-3 hover:bg-[var(--ev-bg-base)]/30 transition-colors ${
@@ -428,23 +444,6 @@ export const Navbar = ({ onOpenCommandPalette }) => {
                     Empresa #{user?.empresa_id || 1}
                   </span>
                 </div>
-              </div>
-
-              {/* Toggle de Modo Claro / Oscuro */}
-              <div className="px-1 py-0.5">
-                <button
-                  type="button"
-                  onClick={toggleTheme}
-                  className="w-full flex items-center justify-between p-2 rounded-xl text-xs text-[var(--ev-text-main)] hover:bg-[var(--ev-bg-base)]/50 active:scale-[0.98] transition-colors duration-150"
-                >
-                  <div className="flex items-center gap-2">
-                    {isDark ? <Moon size={15} className="text-[var(--ev-primary)]" /> : <Sun size={15} className="text-[#C49A3A]" />}
-                    <span>{isDark ? 'Modo Oscuro' : 'Modo Claro'}</span>
-                  </div>
-                  <span className="text-[10px] text-[var(--ev-text-muted)] font-medium">
-                    {isDark ? 'Dark' : 'Light'}
-                  </span>
-                </button>
               </div>
 
               <div className="h-px bg-[var(--ev-border)]/40 my-1" />

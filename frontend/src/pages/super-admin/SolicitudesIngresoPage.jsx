@@ -3,6 +3,7 @@ import { superAdminService } from '../../services/superAdminService';
 import { eventraService } from '../../services/eventraService';
 import { GlobalStatCard } from '../../components/super-admin/GlobalStatCard';
 import { CrearEmpresaModal } from '../../components/super-admin/CrearEmpresaModal';
+import { SolicitudesPublicasPlan } from '../../components/super-admin/SolicitudesPublicasPlan';
 import {
   UserCheck,
   Clock,
@@ -77,7 +78,7 @@ export const SolicitudesIngresoPage = () => {
           esOnboardingDirecto: true,
           empresa_id: e.id,
           empresa_nombre: e.nombre_comercial,
-          empresa_ruc: e.ruc || '1790012345001',
+          empresa_ruc: e.ruc || 'N/D',
           plan_nombre: e.plan_suscripcion || 'Basico',
           monto: (e.plan_suscripcion || '').toLowerCase().includes('premium') ? 99 : 49,
           estado: e.estado_activo ? 'Aprobado' : 'En Revisión',
@@ -157,7 +158,7 @@ export const SolicitudesIngresoPage = () => {
     } catch (err) {
       console.error('[SolicitudesIngresoPage] Error al resolver solicitud:', err);
       mostrarToast(
-        err?.response?.data?.message || 'Error al actualizar el estado de la solicitud.',
+        err?.message || 'Error al actualizar el estado de la solicitud.',
         'error'
       );
     } finally {
@@ -186,6 +187,8 @@ export const SolicitudesIngresoPage = () => {
           <span>{toast.message}</span>
         </div>
       )}
+
+      <SolicitudesPublicasPlan />
 
       {/* ── Encabezado Principal ──────────────────────────────────────────── */}
       <div className="page-header">

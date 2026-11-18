@@ -12,11 +12,6 @@ import { api } from '../../services/api';
 import { eventraService } from '../../services/eventraService';
 import { Badge } from '../../components/common/Badge';
 import {
-  MOCK_EVENTOS,
-  MOCK_METRICAS_SAAS,
-  MOCK_SOLICITUDES_CAMBIO,
-} from '../../services/mockData';
-import {
   CalendarDays, DollarSign, Users, CheckCircle2, Clock,
   AlertCircle, Sparkles, ArrowUpRight, TrendingUp, Activity,
   RefreshCw, WifiOff, Check, X, ChevronRight,
@@ -82,7 +77,7 @@ const OfflineBanner = ({ onRetry }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem', color: '#7a5e18' }}>
       <WifiOff size={16} />
       <span>
-        <strong>API no disponible</strong> — Mostrando datos de demostración. El backend puede estar en cold-start (~30 s).
+        <strong>API no disponible</strong> — No se pudieron cargar los datos. El servidor puede estar iniciando (~30 s).
       </span>
     </div>
     <button onClick={onRetry} className="btn btn-secondary btn-sm">
@@ -123,23 +118,15 @@ export const DashboardPage = () => {
 
   // Estado mutable de eventos, solicitudes y consumo SaaS
   const [eventos, setEventos] = useState([]);
-  const [solicitudes, setSolicitudes] = useState(() =>
-    MOCK_SOLICITUDES_CAMBIO.map(s => ({ ...s }))
-  );
+  const [solicitudes, setSolicitudes] = useState([]);
   const [consumoSaas, setConsumoSaas] = useState(null);
 
   // Checklist interactivo para trabajador (sincronizado con actividades reales si existen)
-  const [checklist, setChecklist] = useState([
-    { id: 1, done: true,  text: 'Verificación de climatización e iluminación — Salón Imperial' },
-    { id: 2, done: true,  text: 'Confirmación con chef: menú gourmet (120 raciones)' },
-    { id: 3, done: false, text: 'Prueba de sonido y cabina de DJ profesional (16:00 hs)' },
-    { id: 4, done: false, text: 'Montaje de backing floral y letras gigantes iluminadas' },
-    { id: 5, done: false, text: 'Revisión de lista de invitados y protocolo de bienvenida' },
-  ]);
+  const [checklist, setChecklist] = useState([]);
 
   useEffect(() => {
     eventraService.getEventos()
-      .then(data => { if (data && data.length > 0) setEventos(data); })
+      .then(data => { if (Array.isArray(data)) setEventos(data); })
       .catch(() => {});
     eventraService.getSolicitudes()
       .then(data => { if (data && data.length > 0) setSolicitudes(data); })
@@ -167,7 +154,7 @@ export const DashboardPage = () => {
     }
   }, [isAdmin, isTrabajador]);
 
-  const eventosList = eventos.length > 0 ? eventos : MOCK_EVENTOS;
+  const eventosList = eventos;
 
   const fetchKpis = useCallback(async () => {
     setKpiLoading(true);
@@ -182,28 +169,29 @@ export const DashboardPage = () => {
   }, []);
 
   useEffect(() => {
-    if (isAdmin || isGerente || isTrabajador) { fetchKpis(); }
+    // /dashboard/admin es exclusivo de Administrador y Gerente (el Trabajador recibiría 403)
+    if (isAdmin || isGerente) { fetchKpis(); }
     else { setKpiLoading(false); }
-  }, [isAdmin, isGerente, isTrabajador, fetchKpis]);
+  }, [isAdmin, isGerente, fetchKpis]);
 
   const metricasSaas = {
-    empresa: branding?.nombre_comercial || user?.empresa_nombre || MOCK_METRICAS_SAAS.empresa,
-    plan: consumoSaas?.plan || user?.plan_suscripcion || 'Premium',
-    clientes_activos: consumoSaas?.uso?.clientes ?? kpis?.total_clientes ?? MOCK_METRICAS_SAAS.clientes_activos,
-    limite_clientes: consumoSaas?.limites?.clientes ?? MOCK_METRICAS_SAAS.limite_clientes,
-    servicios_activos: consumoSaas?.uso?.servicios ?? MOCK_METRICAS_SAAS.servicios_activos,
-    limite_servicios: consumoSaas?.limites?.servicios ?? MOCK_METRICAS_SAAS.limite_servicios,
-    usuarios_internos: consumoSaas?.uso?.usuarios ?? MOCK_METRICAS_SAAS.usuarios_internos,
-    limite_usuarios: consumoSaas?.limites?.usuarios ?? MOCK_METRICAS_SAAS.limite_usuarios,
-    mensajes_chatbot_mes: consumoSaas?.uso?.chatbot ?? MOCK_METRICAS_SAAS.mensajes_chatbot_mes,
-    limite_chatbot: consumoSaas?.limites?.chatbot ?? MOCK_METRICAS_SAAS.limite_chatbot,
+    empresa: branding?.nombre_comercial || user?.empresa_nombre || '',
+    plan: consumoSaas?.plan || user?.plan_suscripcion || 'Basico',
+    clientes_activos: consumoSaas?.uso?.clientes ?? kpis?.total_clientes ?? 0,
+    limite_clientes: consumoSaas?.limites?.clientes ?? 0,
+    servicios_activos: consumoSaas?.uso?.servicios ?? 0,
+    limite_servicios: consumoSaas?.limites?.servicios ?? 0,
+    usuarios_internos: consumoSaas?.uso?.usuarios ?? 0,
+    limite_usuarios: consumoSaas?.limites?.usuarios ?? 0,
+    mensajes_chatbot_mes: consumoSaas?.uso?.chatbot ?? 0,
+    limite_chatbot: consumoSaas?.limites?.chatbot ?? 0,
   };
 
   const kd = {
     total_eventos_activos: kpis?.total_eventos_activos ?? eventosList.length,
     total_clientes:        kpis?.total_clientes        ?? metricasSaas.clientes_activos,
-    ingresos_totales:      kpis?.ingresos_totales      ?? MOCK_METRICAS_SAAS.ingresos_mes,
-    tareas_pendientes:     kpis?.tareas_pendientes     ?? 4,
+    ingresos_totales:      kpis?.ingresos_totales      ?? 0,
+    tareas_pendientes:     kpis?.tareas_pendientes     ?? 0,
   };
 
   const fmt = (n) =>
@@ -300,7 +288,7 @@ export const DashboardPage = () => {
               <BarChart2 size={15} /> Reportes PDF
             </Link>
           )}
-          {(isAdmin || isGerente || isCliente) && (
+          {(isAdmin || isGerente) && (
             <Link to="/cotizador" className="btn btn-primary btn-sm">
               <Sparkles size={15} /> Nueva Cotización
             </Link>
@@ -674,9 +662,18 @@ export const DashboardPage = () => {
           VISTA 4: CLIENTE — Portal de seguimiento
          ══════════════════════════════════════════════════════════════════════ */}
       {isCliente && (() => {
-        const evt = eventosList.find(e => e.cliente_email === user?.email || e.cliente_nombre?.toLowerCase().includes('pablo')) || eventosList[0] || MOCK_EVENTOS[1];
-        const totalEvt = Number(evt.monto_total ?? evt.total_calculado ?? evt.presupuesto_estimado ?? 8500);
-        const anticipoEvt = Number(evt.anticipo_pagado ?? 4250);
+        const evt = eventosList.find(e => e.cliente_email === user?.email) || eventosList[0];
+        if (!evt) {
+          return (
+            <div className="card" style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-secondary)' }}>
+              <CalendarDays size={32} style={{ margin: '0 auto 0.75rem' }} />
+              <p style={{ fontWeight: 600 }}>Aún no tienes eventos registrados.</p>
+              <p style={{ fontSize: '0.85rem' }}>Cuando tu organizador cree tu evento, podrás ver aquí su avance y pagos.</p>
+            </div>
+          );
+        }
+        const totalEvt = Number(evt.monto_total ?? evt.total_calculado ?? evt.presupuesto_estimado ?? 0);
+        const anticipoEvt = Number(evt.anticipo_pagado ?? 0);
         const saldoEvt = Number(evt.saldo_pendiente ?? Math.max(0, totalEvt - anticipoEvt));
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -699,9 +696,9 @@ export const DashboardPage = () => {
                   <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><CalendarDays size={15} /> {evt.fecha || evt.fecha_evento}</span>
                     <span style={{ color: 'var(--border-subtle)' }}>|</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Building2 size={15} /> {evt.salon_o_lugar || evt.salon_nombre || 'Salón Imperial Platinum'}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Building2 size={15} /> {evt.salon_o_lugar || evt.salon_nombre || 'Por definir'}</span>
                     <span style={{ color: 'var(--border-subtle)' }}>|</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Users size={15} /> {evt.invitados || evt.num_invitados || 150} invitados</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Users size={15} /> {evt.invitados || evt.num_invitados || 0} invitados</span>
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -709,14 +706,14 @@ export const DashboardPage = () => {
                     Progreso de Organización
                   </div>
                   <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--primary)', fontFamily: 'Outfit, sans-serif', lineHeight: 1 }}>
-                    {evt.progreso_porcentaje ?? 75}%
+                    {evt.progreso_porcentaje ?? 0}%
                   </div>
                 </div>
               </div>
 
               {/* Barra de progreso */}
               <div className="progress-bar-container" style={{ height: '12px', marginBottom: '1.5rem' }}>
-                <div className="progress-bar-fill" style={{ width: `${evt.progreso_porcentaje ?? 75}%` }} />
+                <div className="progress-bar-fill" style={{ width: `${evt.progreso_porcentaje ?? 0}%` }} />
               </div>
 
               {/* KPIs financieros */}

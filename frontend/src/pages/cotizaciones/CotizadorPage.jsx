@@ -8,7 +8,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { eventraService } from '../../services/eventraService';
-import { MOCK_PAQUETES, MOCK_SERVICIOS } from '../../services/mockData';
 import {
   User, Package, Layers, FileText, Check, ChevronRight, ChevronLeft,
   Sparkles, CalendarDays, Loader2, CheckCircle2, Send, X, AlertCircle,
@@ -81,6 +80,7 @@ export const CotizadorPage = () => {
 
   // Datos del formulario
   const [form, setForm] = useState({
+    cliente_id: '',
     cliente_nombre: '',
     cliente_email: '',
     cliente_telefono: '',
@@ -97,8 +97,8 @@ export const CotizadorPage = () => {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
-  const [paquetes, setPaquetes] = useState(MOCK_PAQUETES);
-  const [servicios, setServicios] = useState(MOCK_SERVICIOS);
+  const [paquetes, setPaquetes] = useState([]);
+  const [servicios, setServicios] = useState([]);
 
   // Cargar clientes, paquetes y servicios reales del backend
   useEffect(() => {
@@ -142,7 +142,7 @@ export const CotizadorPage = () => {
 
   const canNext = () => {
     if (step === 1)
-      return form.cliente_nombre.trim() && form.fecha_estimada && form.tipo_evento;
+      return form.cliente_id && form.fecha_estimada && form.tipo_evento;
     if (step === 2) return true; // paquete es opcional
     if (step === 3) return true; // servicios son opcionales
     return totalCalculado > 0;
@@ -171,15 +171,14 @@ export const CotizadorPage = () => {
     setSubmitting(true);
     try {
       await eventraService.createCotizacion({
-        cliente_nombre: form.cliente_nombre,
+        cliente_id: form.cliente_id,
         fecha_estimada_evento: form.fecha_estimada,
         paquete_id: form.paquete_id || null,
         total_calculado: totalCalculado,
       });
       setSubmitted(true);
-    } catch {
-      // fallback demo
-      setSubmitted(true);
+    } catch (err) {
+      setError(err.message || 'No se pudo generar la cotización. Intenta nuevamente.');
     } finally {
       setSubmitting(false);
     }
@@ -223,7 +222,7 @@ export const CotizadorPage = () => {
           <button className="btn btn-primary" onClick={() => navigate('/cotizaciones')}>
             Ver mis cotizaciones
           </button>
-          <button className="btn btn-secondary" onClick={() => { setSubmitted(false); setStep(1); setForm({ cliente_nombre: '', cliente_email: '', cliente_telefono: '', tipo_evento: '', fecha_estimada: '', num_invitados: '', paquete_id: '', servicios_ids: [] }); }}>
+          <button className="btn btn-secondary" onClick={() => { setSubmitted(false); setStep(1); setForm({ cliente_id: '', cliente_nombre: '', cliente_email: '', cliente_telefono: '', tipo_evento: '', fecha_estimada: '', num_invitados: '', paquete_id: '', servicios_ids: [] }); }}>
             Nueva cotización
           </button>
         </div>
@@ -281,16 +280,29 @@ export const CotizadorPage = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                  <label className="form-label">Nombre del solicitante *</label>
-                  <input
-                    type="text"
-                    name="cliente_nombre"
+                  <label className="form-label">Cliente *</label>
+                  <select
+                    name="cliente_id"
                     className="form-input"
-                    placeholder="Ej: Carlos Mendoza"
-                    value={form.cliente_nombre}
-                    onChange={handleChange}
+                    value={form.cliente_id}
+                    onChange={(e) => {
+                      const c = clientes.find(x => String(x.id) === e.target.value);
+                      setForm(f => ({
+                        ...f,
+                        cliente_id: e.target.value,
+                        cliente_nombre: c ? `${c.nombres || ''} ${c.apellidos || ''}`.trim() : '',
+                        cliente_email: c?.email || '',
+                        cliente_telefono: c?.telefono || '',
+                      }));
+                    }}
                     id="cotizador-nombre"
-                  />
+                    disabled={loadingClientes}
+                  >
+                    <option value="">-- Seleccionar Cliente --</option>
+                    {clientes.map(c => (
+                      <option key={c.id} value={c.id}>{`${c.nombres || ''} ${c.apellidos || ''}`.trim()}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="form-group">

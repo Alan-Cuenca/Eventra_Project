@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { api } from '../../services/api';
 import { superAdminService } from '../../services/superAdminService';
 import { GlobalStatCard } from '../../components/super-admin/GlobalStatCard';
 import { CrearEmpresaModal } from '../../components/super-admin/CrearEmpresaModal';
@@ -121,7 +122,7 @@ export const AdministradoresTenantPage = () => {
       await cargarAdministradores();
     } catch (err) {
       mostrarToast(
-        err?.response?.data?.message || 'Error al modificar el estado del administrador.',
+        err?.message || 'Error al modificar el estado del administrador.',
         'error'
       );
     } finally {
@@ -129,12 +130,18 @@ export const AdministradoresTenantPage = () => {
     }
   };
 
-  const handleReenviarCredenciales = (adm) => {
+  const handleReenviarCredenciales = async (adm) => {
     setAdminSeleccionado(adm);
-    mostrarToast(
-      `Notificación de recordatorio y enlace de acceso enviados a ${adm.email}.`,
-      'success'
-    );
+    setProcesandoId(adm.id);
+    try {
+      // Genera y envía por correo una nueva contraseña temporal (endpoint real)
+      await api.post('/auth/recuperar-credencial', { email: adm.email });
+      mostrarToast(`Se envió una nueva contraseña temporal a ${adm.email}.`, 'success');
+    } catch (err) {
+      mostrarToast(err?.message || 'No se pudieron reenviar las credenciales.', 'error');
+    } finally {
+      setProcesandoId(null);
+    }
   };
 
   return (
