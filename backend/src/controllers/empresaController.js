@@ -65,7 +65,7 @@ export const obtenerEmpresas = async (req, res) => {
            e.fecha_registro,
            COUNT(DISTINCT u.id)  AS total_usuarios,
            COUNT(DISTINCT ev.id) AS total_eventos,
-           COALESCE(SUM(p.monto) FILTER (WHERE p.estado = 'Completado'), 0) AS total_ingresos
+           COALESCE(SUM(p.monto) FILTER (WHERE p.estado IN ('Aprobado', 'Completado')), 0) AS total_ingresos
          FROM empresas e
          LEFT JOIN usuarios u  ON u.empresa_id = e.id
          LEFT JOIN eventos ev  ON ev.empresa_id = e.id
@@ -82,7 +82,7 @@ export const obtenerEmpresas = async (req, res) => {
            e.fecha_registro,
            COUNT(DISTINCT u.id)  AS total_usuarios,
            COUNT(DISTINCT ev.id) AS total_eventos,
-           COALESCE(SUM(p.monto) FILTER (WHERE p.estado = 'Completado'), 0) AS total_ingresos
+           COALESCE(SUM(p.monto) FILTER (WHERE p.estado IN ('Aprobado', 'Completado')), 0) AS total_ingresos
          FROM empresas e
          LEFT JOIN usuarios u  ON u.empresa_id = e.id
          LEFT JOIN eventos ev  ON ev.empresa_id = e.id
@@ -772,5 +772,32 @@ export const analizarLogoIA = async (req, res) => {
       success: false,
       message: 'Error al procesar el logotipo con la IA.',
     });
+  }
+};
+
+/**
+ * GET /api/empresas/administradores  (Super_Admin)
+ * Lista los usuarios Administrador (rol 1) de todos los tenants.
+ */
+export const obtenerAdministradoresTenant = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT u.id, u.nombre_completo, u.email, u.estado_activo, u.rol_id,
+              r.nombre AS rol_nombre,
+              e.id AS empresa_id, e.nombre_comercial AS empresa_nombre, e.ruc AS empresa_ruc,
+              e.slug AS empresa_slug,
+              e.plan_suscripcion AS empresa_plan,
+              e.estado_activo AS empresa_activa,
+              e.fecha_registro
+       FROM usuarios u
+       INNER JOIN empresas e ON u.empresa_id = e.id
+       LEFT JOIN roles r ON u.rol_id = r.id
+       WHERE u.rol_id = 1
+       ORDER BY e.nombre_comercial ASC, u.nombre_completo ASC`
+    );
+    return res.status(200).json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('[empresaController] Error en obtenerAdministradoresTenant:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno al obtener administradores.' });
   }
 };

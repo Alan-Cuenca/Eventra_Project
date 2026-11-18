@@ -1,5 +1,10 @@
 import express from 'express';
-import { crearCotizacion, obtenerCotizaciones } from '../controllers/cotizacionController.js';
+import {
+  crearCotizacion,
+  obtenerCotizaciones,
+  obtenerCotizacionPorId,
+  actualizarEstadoCotizacion,
+} from '../controllers/cotizacionController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -25,5 +30,11 @@ router.post('/', verifyToken, authorizeRoles([1, 2, 3]), crearCotizacion);
  * @access Private — cualquier usuario autenticado con JWT válido
  */
 router.get('/', verifyToken, obtenerCotizaciones);
+
+/** GET /api/cotizaciones/:id — detalle (cualquier usuario autenticado de la empresa). */
+router.get('/:id', verifyToken, obtenerCotizacionPorId);
+
+/** PATCH /api/cotizaciones/:id/estado — aprobar/rechazar/completar (Administrador y Gerente). */
+router.patch('/:id/estado', verifyToken, authorizeRoles([1, 2]), actualizarEstadoCotizacion);
 
 export default router;

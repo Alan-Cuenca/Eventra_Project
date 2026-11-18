@@ -1,3 +1,4 @@
+import { obtenerProveedorPago, procesarPagoConProveedor } from '../services/paymentGateway.js';
 import pool from '../config/db.js';
 import { supabase } from '../config/supabase.js';
 import { notificarPagoAprobado } from '../services/emailService.js';
@@ -36,6 +37,7 @@ export const registrarPago = async (req, res) => {
     }
 
     const metodoNormalizado = metodo_pago ? String(metodo_pago).trim() : 'Efectivo';
+    const proveedor = obtenerProveedorPago(metodoNormalizado);
 
     // --- Blindaje SaaS Multi-tenant (Anti-IDOR) ---
     // Validar que el evento pertenezca estrictamente a la empresa en sesión
@@ -60,7 +62,7 @@ export const registrarPago = async (req, res) => {
     if (metodoNormalizado === 'Efectivo') {
       estadoPago = 'Pendiente';
       comprobante_url = null;
-    } else if (metodoNormalizado === 'Deuna' || metodoNormalizado === 'Transferencia') {
+    } else if (proveedor.requiereComprobante) {
       if (!req.file) {
         return res.status(400).json({
           success: false,
@@ -68,7 +70,7 @@ export const registrarPago = async (req, res) => {
         });
       }
 
-      estadoPago = 'En Revisión';
+      estadoPago = (await procesarPagoConProveedor(proveedor, { monto, evento_id, empresa_id })).estado;
       const file = req.file;
 
       if (supabase) {
@@ -85,19 +87,25 @@ export const registrarPago = async (req, res) => {
 
         if (uploadError) {
           console.error('[pagoController] Error subiendo comprobante a Supabase Storage:', uploadError.message);
-          // Si el bucket aún no existe o hay error en Supabase, registrar fallback de datos en dev
-          comprobante_url = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+          return res.status(502).json({
+            success: false,
+            message: 'No se pudo almacenar el comprobante. Intenta nuevamente en unos minutos.',
+          });
         } else {
           const { data: publicUrlData } = supabase.storage.from('comprobantes').getPublicUrl(filePath);
           comprobante_url = publicUrlData.publicUrl;
         }
       } else {
-        // Fallback resiliente para entornos locales sin credenciales directas de Supabase Storage
-        comprobante_url = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+        return res.status(503).json({
+          success: false,
+          message: 'El almacenamiento de comprobantes no está disponible. Contacta al administrador.',
+        });
       }
     } else {
       // Otros métodos (ej. Tarjeta de crédito física, POS)
-      estadoPago = estado || 'Completado';
+      // Solo Administrador/Gerente pueden fijar el estado; el resto queda Pendiente de revisión
+      const puedeFijarEstado = [1, 2].includes(Number(req.user.rol_id));
+      estadoPago = puedeFijarEstado && estado ? estado : 'Pendiente';
     }
 
     // --- Insertar pago (SQL parametrizado) ---
@@ -207,8 +215,24 @@ export const obtenerPagos = async (req, res) => {
 export const obtenerPagosPorEvento = async (req, res) => {
   const empresa_id = req.user.empresa_id;
   const { evento_id } = req.params;
+  const emailCliente = Number(req.user.rol_id) === 4 ? req.user.email : null;
 
   try {
+    if (emailCliente) {
+      // Cliente: solo puede consultar pagos de sus propios eventos
+      const propio = await pool.query(
+        `SELECT 1 FROM eventos e
+         INNER JOIN reservas r ON e.reserva_id = r.id
+         INNER JOIN cotizaciones c ON r.cotizacion_id = c.id
+         INNER JOIN clientes cl ON c.cliente_id = cl.id
+         WHERE e.id = $1 AND e.empresa_id = $2 AND LOWER(cl.email) = LOWER($3)`,
+        [evento_id, empresa_id, emailCliente]
+      );
+      if (propio.rowCount === 0) {
+        return res.status(403).json({ success: false, message: 'No tienes acceso a los pagos de este evento.' });
+      }
+    }
+
     // Listado de pagos individuales del evento
     const pagosResult = await pool.query(
       `SELECT
@@ -235,7 +259,7 @@ export const obtenerPagosPorEvento = async (req, res) => {
        FROM pagos
        WHERE evento_id  = $1
          AND empresa_id = $2
-         AND estado     = 'Aprobado'`,
+         AND estado     IN ('Aprobado', 'Completado')`,
       [evento_id, empresa_id]
     );
 

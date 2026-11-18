@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import {
   obtenerEmpresas,
+  obtenerAdministradoresTenant,
   crearEmpresa,
   actualizarPlanEmpresa,
   suspenderEmpresa,
@@ -134,6 +135,7 @@ router.use(verifyToken, authorizeSuperAdmin);
  *         description: Requiere rol Super_Admin
  */
 router.get('/', obtenerEmpresas);
+router.get('/administradores', obtenerAdministradoresTenant);
 
 /**
  * @openapi

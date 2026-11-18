@@ -121,6 +121,7 @@ export const crearEvento = async (req, res) => {
  */
 export const obtenerEventos = async (req, res) => {
   const empresa_id = req.user.empresa_id;
+  const emailCliente = Number(req.user.rol_id) === 4 ? req.user.email : null; // Cliente: solo sus datos
 
   try {
     const result = await pool.query(
@@ -175,8 +176,9 @@ export const obtenerEventos = async (req, res) => {
        INNER JOIN clientes cl ON c.cliente_id = cl.id
        LEFT  JOIN paquetes p ON c.paquete_id = p.id
        WHERE e.empresa_id = $1
+         AND ($2::text IS NULL OR LOWER(cl.email) = LOWER($2))
        ORDER BY r.fecha_evento ASC, r.hora_inicio ASC`,
-      [empresa_id]
+      [empresa_id, emailCliente]
     );
 
     return res.status(200).json({
@@ -268,6 +270,7 @@ export const actualizarEstadoEvento = async (req, res) => {
 export const obtenerEventoPorId = async (req, res) => {
   const { id } = req.params;
   const empresa_id = req.user.empresa_id;
+  const emailCliente = Number(req.user.rol_id) === 4 ? req.user.email : null; // Cliente: solo sus datos
 
   try {
     const result = await pool.query(
@@ -317,8 +320,9 @@ export const obtenerEventoPorId = async (req, res) => {
        INNER JOIN cotizaciones c ON r.cotizacion_id = c.id
        INNER JOIN clientes cl ON c.cliente_id = cl.id
        LEFT  JOIN paquetes p ON c.paquete_id = p.id
-       WHERE e.id = $1 AND e.empresa_id = $2`,
-      [id, empresa_id]
+       WHERE e.id = $1 AND e.empresa_id = $2
+         AND ($3::text IS NULL OR LOWER(cl.email) = LOWER($3))`,
+      [id, empresa_id, emailCliente]
     );
 
     if (result.rowCount === 0) {

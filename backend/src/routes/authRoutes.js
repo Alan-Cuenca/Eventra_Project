@@ -6,6 +6,8 @@ import {
   registrarClientePortal,
   obtenerInfoPortalEmpresa,
   loginUser,
+  cambiarPasswordObligatorio,
+  recuperarCredencial,
 } from '../controllers/authController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 import { verificarLimitePlan } from '../middlewares/planLimitsMiddleware.js';
@@ -254,5 +256,8 @@ router.get('/me', verifyToken, (req, res) => {
     data: req.user,
   });
 });
+
+router.post('/cambiar-password-obligatorio', verifyToken, cambiarPasswordObligatorio);
+router.post('/recuperar-credencial', recuperarCredencial);
 
 export default router;

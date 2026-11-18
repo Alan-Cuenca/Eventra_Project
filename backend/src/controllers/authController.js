@@ -3,7 +3,8 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import { ROL_SUPER_ADMIN, ROL_ADMINISTRADOR } from '../middlewares/authMiddleware.js';
-import { getMailTransporter } from '../services/emailService.js';
+import { getMailTransporter, sendMail, escapeHtml } from '../services/emailService.js';
+import { generarPasswordTemporal } from '../utils/passwordGenerator.js';
 
 /**
  * =============================================================================
@@ -52,6 +53,10 @@ export const invitarUsuario = async (req, res) => {
     }
 
     // Un admin de tenant no puede invitar a un Super Admin (5)
+    if (![1, 2, 3, 4, 5].includes(Number(rol_id))) {
+      return res.status(400).json({ success: false, message: 'El rol_id debe ser 1, 2, 3 o 4.' });
+    }
+
     if (Number(rol_id) === ROL_SUPER_ADMIN) {
       return res.status(403).json({
         success: false,
@@ -641,5 +646,125 @@ export const loginUser = async (req, res) => {
       success: false,
       message: 'Error interno del servidor al iniciar sesión.',
     });
+  }
+};
+
+/**
+ * POST /api/auth/cambiar-password-obligatorio  (requiere JWT)
+ * Reemplaza la contraseña temporal por una nueva y devuelve un token renovado.
+ */
+export const cambiarPasswordObligatorio = async (req, res) => {
+  const { password_temporal, password_nuevo, password_confirmar } = req.body;
+
+  try {
+    if (!password_temporal || !password_nuevo || !password_confirmar) {
+      return res.status(400).json({ success: false, message: 'Todos los campos de contraseña son obligatorios.' });
+    }
+    if (password_nuevo !== password_confirmar) {
+      return res.status(400).json({ success: false, message: 'Las contraseñas no coinciden.' });
+    }
+    if (password_nuevo.length < 8 || !/[A-Z]/.test(password_nuevo) || !/[0-9]/.test(password_nuevo)) {
+      return res.status(400).json({
+        success: false,
+        message: 'La nueva contraseña debe tener mínimo 8 caracteres, una mayúscula y un número.',
+      });
+    }
+    if (password_nuevo === password_temporal) {
+      return res.status(400).json({ success: false, message: 'La nueva contraseña debe ser distinta a la temporal.' });
+    }
+
+    const result = await pool.query(
+      `SELECT u.id, u.empresa_id, u.rol_id, u.nombre_completo, u.email, u.password_hash, u.estado_activo,
+              r.nombre AS rol_nombre, e.slug AS empresa_slug, e.plan_suscripcion
+       FROM usuarios u
+       LEFT JOIN roles r ON u.rol_id = r.id
+       LEFT JOIN empresas e ON u.empresa_id = e.id
+       WHERE u.id = $1`,
+      [req.user.id]
+    );
+
+    if (result.rows.length === 0 || !result.rows[0].estado_activo) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado o inactivo.' });
+    }
+
+    const user = result.rows[0];
+    const valida = await bcrypt.compare(password_temporal, user.password_hash);
+    if (!valida) {
+      return res.status(401).json({ success: false, message: 'La contraseña temporal es incorrecta.' });
+    }
+
+    const nuevoHash = await bcrypt.hash(password_nuevo, 10);
+    await pool.query('UPDATE usuarios SET password_hash = $1 WHERE id = $2', [nuevoHash, user.id]);
+
+    const payload = {
+      id: user.id,
+      rol_id: Number(user.rol_id),
+      rol: user.rol_nombre,
+      rol_nombre: user.rol_nombre,
+      empresa_id: user.empresa_id !== null && user.empresa_id !== undefined ? Number(user.empresa_id) : null,
+      empresa_slug: user.empresa_slug || null,
+      plan_suscripcion: user.plan_suscripcion || null,
+      email: user.email,
+    };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const { password_hash, ...userData } = user;
+
+    return res.status(200).json({
+      success: true,
+      message: 'Contraseña actualizada correctamente.',
+      token,
+      data: userData,
+    });
+  } catch (error) {
+    console.error('[authController] Error en cambiarPasswordObligatorio:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor al cambiar la contraseña.' });
+  }
+};
+
+/**
+ * POST /api/auth/recuperar-credencial  (público)
+ * Genera una contraseña temporal y la envía por correo. La respuesta es siempre
+ * genérica para no revelar si el correo existe.
+ */
+export const recuperarCredencial = async (req, res) => {
+  const email = String(req.body?.email || '').toLowerCase().trim();
+  const respuestaGenerica = {
+    success: true,
+    message: 'Si el correo está registrado, recibirás una contraseña temporal en tu bandeja.',
+  };
+
+  try {
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'El correo electrónico es obligatorio.' });
+    }
+
+    const result = await pool.query(
+      'SELECT id, nombre_completo FROM usuarios WHERE email = $1 AND estado_activo = true AND rol_id <> $2',
+      [email, ROL_SUPER_ADMIN]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(200).json(respuestaGenerica);
+    }
+
+    const user = result.rows[0];
+    const temporal = generarPasswordTemporal();
+    const hash = await bcrypt.hash(temporal, 10);
+    await pool.query('UPDATE usuarios SET password_hash = $1 WHERE id = $2', [hash, user.id]);
+
+    const envio = await sendMail({
+      to: email,
+      subject: 'EVENTRA - Recuperación de credenciales',
+      text: `Hola ${user.nombre_completo || ''}, tu contraseña temporal es: ${temporal}. Ingresa y cámbiala de inmediato.`,
+      html: `<p>Hola ${escapeHtml(user.nombre_completo || 'usuario')},</p><p>Tu contraseña temporal es: <strong>${escapeHtml(temporal)}</strong></p><p>Ingresa y cámbiala de inmediato.</p>`,
+    });
+    if (!envio.success) {
+      console.error('[authController] No se pudo enviar correo de recuperación:', envio.error);
+    }
+
+    return res.status(200).json(respuestaGenerica);
+  } catch (error) {
+    console.error('[authController] Error en recuperarCredencial:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
   }
 };

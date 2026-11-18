@@ -18,21 +18,21 @@ router.post('/registro-publico', verificarLimitePlan('clientes'), registrarClien
  * @desc   Crea un nuevo cliente para la empresa del usuario autenticado
  * @access Private — requiere JWT válido + Límites de Plan SaaS (50 Básico, 200 Premium)
  */
-router.post('/', verifyToken, verificarLimitePlan('clientes'), crearCliente);
+router.post('/', verifyToken, authorizeRoles([1, 2, 3]), verificarLimitePlan('clientes'), crearCliente);
 
 /**
  * @route  GET /api/clientes
  * @desc   Retorna todos los clientes de la empresa del usuario autenticado
  * @access Private — requiere JWT válido
  */
-router.get('/', verifyToken, obtenerClientes);
+router.get('/', verifyToken, authorizeRoles([1, 2, 3]), obtenerClientes);
 
 /**
  * @route  GET /api/clientes/:id
  * @desc   Retorna un cliente por ID perteneciente a la empresa
  * @access Private — requiere JWT válido
  */
-router.get('/:id', verifyToken, obtenerClientePorId);
+router.get('/:id', verifyToken, authorizeRoles([1, 2, 3]), obtenerClientePorId);
 
 /**
  * @route  PUT /api/clientes/:id

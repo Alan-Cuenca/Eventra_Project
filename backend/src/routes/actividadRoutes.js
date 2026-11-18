@@ -25,7 +25,7 @@ router.post('/', verifyToken, authorizeRoles([1, 2]), crearActividad);
  * @desc   Lista actividades de la empresa (Trabajador ve solo las suyas)
  * @access Private — cualquier usuario autenticado con JWT válido
  */
-router.get('/', verifyToken, obtenerActividades);
+router.get('/', verifyToken, authorizeRoles([1, 2, 3]), obtenerActividades);
 
 /**
  * @route  PATCH /api/actividades/:id/estado
@@ -37,7 +37,7 @@ router.get('/', verifyToken, obtenerActividades);
  *   "estado": "Pendiente" | "En Progreso" | "Completada" | "Cancelada"
  * }
  */
-router.patch('/:id/estado', verifyToken, actualizarEstadoActividad);
+router.patch('/:id/estado', verifyToken, authorizeRoles([1, 2, 3]), actualizarEstadoActividad);
 
 /**
  * @route  PUT /api/actividades/:id

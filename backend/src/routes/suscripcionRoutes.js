@@ -5,6 +5,9 @@ import {
   obtenerSuscripciones,
   actualizarEstadoSuscripcion,
   obtenerConsumoSuscripcion,
+  crearSolicitudRegistroPlan,
+  listarSolicitudesRegistroPlan,
+  actualizarEstadoSolicitudRegistroPlan,
 } from '../controllers/suscripcionController.js';
 import {
   verifyToken,
@@ -20,7 +23,27 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max
 });
 
+const uploadPdfPublico = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 12 * 1024 * 1024 }, // 12 MB
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') return cb(null, true);
+    const err = new Error('El comprobante debe ser un archivo PDF.');
+    err.status = 400;
+    return cb(err);
+  },
+});
+
 const router = express.Router();
+
+/** POST /api/suscripciones/solicitud-publica — solicitud de plan desde la landing (público). */
+router.post('/solicitud-publica', uploadPdfPublico.single('comprobante'), crearSolicitudRegistroPlan);
+
+/** GET /api/suscripciones/solicitudes-publicas — solicitudes pendientes de revisión (Super_Admin). */
+router.get('/solicitudes-publicas', verifyToken, authorizeSuperAdmin, listarSolicitudesRegistroPlan);
+
+/** PATCH /api/suscripciones/solicitudes-publicas/:id/estado — marcar Atendida/Rechazada (Super_Admin). */
+router.patch('/solicitudes-publicas/:id/estado', verifyToken, authorizeSuperAdmin, actualizarEstadoSolicitudRegistroPlan);
 
 /**
  * @route   POST /api/suscripciones/pagar

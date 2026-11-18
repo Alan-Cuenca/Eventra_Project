@@ -185,6 +185,12 @@ export const verificarLimitePlan = (recurso) => {
           [empresa_id]
         );
         usoActual = countRes?.rows?.[0]?.count ? parseInt(countRes.rows[0].count, 10) : 0;
+      } else if (recurso === 'eventos') {
+        const countRes = await pool.query(
+          `SELECT COUNT(*) FROM eventos WHERE empresa_id = $1 AND estado_progreso <> 'Cancelado'`,
+          [empresa_id]
+        );
+        usoActual = countRes?.rows?.[0]?.count ? parseInt(countRes.rows[0].count, 10) : 0;
       } else if (recurso === 'chatbot') {
         usoActual = empRes?.rows?.[0]?.mensajes_chatbot_mes ? parseInt(empRes.rows[0].mensajes_chatbot_mes, 10) : 0;
       }

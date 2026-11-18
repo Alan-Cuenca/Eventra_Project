@@ -293,3 +293,108 @@ export const obtenerConsumoSuscripcion = async (req, res) => {
 };
 
 
+
+/**
+ * POST /api/suscripciones/solicitud-publica  (público)
+ * Registra la solicitud de contratación de un plan hecha desde la landing, con el
+ * comprobante PDF de la transferencia. El Super_Admin la revisa y crea la empresa.
+ */
+export const crearSolicitudRegistroPlan = async (req, res) => {
+  const { plan_nombre, ciclo, correo_contacto, nombre_empresa } = req.body;
+
+  try {
+    const correo = String(correo_contacto || '').trim().toLowerCase();
+    const empresa = String(nombre_empresa || '').trim();
+
+    if (!['Basico', 'Premium'].includes(plan_nombre)) {
+      return res.status(400).json({ success: false, message: 'El plan debe ser Basico o Premium.' });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+      return res.status(400).json({ success: false, message: 'Ingresa un correo electrónico válido.' });
+    }
+    if (!empresa) {
+      return res.status(400).json({ success: false, message: 'El nombre de la empresa es obligatorio.' });
+    }
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'El comprobante de pago (PDF) es obligatorio.' });
+    }
+    if (!supabase) {
+      return res.status(503).json({
+        success: false,
+        message: 'El almacenamiento de comprobantes no está disponible en este momento. Intenta más tarde.',
+      });
+    }
+
+    const filePath = `solicitudes-planes/${Date.now()}_${Math.random().toString(36).substring(7)}.pdf`;
+    const { error: uploadError } = await supabase.storage
+      .from('comprobantes')
+      .upload(filePath, req.file.buffer, { contentType: 'application/pdf', upsert: false });
+
+    if (uploadError) {
+      console.error('[suscripcionController] Error subiendo comprobante público:', uploadError.message);
+      return res.status(502).json({ success: false, message: 'No se pudo almacenar el comprobante. Intenta nuevamente.' });
+    }
+    const { data: publicUrlData } = supabase.storage.from('comprobantes').getPublicUrl(filePath);
+
+    const result = await pool.query(
+      `INSERT INTO solicitudes_registro_plan (plan_nombre, ciclo, correo_contacto, nombre_empresa, comprobante_url)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, plan_nombre, ciclo, correo_contacto, nombre_empresa, estado, fecha_solicitud`,
+      [plan_nombre, ciclo === 'anual' ? 'anual' : 'mensual', correo, empresa, publicUrlData.publicUrl]
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: 'Solicitud recibida. Revisaremos tu comprobante y te enviaremos las credenciales por correo.',
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error('[suscripcionController] Error en crearSolicitudRegistroPlan:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor al registrar la solicitud.' });
+  }
+};
+
+/**
+ * GET /api/suscripciones/solicitudes-publicas  (Super_Admin)
+ */
+export const listarSolicitudesRegistroPlan = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, plan_nombre, ciclo, correo_contacto, nombre_empresa, comprobante_url, estado, fecha_solicitud
+       FROM solicitudes_registro_plan ORDER BY fecha_solicitud DESC`
+    );
+    return res.status(200).json({ success: true, total: result.rowCount, data: result.rows });
+  } catch (error) {
+    console.error('[suscripcionController] Error en listarSolicitudesRegistroPlan:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor al listar las solicitudes.' });
+  }
+};
+
+/**
+ * PATCH /api/suscripciones/solicitudes-publicas/:id/estado  (Super_Admin)
+ * Marca la solicitud como Atendida (empresa creada) o Rechazada.
+ */
+export const actualizarEstadoSolicitudRegistroPlan = async (req, res) => {
+  const { id } = req.params;
+  const { estado } = req.body;
+
+  try {
+    if (!['Pendiente', 'Atendida', 'Rechazada'].includes(estado)) {
+      return res.status(400).json({ success: false, message: 'El estado debe ser Pendiente, Atendida o Rechazada.' });
+    }
+    const result = await pool.query(
+      'UPDATE solicitudes_registro_plan SET estado = $1 WHERE id = $2 RETURNING id, estado',
+      [estado, id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Solicitud no encontrada.' });
+    }
+    return res.status(200).json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    if (error.code === '22P02') {
+      return res.status(400).json({ success: false, message: 'Identificador de solicitud inválido.' });
+    }
+    console.error('[suscripcionController] Error en actualizarEstadoSolicitudRegistroPlan:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+  }
+};

@@ -7,7 +7,17 @@ import {
 } from '../controllers/pagoController.js';
 import multer from 'multer';
 
-const upload = multer({ storage: multer.memoryStorage() });
+const TIPOS_COMPROBANTE = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (req, file, cb) => {
+    if (TIPOS_COMPROBANTE.includes(file.mimetype)) return cb(null, true);
+    const err = new Error('El comprobante debe ser una imagen (JPG, PNG, WEBP) o un PDF.');
+    err.status = 400;
+    return cb(err);
+  },
+});
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();

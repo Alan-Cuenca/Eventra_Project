@@ -15,17 +15,24 @@ export const crearCotizacion = async (req, res) => {
 
   try {
     // --- Validación de campos obligatorios ---
-    if (!cliente_id || !fecha_estimada_evento || total_calculado === undefined || total_calculado === null) {
+    if (!cliente_id || !fecha_estimada_evento) {
       return res.status(400).json({
         success: false,
-        message: 'Los campos cliente_id, fecha_estimada_evento y total_calculado son obligatorios.',
+        message: 'Los campos cliente_id y fecha_estimada_evento son obligatorios.',
       });
     }
 
-    if (isNaN(total_calculado) || Number(total_calculado) < 0) {
+    const tieneTotal = total_calculado !== undefined && total_calculado !== null && total_calculado !== '';
+    if (tieneTotal && (isNaN(total_calculado) || Number(total_calculado) < 0)) {
       return res.status(400).json({
         success: false,
         message: 'El total_calculado debe ser un número positivo.',
+      });
+    }
+    if (!paquete_id && !tieneTotal) {
+      return res.status(400).json({
+        success: false,
+        message: 'Debes indicar un paquete_id o un total_calculado.',
       });
     }
 
@@ -44,9 +51,10 @@ export const crearCotizacion = async (req, res) => {
     }
 
     // 2. Si se especifica paquete_id, validar que pertenezca a la empresa en sesión
+    let totalFinal = tieneTotal ? Number(total_calculado) : 0;
     if (paquete_id) {
       const paqueteCheck = await pool.query(
-        'SELECT id FROM paquetes WHERE id = $1 AND empresa_id = $2',
+        'SELECT id, precio_total FROM paquetes WHERE id = $1 AND empresa_id = $2',
         [paquete_id, empresa_id]
       );
 
@@ -56,6 +64,9 @@ export const crearCotizacion = async (req, res) => {
           message: 'El paquete especificado no existe o no pertenece a su empresa.',
         });
       }
+      // El total nunca puede ser menor al precio del paquete: lo fija el servidor.
+      const precioPaquete = Number(paqueteCheck.rows[0].precio_total) || 0;
+      totalFinal = Math.max(totalFinal, precioPaquete);
     }
 
     // --- Insertar cotización (SQL parametrizado) ---
@@ -65,7 +76,7 @@ export const crearCotizacion = async (req, res) => {
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, empresa_id, cliente_id, paquete_id, fecha_estimada_evento,
                  total_calculado, estado, fecha_creacion`,
-      [empresa_id, cliente_id, paquete_id || null, fecha_estimada_evento, total_calculado]
+      [empresa_id, cliente_id, paquete_id || null, fecha_estimada_evento, totalFinal]
     );
 
     return res.status(201).json({
@@ -102,6 +113,7 @@ export const crearCotizacion = async (req, res) => {
  */
 export const obtenerCotizaciones = async (req, res) => {
   const empresa_id = req.user.empresa_id;
+  const emailCliente = Number(req.user.rol_id) === 4 ? req.user.email : null; // Cliente: solo sus datos
 
   try {
     const result = await pool.query(
@@ -125,8 +137,9 @@ export const obtenerCotizaciones = async (req, res) => {
        INNER JOIN clientes cl ON c.cliente_id = cl.id
        LEFT  JOIN paquetes  p  ON c.paquete_id = p.id
        WHERE c.empresa_id = $1
+         AND ($2::text IS NULL OR LOWER(cl.email) = LOWER($2))
        ORDER BY c.fecha_creacion DESC`,
-      [empresa_id]
+      [empresa_id, emailCliente]
     );
 
     return res.status(200).json({
@@ -141,5 +154,101 @@ export const obtenerCotizaciones = async (req, res) => {
       success: false,
       message: 'Error interno del servidor al obtener las cotizaciones.',
     });
+  }
+};
+
+const ESTADOS_COTIZACION = ['Pendiente', 'Aprobada', 'Rechazada', 'Completada'];
+
+/**
+ * GET /api/cotizaciones/:id — detalle de una cotización de la empresa.
+ */
+export const obtenerCotizacionPorId = async (req, res) => {
+  const empresa_id = req.user.empresa_id;
+  const emailCliente = Number(req.user.rol_id) === 4 ? req.user.email : null; // Cliente: solo sus datos
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `SELECT c.id, c.empresa_id, c.fecha_estimada_evento, c.total_calculado, c.estado, c.fecha_creacion,
+              cl.id AS cliente_id, cl.nombres AS cliente_nombres, cl.apellidos AS cliente_apellidos,
+              cl.email AS cliente_email,
+              p.id AS paquete_id, p.nombre AS paquete_nombre, p.precio_total AS paquete_precio_total
+       FROM cotizaciones c
+       INNER JOIN clientes cl ON c.cliente_id = cl.id
+       LEFT JOIN paquetes p ON c.paquete_id = p.id
+       WHERE c.id = $1 AND c.empresa_id = $2
+         AND ($3::text IS NULL OR LOWER(cl.email) = LOWER($3))`,
+      [id, empresa_id, emailCliente]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Cotización no encontrada.' });
+    }
+    return res.status(200).json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    if (error.code === '22P02') {
+      return res.status(400).json({ success: false, message: 'Identificador de cotización inválido.' });
+    }
+    console.error('[cotizacionController] Error en obtenerCotizacionPorId:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor al obtener la cotización.' });
+  }
+};
+
+/**
+ * PATCH /api/cotizaciones/:id/estado — aprueba, rechaza o completa una cotización.
+ * Transiciones: Pendiente -> Aprobada | Rechazada; Aprobada -> Completada | Rechazada.
+ */
+export const actualizarEstadoCotizacion = async (req, res) => {
+  const empresa_id = req.user.empresa_id;
+  const { id } = req.params;
+  const { estado } = req.body;
+
+  const TRANSICIONES = {
+    Pendiente: ['Aprobada', 'Rechazada'],
+    Aprobada: ['Completada', 'Rechazada'],
+    Rechazada: [],
+    Completada: [],
+  };
+
+  try {
+    if (!estado || !ESTADOS_COTIZACION.includes(estado)) {
+      return res.status(400).json({
+        success: false,
+        message: `El estado debe ser uno de: ${ESTADOS_COTIZACION.join(', ')}.`,
+      });
+    }
+
+    const actual = await pool.query(
+      'SELECT estado FROM cotizaciones WHERE id = $1 AND empresa_id = $2',
+      [id, empresa_id]
+    );
+    if (actual.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Cotización no encontrada.' });
+    }
+
+    const estadoActual = actual.rows[0].estado || 'Pendiente';
+    if (!(TRANSICIONES[estadoActual] || []).includes(estado)) {
+      return res.status(409).json({
+        success: false,
+        message: `No se puede pasar una cotización de "${estadoActual}" a "${estado}".`,
+      });
+    }
+
+    const result = await pool.query(
+      `UPDATE cotizaciones SET estado = $1 WHERE id = $2 AND empresa_id = $3
+       RETURNING id, estado, total_calculado`,
+      [estado, id, empresa_id]
+    );
+    return res.status(200).json({
+      success: true,
+      message: `Cotización marcada como ${estado}.`,
+      data: result.rows[0],
+    });
+  } catch (error) {
+    if (error.code === '22P02') {
+      return res.status(400).json({ success: false, message: 'Identificador de cotización inválido.' });
+    }
+    console.error('[cotizacionController] Error en actualizarEstadoCotizacion:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor al actualizar la cotización.' });
   }
 };

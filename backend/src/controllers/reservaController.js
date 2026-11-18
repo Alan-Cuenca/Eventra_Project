@@ -14,6 +14,26 @@ import pool from '../config/db.js';
  * @param {import('express').Request}  req
  * @param {import('express').Response} res
  */
+/**
+ * Cuenta reservas activas (no canceladas) del mismo salón que se solapan en el tiempo
+ * con el bloque [fecha + hora_inicio, fecha + hora_fin). Soporta bloques nocturnos
+ * (hora_fin <= hora_inicio se interpreta como día siguiente) y compara el salón sin
+ * distinguir mayúsculas ni espacios sobrantes.
+ */
+const CONTAR_SOLAPAMIENTOS_SQL = `
+  SELECT COUNT(*) AS total
+  FROM reservas
+  WHERE empresa_id = $1
+    AND LOWER(TRIM(salon_o_lugar)) = LOWER(TRIM($2))
+    AND estado <> 'Cancelada'
+    AND ($6::uuid IS NULL OR id <> $6::uuid)
+    AND fecha_evento BETWEEN ($3::date - 1) AND ($3::date + 1)
+    AND (fecha_evento + hora_inicio) <
+        (($3::date + $5::time) + CASE WHEN $5::time > $4::time THEN ($5::time - $4::time) ELSE ($5::time - $4::time + INTERVAL '24 hours') END)
+    AND ($3::date + $4::time) <
+        ((fecha_evento + hora_inicio) + CASE WHEN hora_fin > hora_inicio THEN (hora_fin - hora_inicio) ELSE (hora_fin - hora_inicio + INTERVAL '24 hours') END)
+`;
+
 export const crearReserva = async (req, res) => {
   const empresa_id = req.user.empresa_id;
   const { cotizacion_id, salon_o_lugar, fecha_evento, hora_inicio, hora_fin } = req.body;
@@ -42,21 +62,22 @@ export const crearReserva = async (req, res) => {
     }
 
     // --- Control de concurrencia (Capa 1: Aplicación) ---
-    // Verifica si ya existe una reserva CONFIRMADA para ese salón y fecha
-    const conflicto = await pool.query(
-      `SELECT COUNT(*) AS total
-       FROM reservas
-       WHERE empresa_id   = $1
-         AND salon_o_lugar = $2
-         AND fecha_evento  = $3
-         AND estado        = 'Confirmada'`,
-      [empresa_id, salon_o_lugar, fecha_evento]
-    );
+    // Verifica si el salón ya tiene una reserva activa que se solape en fecha y horario
+    if (hora_inicio === hora_fin) {
+      return res.status(400).json({
+        success: false,
+        message: 'La hora de inicio y la hora de fin no pueden ser iguales.',
+      });
+    }
+
+    const conflicto = await pool.query(CONTAR_SOLAPAMIENTOS_SQL, [
+      empresa_id, salon_o_lugar, fecha_evento, hora_inicio, hora_fin, null,
+    ]);
 
     if (parseInt(conflicto.rows[0].total, 10) > 0) {
       return res.status(409).json({
         success: false,
-        message: `Conflicto: El salón "${salon_o_lugar}" ya se encuentra reservado para la fecha ${fecha_evento}.`,
+        message: `Conflicto: El salón "${salon_o_lugar}" ya se encuentra reservado en esa fecha y horario (${fecha_evento}).`,
       });
     }
 
@@ -108,6 +129,7 @@ export const crearReserva = async (req, res) => {
  * @param {import('express').Response} res
  */
 export const obtenerReservas = async (req, res) => {
+  const emailCliente = Number(req.user.rol_id) === 4 ? req.user.email : null; // Cliente: solo sus datos
   const empresa_id = req.user.empresa_id;
 
   try {
@@ -141,8 +163,9 @@ export const obtenerReservas = async (req, res) => {
        INNER JOIN clientes     cl ON c.cliente_id    = cl.id
        LEFT  JOIN eventos      e  ON e.reserva_id     = r.id
        WHERE r.empresa_id = $1
+         AND ($2::text IS NULL OR LOWER(cl.email) = LOWER($2))
        ORDER BY r.fecha_evento ASC, r.hora_inicio ASC`,
-      [empresa_id]
+      [empresa_id, emailCliente]
     );
 
     return res.status(200).json({
@@ -167,8 +190,47 @@ export const actualizarReserva = async (req, res) => {
   const { id } = req.params;
   const empresa_id = req.user.empresa_id;
   const { salon_o_lugar, fecha_evento, hora_inicio, hora_fin, estado } = req.body;
+  const ESTADOS_RESERVA = ['Confirmada', 'Cancelada'];
 
   try {
+    if (estado !== undefined && estado !== null && !ESTADOS_RESERVA.includes(estado)) {
+      return res.status(400).json({
+        success: false,
+        message: `El estado debe ser uno de: ${ESTADOS_RESERVA.join(', ')}.`,
+      });
+    }
+
+    // Verificar colisión con el resultado final de la edición (excluyendo esta misma reserva)
+    const actual = await pool.query(
+      `SELECT salon_o_lugar, TO_CHAR(fecha_evento, 'YYYY-MM-DD') AS fecha_evento,
+              TO_CHAR(hora_inicio, 'HH24:MI:SS') AS hora_inicio,
+              TO_CHAR(hora_fin, 'HH24:MI:SS') AS hora_fin, estado
+       FROM reservas WHERE id = $1 AND empresa_id = $2`,
+      [id, empresa_id]
+    );
+    if (actual.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Reserva no encontrada.' });
+    }
+    const previa = actual.rows[0];
+    const final = {
+      salon: salon_o_lugar || previa.salon_o_lugar,
+      fecha: fecha_evento || previa.fecha_evento,
+      inicio: hora_inicio || previa.hora_inicio,
+      fin: hora_fin || previa.hora_fin,
+      estado: estado || previa.estado,
+    };
+    if (final.estado !== 'Cancelada') {
+      const conflicto = await pool.query(CONTAR_SOLAPAMIENTOS_SQL, [
+        empresa_id, final.salon, final.fecha, final.inicio, final.fin, id,
+      ]);
+      if (parseInt(conflicto.rows[0].total, 10) > 0) {
+        return res.status(409).json({
+          success: false,
+          message: `Conflicto: El salón "${final.salon}" ya se encuentra reservado en esa fecha y horario.`,
+        });
+      }
+    }
+
     const result = await pool.query(
       `UPDATE reservas 
        SET salon_o_lugar = COALESCE($1, salon_o_lugar),
@@ -187,6 +249,9 @@ export const actualizarReserva = async (req, res) => {
 
     return res.status(200).json({ success: true, message: 'Reserva actualizada.', data: result.rows[0] });
   } catch (error) {
+    if (error.code === '23505') {
+      return res.status(409).json({ success: false, message: 'Conflicto: ya existe una reserva activa para ese salón, fecha y hora.' });
+    }
     console.error('[reservaController] Error en actualizarReserva:', error.message);
     return res.status(500).json({ success: false, message: 'Error interno al actualizar.' });
   }
