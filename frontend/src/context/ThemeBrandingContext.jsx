@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { eventraService } from '../services/eventraService';
 import { useAuth } from './AuthContext';
 
@@ -230,13 +230,21 @@ export const ThemeBrandingProvider = ({ children }) => {
     root.style.setProperty('--brand-accent', accent);
   }, [customPaleta, branding?.paleta_personalizada]);
 
+  // Referencias al estado más reciente. cargarBranding depende SOLO del usuario: si dependiera de
+  // customPaleta/aplicarVariablesCSS, cada respuesta (objeto nuevo) la recrearía y el efecto volvería
+  // a pedir el branding en bucle infinito (miles de peticiones con el logo, egress de Supabase).
+  const aplicarVariablesCSSRef = useRef(aplicarVariablesCSS);
+  const customPaletaRef = useRef(customPaleta);
+  aplicarVariablesCSSRef.current = aplicarVariablesCSS;
+  customPaletaRef.current = customPaleta;
+
   // Cargar branding desde la API cuando el usuario esté autenticado
   const cargarBranding = useCallback(async () => {
     if (!user) {
       setBranding(DEFAULT_BRANDING);
       setPaletaKey('sofisticacion_sutil');
       localStorage.removeItem(PALETTE_CACHE_KEY);
-      aplicarVariablesCSS('sofisticacion_sutil', false);
+      aplicarVariablesCSSRef.current('sofisticacion_sutil', false);
       setLoading(false);
       return;
     }
@@ -248,7 +256,10 @@ export const ThemeBrandingProvider = ({ children }) => {
       if (data && typeof data === 'object') {
         setBranding((prev) => ({ ...prev, ...data }));
         if (data.paleta_personalizada) {
-          setCustomPaleta(data.paleta_personalizada);
+          // Solo se actualiza si el contenido cambió (evita re-renders con objetos idénticos)
+          setCustomPaleta((prev) => (
+            JSON.stringify(prev) === JSON.stringify(data.paleta_personalizada) ? prev : data.paleta_personalizada
+          ));
           try {
             localStorage.setItem('eventra_custom_ia_palette', JSON.stringify(data.paleta_personalizada));
           } catch {}
@@ -262,10 +273,10 @@ export const ThemeBrandingProvider = ({ children }) => {
           : (data.paleta_colores && PALETAS[data.paleta_colores] ? data.paleta_colores : 'sofisticacion_sutil');
         setPaletaKey(targetPaleta);
         localStorage.setItem(PALETTE_CACHE_KEY, targetPaleta);
-        aplicarVariablesCSS(
+        aplicarVariablesCSSRef.current(
           targetPaleta,
           true,
-          isCustomIA ? (data.paleta_personalizada || customPaleta) : null
+          isCustomIA ? (data.paleta_personalizada || customPaletaRef.current) : null
         );
       }
     } catch (err) {
@@ -273,11 +284,11 @@ export const ThemeBrandingProvider = ({ children }) => {
       const fallback = localStorage.getItem(PALETTE_CACHE_KEY);
       const activeKey = fallback && (fallback === 'custom_ia' || PALETAS[fallback]) ? fallback : 'sofisticacion_sutil';
       setPaletaKey(activeKey);
-      aplicarVariablesCSS(activeKey, true, activeKey === 'custom_ia' ? customPaleta : null);
+      aplicarVariablesCSSRef.current(activeKey, true, activeKey === 'custom_ia' ? customPaletaRef.current : null);
     } finally {
       setLoading(false);
     }
-  }, [user, aplicarVariablesCSS, customPaleta]);
+  }, [user]);
 
   useEffect(() => {
     cargarBranding();
