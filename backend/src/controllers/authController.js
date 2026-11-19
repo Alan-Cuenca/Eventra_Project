@@ -529,6 +529,8 @@ export const registrarClientePortal = async (req, res) => {
  * Permite a la página de registro/login de clientes validar la empresa y personalizar la interfaz.
  */
 export const obtenerInfoPortalEmpresa = async (req, res) => {
+  // Portal público (incluye el logo): se revalida con ETag y recibe 304 sin cuerpo si no cambió
+  res.set('Cache-Control', 'public, no-cache');
   const { slug } = req.params;
 
   if (!slug) {

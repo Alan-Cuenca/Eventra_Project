@@ -376,6 +376,8 @@ export const PALETAS_VALIDAS = [
  * Disponible para roles 1 (Admin), 2 (Gerente), 3 (Trabajador) y 4 (Cliente).
  */
 export const obtenerMiBranding = async (req, res) => {
+  // Datos de la empresa (incluye el logo): el navegador revalida con ETag y recibe 304 sin cuerpo
+  res.set('Cache-Control', 'private, no-cache');
   try {
     let empresa_id = req.user?.empresa_id;
 
