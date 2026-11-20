@@ -31,7 +31,10 @@ jest.unstable_mockModule('../src/config/supabase.js', () => ({
     storage: {
       from: jest.fn(() => ({
         upload: jest.fn().mockResolvedValue({ data: { path: '1/fake.png' }, error: null }),
-        getPublicUrl: jest.fn().mockReturnValue({ data: { publicUrl: 'https://supabase.co/storage/v1/object/public/comprobantes/1/fake.png' } }),
+        createSignedUrls: jest.fn(async (paths) => ({
+          data: paths.map((path) => ({ path, signedUrl: `https://supabase.co/storage/v1/object/sign/comprobantes/${path}?token=firmado`, error: null })),
+          error: null,
+        })),
       })),
     },
   },
@@ -152,7 +155,7 @@ describe('Módulo de Pagos y Anticipos — EVENTRA', () => {
           concepto: 'Anticipo',
           metodo_pago: 'Transferencia',
           estado: 'En Revisión',
-          comprobante_url: 'https://supabase.co/storage/v1/object/public/comprobantes/1/fake.png',
+          comprobante_url: '1/fake.png',
         }]
       });
 
@@ -168,7 +171,11 @@ describe('Módulo de Pagos y Anticipos — EVENTRA', () => {
       expect(res.status).toBe(201);
       expect(res.body.success).toBe(true);
       expect(res.body.data.estado).toBe('En Revisión');
-      expect(res.body.data.comprobante_url).toBeTruthy();
+      // Se guarda la RUTA del objeto (bucket privado) y se responde con una URL firmada temporal
+      const insertArgs = pool.query.mock.calls.find(([sql]) => /INSERT INTO pagos/.test(sql))[1];
+      expect(insertArgs[6]).toMatch(/^1\/\d+_[a-z0-9]+\.png$/);
+      expect(res.body.data.comprobante_url).toContain('/object/sign/comprobantes/1/fake.png');
+      expect(res.body.data.comprobante_url).not.toContain('/object/public/');
     });
   });
 

@@ -9,7 +9,9 @@
     "start:prod": "node scripts/migrate.js && node src/app.js",
     "dev": "nodemon src/app.js",
     "test:integration": "cross-env NODE_OPTIONS=--experimental-vm-modules jest -c jest.integration.config.js --runInBand",
-    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --forceExit"
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --forceExit",
+    "check:predeploy": "node scripts/predeployCheck.js",
+    "storage:setup": "node scripts/storageSetup.js"
   },
   "keywords": [],
   "author": "",
