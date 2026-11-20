@@ -174,9 +174,14 @@ export const ReservasList = () => {
                             Reactivar
                           </button>
                         ) : (
-                          <button className="btn btn-sm btn-secondary" disabled={updatingId === reserva.id} onClick={() => cancelarReserva(reserva)}>
-                            Cancelar
-                          </button>
+                          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                            <Link to={`/reservas/editar/${reserva.id}`} className="btn btn-sm btn-primary">
+                              Editar
+                            </Link>
+                            <button className="btn btn-sm btn-secondary" disabled={updatingId === reserva.id} onClick={() => cancelarReserva(reserva)}>
+                              Cancelar
+                            </button>
+                          </div>
                         )}
                       </td>
                     )}

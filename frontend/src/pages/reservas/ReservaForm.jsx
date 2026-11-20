@@ -1,17 +1,34 @@
 /**
- * EVENTRA — Formulario de Nueva Reserva
+ * EVENTRA — Formulario de Reserva (crear y editar)
  * Permite agendar un evento en un salón y horario específico,
  * con prevención de conflictos (Double-Booking).
+ * - /reservas/nueva        → POST /reservas
+ * - /reservas/editar/:id   → GET /reservas/:id para precargar y PUT /reservas/:id para guardar
  */
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { Card } from '../../components/common/Card';
 import { eventraService } from '../../services/eventraService';
 import { CalendarCheck, ArrowLeft, Send, Loader2, AlertCircle, CheckCircle2, Clock, MapPin, CalendarDays, PartyPopper } from 'lucide-react';
 
+const HORARIOS_PREDEFINIDOS = ['10:00 - 16:00', '15:00 - 21:00', '19:00 - 02:00', '20:00 - 03:00'];
+
+/** Convierte las horas guardadas ("19:00:00") en el valor del selector de horario. */
+const horarioDesdeReserva = (reserva) => {
+  const inicio = String(reserva.hora_inicio || '').slice(0, 5);
+  const fin = String(reserva.hora_fin || '').slice(0, 5);
+  const valor = `${inicio} - ${fin}`;
+  return HORARIOS_PREDEFINIDOS.includes(valor)
+    ? { horario: valor }
+    : { horario: 'custom', hora_inicio_custom: inicio, hora_fin_custom: fin };
+};
+
 export const ReservaForm = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const esEdicion = Boolean(id);
 
+  const [reservaOriginal, setReservaOriginal] = useState(null);
   const [cotizaciones, setCotizaciones] = useState([]);
   const [salones, setSalones] = useState([]);
   const [loadingInit, setLoadingInit] = useState(true);
@@ -33,11 +50,23 @@ export const ReservaForm = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [cotData, srvData, resData] = await Promise.all([
-          eventraService.getCotizaciones(),
+        const [cotData, srvData, resData, reserva] = await Promise.all([
+          esEdicion ? Promise.resolve([]) : eventraService.getCotizaciones(),
           eventraService.getServicios(),
           eventraService.getReservas().catch(() => []),
+          esEdicion ? eventraService.getReserva(id) : Promise.resolve(null),
         ]);
+
+        if (esEdicion) {
+          setReservaOriginal(reserva);
+          setForm((p) => ({
+            ...p,
+            cotizacion_id: reserva.cotizacion_id,
+            salon: reserva.salon_o_lugar || reserva.salon || '',
+            fecha: reserva.fecha_iso || String(reserva.fecha_evento || '').split('T')[0],
+            ...horarioDesdeReserva(reserva),
+          }));
+        }
 
         // Sugerencias de salón: lugares ya usados en reservas + servicios del catálogo que parecen espacios
         const esEspacio = (n) => /sal[oó]n|espacio|terraza|jard[ií]n|hacienda|quinta|local|casa/i.test(n || '');
@@ -49,13 +78,15 @@ export const ReservaForm = () => {
         setCotizaciones((cotData || []).filter((c) => c.estado === 'Aprobada'));
         setSalones([...nombres].filter(Boolean).sort().map((nombre) => ({ id: nombre, nombre })));
       } catch (err) {
-        setError('Error al cargar datos base. Intenta recargar la página.');
+        setError(esEdicion && err.status === 404
+          ? 'No se encontró la reserva. Puede que haya sido eliminada o no pertenezca a tu empresa.'
+          : 'Error al cargar datos base. Intenta recargar la página.');
       } finally {
         setLoadingInit(false);
       }
     };
     fetchInitialData();
-  }, []);
+  }, [esEdicion, id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -69,8 +100,17 @@ export const ReservaForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.cotizacion_id || !form.salon || !form.fecha || !form.horario) {
+    if (!form.cotizacion_id || !form.salon.trim() || !form.fecha || !form.horario) {
       setError('Por favor, completa todos los campos requeridos.');
+      return;
+    }
+
+    const [hora_inicio, hora_fin] = form.horario === 'custom'
+      ? [form.hora_inicio_custom, form.hora_fin_custom]
+      : form.horario.split(' - ').map((h) => h.trim());
+
+    if (hora_inicio === hora_fin) {
+      setError('La hora de inicio y la hora de fin no pueden ser iguales.');
       return;
     }
 
@@ -79,17 +119,18 @@ export const ReservaForm = () => {
     setSubmitting(true);
 
     try {
-      const [hora_inicio, hora_fin] = form.horario === 'custom'
-        ? [form.hora_inicio_custom, form.hora_fin_custom]
-        : form.horario.split(' - ').map((h) => h.trim());
-
-      await eventraService.createReserva({
-        cotizacion_id: form.cotizacion_id,
-        salon_o_lugar: form.salon,
+      const datos = {
+        salon_o_lugar: form.salon.trim(),
         fecha_evento: form.fecha,
         hora_inicio,
         hora_fin,
-      });
+      };
+
+      if (esEdicion) {
+        await eventraService.updateReserva(id, datos);
+      } else {
+        await eventraService.createReserva({ cotizacion_id: form.cotizacion_id, ...datos });
+      }
 
       setSuccess(true);
       setTimeout(() => navigate('/reservas', { replace: true }), 1800);
@@ -99,7 +140,7 @@ export const ReservaForm = () => {
         setConflictError(true);
         setError('El salón seleccionado ya está reservado en esa fecha y horario. Por favor, elige otro salón u otra fecha/horario.');
       } else {
-        setError(err.message || 'Error al agendar la reserva.');
+        setError(err.message || (esEdicion ? 'Error al guardar los cambios de la reserva.' : 'Error al agendar la reserva.'));
       }
     } finally {
       setSubmitting(false);
@@ -110,8 +151,10 @@ export const ReservaForm = () => {
     return (
       <div style={{ textAlign: 'center', padding: '5rem 0' }}>
         <CheckCircle2 size={48} color="var(--success)" style={{ margin: '0 auto 1rem' }} />
-        <h2>¡Reserva Confirmada!</h2>
-        <p style={{ color: 'var(--text-secondary)' }}>El espacio ha sido bloqueado exitosamente para tu evento.</p>
+        <h2>{esEdicion ? '¡Reserva Actualizada!' : '¡Reserva Confirmada!'}</h2>
+        <p style={{ color: 'var(--text-secondary)' }}>
+          {esEdicion ? 'Los cambios de salón, fecha y horario se guardaron correctamente.' : 'El espacio ha sido bloqueado exitosamente para tu evento.'}
+        </p>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '1rem' }}>Redirigiendo a la agenda...</p>
       </div>
     );
@@ -132,10 +175,12 @@ export const ReservaForm = () => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
             <CalendarCheck size={24} color="var(--accent)" />
-            <h1 style={{ margin: 0 }}>Agendar Nueva Reserva</h1>
+            <h1 style={{ margin: 0 }}>{esEdicion ? 'Editar Reserva' : 'Agendar Nueva Reserva'}</h1>
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            Asigna un salón físico y un bloque de tiempo a un evento.
+            {esEdicion
+              ? 'Cambia el salón, la fecha o el horario. Se vuelve a verificar que no choque con otra reserva.'
+              : 'Asigna un salón físico y un bloque de tiempo a un evento.'}
           </p>
         </div>
         <Link to="/reservas" className="btn btn-secondary">
@@ -170,19 +215,37 @@ export const ReservaForm = () => {
               
               <div className="form-group">
                 <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <PartyPopper size={16} color="var(--accent)" /> Cotización a vincular *
+                  <PartyPopper size={16} color="var(--accent)" /> {esEdicion ? 'Cotización vinculada' : 'Cotización a vincular *'}
                 </label>
-                <select name="cotizacion_id" className="form-select" value={form.cotizacion_id} onChange={handleChange} required>
-                  <option value="">-- Selecciona la Cotización --</option>
-                  {cotizaciones.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {`${c.cliente_nombres || ''} ${c.cliente_apellidos || ''}`.trim() || 'Cliente'} · {String(c.fecha_estimada_evento || '').split('T')[0]} · ${Number(c.total_calculado || 0).toFixed(2)}
-                    </option>
-                  ))}
-                </select>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem', display: 'block' }}>
-                  Solo aparecen cotizaciones Aprobadas que aún no tienen reserva. Apruébala primero en Cotizaciones.
-                </span>
+                {esEdicion ? (
+                  <>
+                    <input
+                      type="text"
+                      name="cotizacion_vinculada"
+                      className="form-input"
+                      value={`${reservaOriginal?.cliente_nombre || 'Cliente'} · $${Number(reservaOriginal?.cotizacion_total || 0).toFixed(2)}`}
+                      readOnly
+                      disabled
+                    />
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem', display: 'block' }}>
+                      La cotización no se cambia al editar. Para otra cotización, cancela esta reserva y crea una nueva.
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <select name="cotizacion_id" className="form-select" value={form.cotizacion_id} onChange={handleChange} required>
+                      <option value="">-- Selecciona la Cotización --</option>
+                      {cotizaciones.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {`${c.cliente_nombres || ''} ${c.cliente_apellidos || ''}`.trim() || 'Cliente'} · {String(c.fecha_estimada_evento || '').split('T')[0]} · ${Number(c.total_calculado || 0).toFixed(2)}
+                        </option>
+                      ))}
+                    </select>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem', display: 'block' }}>
+                      Solo aparecen cotizaciones Aprobadas que aún no tienen reserva. Apruébala primero en Cotizaciones.
+                    </span>
+                  </>
+                )}
               </div>
 
               <div style={{ borderTop: '1px solid var(--border-subtle)', margin: '0.5rem 0' }}></div>
@@ -246,10 +309,12 @@ export const ReservaForm = () => {
                 type="submit"
                 className="btn btn-primary"
                 style={{ padding: '0.85rem 2rem', fontSize: '1rem' }}
-                disabled={submitting}
+                disabled={submitting || (esEdicion && !reservaOriginal)}
               >
                 {submitting ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Send size={18} />}
-                <span style={{ marginLeft: '0.5rem' }}>{submitting ? 'Verificando Disponibilidad...' : 'Guardar y Agendar Reserva'}</span>
+                <span style={{ marginLeft: '0.5rem' }}>
+                  {submitting ? 'Verificando Disponibilidad...' : (esEdicion ? 'Guardar Cambios' : 'Guardar y Agendar Reserva')}
+                </span>
               </button>
             </div>
 
