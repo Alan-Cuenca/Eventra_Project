@@ -52,7 +52,6 @@ const DEFAULT_SAAS_CONFIG = {
     premium_max_servicios: 50,
     premium_max_chatbot: 1500,
     premium_evara_ai: true,
-    dias_gracia_facturacion: 5,
   },
   seguridad: {
     expiracion_jwt_horas: 8,
@@ -635,42 +634,6 @@ export const ConfiguracionSaasPage = () => {
                   </div>
                 </div>
               </div>
-
-              {/* ── Política de Cobro y Suspensión ──────────────── */}
-              <div
-                style={{
-                  padding: '0.9rem 1.1rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border-subtle)',
-                  background: 'var(--bg-primary)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: '0.85rem',
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    Días de Gracia antes de Suspensión Automática
-                  </div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                    Margen permitido tras vencer la factura antes del bloqueo de acceso al tenant
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input
-                    type="number"
-                    min="0"
-                    max="30"
-                    style={{ width: '80px', textAlign: 'center' }}
-                    className="form-input"
-                    value={config.planes.dias_gracia_facturacion ?? 5}
-                    onChange={(e) => handleFieldChange('planes', 'dias_gracia_facturacion', Number(e.target.value) || 5)}
-                  />
-                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>días</span>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -813,6 +776,9 @@ export const ConfiguracionSaasPage = () => {
                   )
                 }
               />
+              <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.35rem 0 0' }}>
+                Entre 1 y 72 horas. Se aplica a los inicios de sesión posteriores al guardado.
+              </p>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>

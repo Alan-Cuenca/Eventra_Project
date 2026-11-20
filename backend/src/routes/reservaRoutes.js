@@ -1,6 +1,6 @@
 import express from 'express';
 import { registrarValidacionIds } from '../middlewares/validarParams.js';
-import { crearReserva, obtenerReservas, actualizarReserva, eliminarReserva } from '../controllers/reservaController.js';
+import { crearReserva, obtenerReservas, obtenerReservaPorId, actualizarReserva, eliminarReserva } from '../controllers/reservaController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -28,6 +28,13 @@ router.post('/', verifyToken, authorizeRoles([1, 2, 3]), crearReserva);
  * @access Private — cualquier usuario autenticado con JWT válido
  */
 router.get('/', verifyToken, obtenerReservas);
+
+/**
+ * @route  GET /api/reservas/:id
+ * @desc   Detalle de una reserva (precarga el formulario de edición)
+ * @access Private — el Cliente solo ve las suyas
+ */
+router.get('/:id', verifyToken, obtenerReservaPorId);
 
 /**
  * @route  PUT /api/reservas/:id

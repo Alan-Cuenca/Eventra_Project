@@ -1,5 +1,5 @@
 import pool from '../config/db.js';
-import { supabase } from '../config/supabase.js';
+import { subirComprobante, firmarComprobantes } from '../services/storageService.js';
 import { obtenerConsumoPlanEmpresa, normalizarPlan } from '../middlewares/planLimitsMiddleware.js';
 
 const ESTADOS_VALIDOS = ['En Revisión', 'Aprobado', 'Rechazado'];
@@ -60,34 +60,16 @@ export const registrarPagoSuscripcion = async (req, res) => {
     let comprobante_url = null;
 
     if (req.file) {
-      const file = req.file;
-
-      if (supabase) {
-        const fileExt = (String(file.originalname || '').split('.').pop() || 'bin').replace(/[^a-zA-Z0-9]/g, '').slice(0, 5) || 'bin';
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `suscripciones/${empresa_id}/${fileName}`;
-
-        const { data, error: uploadError } = await supabase.storage
-          .from('comprobantes')
-          .upload(filePath, file.buffer, {
-            contentType: file.mimetype,
-            upsert: true,
-          });
-
-        if (uploadError) {
-          console.error('[suscripcionController] Error subiendo comprobante a Supabase:', uploadError.message);
-          return res.status(502).json({
-            success: false,
-            message: 'No se pudo almacenar el comprobante. Intenta nuevamente en unos minutos.',
-          });
-        } else {
-          const { data: publicUrlData } = supabase.storage.from('comprobantes').getPublicUrl(filePath);
-          comprobante_url = publicUrlData.publicUrl;
-        }
-      } else {
-        return res.status(503).json({
+      try {
+        // Bucket privado: se guarda la ruta del objeto, no una URL pública
+        comprobante_url = await subirComprobante(`suscripciones/${empresa_id}`, req.file, 'pdf');
+      } catch (storageErr) {
+        console.error('[suscripcionController] Error subiendo comprobante a Supabase:', storageErr.message);
+        return res.status(storageErr.httpStatus || 502).json({
           success: false,
-          message: 'El almacenamiento de comprobantes no está disponible. Contacta al administrador.',
+          message: storageErr.sinConfigurar
+            ? 'El almacenamiento de comprobantes no está disponible. Contacta al administrador.'
+            : 'No se pudo almacenar el comprobante. Intenta nuevamente en unos minutos.',
         });
       }
     }
@@ -103,7 +85,7 @@ export const registrarPagoSuscripcion = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: 'Comprobante de suscripción enviado exitosamente. Tu plan está en revisión.',
-      data: result.rows[0],
+      data: (await firmarComprobantes(result.rows))[0],
     });
 
   } catch (error) {
@@ -151,7 +133,7 @@ export const obtenerSuscripciones = async (req, res) => {
       return res.status(200).json({
         success: true,
         total: result.rowCount,
-        data: result.rows,
+        data: await firmarComprobantes(result.rows),
       });
     }
 
@@ -186,7 +168,7 @@ export const obtenerSuscripciones = async (req, res) => {
     return res.status(200).json({
       success: true,
       total: result.rowCount,
-      data: result.rows,
+      data: await firmarComprobantes(result.rows),
     });
 
   } catch (error) {
@@ -255,7 +237,7 @@ export const actualizarEstadoSuscripcion = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: `Suscripción marcada como "${estado}" exitosamente.`,
-      data: updatedPagoRes.rows[0],
+      data: (await firmarComprobantes(updatedPagoRes.rows))[0],
     });
 
   } catch (error) {
@@ -328,29 +310,24 @@ export const crearSolicitudRegistroPlan = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'El comprobante de pago (PDF) es obligatorio.' });
     }
-    if (!supabase) {
-      return res.status(503).json({
+    let rutaComprobante;
+    try {
+      rutaComprobante = await subirComprobante('solicitudes-planes', { ...req.file, originalname: 'comprobante.pdf' }, 'pdf');
+    } catch (storageErr) {
+      console.error('[suscripcionController] Error subiendo comprobante público:', storageErr.message);
+      return res.status(storageErr.httpStatus || 502).json({
         success: false,
-        message: 'El almacenamiento de comprobantes no está disponible en este momento. Intenta más tarde.',
+        message: storageErr.sinConfigurar
+          ? 'El almacenamiento de comprobantes no está disponible en este momento. Intenta más tarde.'
+          : 'No se pudo almacenar el comprobante. Intenta nuevamente.',
       });
     }
-
-    const filePath = `solicitudes-planes/${Date.now()}_${Math.random().toString(36).substring(7)}.pdf`;
-    const { error: uploadError } = await supabase.storage
-      .from('comprobantes')
-      .upload(filePath, req.file.buffer, { contentType: 'application/pdf', upsert: false });
-
-    if (uploadError) {
-      console.error('[suscripcionController] Error subiendo comprobante público:', uploadError.message);
-      return res.status(502).json({ success: false, message: 'No se pudo almacenar el comprobante. Intenta nuevamente.' });
-    }
-    const { data: publicUrlData } = supabase.storage.from('comprobantes').getPublicUrl(filePath);
 
     const result = await pool.query(
       `INSERT INTO solicitudes_registro_plan (plan_nombre, ciclo, correo_contacto, nombre_empresa, comprobante_url)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, plan_nombre, ciclo, correo_contacto, nombre_empresa, estado, fecha_solicitud`,
-      [plan_nombre, ciclo === 'anual' ? 'anual' : 'mensual', correo, empresa, publicUrlData.publicUrl]
+      [plan_nombre, ciclo === 'anual' ? 'anual' : 'mensual', correo, empresa, rutaComprobante]
     );
 
     return res.status(201).json({
@@ -373,7 +350,7 @@ export const listarSolicitudesRegistroPlan = async (req, res) => {
       `SELECT id, plan_nombre, ciclo, correo_contacto, nombre_empresa, comprobante_url, estado, fecha_solicitud
        FROM solicitudes_registro_plan ORDER BY fecha_solicitud DESC`
     );
-    return res.status(200).json({ success: true, total: result.rowCount, data: result.rows });
+    return res.status(200).json({ success: true, total: result.rowCount, data: await firmarComprobantes(result.rows) });
   } catch (error) {
     console.error('[suscripcionController] Error en listarSolicitudesRegistroPlan:', error.message);
     return res.status(500).json({ success: false, message: 'Error interno del servidor al listar las solicitudes.' });

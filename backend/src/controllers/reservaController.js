@@ -35,6 +35,39 @@ const CONTAR_SOLAPAMIENTOS_SQL = `
         ((fecha_evento + hora_inicio) + CASE WHEN hora_fin > hora_inicio THEN (hora_fin - hora_inicio) ELSE (hora_fin - hora_inicio + INTERVAL '24 hours') END)
 `;
 
+/** Columnas comunes de listado y detalle de reservas (con cotización, cliente y evento). */
+const SELECT_RESERVAS = `
+  SELECT
+    r.id,
+    r.salon_o_lugar,
+    r.salon_o_lugar AS salon,
+    r.fecha_evento,
+    r.fecha_evento  AS fecha,
+    TO_CHAR(r.fecha_evento, 'YYYY-MM-DD') AS fecha_iso,
+    r.hora_inicio,
+    r.hora_fin,
+    CONCAT(TO_CHAR(r.hora_inicio, 'HH24:MI'), ' - ', TO_CHAR(r.hora_fin, 'HH24:MI')) AS horario,
+    r.estado,
+    r.fecha_creacion,
+    -- Datos de la cotización
+    c.id              AS cotizacion_id,
+    c.total_calculado AS cotizacion_total,
+    c.estado          AS cotizacion_estado,
+    -- Datos del cliente (a través de la cotización)
+    cl.id             AS cliente_id,
+    cl.nombres        AS cliente_nombres,
+    cl.apellidos      AS cliente_apellidos,
+    CONCAT(cl.nombres, ' ', cl.apellidos) AS cliente_nombre,
+    cl.email          AS cliente_email,
+    -- Datos del evento asociado
+    e.id              AS evento_id,
+    COALESCE(e.titulo, 'Evento agendado') AS evento_titulo
+  FROM reservas r
+  INNER JOIN cotizaciones c  ON r.cotizacion_id = c.id
+  INNER JOIN clientes     cl ON c.cliente_id    = cl.id
+  LEFT  JOIN eventos      e  ON e.reserva_id     = r.id
+`;
+
 export const crearReserva = async (req, res) => {
   const empresa_id = req.user.empresa_id;
   const { cotizacion_id, salon_o_lugar, fecha_evento, hora_inicio, hora_fin } = req.body;
@@ -163,34 +196,7 @@ export const obtenerReservas = async (req, res) => {
 
   try {
     const result = await pool.query(
-      `SELECT
-         r.id,
-         r.salon_o_lugar,
-         r.salon_o_lugar AS salon,
-         r.fecha_evento,
-         r.fecha_evento  AS fecha,
-         r.hora_inicio,
-         r.hora_fin,
-         CONCAT(TO_CHAR(r.hora_inicio, 'HH24:MI'), ' - ', TO_CHAR(r.hora_fin, 'HH24:MI')) AS horario,
-         r.estado,
-         r.fecha_creacion,
-         -- Datos de la cotización
-         c.id              AS cotizacion_id,
-         c.total_calculado AS cotizacion_total,
-         c.estado          AS cotizacion_estado,
-         -- Datos del cliente (a través de la cotización)
-         cl.id             AS cliente_id,
-         cl.nombres        AS cliente_nombres,
-         cl.apellidos      AS cliente_apellidos,
-         CONCAT(cl.nombres, ' ', cl.apellidos) AS cliente_nombre,
-         cl.email          AS cliente_email,
-         -- Datos del evento asociado
-         e.id              AS evento_id,
-         COALESCE(e.titulo, 'Evento agendado') AS evento_titulo
-       FROM reservas r
-       INNER JOIN cotizaciones c  ON r.cotizacion_id = c.id
-       INNER JOIN clientes     cl ON c.cliente_id    = cl.id
-       LEFT  JOIN eventos      e  ON e.reserva_id     = r.id
+      `${SELECT_RESERVAS}
        WHERE r.empresa_id = $1
          AND ($2::text IS NULL OR LOWER(cl.email) = LOWER($2))
        ORDER BY r.fecha_evento ASC, r.hora_inicio ASC`,
@@ -209,6 +215,32 @@ export const obtenerReservas = async (req, res) => {
       success: false,
       message: 'Error interno del servidor al obtener las reservas.',
     });
+  }
+};
+
+/**
+ * GET /api/reservas/:id — detalle de una reserva (precarga el formulario de edición).
+ * Aislamiento SaaS por empresa_id; el Cliente solo puede ver las suyas.
+ */
+export const obtenerReservaPorId = async (req, res) => {
+  const emailCliente = Number(req.user.rol_id) === 4 ? req.user.email : null;
+  const empresa_id = req.user.empresa_id;
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `${SELECT_RESERVAS}
+       WHERE r.id = $1 AND r.empresa_id = $2
+         AND ($3::text IS NULL OR LOWER(cl.email) = LOWER($3))`,
+      [id, empresa_id, emailCliente]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Reserva no encontrada.' });
+    }
+    return res.status(200).json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error('[reservaController] Error en obtenerReservaPorId:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor al obtener la reserva.' });
   }
 };
 
@@ -248,6 +280,12 @@ export const actualizarReserva = async (req, res) => {
       fin: hora_fin || previa.hora_fin,
       estado: estado || previa.estado,
     };
+    if (String(final.inicio).slice(0, 5) === String(final.fin).slice(0, 5)) {
+      return res.status(400).json({
+        success: false,
+        message: 'La hora de inicio y la hora de fin no pueden ser iguales.',
+      });
+    }
     if (final.estado !== 'Cancelada') {
       const conflicto = await pool.query(CONTAR_SOLAPAMIENTOS_SQL, [
         empresa_id, final.salon, final.fecha, final.inicio, final.fin, id,

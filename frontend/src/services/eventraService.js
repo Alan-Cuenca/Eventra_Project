@@ -235,6 +235,11 @@ export const eventraService = {
     return response.data;
   },
 
+  async getReserva(id) {
+    const response = await api.get(`/reservas/${id}`);
+    return response?.data || response;
+  },
+
   async updateReserva(id, reservaData) {
     const response = await api.put(`/reservas/${id}`, reservaData);
     return response.data;

@@ -1,7 +1,7 @@
 import { validarMonto } from '../utils/validaciones.js';
 import { obtenerProveedorPago, procesarPagoConProveedor } from '../services/paymentGateway.js';
 import pool from '../config/db.js';
-import { supabase } from '../config/supabase.js';
+import { subirComprobante, firmarComprobantes } from '../services/storageService.js';
 import { notificarPagoAprobado } from '../services/emailService.js';
 
 // Estados y conceptos válidos para validación en el servidor
@@ -85,34 +85,16 @@ export const registrarPago = async (req, res) => {
       }
 
       estadoPago = (await procesarPagoConProveedor(proveedor, { monto, evento_id, empresa_id })).estado;
-      const file = req.file;
-
-      if (supabase) {
-        const fileExt = (String(file.originalname || '').split('.').pop() || 'bin').replace(/[^a-zA-Z0-9]/g, '').slice(0, 5) || 'bin';
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `${empresa_id}/${fileName}`;
-
-        const { data, error: uploadError } = await supabase.storage
-          .from('comprobantes')
-          .upload(filePath, file.buffer, {
-            contentType: file.mimetype,
-            upsert: true,
-          });
-
-        if (uploadError) {
-          console.error('[pagoController] Error subiendo comprobante a Supabase Storage:', uploadError.message);
-          return res.status(502).json({
-            success: false,
-            message: 'No se pudo almacenar el comprobante. Intenta nuevamente en unos minutos.',
-          });
-        } else {
-          const { data: publicUrlData } = supabase.storage.from('comprobantes').getPublicUrl(filePath);
-          comprobante_url = publicUrlData.publicUrl;
-        }
-      } else {
-        return res.status(503).json({
+      try {
+        // Bucket privado: se guarda la ruta del objeto, no una URL pública
+        comprobante_url = await subirComprobante(String(empresa_id), req.file);
+      } catch (storageErr) {
+        console.error('[pagoController] Error subiendo comprobante a Supabase Storage:', storageErr.message);
+        return res.status(storageErr.httpStatus || 502).json({
           success: false,
-          message: 'El almacenamiento de comprobantes no está disponible. Contacta al administrador.',
+          message: storageErr.sinConfigurar
+            ? 'El almacenamiento de comprobantes no está disponible. Contacta al administrador.'
+            : 'No se pudo almacenar el comprobante. Intenta nuevamente en unos minutos.',
         });
       }
     } else {
@@ -142,7 +124,7 @@ export const registrarPago = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: 'Pago registrado exitosamente.',
-      data: result.rows[0],
+      data: (await firmarComprobantes(result.rows))[0],
     });
 
   } catch (error) {
@@ -205,7 +187,7 @@ export const obtenerPagos = async (req, res) => {
     return res.status(200).json({
       success: true,
       total: result.rowCount,
-      data: result.rows,
+      data: await firmarComprobantes(result.rows),
     });
 
   } catch (error) {
@@ -285,7 +267,7 @@ export const obtenerPagosPorEvento = async (req, res) => {
         cantidad_pagos: Number(sumaResult.rows[0].cantidad_pagos),
       },
       total: pagosResult.rowCount,
-      data:  pagosResult.rows,
+      data:  await firmarComprobantes(pagosResult.rows),
     });
 
   } catch (error) {
@@ -329,7 +311,7 @@ export const actualizarEstadoPago = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Pago no encontrado o no pertenece a la empresa.' });
     }
 
-    const pagoActualizado = result.rows[0];
+    const [pagoActualizado] = await firmarComprobantes(result.rows);
 
     // Disparar notificación por correo al cliente si el pago fue Aprobado
     if (estado === 'Aprobado') {

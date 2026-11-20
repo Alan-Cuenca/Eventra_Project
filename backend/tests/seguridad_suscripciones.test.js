@@ -21,7 +21,6 @@ jest.unstable_mockModule('../src/config/supabase.js', () => ({
     storage: {
       from: () => ({
         upload: async () => resultadoSubida,
-        getPublicUrl: () => ({ data: { publicUrl: 'https://storage.test/comprobante.pdf' } }),
       }),
     },
   },
@@ -192,13 +191,14 @@ describe('Solicitud pública de plan (landing)', () => {
       .attach('comprobante', Buffer.from('x'), { filename: 'c.png', contentType: 'image/png' });
     expect(res.statusCode).toBe(400);
   });
-  it('201 y guarda la URL pública del comprobante', async () => {
+  it('201 y guarda la ruta privada del comprobante (no una URL pública)', async () => {
     mockPool.query.mockResolvedValueOnce({ rows: [{ id: 'sol-1', estado: 'Pendiente' }], rowCount: 1 });
     const res = await enviar();
     expect(res.statusCode).toBe(201);
     const [sql, params] = mockPool.query.mock.calls[0];
     expect(sql).toMatch(/INSERT INTO solicitudes_registro_plan/);
-    expect(params).toEqual(['Premium', 'mensual', 'dueno@empresa.com', 'Eventos SA', 'https://storage.test/comprobante.pdf']);
+    expect(params.slice(0, 4)).toEqual(['Premium', 'mensual', 'dueno@empresa.com', 'Eventos SA']);
+    expect(params[4]).toMatch(/^solicitudes-planes\/\d+_[a-z0-9]+\.pdf$/);
   });
   it('502 si falla la subida al almacenamiento', async () => {
     resultadoSubida = { error: { message: 'bucket not found' } };

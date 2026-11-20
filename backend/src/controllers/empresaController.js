@@ -2,7 +2,7 @@ import { invalidarSesionesEmpresa } from '../services/sesionService.js';
 import pool from '../config/db.js';
 import { normalizarPlan } from '../middlewares/planLimitsMiddleware.js';
 import bcrypt from 'bcrypt';
-import { supabase } from '../config/supabase.js';
+import { subirLogoPublico } from '../services/storageService.js';
 import { generarPasswordTemporal } from '../utils/passwordGenerator.js';
 import { sendWelcomeAdminEmail } from '../services/emailService.js';
 import { analizarLogotipoConIA } from '../services/aiBrandingService.js';
@@ -487,35 +487,9 @@ export const actualizarMiBranding = async (req, res) => {
 
     if (req.file) {
       const file = req.file;
-      if (supabase) {
-        const fileExt = (String(file.originalname || '').split('.').pop() || 'bin').replace(/[^a-zA-Z0-9]/g, '').slice(0, 5) || 'bin';
-        const fileName = `logo_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `logos/${empresa_id}/${fileName}`;
-
-        try {
-          const { error: uploadError } = await supabase.storage
-            .from('comprobantes')
-            .upload(filePath, file.buffer, {
-              contentType: file.mimetype,
-              upsert: true,
-            });
-
-          if (uploadError) {
-            console.warn('[empresaController] Falló subida a bucket comprobantes, usando Data URL:', uploadError.message);
-            nuevoLogoUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
-          } else {
-            const { data: publicUrlData } = supabase.storage
-              .from('comprobantes')
-              .getPublicUrl(filePath);
-            nuevoLogoUrl = publicUrlData.publicUrl;
-          }
-        } catch (storageErr) {
-          console.warn('[empresaController] Excepción en Supabase Storage:', storageErr.message);
-          nuevoLogoUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
-        }
-      } else {
-        nuevoLogoUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
-      }
+      // Bucket público de logos; si falla, el logo se guarda como Data URL
+      nuevoLogoUrl = (await subirLogoPublico(empresa_id, file))
+        || `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
     } else if (req.body?.logo_base64) {
       nuevoLogoUrl = req.body.logo_base64;
     } else if (req.body?.logo_url !== undefined && req.body?.logo_url !== null) {
@@ -659,31 +633,9 @@ export const analizarLogoIA = async (req, res) => {
     // persistir también el logotipo en empresas.logo_url
     let nuevoLogoGuardado = undefined;
     if (req.file) {
-      if (supabase) {
-        const fileExt = (String(req.file.originalname || '').split('.').pop() || 'bin').replace(/[^a-zA-Z0-9]/g, '').slice(0, 5) || 'bin';
-        const fileName = `logo_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `logos/${empresa_id}/${fileName}`;
-        try {
-          const { error: uploadError } = await supabase.storage
-            .from('comprobantes')
-            .upload(filePath, req.file.buffer, {
-              contentType: req.file.mimetype,
-              upsert: true,
-            });
-          if (!uploadError) {
-            const { data: publicUrlData } = supabase.storage
-              .from('comprobantes')
-              .getPublicUrl(filePath);
-            nuevoLogoGuardado = publicUrlData.publicUrl;
-          } else {
-            nuevoLogoGuardado = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-          }
-        } catch {
-          nuevoLogoGuardado = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-        }
-      } else {
-        nuevoLogoGuardado = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-      }
+      // Bucket público de logos; si falla, el logo se guarda como Data URL
+      nuevoLogoGuardado = (await subirLogoPublico(empresa_id, req.file))
+        || `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
     } else if (req.body?.logo_base64) {
       nuevoLogoGuardado = req.body.logo_base64;
     }

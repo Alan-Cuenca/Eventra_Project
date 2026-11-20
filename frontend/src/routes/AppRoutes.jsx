@@ -178,6 +178,10 @@ export const AppRoutes = () => {
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR]} />}>
             <Route path="/reservas/nueva" element={<ReservaForm />} />
           </Route>
+          {/* Editar reserva: mismo formulario (GET + PUT), solo Administrador y Gerente */}
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE]} />}>
+            <Route path="/reservas/editar/:id" element={<ReservaForm />} />
+          </Route>
 
           {/* Pagos */}
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.GERENTE, ROLES.TRABAJADOR, ROLES.CLIENTE]} />}>

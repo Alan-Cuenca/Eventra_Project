@@ -145,7 +145,11 @@ export const actualizarUsuario = async (req, res) => {
     });
   }
 
-  const nombreFinal = nombre_completo || nombre || null;
+  const nombreEnviado = nombre_completo ?? nombre;
+  if (nombreEnviado !== undefined && nombreEnviado !== null && !String(nombreEnviado).trim()) {
+    return res.status(400).json({ success: false, message: 'El nombre del colaborador no puede quedar vacío.' });
+  }
+  const nombreFinal = nombreEnviado ? String(nombreEnviado).trim() : null;
 
   // Un administrador no puede quitarse su propio rol ni desactivarse (evita bloquear la empresa)
   if (String(id) === String(req.user.id) && ((rol_id && Number(rol_id) !== Number(req.user.rol_id)) || estado_activo === false)) {
