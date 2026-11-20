@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { ROL_SUPER_ADMIN } from '../middlewares/authMiddleware.js';
 import { getMailTransporter, sendPasswordResetEmail, sendMail } from '../services/emailService.js';
 import { hayCupoUsuarios } from '../middlewares/planLimitsMiddleware.js';
+import { obtenerExpiracionJwt } from '../middlewares/configuracionPlataforma.js';
 
 /**
  * =============================================================================
@@ -485,7 +486,7 @@ export const registrarClientePortal = async (req, res) => {
       cliente_id: nuevoCliente.id,
     };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: await obtenerExpiracionJwt() });
 
     return res.status(201).json({
       success: true,
@@ -657,7 +658,7 @@ export const loginUser = async (req, res) => {
     }
 
     // --- Generar token JWT con empresa_id y rol_id explícitos ---
-    const { token, data: userData } = construirSesion(user);
+    const { token, data: userData } = await construirSesion(user);
 
     return res.status(200).json({
       success: true,
@@ -704,7 +705,7 @@ const SQL_USUARIO_SESION = `
  * Si la cuenta tiene una contraseña temporal, el token lleva debe_cambiar_password = true
  * y el middleware verifyToken bloqueará el resto de la API hasta que se cambie.
  */
-function construirSesion(user) {
+async function construirSesion(user) {
   const debeCambiar = user.debe_cambiar_password === true;
   const payload = {
     id: user.id,
@@ -718,7 +719,7 @@ function construirSesion(user) {
     debe_cambiar_password: debeCambiar,
   };
 
-  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: await obtenerExpiracionJwt() });
   const { password_hash, ...data } = user;
   return { token, data: { ...data, debe_cambiar_password: debeCambiar } };
 }
@@ -824,7 +825,7 @@ export const cambiarPasswordObligatorio = async (req, res) => {
       [nuevoHash, user.id]
     );
 
-    const { token, data } = construirSesion({
+    const { token, data } = await construirSesion({
       ...user,
       password_hash: nuevoHash,
       debe_cambiar_password: false,

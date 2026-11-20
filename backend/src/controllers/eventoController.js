@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 import { notificarNuevoEvento } from '../services/emailService.js';
+import { firmarComprobantes } from '../services/storageService.js';
 
 // Estados válidos del ciclo de vida de un evento
 const ESTADOS_VALIDOS = ['En Planificación', 'En Progreso', 'Finalizado', 'Cancelado'];
@@ -366,7 +367,7 @@ export const obtenerEventoPorId = async (req, res) => {
     );
 
     evento.actividades = actResult.rows;
-    evento.pagos = pagosResult.rows;
+    evento.pagos = await firmarComprobantes(pagosResult.rows);
 
     return res.status(200).json({ success: true, data: evento });
   } catch (error) {

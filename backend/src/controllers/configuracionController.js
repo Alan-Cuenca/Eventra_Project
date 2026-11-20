@@ -1,6 +1,6 @@
 import pool from '../config/db.js';
 import { actualizarLimitesEnMemoria } from '../middlewares/planLimitsMiddleware.js';
-import { invalidarCachePlataforma } from '../middlewares/configuracionPlataforma.js';
+import { invalidarCachePlataforma, normalizarHorasJwt } from '../middlewares/configuracionPlataforma.js';
 
 export const DEFAULT_CONFIG = {
   plataforma: {
@@ -33,7 +33,6 @@ export const DEFAULT_CONFIG = {
     premium_max_servicios: 50,
     premium_max_chatbot: 1500,
     premium_evara_ai: true,
-    dias_gracia_facturacion: 5,
   },
   seguridad: {
     expiracion_jwt_horas: 8,
@@ -92,6 +91,11 @@ export const guardarConfiguracionGlobal = async (req, res) => {
         success: false,
         message: 'Payload inválido.',
       });
+    }
+
+    // La duración del JWT se aplica en el login: se guarda ya normalizada (1–72 h)
+    if (payload.seguridad && payload.seguridad.expiracion_jwt_horas !== undefined) {
+      payload.seguridad.expiracion_jwt_horas = normalizarHorasJwt(payload.seguridad.expiracion_jwt_horas);
     }
 
     const valorJson = JSON.stringify(payload);
