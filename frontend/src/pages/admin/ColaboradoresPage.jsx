@@ -46,6 +46,41 @@ export const ColaboradoresPage = () => {
     }
   };
 
+  // Edición de nombre y correo (PUT /usuarios/:id)
+  const [edicion, setEdicion] = useState(null); // { id, nombre_completo, email }
+  const [edicionError, setEdicionError] = useState('');
+  const [edicionGuardando, setEdicionGuardando] = useState(false);
+
+  const abrirEdicion = (colab) => {
+    setEdicionError('');
+    setEdicion({ id: colab.id, nombre_completo: colab.nombre_completo || colab.nombre || '', email: colab.email || '' });
+  };
+
+  const guardarEdicion = async (e) => {
+    e.preventDefault();
+    const nombre = edicion.nombre_completo.trim();
+    const email = edicion.email.trim().toLowerCase();
+    if (!nombre) {
+      setEdicionError('El nombre no puede quedar vacío.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEdicionError('Ingresa un correo electrónico válido.');
+      return;
+    }
+    setEdicionGuardando(true);
+    setEdicionError('');
+    try {
+      await api.put(`/usuarios/${edicion.id}`, { nombre_completo: nombre, email });
+      setColaboradores((prev) => prev.map((c) => (c.id === edicion.id ? { ...c, nombre_completo: nombre, nombre, email } : c)));
+      setEdicion(null);
+    } catch (err) {
+      setEdicionError(err.message || 'No se pudieron guardar los cambios.');
+    } finally {
+      setEdicionGuardando(false);
+    }
+  };
+
   const eliminarColaborador = async (colab) => {
     if (!window.confirm(`¿Desactivar y retirar a ${colab.nombre_completo || colab.nombre} de la empresa?`)) return;
     setAccionId(colab.id);
@@ -505,6 +540,14 @@ export const ColaboradoresPage = () => {
                             <button
                               type="button"
                               disabled={accionId === colab.id}
+                              onClick={() => abrirEdicion(colab)}
+                              style={{ padding: '4px 10px', borderRadius: '8px', border: '1px solid #4D7182', background: '#fff', color: '#4D7182', fontSize: '12px', cursor: 'pointer' }}
+                            >
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              disabled={accionId === colab.id}
                               onClick={() => actualizarColaborador(colab, { estado_activo: !colab.estado_activo }, 'No se pudo cambiar el estado.')}
                               style={{ padding: '4px 10px', borderRadius: '8px', border: '1px solid #CEC8B8', background: '#fff', color: '#233D49', fontSize: '12px', cursor: 'pointer' }}
                             >
@@ -529,6 +572,71 @@ export const ColaboradoresPage = () => {
           </div>
         )}
       </div>
+
+      {/* ── Modal: Editar nombre y correo del colaborador ───────────── */}
+      {edicion && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="titulo-editar-colaborador"
+          style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(35, 61, 73, 0.45)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}
+        >
+          <form
+            onSubmit={guardarEdicion}
+            noValidate
+            style={{ background: '#FFFFFF', borderRadius: '16px', border: '1px solid #CEC8B8', boxShadow: '0 12px 32px rgba(35, 61, 73, 0.12)', width: '100%', maxWidth: '440px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 id="titulo-editar-colaborador" style={{ margin: 0, fontSize: '18px', color: '#233D49' }}>Editar colaborador</h2>
+              <button type="button" onClick={() => setEdicion(null)} aria-label="Cerrar" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4D7182' }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {edicionError && (
+              <div role="alert" style={{ display: 'flex', gap: '8px', alignItems: 'center', padding: '10px 12px', borderRadius: '10px', background: '#FDF2F2', color: '#C95C5C', fontSize: '13px' }}>
+                <AlertCircle size={16} /> {edicionError}
+              </div>
+            )}
+
+            <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#233D49' }}>
+              Nombre completo
+              <input
+                name="nombre_completo"
+                value={edicion.nombre_completo}
+                onChange={(e) => setEdicion((p) => ({ ...p, nombre_completo: e.target.value }))}
+                maxLength={150}
+                style={{ padding: '10px 12px', borderRadius: '10px', border: '1px solid #CEC8B8', fontSize: '14px', color: '#233D49' }}
+              />
+            </label>
+
+            <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#233D49' }}>
+              Correo electrónico
+              <input
+                name="email"
+                type="email"
+                value={edicion.email}
+                onChange={(e) => setEdicion((p) => ({ ...p, email: e.target.value }))}
+                maxLength={150}
+                style={{ padding: '10px 12px', borderRadius: '10px', border: '1px solid #CEC8B8', fontSize: '14px', color: '#233D49' }}
+              />
+              <span style={{ fontSize: '12px', fontWeight: 400, color: '#4D7182' }}>
+                Será su nuevo correo de inicio de sesión.
+              </span>
+            </label>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              <button type="button" onClick={() => setEdicion(null)} style={{ padding: '8px 14px', borderRadius: '10px', border: '1px solid #CEC8B8', background: '#fff', color: '#233D49', cursor: 'pointer' }}>
+                Cancelar
+              </button>
+              <button type="submit" disabled={edicionGuardando} style={{ padding: '8px 14px', borderRadius: '10px', border: 'none', background: '#4D7182', color: '#fff', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                {edicionGuardando && <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />}
+                Guardar cambios
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* ── Modal: Invitar Colaborador (Exclusivo Administrador) ───────────── */}
       {modalOpen && (
