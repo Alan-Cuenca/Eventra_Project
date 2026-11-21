@@ -64,7 +64,7 @@ export const EventsPage = () => {
   return (
     <div className="space-y-6 animate-fade-in text-[var(--ev-text-main)]">
       {/* ── Cabecera de Página (Apple HIG) ───────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--ev-border)]/50">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-ev-border/50">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--ev-text-main)] tracking-tight">
             Gestión de Eventos y Recepciones
@@ -101,12 +101,12 @@ export const EventsPage = () => {
       )}
 
       {/* ── Barra de Búsqueda y Filtros ──────────────────────────── */}
-      <div className="bg-[var(--ev-surface)] rounded-2xl border border-[var(--ev-border)]/60 p-3.5 shadow-xs flex flex-col sm:flex-row items-center gap-3">
+      <div className="bg-[var(--ev-surface)] rounded-2xl border border-ev-border/60 p-3.5 shadow-xs flex flex-col sm:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
           <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--ev-text-muted)]" />
           <input
             type="text"
-            className="w-full pl-9 pr-4 py-2 text-xs rounded-full border border-[var(--ev-border)]/60 bg-[var(--ev-bg-base)]/30 focus:bg-[var(--ev-surface)] focus:border-[var(--ev-primary)] text-[var(--ev-text-main)] placeholder-[var(--ev-text-muted)] focus:outline-none transition-colors"
+            className="w-full pl-9 pr-4 py-2 text-xs rounded-full border border-ev-border/60 bg-ev-bg-base/30 focus:bg-[var(--ev-surface)] focus:border-[var(--ev-primary)] text-[var(--ev-text-main)] placeholder-[var(--ev-text-muted)] focus:outline-none transition-colors"
             placeholder="Buscar por cliente, título o código..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -116,7 +116,7 @@ export const EventsPage = () => {
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Filter size={14} className="text-[var(--ev-text-muted)]" />
           <select
-            className="px-4 py-2 text-xs rounded-full border border-[var(--ev-border)]/60 bg-[var(--ev-surface)] text-[var(--ev-text-main)] font-medium focus:outline-none focus:border-[var(--ev-primary)] cursor-pointer"
+            className="px-4 py-2 text-xs rounded-full border border-ev-border/60 bg-[var(--ev-surface)] text-[var(--ev-text-main)] font-medium focus:outline-none focus:border-[var(--ev-primary)] cursor-pointer"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
@@ -131,8 +131,8 @@ export const EventsPage = () => {
 
       {/* ── Grid de Eventos ───────────────────────────────────────── */}
       {filteredEvents.length === 0 ? (
-        <div className="p-12 text-center bg-[var(--ev-surface)] rounded-3xl border border-[var(--ev-border)]/60 shadow-xs space-y-3">
-          <Sparkles size={32} className="mx-auto text-[var(--ev-primary)]/70" />
+        <div className="p-12 text-center bg-[var(--ev-surface)] rounded-3xl border border-ev-border/60 shadow-xs space-y-3">
+          <Sparkles size={32} className="mx-auto text-ev-primary/70" />
           <h3 className="text-base font-bold text-[var(--ev-text-main)]">
             No se encontraron eventos
           </h3>
@@ -184,14 +184,14 @@ export const EventsPage = () => {
             const badgeStyle = isSuccess
               ? 'bg-[#4D9A72]/15 text-[#2E6F4E] border-0'
               : isProgress
-              ? 'bg-[var(--ev-primary)]/15 text-[var(--ev-primary)] border-0'
+              ? 'bg-ev-primary/15 text-[var(--ev-primary)] border-0'
               : 'bg-[#C49A3A]/15 text-[#7A5C14] border-0';
 
             return (
               <div
                 key={evt.id}
                 onClick={() => navigate(`/eventos/${evt.id}`)}
-                className="group bg-[var(--ev-surface)] rounded-2xl border border-[var(--ev-border)]/60 p-5 sm:p-6 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between relative overflow-hidden"
+                className="group bg-[var(--ev-surface)] rounded-2xl border border-ev-border/60 p-5 sm:p-6 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between relative overflow-hidden"
               >
                 {/* Cabecera de la tarjeta */}
                 <div>
@@ -233,7 +233,7 @@ export const EventsPage = () => {
                       <span className="text-[var(--ev-text-muted)]">Progreso organizativo</span>
                       <span className="text-[var(--ev-primary)] font-mono tabular-nums">{progreso}%</span>
                     </div>
-                    <div className="w-full bg-[var(--ev-border)]/30 rounded-full h-1.5 overflow-hidden">
+                    <div className="w-full bg-ev-border/30 rounded-full h-1.5 overflow-hidden">
                       <div
                         className="h-full rounded-full bg-[var(--ev-primary)] transition-all duration-300"
                         style={{ width: `${progreso}%` }}
@@ -243,7 +243,7 @@ export const EventsPage = () => {
                 </div>
 
                 {/* Resumen Financiero y Botón de Acción Landing Pro */}
-                <div className="pt-3.5 border-t border-[var(--ev-border)]/50 flex items-center justify-between gap-3">
+                <div className="pt-3.5 border-t border-ev-border/50 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-4">
                     <div>
                       <span className="text-[11px] uppercase font-semibold text-[var(--ev-text-muted)] block">Total</span>

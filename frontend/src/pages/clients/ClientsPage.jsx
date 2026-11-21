@@ -63,7 +63,7 @@ const ClienteFormDrawer = ({ initialData = {}, onSubmit, submitting, onCancel, s
           <input
             id="cli-nombres"
             type="text"
-            className="w-full px-3 py-2 rounded-[12px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] focus:outline-none focus:ring-2 focus:ring-[var(--ev-primary)]/40"
+            className="w-full px-3 py-2 rounded-[12px] bg-ev-bg-base/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] focus:outline-none focus:ring-2 focus:ring-ev-primary/40"
             value={form.nombres}
             onChange={set('nombres')}
             required
@@ -77,7 +77,7 @@ const ClienteFormDrawer = ({ initialData = {}, onSubmit, submitting, onCancel, s
           <input
             id="cli-apellidos"
             type="text"
-            className="w-full px-3 py-2 rounded-[12px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] focus:outline-none focus:ring-2 focus:ring-[var(--ev-primary)]/40"
+            className="w-full px-3 py-2 rounded-[12px] bg-ev-bg-base/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] focus:outline-none focus:ring-2 focus:ring-ev-primary/40"
             value={form.apellidos}
             onChange={set('apellidos')}
             required
@@ -93,7 +93,7 @@ const ClienteFormDrawer = ({ initialData = {}, onSubmit, submitting, onCancel, s
         <input
           id="cli-email"
           type="email"
-          className="w-full px-3 py-2 rounded-[12px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] focus:outline-none focus:ring-2 focus:ring-[var(--ev-primary)]/40"
+          className="w-full px-3 py-2 rounded-[12px] bg-ev-bg-base/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] focus:outline-none focus:ring-2 focus:ring-ev-primary/40"
           placeholder="ejemplo@correo.com"
           value={form.email}
           onChange={set('email')}
@@ -108,7 +108,7 @@ const ClienteFormDrawer = ({ initialData = {}, onSubmit, submitting, onCancel, s
         <input
           id="cli-telefono"
           type="text"
-          className="w-full px-3 py-2 rounded-[12px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] focus:outline-none focus:ring-2 focus:ring-[var(--ev-primary)]/40"
+          className="w-full px-3 py-2 rounded-[12px] bg-ev-bg-base/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] focus:outline-none focus:ring-2 focus:ring-ev-primary/40"
           placeholder="+593 99 123 4567"
           value={form.telefono}
           onChange={set('telefono')}
@@ -130,12 +130,12 @@ const ClienteFormDrawer = ({ initialData = {}, onSubmit, submitting, onCancel, s
         </div>
       )}
 
-      <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--ev-border)]/40">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t border-ev-border/40">
         <button
           type="button"
           onClick={onCancel}
           disabled={submitting}
-          className="px-4 py-2 rounded-full border border-[var(--ev-border)] text-xs font-semibold text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/20 active:scale-[0.98] transition-transform duration-150"
+          className="px-4 py-2 rounded-full border border-[var(--ev-border)] text-xs font-semibold text-[var(--ev-text-main)] hover:bg-ev-border/20 active:scale-[0.98] transition-transform duration-150"
         >
           Cancelar
         </button>
@@ -315,7 +315,7 @@ export const ClientsPage = () => {
             type="button"
             onClick={loadClientes}
             title="Recargar directorio"
-            className="p-2 rounded-full border border-[var(--ev-border)] text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/20 active:scale-[0.98] transition-transform duration-150"
+            className="p-2 rounded-full border border-[var(--ev-border)] text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] hover:bg-ev-border/20 active:scale-[0.98] transition-transform duration-150"
           >
             <RefreshCw size={15} />
           </button>
@@ -338,7 +338,7 @@ export const ClientsPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* COLUMNA MASTER (35% - 4 cols en lg) */}
-        <div className="lg:col-span-5 xl:col-span-4 rounded-[22px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-xs p-4 flex flex-col space-y-3">
+        <div className="lg:col-span-5 xl:col-span-4 rounded-[22px] bg-[var(--ev-surface)] border border-ev-border/60 shadow-xs p-4 flex flex-col space-y-3">
           
           {/* Barra de Búsqueda y Filtro */}
           <div className="space-y-2">
@@ -346,7 +346,7 @@ export const ClientsPage = () => {
               <input
                 id="clientes-search"
                 type="text"
-                className="w-full pl-9 pr-3 py-2 rounded-[12px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)] text-xs text-[var(--ev-text-main)] placeholder-[var(--ev-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--ev-primary)]/40"
+                className="w-full pl-9 pr-3 py-2 rounded-[12px] bg-ev-bg-base/50 border border-[var(--ev-border)] text-xs text-[var(--ev-text-main)] placeholder-[var(--ev-text-muted)] focus:outline-none focus:ring-2 focus:ring-ev-primary/40"
                 placeholder="Buscar por nombre, email o tel..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -367,7 +367,7 @@ export const ClientsPage = () => {
                   className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all active:scale-[0.98] ${
                     filterStatus === pill.id
                       ? 'bg-[var(--ev-primary)] text-white shadow-2xs'
-                      : 'bg-[var(--ev-bg-base)]/60 text-[var(--ev-text-muted)] hover:bg-[var(--ev-border)]/30'
+                      : 'bg-ev-bg-base/60 text-[var(--ev-text-muted)] hover:bg-ev-border/30'
                   }`}
                 >
                   {pill.label}
@@ -385,7 +385,7 @@ export const ClientsPage = () => {
               </div>
             ) : filteredClientes.length === 0 ? (
               <div className="py-10 text-center text-xs text-[var(--ev-text-muted)]">
-                <Users size={32} className="mx-auto mb-2 text-[var(--ev-text-muted)]/50" />
+                <Users size={32} className="mx-auto mb-2 text-[var(--ev-text-muted)]" />
                 <p>No se encontraron clientes.</p>
               </div>
             ) : (
@@ -398,14 +398,14 @@ export const ClientsPage = () => {
                     onClick={() => setSelectedCliente(cli)}
                     className={`p-3 rounded-[16px] cursor-pointer transition-all duration-150 active:scale-[0.99] border ${
                       isSelected
-                        ? 'bg-[var(--ev-primary)]/12 border-[var(--ev-primary)]/40 shadow-xs'
-                        : 'bg-[var(--ev-surface)] border-[var(--ev-border)]/40 hover:bg-[var(--ev-bg-base)]/40'
+                        ? 'bg-ev-primary/12 border-ev-primary/40 shadow-xs'
+                        : 'bg-[var(--ev-surface)] border-ev-border/40 hover:bg-ev-bg-base/40'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                          isSelected ? 'bg-[var(--ev-primary)] text-white' : 'bg-[var(--ev-border)]/30 text-[var(--ev-primary)]'
+                          isSelected ? 'bg-[var(--ev-primary)] text-white' : 'bg-ev-border/30 text-[var(--ev-primary)]'
                         }`}>
                           {initials}
                         </div>
@@ -430,7 +430,7 @@ export const ClientsPage = () => {
             )}
           </div>
 
-          <div className="pt-2 border-t border-[var(--ev-border)]/40 text-[11px] text-[var(--ev-text-muted)] flex items-center justify-between">
+          <div className="pt-2 border-t border-ev-border/40 text-[11px] text-[var(--ev-text-muted)] flex items-center justify-between">
             <span className="tabular-nums font-medium">Mostrando {filteredClientes.length} de {clientes.length}</span>
             <span className="text-[11px] font-semibold text-[var(--ev-primary)]">CRM Multi-tenant</span>
           </div>
@@ -438,13 +438,13 @@ export const ClientsPage = () => {
         </div>
 
         {/* COLUMNA DETAIL (65% - 8 cols en lg) */}
-        <div className="lg:col-span-7 xl:col-span-8 rounded-[22px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-xs p-6 min-h-[580px] flex flex-col justify-between">
+        <div className="lg:col-span-7 xl:col-span-8 rounded-[22px] bg-[var(--ev-surface)] border border-ev-border/60 shadow-xs p-6 min-h-[580px] flex flex-col justify-between">
           
           {selectedCliente ? (
             <div className="space-y-6">
               
               {/* Cabecera del Detalle con Botones de Acción Top Right */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--ev-border)]/50">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-ev-border/50">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-[16px] bg-[var(--ev-primary)] text-white text-base font-bold flex items-center justify-center shadow-xs">
                     {`${selectedCliente.nombres?.[0] || ''}${selectedCliente.apellidos?.[0] || ''}`.toUpperCase()}
@@ -470,7 +470,7 @@ export const ClientsPage = () => {
                     <button
                       type="button"
                       onClick={() => setEditTarget(selectedCliente)}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[var(--ev-border)] text-xs font-semibold text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/20 active:scale-[0.98] transition-transform duration-150"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[var(--ev-border)] text-xs font-semibold text-[var(--ev-text-main)] hover:bg-ev-border/20 active:scale-[0.98] transition-transform duration-150"
                     >
                       <Edit2 size={13} />
                       <span>Editar</span>
@@ -492,7 +492,7 @@ export const ClientsPage = () => {
 
               {/* Información de Contacto (Radios Concéntricos: R_ext 22px - p-6 = R_int 16px) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 rounded-[16px] bg-[var(--ev-bg-base)]/40 border border-[var(--ev-border)]/50 space-y-1">
+                <div className="p-4 rounded-[16px] bg-ev-bg-base/40 border border-ev-border/50 space-y-1">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block">
                     Correo Electrónico
                   </span>
@@ -502,7 +502,7 @@ export const ClientsPage = () => {
                   </div>
                 </div>
 
-                <div className="p-4 rounded-[16px] bg-[var(--ev-bg-base)]/40 border border-[var(--ev-border)]/50 space-y-1">
+                <div className="p-4 rounded-[16px] bg-ev-bg-base/40 border border-ev-border/50 space-y-1">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block">
                     Teléfono de Contacto
                   </span>
@@ -515,7 +515,7 @@ export const ClientsPage = () => {
 
               {/* Métricas y Estado en el CRM (Toss-Style Bento Row) */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="p-3.5 rounded-[16px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-2xs">
+                <div className="p-3.5 rounded-[16px] bg-[var(--ev-surface)] border border-ev-border/60 shadow-2xs">
                   <span className="text-[11px] uppercase font-bold text-[var(--ev-text-muted)] block">
                     Eventos Activos
                   </span>
@@ -527,7 +527,7 @@ export const ClientsPage = () => {
                   </span>
                 </div>
 
-                <div className="p-3.5 rounded-[16px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-2xs">
+                <div className="p-3.5 rounded-[16px] bg-[var(--ev-surface)] border border-ev-border/60 shadow-2xs">
                   <span className="text-[11px] uppercase font-bold text-[var(--ev-text-muted)] block">
                     Cotizaciones
                   </span>
@@ -539,7 +539,7 @@ export const ClientsPage = () => {
                   </span>
                 </div>
 
-                <div className="p-3.5 rounded-[16px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-2xs">
+                <div className="p-3.5 rounded-[16px] bg-[var(--ev-surface)] border border-ev-border/60 shadow-2xs">
                   <span className="text-[11px] uppercase font-bold text-[var(--ev-text-muted)] block">
                     Total Facturado
                   </span>
@@ -553,7 +553,7 @@ export const ClientsPage = () => {
               </div>
 
               {/* Registro y Trazabilidad */}
-              <div className="p-4 rounded-[16px] bg-[var(--ev-bg-base)]/30 border border-[var(--ev-border)]/40 text-xs space-y-2">
+              <div className="p-4 rounded-[16px] bg-ev-bg-base/30 border border-ev-border/40 text-xs space-y-2">
                 <div className="flex items-center justify-between text-[var(--ev-text-muted)]">
                   <span>Fecha de alta en el sistema:</span>
                   <span className="font-semibold text-[var(--ev-text-main)] tabular-nums">
@@ -572,7 +572,7 @@ export const ClientsPage = () => {
           ) : (
             /* Empty State Accionable (Regla 5 de spatial-architecture) */
             <div className="my-auto text-center py-12 px-4 space-y-3">
-              <div className="w-12 h-12 rounded-full bg-[var(--ev-primary)]/10 text-[var(--ev-primary)] flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 rounded-full bg-ev-primary/10 text-[var(--ev-primary)] flex items-center justify-center mx-auto">
                 <Users size={24} />
               </div>
               <h3 className="text-base font-bold text-[var(--ev-text-main)]">

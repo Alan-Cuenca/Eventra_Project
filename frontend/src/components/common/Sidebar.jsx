@@ -149,13 +149,13 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
     <aside className="flex h-screen sticky top-0 z-40 shrink-0 select-none">
       
       {/* ── 1. PRIMARY RAIL (GLOBAL - w-16) ─────────────────────────────── */}
-      <div className="w-16 h-full bg-[var(--ev-surface)] border-r border-[var(--ev-border)]/60 flex flex-col justify-between items-center py-4 z-20 shadow-xs">
+      <div className="w-16 h-full bg-[var(--ev-surface)] border-r border-ev-border/60 flex flex-col justify-between items-center py-4 z-20 shadow-xs">
         
         {/* Logo / Marca Reducida */}
         <div className="flex flex-col items-center gap-4">
           <div
             onClick={() => navigate('/dashboard')}
-            className="w-10 h-10 rounded-[12px] bg-[var(--ev-primary)]/10 border border-[var(--ev-primary)]/30 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-[0.98] transition-transform duration-150 shadow-xs overflow-hidden"
+            className="w-10 h-10 rounded-[12px] bg-ev-primary/10 border border-ev-primary/30 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-[0.98] transition-transform duration-150 shadow-xs overflow-hidden"
             title={brandName}
           >
             <img
@@ -170,7 +170,7 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
           </div>
 
           {/* Divisor sutil */}
-          <div className="w-8 h-px bg-[var(--ev-border)]/50" />
+          <div className="w-8 h-px bg-ev-border/50" />
 
           {/* Íconos de Macros de Navegación (Primary Rail) */}
           <nav className="flex flex-col items-center gap-2">
@@ -186,8 +186,8 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
                   }}
                   className={`w-11 h-11 rounded-xl border-0 focus:outline-none flex items-center justify-center transition-transform duration-150 active:scale-[0.98] ${
                     isSelected
-                      ? 'bg-[var(--ev-primary)]/12 text-[var(--ev-primary)] font-semibold shadow-2xs'
-                      : 'text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/20'
+                      ? 'bg-ev-primary/12 text-[var(--ev-primary)] font-semibold shadow-2xs'
+                      : 'text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] hover:bg-ev-border/20'
                   }`}
                   title={macro.label}
                 >
@@ -204,7 +204,7 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
           <button
             type="button"
             onClick={onOpenCommandPalette}
-            className="w-10 h-10 rounded-[12px] border-0 focus:outline-none text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/25 flex items-center justify-center transition-all active:scale-[0.98]"
+            className="w-10 h-10 rounded-[12px] border-0 focus:outline-none text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] hover:bg-ev-border/25 flex items-center justify-center transition-all active:scale-[0.98]"
             title="Búsqueda rápida y Comandos (⌘K)"
           >
             <Command size={18} />
@@ -215,12 +215,12 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
 
       {/* ── 2. SECONDARY CONTEXT SIDEBAR (LOCAL - w-60) ────────────────── */}
       <div
-        className={`h-full bg-[var(--ev-bg-base)]/40 backdrop-blur-md border-r border-[var(--ev-border)]/60 flex flex-col justify-between transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`h-full bg-ev-bg-base/40 backdrop-blur-md border-r border-ev-border/60 flex flex-col justify-between transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           secondaryCollapsed ? 'w-0 overflow-hidden opacity-0 border-r-0' : 'w-60 opacity-100'
         }`}
       >
         {/* Cabecera del Módulo Contextual */}
-        <div className="p-4 border-b border-[var(--ev-border)]/50 flex items-center justify-between">
+        <div className="p-4 border-b border-ev-border/50 flex items-center justify-between">
           <div className="min-w-0 flex-1">
             <span className="text-[11px] uppercase font-bold tracking-widest text-[var(--ev-primary)] block truncate">
               {brandName}
@@ -233,7 +233,7 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
           <button
             type="button"
             onClick={() => setSecondaryCollapsed(true)}
-            className="p-1 rounded-[8px] border-0 focus:outline-none text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/30 active:scale-[0.98] transition-transform"
+            className="p-1 rounded-[8px] border-0 focus:outline-none text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] hover:bg-ev-border/30 active:scale-[0.98] transition-transform"
             title="Minimizar panel secundario"
           >
             <ChevronLeft size={16} />
@@ -257,7 +257,7 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
                     className={({ isActive }) =>
                       `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-transform duration-150 active:scale-[0.98] ${
                         isActive
-                          ? 'bg-[var(--ev-primary)]/12 text-[var(--ev-primary)] shadow-2xs'
+                          ? 'bg-ev-primary/12 text-[var(--ev-primary)] shadow-2xs'
                           : 'text-[var(--ev-text-muted)] hover:bg-[var(--ev-surface)] hover:text-[var(--ev-text-main)]'
                       }`
                     }
@@ -272,7 +272,7 @@ export const Sidebar = ({ onOpenCommandPalette }) => {
         </div>
 
         {/* Footer del Secondary Sidebar */}
-        <div className="p-3 border-t border-[var(--ev-border)]/50 bg-[var(--ev-surface)]/40 text-[11px] text-[var(--ev-text-muted)] flex items-center justify-between">
+        <div className="p-3 border-t border-ev-border/50 bg-ev-surface/40 text-[11px] text-[var(--ev-text-muted)] flex items-center justify-between">
           <span className="truncate">EVENTRA</span>
         </div>
 

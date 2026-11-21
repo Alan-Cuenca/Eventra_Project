@@ -261,7 +261,7 @@ export const ProveedoresList = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#FAF8F5] border-b border-[var(--ev-border)]/60 text-[11px] font-bold uppercase tracking-wider text-[#4D7182]">
+                <tr className="bg-[#FAF8F5] border-b border-ev-border/60 text-[11px] font-bold uppercase tracking-wider text-[#4D7182]">
                   <th className="py-4 px-6">Empresa / Contacto</th>
                   <th className="py-4 px-6">Especialidad</th>
                   <th className="py-4 px-6">Contacto Directo</th>
@@ -383,7 +383,7 @@ export const ProveedoresList = () => {
       {/* Modal de Confirmación de Eliminación */}
       {deletingProv && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 rounded-3xl p-6 sm:p-7 max-w-md w-full border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] space-y-4 my-auto max-h-[calc(100vh-3.5rem)] overflow-y-auto">
+          <div className="backdrop-blur-xl backdrop-saturate-[180%] bg-ev-surface/80 rounded-3xl p-6 sm:p-7 max-w-md w-full border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] space-y-4 my-auto max-h-[calc(100vh-3.5rem)] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-[#CEC8B8]/50">
               <div className="flex items-center gap-2 text-[#B04646]">
                 <AlertCircle size={20} />
@@ -411,7 +411,7 @@ export const ProveedoresList = () => {
               <button
                 type="button"
                 onClick={() => setDeletingProv(null)}
-                className="px-4 py-2 rounded-full bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 text-xs font-semibold text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/20 active:scale-[0.98] transition-transform duration-150"
+                className="px-4 py-2 rounded-full bg-[var(--ev-surface)] border border-ev-border/60 text-xs font-semibold text-[var(--ev-text-main)] hover:bg-ev-border/20 active:scale-[0.98] transition-transform duration-150"
               >
                 Cancelar
               </button>

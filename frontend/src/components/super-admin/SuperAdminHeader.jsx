@@ -91,7 +91,7 @@ export const SuperAdminHeader = ({ onToggleSidebar }) => {
     : 'SA';
 
   return (
-    <header className="app-header h-16 sticky top-0 z-50 px-4 sm:px-6 backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] flex items-center justify-between transition-colors duration-300">
+    <header className="app-header h-16 sticky top-0 z-50 px-4 sm:px-6 backdrop-blur-xl backdrop-saturate-[180%] bg-ev-surface/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] flex items-center justify-between transition-colors duration-300">
       {/* Lado Izquierdo: Botón móvil + Logotipo Oficial de EVENTRA */}
       <div className="header-left flex items-center gap-3">
         <button

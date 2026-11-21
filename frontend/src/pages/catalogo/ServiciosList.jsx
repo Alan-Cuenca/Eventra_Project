@@ -62,7 +62,7 @@ const ServicioFormDrawer = ({ initialData = {}, onSubmit, submitting, onCancel }
           id="srv-nombre"
           name="nombre"
           type="text"
-          className="w-full px-3 py-2 rounded-[12px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] focus:outline-none focus:ring-2 focus:ring-[var(--ev-primary)]/40"
+          className="w-full px-3 py-2 rounded-[12px] bg-ev-bg-base/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] focus:outline-none focus:ring-2 focus:ring-ev-primary/40"
           placeholder="Ej: Iluminación Robótica & Estrobos"
           value={form.nombre}
           onChange={handleChange}
@@ -82,7 +82,7 @@ const ServicioFormDrawer = ({ initialData = {}, onSubmit, submitting, onCancel }
             name="precio_base"
             type="number"
             step="0.01"
-            className="w-full pl-8 pr-3 py-2 rounded-[12px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--ev-primary)]/40"
+            className="w-full pl-8 pr-3 py-2 rounded-[12px] bg-ev-bg-base/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-ev-primary/40"
             placeholder="0.00"
             value={form.precio_base}
             onChange={handleChange}
@@ -100,7 +100,7 @@ const ServicioFormDrawer = ({ initialData = {}, onSubmit, submitting, onCancel }
           id="srv-descripcion"
           name="descripcion"
           rows={3}
-          className="w-full px-3 py-2 rounded-[12px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] focus:outline-none focus:ring-2 focus:ring-[var(--ev-primary)]/40 resize-none"
+          className="w-full px-3 py-2 rounded-[12px] bg-ev-bg-base/50 border border-[var(--ev-border)] text-sm text-[var(--ev-text-main)] focus:outline-none focus:ring-2 focus:ring-ev-primary/40 resize-none"
           placeholder="Especificaciones técnicas, cantidad de operadores o equipamiento incluido..."
           value={form.descripcion}
           onChange={handleChange}
@@ -121,12 +121,12 @@ const ServicioFormDrawer = ({ initialData = {}, onSubmit, submitting, onCancel }
         </label>
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--ev-border)]/40">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t border-ev-border/40">
         <button
           type="button"
           onClick={onCancel}
           disabled={submitting}
-          className="px-4 py-2 rounded-full border border-[var(--ev-border)] text-xs font-semibold text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/20 active:scale-[0.98] transition-transform duration-150"
+          className="px-4 py-2 rounded-full border border-[var(--ev-border)] text-xs font-semibold text-[var(--ev-text-main)] hover:bg-ev-border/20 active:scale-[0.98] transition-transform duration-150"
         >
           Cancelar
         </button>
@@ -302,7 +302,7 @@ export const ServiciosList = () => {
             type="button"
             onClick={loadServicios}
             title="Recargar catálogo"
-            className="p-2 rounded-full border border-[var(--ev-border)] text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/20 active:scale-[0.98] transition-transform duration-150"
+            className="p-2 rounded-full border border-[var(--ev-border)] text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] hover:bg-ev-border/20 active:scale-[0.98] transition-transform duration-150"
           >
             <RefreshCw size={15} />
           </button>
@@ -325,14 +325,14 @@ export const ServiciosList = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* COLUMNA MASTER (35% - 4 cols en lg) */}
-        <div className="lg:col-span-5 xl:col-span-4 rounded-[22px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-xs p-4 flex flex-col space-y-3">
+        <div className="lg:col-span-5 xl:col-span-4 rounded-[22px] bg-[var(--ev-surface)] border border-ev-border/60 shadow-xs p-4 flex flex-col space-y-3">
           
           {/* Búsqueda y Filtros */}
           <div className="space-y-2">
             <div className="relative">
               <input
                 type="text"
-                className="w-full pl-9 pr-3 py-2 rounded-[12px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)] text-xs text-[var(--ev-text-main)] placeholder-[var(--ev-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--ev-primary)]/40"
+                className="w-full pl-9 pr-3 py-2 rounded-[12px] bg-ev-bg-base/50 border border-[var(--ev-border)] text-xs text-[var(--ev-text-main)] placeholder-[var(--ev-text-muted)] focus:outline-none focus:ring-2 focus:ring-ev-primary/40"
                 placeholder="Buscar servicio por nombre..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -353,7 +353,7 @@ export const ServiciosList = () => {
                   className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all active:scale-[0.98] ${
                     filterStatus === pill.id
                       ? 'bg-[var(--ev-primary)] text-white shadow-2xs'
-                      : 'bg-[var(--ev-bg-base)]/60 text-[var(--ev-text-muted)] hover:bg-[var(--ev-border)]/30'
+                      : 'bg-ev-bg-base/60 text-[var(--ev-text-muted)] hover:bg-ev-border/30'
                   }`}
                 >
                   {pill.label}
@@ -371,7 +371,7 @@ export const ServiciosList = () => {
               </div>
             ) : filteredServicios.length === 0 ? (
               <div className="py-10 text-center text-xs text-[var(--ev-text-muted)]">
-                <Layers size={32} className="mx-auto mb-2 text-[var(--ev-text-muted)]/50" />
+                <Layers size={32} className="mx-auto mb-2 text-[var(--ev-text-muted)]" />
                 <p>No se encontraron servicios.</p>
               </div>
             ) : (
@@ -383,8 +383,8 @@ export const ServiciosList = () => {
                     onClick={() => setSelectedServicio(srv)}
                     className={`p-3 rounded-[16px] cursor-pointer transition-all duration-150 active:scale-[0.99] border ${
                       isSelected
-                        ? 'bg-[var(--ev-primary)]/12 border-[var(--ev-primary)]/40 shadow-xs'
-                        : 'bg-[var(--ev-surface)] border-[var(--ev-border)]/40 hover:bg-[var(--ev-bg-base)]/40'
+                        ? 'bg-ev-primary/12 border-ev-primary/40 shadow-xs'
+                        : 'bg-[var(--ev-surface)] border-ev-border/40 hover:bg-ev-bg-base/40'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -410,7 +410,7 @@ export const ServiciosList = () => {
             )}
           </div>
 
-          <div className="pt-2 border-t border-[var(--ev-border)]/40 text-[11px] text-[var(--ev-text-muted)] flex items-center justify-between">
+          <div className="pt-2 border-t border-ev-border/40 text-[11px] text-[var(--ev-text-muted)] flex items-center justify-between">
             <span className="tabular-nums font-medium">Mostrando {filteredServicios.length} de {servicios.length}</span>
             <span className="text-[11px] font-semibold text-[var(--ev-primary)]">Tarifario Base</span>
           </div>
@@ -418,13 +418,13 @@ export const ServiciosList = () => {
         </div>
 
         {/* COLUMNA DETAIL (65% - 8 cols en lg) */}
-        <div className="lg:col-span-7 xl:col-span-8 rounded-[22px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-xs p-6 min-h-[580px] flex flex-col justify-between">
+        <div className="lg:col-span-7 xl:col-span-8 rounded-[22px] bg-[var(--ev-surface)] border border-ev-border/60 shadow-xs p-6 min-h-[580px] flex flex-col justify-between">
           
           {selectedServicio ? (
             <div className="space-y-6">
               
               {/* Header del Detalle */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--ev-border)]/50">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-ev-border/50">
                 <div>
                   <div className="flex items-center gap-2.5">
                     <h2 className="text-xl font-bold text-[var(--ev-text-main)]">
@@ -444,7 +444,7 @@ export const ServiciosList = () => {
                     <button
                       type="button"
                       onClick={() => setEditTarget(selectedServicio)}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[var(--ev-border)] text-xs font-semibold text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/20 active:scale-[0.98] transition-transform duration-150"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[var(--ev-border)] text-xs font-semibold text-[var(--ev-text-main)] hover:bg-ev-border/20 active:scale-[0.98] transition-transform duration-150"
                     >
                       <Edit2 size={13} />
                       <span>Editar</span>
@@ -466,7 +466,7 @@ export const ServiciosList = () => {
 
               {/* Tarjeta de Precio & Valoración (Radios Concéntricos: R_int 16px) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 rounded-[16px] bg-[var(--ev-bg-base)]/40 border border-[var(--ev-border)]/50">
+                <div className="p-4 rounded-[16px] bg-ev-bg-base/40 border border-ev-border/50">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block mb-1">
                     Precio Base de Catálogo
                   </span>
@@ -478,7 +478,7 @@ export const ServiciosList = () => {
                   </span>
                 </div>
 
-                <div className="p-4 rounded-[16px] bg-[var(--ev-bg-base)]/40 border border-[var(--ev-border)]/50">
+                <div className="p-4 rounded-[16px] bg-ev-bg-base/40 border border-ev-border/50">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block mb-1">
                     Disponibilidad en Cotizador
                   </span>
@@ -495,7 +495,7 @@ export const ServiciosList = () => {
               </div>
 
               {/* Especificaciones y Descripción */}
-              <div className="p-4 rounded-[16px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-2xs space-y-2">
+              <div className="p-4 rounded-[16px] bg-[var(--ev-surface)] border border-ev-border/60 shadow-2xs space-y-2">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--ev-text-muted)]">
                   Descripción del Servicio
                 </h4>
@@ -506,11 +506,11 @@ export const ServiciosList = () => {
 
               {/* Bento de Integración */}
               <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="p-3 rounded-[14px] bg-[var(--ev-bg-base)]/30 border border-[var(--ev-border)]/40">
+                <div className="p-3 rounded-[14px] bg-ev-bg-base/30 border border-ev-border/40">
                   <span className="text-[11px] text-[var(--ev-text-muted)] uppercase font-semibold block">Margen Operativo</span>
                   <span className="text-base font-bold text-[var(--ev-text-main)] tabular-nums mt-0.5 block">Protegido (30%)</span>
                 </div>
-                <div className="p-3 rounded-[14px] bg-[var(--ev-bg-base)]/30 border border-[var(--ev-border)]/40">
+                <div className="p-3 rounded-[14px] bg-ev-bg-base/30 border border-ev-border/40">
                   <span className="text-[11px] text-[var(--ev-text-muted)] uppercase font-semibold block">Partición Inquilino</span>
                   <span className="text-base font-bold text-[var(--ev-primary)] mt-0.5 block">Catálogo Propio</span>
                 </div>
@@ -519,7 +519,7 @@ export const ServiciosList = () => {
             </div>
           ) : (
             <div className="my-auto text-center py-12 px-4 space-y-3">
-              <div className="w-12 h-12 rounded-full bg-[var(--ev-primary)]/10 text-[var(--ev-primary)] flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 rounded-full bg-ev-primary/10 text-[var(--ev-primary)] flex items-center justify-center mx-auto">
                 <Layers size={24} />
               </div>
               <h3 className="text-base font-bold text-[var(--ev-text-main)]">
@@ -594,7 +594,7 @@ export const ServiciosList = () => {
       {/* Modal Desactivar */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="w-full max-w-sm rounded-[22px] backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] p-6 text-center animate-fade-in">
+          <div className="w-full max-w-sm rounded-[22px] backdrop-blur-xl backdrop-saturate-[180%] bg-ev-surface/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] p-6 text-center animate-fade-in">
             <div className="w-10 h-10 rounded-full bg-[#C95C5C]/15 text-[#B04646] flex items-center justify-center mx-auto mb-3">
               <AlertTriangle size={20} />
             </div>

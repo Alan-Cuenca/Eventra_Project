@@ -319,7 +319,7 @@ export const DashboardPage = () => {
       {isAdmin && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* KPIs */}
-          <div className="grid-cols-4">
+          <div className="grid-auto-4">
             <KpiCard label="Eventos Activos" value={kd.total_eventos_activos}
               icon={CalendarDays} iconColor="var(--primary)"
               subtext={<><TrendingUp size={12} /> En planificación o en progreso</>}
@@ -406,7 +406,7 @@ export const DashboardPage = () => {
          ══════════════════════════════════════════════════════════════════════ */}
       {isGerente && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div className="grid-cols-4">
+          <div className="grid-auto-4">
             <KpiCard label="Eventos Activos" value={kd.total_eventos_activos}
               icon={Activity} iconColor="var(--primary)"
               subtext="En planificación o en progreso" loading={kpiLoading} />
@@ -551,7 +551,7 @@ export const DashboardPage = () => {
          ══════════════════════════════════════════════════════════════════════ */}
       {isTrabajador && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div className="grid-cols-4">
+          <div className="grid-auto-4">
             <KpiCard label="Eventos Asignados" value={kd.total_eventos_activos}
               icon={CalendarDays} iconColor="var(--primary)"
               subtext="En progreso o planificación" loading={kpiLoading} />
@@ -564,7 +564,7 @@ export const DashboardPage = () => {
             />
           </div>
 
-          <div className="grid-cols-2">
+          <div className="grid-auto-2">
             {/* Eventos asignados */}
             <div className="card">
               <div className="card-header">
@@ -752,7 +752,7 @@ export const DashboardPage = () => {
             </div>
 
             {/* Links de acceso rápido */}
-            <div className="grid-cols-3">
+            <div className="grid-auto-3">
               {[
                 { icon: <CalendarCheck size={22} />, label: 'Ver detalle completo', sub: 'Actividades, pagos y archivos', to: '/eventos', color: 'var(--primary)' },
                 { icon: <MessageSquare size={22} />, label: 'Solicitar modificación', sub: 'Cambia detalles de tu evento', to: '/portal-cliente/solicitudes', color: 'var(--warning-text)' },
