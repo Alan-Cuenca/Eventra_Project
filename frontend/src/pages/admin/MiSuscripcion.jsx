@@ -146,7 +146,7 @@ export const MiSuscripcion = () => {
     try {
       const formData = new FormData();
       formData.append('plan_nombre', planSeleccionado);
-      formData.append('monto', planSeleccionado === 'Premium' ? '99.00' : '49.00');
+      formData.append('monto', montoPlan.toFixed(2)); // informativo: el backend calcula el monto con la configuración
       formData.append('comprobante', archivo);
       formData.append('correo_credenciales', emailLimpio);
 
@@ -156,7 +156,7 @@ export const MiSuscripcion = () => {
       setConfirmacionPantalla({
         correo: emailLimpio,
         plan: planSeleccionado,
-        monto: planSeleccionado === 'Premium' ? '99.00' : '49.00',
+        monto: montoPlan.toFixed(2),
         archivoNombre: archivo.name,
       });
       showToast(
@@ -176,7 +176,7 @@ export const MiSuscripcion = () => {
   // Plan actual de la empresa desde el usuario o el último registro
   const planActual = user?.plan_suscripcion || suscripciones[0]?.empresa_plan_actual || 'Basico';
   const esPremium = planActual.toLowerCase().includes('premium');
-  const costoActual = esPremium ? 99.0 : 49.0;
+  const costoActual = esPremium ? precioPremium : precioBasico;
 
   // Estado general de la cuenta
   const tienePagoPendiente = suscripciones.some((s) => s.estado === 'En Revisión');
@@ -575,7 +575,7 @@ export const MiSuscripcion = () => {
         <form onSubmit={handleSubmitPago} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-[#233D49] mb-1.5">
-              Subir PDF del Comprobante de Pago ({planSeleccionado} — ${montoPlan}.00) <span className="text-[#B04646]">*</span>
+              Subir PDF del Comprobante de Pago ({planSeleccionado} — ${montoPlan.toFixed(2)}) <span className="text-[#B04646]">*</span>
             </label>
 
             {!archivo ? (
@@ -687,7 +687,7 @@ export const MiSuscripcion = () => {
                     {archivo?.name}
                   </span>
                   <span className="text-[#2F7A55] font-semibold">
-                    Plan {planSeleccionado} · ${planSeleccionado === 'Premium' ? '99.00' : '49.00'} USD
+                    Plan {planSeleccionado} · ${montoPlan.toFixed(2)} USD
                   </span>
                 </div>
               </div>

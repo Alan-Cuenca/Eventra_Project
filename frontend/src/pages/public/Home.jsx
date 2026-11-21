@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { usePlanes, fmt } from '../../hooks/usePlanes';
 import { 
   Sparkles, 
   ArrowRight, 
@@ -22,6 +23,8 @@ import {
 } from 'lucide-react';
 
 export const Home = () => {
+  const { planes } = usePlanes();
+  const { Basico: basico, Premium: premium } = planes;
   // Estado para el Cotizador Dinámico Interactivo en la Hero Feature Card del Bento Grid
   const [cotizadorPax, setCotizadorPax] = useState(150);
   const [cotizadorPaquete, setCotizadorPaquete] = useState('platino'); // 'platino' | 'imperial'
@@ -830,7 +833,7 @@ export const Home = () => {
                 <div className="my-6">
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl sm:text-5xl font-extrabold text-[var(--ev-text-main)] tabular-nums">
-                      $29
+                      ${basico.precioMensual}
                     </span>
                     <span className="text-sm text-[var(--ev-text-muted)] font-medium">/ mes</span>
                   </div>
@@ -841,8 +844,9 @@ export const Home = () => {
                 <div className="p-4 rounded-[16px] bg-[var(--ev-bg-base)]/40 border border-[var(--ev-border)]/50 mb-6">
                   <ul className="space-y-3 text-xs text-[var(--ev-text-main)]/85">
                     {[
-                      'Hasta 3 colaboradores del equipo',
-                      'Hasta 15 eventos gestionados al mes',
+                      `Hasta ${fmt(basico.usuarios)} colaboradores del equipo`,
+                      `Hasta ${fmt(basico.eventos)} eventos activos y ${fmt(basico.clientes)} clientes`,
+                      `EVARA AI: ${fmt(basico.chatbot)} mensajes al mes`,
                       'Cotizador dinámico con catálogo base',
                       'Prevención estricta de doble agendamiento',
                       'Recepción de comprobantes de pago',
@@ -891,20 +895,20 @@ export const Home = () => {
                 <div className="my-6">
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl sm:text-5xl font-extrabold text-white tabular-nums">
-                      $79
+                      ${premium.precioMensual}
                     </span>
                     <span className="text-sm text-white/70 font-medium">/ mes</span>
                   </div>
-                  <p className="text-xs text-white/60 mt-1">Acceso ilimitado con todas las funciones pro</p>
+                  <p className="text-xs text-white/60 mt-1">Más capacidad para equipos y volumen alto</p>
                 </div>
 
                 {/* Lista de Capacidades Premium (R_int 16px) */}
                 <div className="p-4 rounded-[16px] bg-white/10 border border-white/15 mb-6">
                   <ul className="space-y-3 text-xs text-white/90">
                     {[
-                      'Eventos y cotizaciones ilimitadas',
-                      'Colaboradores ilimitados (Admin, Gerente, Trabajador)',
-                      'Asistente comercial EVARA AI 24/7 sin límites',
+                      `Hasta ${fmt(premium.eventos)} eventos activos y ${fmt(premium.clientes)} clientes`,
+                      `Hasta ${fmt(premium.usuarios)} colaboradores (Admin, Gerente, Trabajador)`,
+                      `EVARA AI: ${fmt(premium.chatbot)} mensajes al mes`,
                       'Marca Blanca completa (logo, slug y paleta propia)',
                       'Control de reservas por salón y horario',
                       'Portal del Cliente interactivo con seguimiento',

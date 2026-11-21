@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Check,
-  X,
   Sparkles,
   ArrowRight,
   ChevronDown,
 } from 'lucide-react';
+import { usePlanes, precioSegunCiclo, fmt } from '../../hooks/usePlanes';
 
 export const Pricing = () => {
   const navigate = useNavigate();
@@ -21,9 +21,11 @@ export const Pricing = () => {
     setOpenFaq(openFaq === index ? null : index);
   };
 
+  const { planes } = usePlanes();
+  const { Basico: basico, Premium: premium } = planes;
   const isAnnual = billingCycle === 'annual';
-  const basicPrice = isAnnual ? 39 : 49;
-  const premiumPrice = isAnnual ? 79 : 99;
+  const basicPrice = precioSegunCiclo(basico, isAnnual);
+  const premiumPrice = precioSegunCiclo(premium, isAnnual);
 
   const handleSeleccionarPlan = (planKey) => {
     navigate(`/planes/pago?plan=${planKey}&ciclo=${billingCycle}`);
@@ -35,12 +37,12 @@ export const Pricing = () => {
       a: 'A diferencia de las planillas en Excel o sistemas convencionales, EVENTRA cuenta con una restricción de unicidad estricta (UNIQUE constraint) a nivel de la base de datos PostgreSQL en Supabase. Si dos usuarios intentan confirmar una reserva para el mismo salón, fecha y turno, el sistema bloquea inmediatamente la segunda solicitud devolviendo un código 409 Conflict, erradicando el riesgo de colisión.',
     },
     {
-      q: '¿Qué sucede si en el Plan Básico supero los 10 eventos en un mes?',
-      a: 'Recibirás una notificación proactiva en tu panel administrativo cuando alcances el 80% de tu cupo. Si requieres registrar eventos adicionales, puedes escalar de forma instantánea al Plan Premium en cualquier momento sin perder tu configuración de salones, cotizaciones ni historial de clientes.',
+      q: `¿Qué sucede si en el Plan Básico llego a ${basico.eventos} eventos activos?`,
+      a: `El sistema no te deja registrar más eventos y te avisa que alcanzaste el límite del plan; en Mi Suscripción ves tu consumo en todo momento. Puedes pasar al Plan Premium (hasta ${fmt(premium.eventos)} eventos activos) sin perder salones, cotizaciones ni historial de clientes.`,
     },
     {
-      q: '¿EVARA AI puede atender consultas por WhatsApp además de la web?',
-      a: 'Sí. En el Plan Premium, EVARA AI cuenta con endpoints desacoplados listos para conectarse con proveedores de WhatsApp Business API mediante Webhooks. El bot consulta en tiempo real tu catálogo de precios y disponibilidad para responder al cliente de inmediato.',
+      q: '¿Cuántas consultas puede responder EVARA AI?',
+      a: `EVARA AI está incluida en ambos planes: hasta ${fmt(basico.chatbot)} mensajes al mes en el Plan Básico y hasta ${fmt(premium.chatbot)} en el Premium. Responde desde la plataforma y el portal de tus clientes consultando tu catálogo real; el contador se reinicia cada mes.`,
     },
     {
       q: '¿Puedo personalizar los paquetes, menús y comisiones de mis proveedores?',
@@ -141,14 +143,14 @@ export const Pricing = () => {
                 <div className="flex items-start gap-3 text-sm text-[#233D49]/85">
                   <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>
-                    <strong>Hasta 10 eventos</strong> por mes
+                    <strong>Hasta {fmt(basico.eventos)} eventos</strong> activos
                   </span>
                 </div>
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49]/85">
                   <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>
-                    <strong>3 cuentas de usuario</strong> con roles (Admin, Gerente, Trabajador)
+                    <strong>{fmt(basico.usuarios)} cuentas de usuario</strong> con roles (Admin, Gerente, Trabajador) y hasta {fmt(basico.clientes)} clientes
                   </span>
                 </div>
 
@@ -169,16 +171,14 @@ export const Pricing = () => {
                   <span>Portal estándar para el anfitrión con cronograma</span>
                 </div>
 
-                <div className="flex items-start gap-3 text-sm text-[#233D49]/50">
-                  <X className="w-4 h-4 text-[#B04646]/60 shrink-0 mt-0.5" />
-                  <span className="line-through">Asistente comercial EVARA AI (24/7)</span>
+                <div className="flex items-start gap-3 text-sm text-[#233D49]/85">
+                  <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
+                  <span>Asistente EVARA AI: <strong>{fmt(basico.chatbot)} mensajes</strong> al mes</span>
                 </div>
 
-                <div className="flex items-start gap-3 text-sm text-[#233D49]/50">
-                  <X className="w-4 h-4 text-[#B04646]/60 shrink-0 mt-0.5" />
-                  <span className="line-through">
-                    Cotizador dinámico completo (4 pasos con desglose de margen)
-                  </span>
+                <div className="flex items-start gap-3 text-sm text-[#233D49]/85">
+                  <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
+                  <span>Cotizador dinámico de 4 pasos y catálogo de hasta {fmt(basico.servicios)} servicios</span>
                 </div>
               </div>
             </div>
@@ -217,7 +217,7 @@ export const Pricing = () => {
               <h3 className="text-2xl font-bold text-[#233D49] mb-2">Premium</h3>
 
               <p className="text-sm text-[#233D49]/75 mb-6 min-h-[40px]">
-                Para empresas consolidadas y salones de alta demanda que buscan automatizar cotizaciones con IA y gestionar sin límites.
+                Para empresas consolidadas y salones de alta demanda que buscan automatizar cotizaciones con IA y manejar más volumen.
               </p>
 
               {/* Precio */}
@@ -240,14 +240,14 @@ export const Pricing = () => {
                 <div className="flex items-start gap-3 text-sm text-[#233D49] font-medium">
                   <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>
-                    <strong>Eventos Ilimitados</strong> sin restricciones mensuales
+                    <strong>Hasta {fmt(premium.eventos)} eventos</strong> activos y {fmt(premium.clientes)} clientes
                   </span>
                 </div>
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49] font-medium">
                   <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>
-                    <strong>Usuarios Ilimitados</strong> (Administradores, Gerentes y Personal de Piso)
+                    <strong>{fmt(premium.usuarios)} cuentas de usuario</strong> (Administradores, Gerentes y Personal de Piso)
                   </span>
                 </div>
 
@@ -256,7 +256,7 @@ export const Pricing = () => {
                     <Sparkles className="w-3 h-3 text-[#526F7D]" />
                   </div>
                   <span>
-                    <strong>Asistente EVARA AI 24/7</strong> conectada a tu catálogo real
+                    <strong>EVARA AI: {fmt(premium.chatbot)} mensajes</strong> al mes, conectada a tu catálogo real
                   </span>
                 </div>
 
@@ -270,14 +270,14 @@ export const Pricing = () => {
                 <div className="flex items-start gap-3 text-sm text-[#233D49] font-medium">
                   <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>
-                    <strong>Portal Premium del Anfitrión</strong> con firma de contrato y seguimiento de pagos
+                    <strong>Portal del cliente</strong> con seguimiento del evento, pagos y solicitudes de cambio
                   </span>
                 </div>
 
                 <div className="flex items-start gap-3 text-sm text-[#233D49] font-medium">
                   <Check className="w-4 h-4 text-[#2F7A55] shrink-0 mt-0.5" />
                   <span>
-                    Almacenamiento ilimitado de comprobantes en <strong>Supabase Storage</strong>
+                    Catálogo de hasta {fmt(premium.servicios)} servicios y comprobantes en <strong>almacenamiento privado</strong>
                   </span>
                 </div>
 

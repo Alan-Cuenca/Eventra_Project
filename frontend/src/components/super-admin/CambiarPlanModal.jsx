@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { superAdminService } from '../../services/superAdminService';
+import { usePlanes, fmt } from '../../hooks/usePlanes';
 import {
   X,
   Layers,
@@ -10,20 +11,21 @@ import {
   HelpCircle,
 } from 'lucide-react';
 
-const PLANES_DISPONIBLES = [
+/** Tarjetas de plan con precio y límites reales de la configuración SaaS. */
+const tarjetasPlanes = (planes) => [
   {
     id: 'Basico',
     nombre: 'Básico',
     color: '#4D7182',
-    precio: '$49/mes',
-    desc: 'Tier Boutique para organizadores en crecimiento',
+    precio: `$${planes.Basico.precioMensual}/mes`,
+    desc: `${fmt(planes.Basico.eventos)} eventos · ${fmt(planes.Basico.usuarios)} usuarios · EVARA AI ${fmt(planes.Basico.chatbot)} mensajes/mes`,
   },
   {
     id: 'Premium',
     nombre: 'Premium',
     color: '#7A5C14',
-    precio: '$99/mes',
-    desc: 'Tier Corporativo con Asistente EVARA AI y límites ampliados',
+    precio: `$${planes.Premium.precioMensual}/mes`,
+    desc: `${fmt(planes.Premium.eventos)} eventos · ${fmt(planes.Premium.usuarios)} usuarios · EVARA AI ${fmt(planes.Premium.chatbot)} mensajes/mes`,
   },
 ];
 
@@ -40,36 +42,8 @@ export const CambiarPlanModal = ({ isOpen, onClose, empresa, onPlanActualizado }
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [planes, setPlanes] = useState(PLANES_DISPONIBLES);
-
-  useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const config = await superAdminService.obtenerConfiguracion();
-        if (config?.planes) {
-          setPlanes([
-            {
-              id: 'Basico',
-              nombre: 'Básico',
-              color: '#4D7182',
-              precio: `$${config.planes.basico?.precio_mensual ?? 49}/mes`,
-              desc: 'Tier Boutique para organizadores en crecimiento',
-            },
-            {
-              id: 'Premium',
-              nombre: 'Premium',
-              color: '#7A5C14',
-              precio: `$${config.planes.premium?.precio_mensual ?? 99}/mes`,
-              desc: 'Tier Corporativo con Asistente EVARA AI y límites ampliados',
-            },
-          ]);
-        }
-      } catch (e) {
-        // Conserva planes por defecto si falla la petición
-      }
-    };
-    fetchConfig();
-  }, []);
+  const { planes: configPlanes } = usePlanes();
+  const planes = tarjetasPlanes(configPlanes);
 
   useEffect(() => {
     if (empresa) {

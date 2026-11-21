@@ -18,9 +18,12 @@ export const JWT_HORAS_DEFECTO = 8;
 export const JWT_HORAS_MIN = 1;
 export const JWT_HORAS_MAX = 72;
 
+export const PRECIOS_DEFECTO = { basico_precio: 49, premium_precio: 99 };
+
 const construirValor = (guardada = {}) => ({
   plataforma: { ...PLATAFORMA_DEFECTO, ...(guardada.plataforma || {}) },
   seguridad: { expiracion_jwt_horas: JWT_HORAS_DEFECTO, ...(guardada.seguridad || {}) },
+  planes: { ...PRECIOS_DEFECTO, ...(guardada.planes || {}) },
 });
 
 /** Lee plataforma y seguridad de configuracion_saas (con caché corta). */
@@ -62,6 +65,18 @@ export const normalizarHorasJwt = (valor) => {
 export const obtenerExpiracionJwt = async () => {
   const config = process.env.NODE_ENV === 'test' ? (cache.valor || construirValor()) : await leerConfigGlobal();
   return `${normalizarHorasJwt(config.seguridad.expiracion_jwt_horas)}h`;
+};
+
+/**
+ * Precio mensual vigente del plan ('Basico' | 'Premium') según la configuración del
+ * Super Admin. El backend lo usa para registrar pagos: nunca confía en el monto del cliente.
+ * En Jest usa la caché o el valor por defecto (no consume los mocks de pool.query).
+ */
+export const obtenerPrecioPlan = async (plan) => {
+  const config = process.env.NODE_ENV === 'test' ? (cache.valor || construirValor()) : await leerConfigGlobal();
+  const clave = String(plan).toLowerCase() === 'premium' ? 'premium_precio' : 'basico_precio';
+  const n = Number(config.planes[clave]);
+  return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : PRECIOS_DEFECTO[clave];
 };
 
 const RUTAS_EXENTAS = [/^\/api\/health/, /^\/api\/auth\//, /^\/api\/configuracion/, /^\/api-docs/];
