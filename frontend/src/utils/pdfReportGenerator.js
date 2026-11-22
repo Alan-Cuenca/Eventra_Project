@@ -264,7 +264,7 @@ const obtenerEstilosAutoTable = (paletaKey = 'sofisticacion_sutil') => {
  */
 export const exportarReporteIngresosPDF = async ({ membrete, transacciones = [], kpis = {} }) => {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const logoBase64 = await cargarImagenBase64(membrete?.logo_url || '/logo_Helados_Catedral.jpg');
+  const logoBase64 = await cargarImagenBase64(membrete?.logo_url || '/logo.png');
   const estilos = obtenerEstilosAutoTable(membrete?.paleta_colores);
 
   dibujarMembrete(doc, membrete, 'Reporte Financiero de Ingresos', logoBase64);
@@ -308,7 +308,7 @@ export const exportarReporteIngresosPDF = async ({ membrete, transacciones = [],
  */
 export const exportarReporteEventosPDF = async ({ membrete, eventos = [], kpis = {} }) => {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-  const logoBase64 = await cargarImagenBase64(membrete?.logo_url || '/logo_Helados_Catedral.jpg');
+  const logoBase64 = await cargarImagenBase64(membrete?.logo_url || '/logo.png');
   const estilos = obtenerEstilosAutoTable(membrete?.paleta_colores);
 
   dibujarMembrete(doc, membrete, 'Reporte Operativo de Eventos', logoBase64);
@@ -349,7 +349,7 @@ export const exportarReporteEventosPDF = async ({ membrete, eventos = [], kpis =
  */
 export const exportarReporteSaldosPDF = async ({ membrete, saldos = [], kpis = {} }) => {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-  const logoBase64 = await cargarImagenBase64(membrete?.logo_url || '/logo_Helados_Catedral.jpg');
+  const logoBase64 = await cargarImagenBase64(membrete?.logo_url || '/logo.png');
   const estilos = obtenerEstilosAutoTable(membrete?.paleta_colores);
 
   dibujarMembrete(doc, membrete, 'Estado de Saldos Pendientes (Cuentas por Cobrar)', logoBase64);

@@ -106,7 +106,7 @@ export const ReportesPage = () => {
 
   const rucVisible = membrete.ruc || branding?.ruc || 'N/D';
   const nombreVisible = membrete.nombre_comercial || branding?.nombre_comercial || 'Reportes Corporativos';
-  const logoVisible = membrete.logo_url || branding?.logo_url || '/logo_Helados_Catedral.jpg';
+  const logoVisible = membrete.logo_url || branding?.logo_url || '/logo.png';
 
   return (
     <div className="space-y-8 font-sans text-[#233D49]">
