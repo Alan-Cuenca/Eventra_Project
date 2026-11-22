@@ -3,9 +3,10 @@
  * Izquierda: Branding crema cálido + eslogan + imagen elegante
  * Derecha: Formulario estándar + Acceso rápido (Demo Roles)
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { leerAvisoSesion, descartarAvisoSesion } from '../../services/api';
 import {
   Lock, Mail, ArrowRight, Eye, EyeOff, Loader2,
   CalendarDays, Shield, Sparkles, AlertCircle, ArrowLeft,
@@ -33,7 +34,8 @@ const FEATURES = [
 export const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(leerAvisoSesion);
+  useEffect(() => { descartarAvisoSesion(); }, []);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();

@@ -76,6 +76,11 @@ export const obtenerConfiguracionGlobal = async (req, res) => {
     });
   } catch (error) {
     console.error('[configuracionController] Error en obtenerConfiguracionGlobal:', error.message);
+    // El Super Admin no debe recibir los valores por defecto como si fueran los guardados:
+    // si los guardara desde la pantalla, sobrescribiría la configuración real.
+    if (Number(req.user?.rol_id) === 5) {
+      return res.status(503).json({ success: false, message: 'No se pudo leer la configuración guardada. Intenta de nuevo.' });
+    }
     return res.status(200).json({
       success: true,
       data: vistaSegunRol(DEFAULT_CONFIG, req),
@@ -98,7 +103,18 @@ export const guardarConfiguracionGlobal = async (req, res) => {
       payload.seguridad.expiracion_jwt_horas = normalizarHorasJwt(payload.seguridad.expiracion_jwt_horas);
     }
 
-    const valorJson = JSON.stringify(payload);
+    // Se fusiona por sección con lo guardado: un campo que no viene en el payload
+    // (p. ej. uno que la pantalla no muestra) conserva su valor en lugar de perderse.
+    const actual = await pool.query("SELECT valor FROM configuracion_saas WHERE clave = 'global'");
+    const guardado = actual.rows[0]?.valor || {};
+    const fusionado = { ...guardado };
+    for (const [seccion, valores] of Object.entries(payload)) {
+      fusionado[seccion] = valores && typeof valores === 'object' && !Array.isArray(valores)
+        ? { ...(guardado[seccion] || {}), ...valores }
+        : valores;
+    }
+
+    const valorJson = JSON.stringify(fusionado);
     await pool.query(
       `INSERT INTO configuracion_saas (clave, valor, updated_at)
        VALUES ('global', $1::jsonb, CURRENT_TIMESTAMP)
@@ -108,15 +124,15 @@ export const guardarConfiguracionGlobal = async (req, res) => {
     );
 
     // Actualizar límites en memoria si se enviaron planes
-    if (payload.planes) {
-      actualizarLimitesEnMemoria(payload.planes);
+    if (fusionado.planes) {
+      actualizarLimitesEnMemoria(fusionado.planes);
     }
 
     invalidarCachePlataforma();
     return res.status(200).json({
       success: true,
       message: 'Configuración global guardada y sincronizada correctamente en PostgreSQL.',
-      data: payload,
+      data: fusionado,
     });
   } catch (error) {
     console.error('[configuracionController] Error en guardarConfiguracionGlobal:', error.message);

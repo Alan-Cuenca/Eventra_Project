@@ -55,6 +55,7 @@ describe('Revalidación de sesión (BD simulada)', () => {
     const res = await request(app).get('/api/clientes').set(auth(1));
     expect(res.statusCode).toBe(403);
     expect(res.body.message).toMatch(/suspendida/i);
+    expect(res.body.error).toBe('EMPRESA_SUSPENDIDA'); // el frontend cierra la sesión con este código
 
     sesiones.limpiarCacheSesiones();
     mockPool.query.mockImplementation(async () => ({ rows: [sesionBd({ rol_id: 5, empresa_id: null, empresa_activa: null })], rowCount: 1 }));

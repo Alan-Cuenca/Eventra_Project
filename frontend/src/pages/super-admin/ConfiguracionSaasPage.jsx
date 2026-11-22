@@ -19,8 +19,6 @@ import { api } from '../../services/api';
 import { superAdminService } from '../../services/superAdminService';
 import { GlobalStatCard } from '../../components/super-admin/GlobalStatCard';
 
-const STORAGE_KEY_SAAS_CONFIG = 'eventra_saas_global_config_v1';
-
 const DEFAULT_SAAS_CONFIG = {
   plataforma: {
     nombre_comercial: 'EVENTRA SaaS Multi-Tenant',
@@ -72,27 +70,14 @@ const DEFAULT_SAAS_CONFIG = {
  * =============================================================================
  */
 export const ConfiguracionSaasPage = () => {
-  const [config, setConfig] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY_SAAS_CONFIG);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return {
-          plataforma: { ...DEFAULT_SAAS_CONFIG.plataforma, ...(parsed.plataforma || {}) },
-          transferencia: { ...DEFAULT_SAAS_CONFIG.transferencia, ...(parsed.transferencia || {}) },
-          planes: { ...DEFAULT_SAAS_CONFIG.planes, ...(parsed.planes || {}) },
-          seguridad: { ...DEFAULT_SAAS_CONFIG.seguridad, ...(parsed.seguridad || {}) },
-        };
-      }
-    } catch {
-      // Fallback to default config
-    }
-    return DEFAULT_SAAS_CONFIG;
-  });
+  const [config, setConfig] = useState(DEFAULT_SAAS_CONFIG);
+  // 'cargando' | 'ok' | 'error': guardar o restaurar solo se permite con la configuración real cargada,
+  // para no sobrescribir la de producción con los valores por defecto de la pantalla.
+  const [estadoCarga, setEstadoCarga] = useState('cargando');
 
   const [healthStatus, setHealthStatus] = useState({
     apiOnline: true,
-    latencyMs: 42,
+    latencyMs: null,
     tenantsCount: 0,
     activeTenants: 0,
     lastCheck: new Date(),
@@ -146,26 +131,32 @@ export const ConfiguracionSaasPage = () => {
     }
   }, []);
 
-  useEffect(() => {
-    verificarEstadoSistema(false);
-    const cargarConfigRemota = async () => {
-      try {
-        const remota = await superAdminService.obtenerConfiguracion();
-        if (remota && remota.planes) {
-          setConfig({
+  const cargarConfigRemota = useCallback(async () => {
+    setEstadoCarga('cargando');
+    try {
+      const remota = await superAdminService.obtenerConfiguracion();
+      if (remota && remota.planes) {
+        setConfig({
+            ...remota,
             plataforma: { ...DEFAULT_SAAS_CONFIG.plataforma, ...(remota.plataforma || {}) },
             transferencia: { ...DEFAULT_SAAS_CONFIG.transferencia, ...(remota.transferencia || {}) },
             planes: { ...DEFAULT_SAAS_CONFIG.planes, ...(remota.planes || {}) },
             seguridad: { ...DEFAULT_SAAS_CONFIG.seguridad, ...(remota.seguridad || {}) },
           });
-          localStorage.setItem(STORAGE_KEY_SAAS_CONFIG, JSON.stringify(remota));
-        }
-      } catch (err) {
-        console.warn('Error cargando config remota:', err);
+        setEstadoCarga('ok');
+      } else {
+        setEstadoCarga('error');
       }
-    };
+    } catch (err) {
+      console.warn('Error cargando config remota:', err);
+      setEstadoCarga('error');
+    }
+  }, []);
+
+  useEffect(() => {
+    verificarEstadoSistema(false);
     cargarConfigRemota();
-  }, [verificarEstadoSistema]);
+  }, [verificarEstadoSistema, cargarConfigRemota]);
 
   const handleFieldChange = (section, field, value) => {
     setConfig((prev) => ({
@@ -179,9 +170,9 @@ export const ConfiguracionSaasPage = () => {
 
   const handleGuardarConfiguracion = async (e) => {
     e.preventDefault();
+    if (estadoCarga !== 'ok') return;
     setSaving(true);
     try {
-      localStorage.setItem(STORAGE_KEY_SAAS_CONFIG, JSON.stringify(config));
       await superAdminService.guardarConfiguracion(config);
       setSaving(false);
       mostrarToast(
@@ -195,12 +186,23 @@ export const ConfiguracionSaasPage = () => {
   };
 
   const handleRestaurarValores = async () => {
-    setConfig(DEFAULT_SAAS_CONFIG);
-    localStorage.setItem(STORAGE_KEY_SAAS_CONFIG, JSON.stringify(DEFAULT_SAAS_CONFIG));
+    if (estadoCarga !== 'ok') return;
+    const confirmado = window.confirm(
+      '¿Restaurar planes, plataforma y seguridad a los valores predeterminados? Se aplica de inmediato a todas las empresas. Los datos de transferencia bancaria se conservan.'
+    );
+    if (!confirmado) return;
+    // Los datos bancarios no tienen un "valor predeterminado": vaciarlos rompería el cobro por transferencia
+    const restaurada = { ...DEFAULT_SAAS_CONFIG, transferencia: config.transferencia };
+    setSaving(true);
     try {
-      await superAdminService.guardarConfiguracion(DEFAULT_SAAS_CONFIG);
-    } catch (_) {}
-    mostrarToast('success', 'Parámetros globales restaurados a los valores oficiales de EVENTRA.');
+      await superAdminService.guardarConfiguracion(restaurada);
+      setConfig(restaurada);
+      mostrarToast('success', 'Parámetros globales restaurados a los valores oficiales de EVENTRA.');
+    } catch (err) {
+      mostrarToast('error', 'No se pudieron restaurar los valores: ' + (err.message || 'Error del servidor'));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -254,6 +256,7 @@ export const ConfiguracionSaasPage = () => {
           <button
             type="button"
             onClick={handleRestaurarValores}
+            disabled={estadoCarga !== 'ok' || saving}
             className="btn btn-secondary"
           >
             <RotateCcw size={15} />
@@ -263,7 +266,8 @@ export const ConfiguracionSaasPage = () => {
           <button
             type="button"
             onClick={handleGuardarConfiguracion}
-            disabled={saving}
+            disabled={saving || estadoCarga !== 'ok'}
+            data-cy="guardar-configuracion"
             className="btn btn-primary"
           >
             <Save size={15} />
@@ -271,6 +275,31 @@ export const ConfiguracionSaasPage = () => {
           </button>
         </div>
       </div>
+
+      {estadoCarga !== 'ok' && (
+        <div
+          role={estadoCarga === 'error' ? 'alert' : 'status'}
+          data-cy="configuracion-estado-carga"
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem', flexWrap: 'wrap',
+            padding: '0.75rem 1rem', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 600,
+            background: estadoCarga === 'error' ? 'rgba(201, 92, 92, 0.12)' : 'rgba(77, 113, 130, 0.10)',
+            color: estadoCarga === 'error' ? '#8a2f2f' : '#233D49',
+          }}
+        >
+          {estadoCarga === 'error' ? <AlertCircle size={16} /> : <RefreshCw size={16} className="animate-spin" />}
+          <span>
+            {estadoCarga === 'error'
+              ? 'No se pudo cargar la configuración guardada. Para no sobrescribirla, guardar está deshabilitado.'
+              : 'Cargando la configuración guardada…'}
+          </span>
+          {estadoCarga === 'error' && (
+            <button type="button" className="btn btn-secondary btn-sm" onClick={cargarConfigRemota}>
+              Reintentar
+            </button>
+          )}
+        </div>
+      )}
 
       {/* KPIs de Infraestructura y Estado */}
       <div
@@ -284,7 +313,7 @@ export const ConfiguracionSaasPage = () => {
         <GlobalStatCard
           title="Estado Backend Express"
           value={healthStatus.apiOnline ? 'Operativo' : 'Degradado'}
-          subtitle={`Latencia: ${healthStatus.latencyMs} ms`}
+          subtitle={healthStatus.latencyMs == null ? 'Latencia: —' : `Latencia: ${healthStatus.latencyMs} ms`}
           icon={<Server size={20} />}
           accentColor={healthStatus.apiOnline ? '#4D9A72' : '#C95C5C'}
           badgeText={healthStatus.apiOnline ? 'TLS 1.3 Activo' : 'Revisar'}

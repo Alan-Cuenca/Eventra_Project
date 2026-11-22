@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useOutletContext, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { leerAvisoSesion, descartarAvisoSesion } from '../../services/api';
 import { TenantAuthLayout } from './TenantAuthLayout';
 import {
   Lock,
@@ -37,7 +38,8 @@ export const LoginTenant = () => {
 
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(leerAvisoSesion);
+  useEffect(() => { descartarAvisoSesion(); }, []);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
