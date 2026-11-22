@@ -42,11 +42,8 @@ export const MiSuscripcion = () => {
   const [confirmacionPantalla, setConfirmacionPantalla] = useState(null);
   const [saasConfig, setSaasConfig] = useState(null);
 
-  const [consumo, setConsumo] = useState({
-    plan: 'Basico',
-    limites: { usuarios: 3, clientes: 50, servicios: 20, chatbot: 300 },
-    uso: { usuarios: 3, clientes: 50, servicios: 20, chatbot: 300 },
-  });
+  // null hasta que responde la API: nunca se muestran cifras de consumo inventadas
+  const [consumo, setConsumo] = useState(null);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -316,69 +313,14 @@ export const MiSuscripcion = () => {
               </div>
             </div>
 
-            <div className="mt-3 space-y-2">
-              <div>
-                <div className="flex justify-between text-[11px] mb-0.5">
-                  <span className="font-semibold text-[#233D49]">Usuarios</span>
-                  <span className="font-mono text-[#566D7A] font-bold">
-                    {consumo.uso?.usuarios ?? 3} / {consumo.limites?.usuarios ?? 3}
-                  </span>
-                </div>
-                <div className="w-full bg-[#F3F0E4] rounded-full h-1.5 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-300 ${
-                      (consumo.uso?.usuarios ?? 3) >= (consumo.limites?.usuarios ?? 3)
-                        ? 'bg-[#C95C5C]'
-                        : 'bg-[#526F7D]'
-                    }`}
-                    style={{
-                      width: `${Math.min(100, Math.round(((consumo.uso?.usuarios ?? 3) / (consumo.limites?.usuarios ?? 3)) * 100))}%`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-[11px] mb-0.5">
-                  <span className="font-semibold text-[#233D49]">Clientes</span>
-                  <span className="font-mono text-[#566D7A] font-bold">
-                    {consumo.uso?.clientes ?? 50} / {consumo.limites?.clientes ?? 50}
-                  </span>
-                </div>
-                <div className="w-full bg-[#F3F0E4] rounded-full h-1.5 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-300 ${
-                      (consumo.uso?.clientes ?? 50) >= (consumo.limites?.clientes ?? 50)
-                        ? 'bg-[#C95C5C]'
-                        : 'bg-[#526F7D]'
-                    }`}
-                    style={{
-                      width: `${Math.min(100, Math.round(((consumo.uso?.clientes ?? 50) / (consumo.limites?.clientes ?? 50)) * 100))}%`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-[11px] mb-0.5">
-                  <span className="font-semibold text-[#233D49]">Mensajes de IA</span>
-                  <span className="font-mono text-[#566D7A] font-bold">
-                    {consumo.uso?.chatbot ?? 300} / {consumo.limites?.chatbot ?? 300}
-                  </span>
-                </div>
-                <div className="w-full bg-[#F3F0E4] rounded-full h-1.5 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-300 ${
-                      (consumo.uso?.chatbot ?? 300) >= (consumo.limites?.chatbot ?? 300)
-                        ? 'bg-[#C95C5C]'
-                        : 'bg-[#526F7D]'
-                    }`}
-                    style={{
-                      width: `${Math.min(100, Math.round(((consumo.uso?.chatbot ?? 300) / (consumo.limites?.chatbot ?? 300)) * 100))}%`,
-                    }}
-                  />
-                </div>
-              </div>
+            <div className="mt-3 space-y-2" data-cy="consumo-plan">
+              {[
+                ['usuarios', 'Usuarios'],
+                ['clientes', 'Clientes'],
+                ['chatbot', 'Mensajes de IA'],
+              ].map(([clave, etiqueta]) => (
+                <BarraConsumo key={clave} etiqueta={etiqueta} uso={consumo?.uso?.[clave]} limite={consumo?.limites?.[clave]} />
+              ))}
             </div>
           </div>
 
@@ -456,9 +398,12 @@ export const MiSuscripcion = () => {
 
         {/* Selector de Plan */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div
+          <button
+            type="button"
+            aria-pressed={planSeleccionado === 'Basico'}
+            data-cy="plan-basico"
             onClick={() => setPlanSeleccionado('Basico')}
-            className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+            className={`w-full text-left p-4 rounded-2xl border cursor-pointer transition-all ${
               planSeleccionado === 'Basico'
                 ? 'border-[#526F7D] bg-[#F3F0E4]/40 ring-2 ring-[#526F7D]/20 shadow-sm'
                 : 'border-[#CBC6B6] bg-white hover:bg-[#FAF8F5]'
@@ -469,17 +414,20 @@ export const MiSuscripcion = () => {
                 Plan Básico
               </span>
               <span className="text-sm font-extrabold text-[#233D49] tabular-nums">
-                ${precioBasico}.00 <span className="text-xs font-normal text-[#566D7A]">/mes</span>
+                ${precioBasico.toFixed(2)} <span className="text-xs font-normal text-[#566D7A]">/mes</span>
               </span>
             </div>
             <p className="text-xs text-[#566D7A] mt-1">
               Hasta {saasConfig?.planes?.basico_max_eventos ?? 20} eventos activos, {saasConfig?.planes?.basico_max_usuarios ?? 3} colaboradores y EVARA AI ({saasConfig?.planes?.basico_max_chatbot ?? 300} mensajes/mes).
             </p>
-          </div>
+          </button>
 
-          <div
+          <button
+            type="button"
+            aria-pressed={planSeleccionado === 'Premium'}
+            data-cy="plan-premium"
             onClick={() => setPlanSeleccionado('Premium')}
-            className={`p-4 rounded-2xl border cursor-pointer transition-all relative overflow-hidden ${
+            className={`w-full text-left p-4 rounded-2xl border cursor-pointer transition-all relative overflow-hidden ${
               planSeleccionado === 'Premium'
                 ? 'border-[#526F7D] bg-[#F3F0E4]/40 ring-2 ring-[#526F7D]/20 shadow-sm'
                 : 'border-[#CBC6B6] bg-white hover:bg-[#FAF8F5]'
@@ -491,13 +439,13 @@ export const MiSuscripcion = () => {
                 Plan Premium (Recomendado)
               </span>
               <span className="text-sm font-extrabold text-[#233D49] tabular-nums">
-                ${precioPremium}.00 <span className="text-xs font-normal text-[#566D7A]">/mes</span>
+                ${precioPremium.toFixed(2)} <span className="text-xs font-normal text-[#566D7A]">/mes</span>
               </span>
             </div>
             <p className="text-xs text-[#566D7A] mt-1">
               Hasta {saasConfig?.planes?.premium_max_eventos ?? 100} eventos activos, {saasConfig?.planes?.premium_max_usuarios ?? 10} colaboradores y EVARA AI ({saasConfig?.planes?.premium_max_chatbot ?? 1500} mensajes/mes).
             </p>
-          </div>
+          </button>
         </div>
 
         {/* Datos Oficiales para la Transferencia SaaS */}
@@ -575,7 +523,7 @@ export const MiSuscripcion = () => {
         <form onSubmit={handleSubmitPago} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-[#233D49] mb-1.5">
-              Subir PDF del Comprobante de Pago ({planSeleccionado} — ${montoPlan.toFixed(2)}) <span className="text-[#B04646]">*</span>
+              Subir PDF del Comprobante de Pago ({planSeleccionado === 'Basico' ? 'Básico' : 'Premium'} — ${montoPlan.toFixed(2)}) <span className="text-[#B04646]">*</span>
             </label>
 
             {!archivo ? (
@@ -836,3 +784,23 @@ export const MiSuscripcion = () => {
 };
 
 export default MiSuscripcion;
+
+/** Barra de consumo de un recurso del plan; muestra "—" mientras no hay datos reales. */
+function BarraConsumo({ etiqueta, uso, limite }) {
+  const hayDatos = Number.isFinite(Number(uso)) && Number(limite) > 0 && uso !== null && uso !== undefined;
+  const porcentaje = hayDatos ? Math.min(100, Math.round((Number(uso) / Number(limite)) * 100)) : 0;
+  return (
+    <div>
+      <div className="flex justify-between text-[11px] mb-0.5">
+        <span className="font-semibold text-[#233D49]">{etiqueta}</span>
+        <span className="font-mono text-[#566D7A] font-bold">{hayDatos ? `${uso} / ${limite}` : '—'}</span>
+      </div>
+      <div className="w-full bg-[#F3F0E4] rounded-full h-1.5 overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-300 ${hayDatos && Number(uso) >= Number(limite) ? 'bg-[#C95C5C]' : 'bg-[#526F7D]'}`}
+          style={{ width: `${porcentaje}%` }}
+        />
+      </div>
+    </div>
+  );
+}

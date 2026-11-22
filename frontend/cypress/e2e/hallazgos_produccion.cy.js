@@ -88,3 +88,73 @@ describe('Indicador de conexión', () => {
     cy.contains('En línea', { timeout: 6000 }).should('exist');
   });
 });
+
+describe('Configuración global del Super Admin', () => {
+  const GUARDADA = {
+    plataforma: { nombre_comercial: 'EVENTRA', correo_soporte: 'soporte@real.com' },
+    transferencia: { titular: 'Titular Real', numero_cuenta: '2210101010', cedula: '1850116508', correo_notificacion: 'pagos@real.com' },
+    planes: { basico_precio: 49, premium_precio: 99, premium_max_usuarios: 60, dias_gracia_facturacion: 5 },
+    seguridad: { expiracion_jwt_horas: 8 },
+  };
+
+  it('no permite guardar hasta cargar la configuración real, y luego envía esos valores', () => {
+    cy.apiVacia();
+    cy.intercept('GET', '**/api/configuracion', (req) => req.reply({ delay: 2000, body: { success: true, data: GUARDADA } }));
+    cy.intercept('PUT', '**/api/configuracion', (req) => req.reply({ success: true, data: req.body })).as('guardar');
+    cy.visitarComo(5, '/super-admin/configuracion');
+    cy.get('[data-cy="guardar-configuracion"]').should('be.disabled');
+    cy.contains('button', 'Restaurar Predeterminados').should('be.disabled');
+    cy.get('[data-cy="guardar-configuracion"]', { timeout: 6000 }).should('not.be.disabled').click();
+    cy.wait('@guardar').its('request.body').then((body) => {
+      expect(body.transferencia).to.include({ titular: 'Titular Real', numero_cuenta: '2210101010' });
+      expect(body.planes).to.include({ premium_max_usuarios: 60, dias_gracia_facturacion: 5 });
+      expect(body.plataforma.correo_soporte).to.eq('soporte@real.com');
+    });
+  });
+
+  it('si no se puede cargar, avisa y mantiene el guardado deshabilitado', () => {
+    cy.apiVacia();
+    cy.intercept('GET', '**/api/configuracion', { statusCode: 503, body: { success: false, message: 'No se pudo leer' } });
+    cy.visitarComo(5, '/super-admin/configuracion');
+    cy.get('[data-cy="configuracion-estado-carga"]').should('contain', 'No se pudo cargar la configuración guardada');
+    cy.get('[data-cy="guardar-configuracion"]').should('be.disabled');
+  });
+
+  it('restaurar predeterminados pide confirmación y conserva los datos bancarios', () => {
+    cy.apiVacia();
+    cy.intercept('GET', '**/api/configuracion', { success: true, data: GUARDADA });
+    cy.intercept('PUT', '**/api/configuracion', (req) => req.reply({ success: true, data: req.body })).as('guardar');
+    cy.visitarComo(5, '/super-admin/configuracion');
+    cy.on('window:confirm', () => true);
+    cy.contains('button', 'Restaurar Predeterminados').should('not.be.disabled').click();
+    cy.wait('@guardar').its('request.body.transferencia').should('include', { titular: 'Titular Real', numero_cuenta: '2210101010' });
+  });
+});
+
+describe('Empresa suspendida con la sesión abierta', () => {
+  it('cierra la sesión y explica el motivo en el login', () => {
+    cy.apiVacia();
+    cy.intercept('GET', '**/api/clientes', { statusCode: 403, body: { success: false, error: 'EMPRESA_SUSPENDIDA', message: 'La empresa asociada a tu cuenta está suspendida. Contacta a soporte de EVENTRA.' } });
+    cy.visitarComo(1, '/clientes');
+    cy.location('pathname', { timeout: 8000 }).should('eq', '/login');
+    cy.contains('La empresa asociada a tu cuenta está suspendida').should('be.visible');
+    cy.window().its('localStorage.token').should('be.undefined');
+  });
+});
+
+describe('Mi Suscripción: consumo real del plan', () => {
+  it('muestra "—" mientras carga (no cifras inventadas al límite) y luego el uso real', () => {
+    cy.apiVacia();
+    cy.intercept('GET', '**/api/suscripciones/consumo', (req) => req.reply({ delay: 2000, body: { success: true, data: { plan: 'Premium', limites: { usuarios: 60, clientes: 200, chatbot: 1525 }, uso: { usuarios: 2, clientes: 0, chatbot: 0 } } } }));
+    cy.visitarComo(1, '/mi-suscripcion');
+    cy.get('[data-cy="consumo-plan"]').should('contain', '—').and('not.contain', '3 / 3').and('not.contain', '50 / 50');
+    cy.get('[data-cy="consumo-plan"]', { timeout: 6000 }).should('contain', '2 / 60').and('contain', '0 / 200').and('contain', '0 / 1525');
+  });
+
+  it('los planes se eligen con botones y el comprobante indica el plan elegido', () => {
+    cy.apiVacia();
+    cy.visitarComo(1, '/mi-suscripcion');
+    cy.get('[data-cy="plan-basico"]').click().should('have.attr', 'aria-pressed', 'true');
+    cy.contains('Subir PDF del Comprobante de Pago (Básico').should('exist');
+  });
+});

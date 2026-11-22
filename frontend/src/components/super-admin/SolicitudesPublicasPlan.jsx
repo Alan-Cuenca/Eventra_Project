@@ -60,8 +60,8 @@ export const SolicitudesPublicasPlan = () => {
       ) : items.length === 0 ? (
         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No hay solicitudes pendientes.</p>
       ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table className="table">
+        <div className="table-container">
+          <table className="custom-table">
             <thead>
               <tr><th>Empresa</th><th>Correo</th><th>Plan</th><th>Fecha</th><th>Comprobante</th><th>Estado</th><th>Acciones</th></tr>
             </thead>

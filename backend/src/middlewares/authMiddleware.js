@@ -64,7 +64,7 @@ const autenticar = async (req, res, next, { permitirCambioPendiente = false } = 
     try {
       const evaluacion = evaluarSesion(await cargarSesion(String(decoded.id)));
       if (!evaluacion.ok) {
-        return res.status(evaluacion.status).json({ success: false, message: evaluacion.message });
+        return res.status(evaluacion.status).json({ success: false, error: evaluacion.error, message: evaluacion.message });
       }
       // El rol y la empresa vigentes en la BD mandan sobre los del token
       req.user.rol_id = Number(evaluacion.sesion.rol_id);
