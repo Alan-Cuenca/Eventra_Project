@@ -52,14 +52,14 @@ export const limpiarCacheSesiones = () => cache.clear();
 
 /**
  * Evalúa si una sesión sigue siendo válida.
- * @returns {{ ok: true, sesion } | { ok: false, status: number, message: string }}
+ * @returns {{ ok: true, sesion } | { ok: false, status: number, error: string, message: string }}
  */
 export const evaluarSesion = (sesion) => {
   if (!sesion || sesion.estado_activo === false) {
-    return { ok: false, status: 401, message: 'Tu sesión ya no es válida. Inicia sesión nuevamente.' };
+    return { ok: false, status: 401, error: 'SESION_INVALIDA', message: 'Tu sesión ya no es válida. Inicia sesión nuevamente.' };
   }
   if (Number(sesion.rol_id) !== 5 && sesion.empresa_activa === false) {
-    return { ok: false, status: 403, message: 'La empresa asociada a tu cuenta está suspendida. Contacta a soporte de EVENTRA.' };
+    return { ok: false, status: 403, error: 'EMPRESA_SUSPENDIDA', message: 'La empresa asociada a tu cuenta está suspendida. Contacta a soporte de EVENTRA.' };
   }
   return { ok: true, sesion };
 };

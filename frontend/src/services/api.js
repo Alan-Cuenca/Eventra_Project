@@ -54,14 +54,30 @@ apiClient.interceptors.request.use(
 );
 
 // ── Interceptor de Response: errores de red y 401 → forzar logout ──────────
+/** Aviso que la pantalla de login muestra tras cerrar la sesión desde el interceptor. */
+const AVISO_SESION_KEY = 'eventra_aviso_sesion';
+// Lectura sin efectos (los inicializadores de useState se ejecutan dos veces en StrictMode);
+// el aviso se descarta aparte, una vez montada la pantalla.
+export const leerAvisoSesion = () => {
+  try { return sessionStorage.getItem(AVISO_SESION_KEY) || ''; } catch { return ''; }
+};
+export const descartarAvisoSesion = () => {
+  try { sessionStorage.removeItem(AVISO_SESION_KEY); } catch { /* sin almacenamiento */ }
+};
+
 apiClient.interceptors.response.use(
   (response) => response.data,          // devuelve directamente el body
   (error) => {
     // ── Manejo crítico: token expirado o inválido (401 Unauthorized) ─────────
     const urlPeticion = String(error.config?.url || '');
     const esEndpointDeLogin = /\/(auth\/(login|recuperar-password|restablecer-password|cambiar-password-obligatorio|completar-registro|registro-cliente)|clientes\/registro-publico)/.test(urlPeticion);
-    if (error.response?.status === 401 && !esEndpointDeLogin) {
+    // Empresa suspendida con la sesión abierta: se cierra la sesión igual que con un 401
+    const empresaSuspendida = error.response?.status === 403 && error.response?.data?.error === 'EMPRESA_SUSPENDIDA';
+    if ((error.response?.status === 401 || empresaSuspendida) && !esEndpointDeLogin) {
       console.warn('[api] Token expirado o inválido — cerrando sesión...');
+      if (empresaSuspendida || error.response?.data?.error === 'SESION_INVALIDA') {
+        try { sessionStorage.setItem(AVISO_SESION_KEY, error.response.data.message || ''); } catch { /* sin almacenamiento */ }
+      }
       // Limpiar todas las claves de sesión del localStorage
       localStorage.removeItem('token');
       localStorage.removeItem('eventra_user');
