@@ -9,6 +9,7 @@ import { Badge } from '../../components/common/Badge';
 import { eventraService } from '../../services/eventraService';
 import { useAuth } from '../../context/AuthContext';
 import { Plus, Search, Loader2, CalendarDays, MapPin, Clock, CalendarCheck } from 'lucide-react';
+import { aFechaLocal } from '../../utils/format';
 
 export const ReservasList = () => {
   const { isAdmin, isGerente, isCliente, isTrabajador } = useAuth();
@@ -144,7 +145,7 @@ export const ReservasList = () => {
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
                         <CalendarDays size={14} color="var(--accent)" />
-                        {new Date(reserva.fecha).toLocaleDateString('es-EC')}
+                        {aFechaLocal(reserva.fecha).toLocaleDateString('es-EC')}
                       </div>
                     </td>
                     <td>

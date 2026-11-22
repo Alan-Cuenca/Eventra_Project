@@ -327,7 +327,7 @@ export const EventDetailPage = ({ eventoId: propId }) => {
               { label: 'Costo Total', value: fmt(evento.monto_total || 0), icon: DollarSign, color: 'var(--primary)' },
               { label: 'Anticipo Pagado', value: fmt(evento.anticipo_pagado || 0), icon: CheckCircle2, color: 'var(--success-text)' },
               { label: 'Saldo Pendiente', value: fmt(evento.saldo_pendiente || 0), icon: Clock, color: 'var(--warning-text)' },
-              { label: 'Invitados', value: evento.invitados || 0, icon: Users, color: 'var(--info)' },
+              { label: 'Invitados', value: evento.invitados || 'Sin dato', icon: Users, color: 'var(--info)' },
             ].map(({ label, value, icon: Icon, color }) => (
               <div key={label} className="kpi-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>

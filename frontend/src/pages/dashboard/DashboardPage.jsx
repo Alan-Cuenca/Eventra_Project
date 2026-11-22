@@ -594,7 +594,7 @@ export const DashboardPage = () => {
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><CalendarDays size={14} /> {evt.fecha || evt.fecha_evento}</span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Users size={14} /> {evt.invitados || evt.num_invitados || 100} invitados</span>
+                      {(evt.invitados || evt.num_invitados) && <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Users size={14} /> {evt.invitados || evt.num_invitados} invitados</span>}
                     </div>
                     <div style={{ marginTop: '0.75rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
@@ -705,7 +705,7 @@ export const DashboardPage = () => {
                     <span style={{ color: 'var(--border-subtle)' }}>|</span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Building2 size={15} /> {evt.salon_o_lugar || evt.salon_nombre || 'Por definir'}</span>
                     <span style={{ color: 'var(--border-subtle)' }}>|</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Users size={15} /> {evt.invitados || evt.num_invitados || 0} invitados</span>
+                    {(evt.invitados || evt.num_invitados) && <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Users size={15} /> {evt.invitados || evt.num_invitados} invitados</span>}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>

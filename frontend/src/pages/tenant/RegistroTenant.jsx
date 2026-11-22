@@ -114,7 +114,9 @@ export const RegistroTenant = () => {
       let msg = 'Ocurrió un error al procesar tu cuenta. Intenta nuevamente.';
 
       if (err?.status === 409 || err?.response?.status === 409) {
-        msg = 'Ya existe una cuenta con este correo electrónico. Por favor inicia sesión.';
+        // El backend distingue "ya tienes cuenta" de "la empresa ya te registró como cliente"
+        msg = err?.response?.data?.message || err?.data?.message || err?.message
+          || 'Ya existe una cuenta con este correo electrónico. Por favor inicia sesión.';
       } else if (err?.status === 403 || err?.response?.status === 403) {
         msg =
           err?.data?.message ||

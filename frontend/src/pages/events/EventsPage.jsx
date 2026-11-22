@@ -3,7 +3,7 @@ import { eventraService } from '../../services/eventraService';
 import { Calendar, Search, Filter, Plus, User, Phone, Eye, Loader2, Sparkles, AlertCircle, RefreshCw } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { formatMoney } from '../../utils/format';
+import { formatMoney, aFechaLocal } from '../../utils/format';
 
 export const EventsPage = () => {
   const navigate = useNavigate();
@@ -167,7 +167,7 @@ export const EventsPage = () => {
             const rawFecha = evt.fecha_evento || evt.fecha;
             let fechaFmt = 'Por definir';
             if (rawFecha) {
-              const parsed = new Date(rawFecha);
+              const parsed = aFechaLocal(rawFecha);
               if (!isNaN(parsed.getTime())) {
                 fechaFmt = parsed.toLocaleDateString('es-EC', { day: '2-digit', month: 'short', year: 'numeric' });
               }
@@ -214,7 +214,7 @@ export const EventsPage = () => {
                     <div className="flex items-center gap-2">
                       <Calendar size={14} className="text-[var(--ev-primary)] shrink-0" />
                       <span className="truncate">
-                        Fecha: <strong className="text-[var(--ev-text-main)] font-semibold">{fechaFmt}</strong> ({evt.invitados || 100} invitados)
+                        Fecha: <strong className="text-[var(--ev-text-main)] font-semibold">{fechaFmt}</strong>{evt.invitados ? ` (${evt.invitados} invitados)` : ''}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">

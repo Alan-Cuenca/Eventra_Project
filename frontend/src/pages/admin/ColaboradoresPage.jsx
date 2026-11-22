@@ -24,6 +24,7 @@ import {
   Send,
   Briefcase,
 } from 'lucide-react';
+import { aFechaLocal } from '../../utils/format';
 
 export const ColaboradoresPage = () => {
   const { isAdmin, user } = useAuth();
@@ -512,7 +513,7 @@ export const ColaboradoresPage = () => {
 
                       <td style={{ padding: '16px 24px', color: '#4D7182', fontSize: '13px' }}>
                         {colab.fecha_creacion
-                          ? new Date(colab.fecha_creacion).toLocaleDateString('es-ES', {
+                          ? aFechaLocal(colab.fecha_creacion).toLocaleDateString('es-ES', {
                               day: '2-digit',
                               month: 'short',
                               year: 'numeric',

@@ -13,6 +13,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   Users,
   Mail,
+  Send,
   Phone,
   Plus,
   X,
@@ -31,6 +32,7 @@ import {
   ChevronRight,
   ExternalLink,
 } from 'lucide-react';
+import { aFechaLocal } from '../../utils/format';
 
 // ── Formulario reutilizable dentro del Drawer ─────────────────────────────────
 const ClienteFormDrawer = ({ initialData = {}, onSubmit, submitting, onCancel, showEstado = false }) => {
@@ -162,9 +164,35 @@ const ClienteFormDrawer = ({ initialData = {}, onSubmit, submitting, onCancel, s
 export const ClientsPage = () => {
   const { isAdmin, isGerente } = useAuth();
   const canEdit = isAdmin || isGerente;
+  const [accesoPortal, setAccesoPortal] = useState(null); // { tipo: 'ok' | 'error', texto, enlace? }
+  const [enviandoAcceso, setEnviandoAcceso] = useState(false);
+
+  const enviarAccesoPortal = async (cliente) => {
+    if (!cliente?.email) {
+      setAccesoPortal({ tipo: 'error', texto: 'Este cliente no tiene correo electrónico. Agrégalo con "Editar" para enviarle el acceso.' });
+      return;
+    }
+    setEnviandoAcceso(true);
+    setAccesoPortal(null);
+    try {
+      const res = await eventraService.invitarClientePortal(cliente.email);
+      const enlace = res?.data?.enlace_registro;
+      setAccesoPortal({
+        tipo: 'ok',
+        texto: res?.message || `Enviamos a ${cliente.email} el enlace para crear su cuenta del portal.`,
+        enlace: res?.correo_enviado === false ? enlace : null,
+      });
+    } catch (err) {
+      setAccesoPortal({ tipo: 'error', texto: err.message || 'No se pudo enviar el acceso al portal.' });
+    } finally {
+      setEnviandoAcceso(false);
+    }
+  };
 
   const [clientes, setClientes] = useState([]);
   const [selectedCliente, setSelectedCliente] = useState(null);
+  // El aviso de acceso al portal pertenece al cliente seleccionado
+  useEffect(() => { setAccesoPortal(null); }, [selectedCliente?.id]);
   const [loading, setLoading] = useState(true);
   const [apiOnline, setApiOnline] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -476,6 +504,19 @@ export const ClientsPage = () => {
                       <span>Editar</span>
                     </button>
 
+                    {isAdmin && selectedCliente.estado_activo !== false && (
+                      <button
+                        type="button"
+                        onClick={() => enviarAccesoPortal(selectedCliente)}
+                        disabled={enviandoAcceso}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[var(--ev-border)] text-xs font-semibold text-[var(--ev-text-main)] hover:bg-ev-border/20 active:scale-[0.98] transition-transform duration-150 disabled:opacity-60"
+                        title="Envía al cliente un enlace para crear su cuenta y ver su evento y pagos"
+                      >
+                        <Send size={13} />
+                        <span>{enviandoAcceso ? 'Enviando…' : 'Enviar acceso al portal'}</span>
+                      </button>
+                    )}
+
                     {selectedCliente.estado_activo !== false && (
                       <button
                         type="button"
@@ -489,6 +530,25 @@ export const ClientsPage = () => {
                   </div>
                 )}
               </div>
+
+              {accesoPortal && (
+                <div
+                  role={accesoPortal.tipo === 'error' ? 'alert' : 'status'}
+                  data-cy="acceso-portal-aviso"
+                  className={`p-3 rounded-[14px] text-xs font-semibold border ${
+                    accesoPortal.tipo === 'error'
+                      ? 'bg-[#C95C5C]/10 border-[#C95C5C]/30 text-[#B04646]'
+                      : 'bg-[#4D9A72]/10 border-[#4D9A72]/30 text-[#2F7A55]'
+                  }`}
+                >
+                  <p className="m-0">{accesoPortal.texto}</p>
+                  {accesoPortal.enlace && (
+                    <p className="m-0 mt-1 break-all font-normal text-[var(--ev-text-main)]">
+                      Enlace para compartir: <span className="font-mono">{accesoPortal.enlace}</span>
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Información de Contacto (Radios Concéntricos: R_ext 22px - p-6 = R_int 16px) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -558,7 +618,7 @@ export const ClientsPage = () => {
                   <span>Fecha de alta en el sistema:</span>
                   <span className="font-semibold text-[var(--ev-text-main)] tabular-nums">
                     {selectedCliente.fecha_creacion
-                      ? new Date(selectedCliente.fecha_creacion).toLocaleDateString('es-EC', { dateStyle: 'long' })
+                      ? aFechaLocal(selectedCliente.fecha_creacion).toLocaleDateString('es-EC', { dateStyle: 'long' })
                       : 'Registro previo'}
                   </span>
                 </div>

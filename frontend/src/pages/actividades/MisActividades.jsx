@@ -13,6 +13,7 @@ import {
   TrendingUp,
   Check
 } from 'lucide-react';
+import { aFechaLocal } from '../../utils/format';
 
 export const MisActividades = () => {
   const { user } = useAuth();
@@ -225,7 +226,7 @@ export const MisActividades = () => {
                           {tarea.fecha_limite && (
                             <div className="flex items-center gap-1.5 text-[11px] text-[#4D7182] mt-0.5">
                               <Calendar size={12} />
-                              <span>Límite: {new Date(tarea.fecha_limite).toLocaleDateString('es-ES')}</span>
+                              <span>Límite: {aFechaLocal(tarea.fecha_limite).toLocaleDateString('es-ES')}</span>
                             </div>
                           )}
                         </div>

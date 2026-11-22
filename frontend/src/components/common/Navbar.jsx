@@ -301,12 +301,13 @@ export const Navbar = ({ onOpenCommandPalette }) => {
 
         {/* Estado API Sutil */}
         <div
-          className={`api-status-badge ${backendStatus === 'connected' ? 'connected' : 'offline'}`}
-          title={backendStatus === 'connected' ? 'Conectado con el servidor' : 'Sin conexión con el servidor'}
+          className={`api-status-badge ${backendStatus === 'connected' || backendStatus === 'checking' ? 'connected' : 'offline'}`}
+          title={backendStatus === 'checking' ? 'Comprobando la conexión con el servidor' : backendStatus === 'connected' ? 'Conectado con el servidor' : 'Sin conexión con el servidor'}
+          aria-live="polite"
         >
-          <span className={`status-dot ${backendStatus === 'connected' ? 'online' : 'offline'}`} />
+          <span className={`status-dot ${backendStatus === 'offline' || backendStatus === 'mock' ? 'offline' : 'online'}`} />
           <span className="hidden lg:inline">
-            {backendStatus === 'connected' ? 'En línea' : 'Sin conexión'}
+            {backendStatus === 'checking' ? 'Conectando…' : backendStatus === 'connected' ? 'En línea' : 'Sin conexión'}
           </span>
         </div>
 

@@ -17,7 +17,7 @@ import {
   ShieldCheck,
   ArrowRight,
 } from 'lucide-react';
-import { formatMoney } from '../../utils/format';
+import { formatMoney, aFechaLocal } from '../../utils/format';
 
 export const FacturacionSuperAdmin = () => {
   const [suscripciones, setSuscripciones] = useState([]);
@@ -315,7 +315,7 @@ export const FacturacionSuperAdmin = () => {
                       </td>
 
                       <td className="py-3.5 px-5 text-[#566D7A] tabular-nums font-medium">
-                        {new Date(susc.fecha_pago || susc.fecha_registro).toLocaleDateString('es-ES', {
+                        {aFechaLocal(susc.fecha_pago || susc.fecha_registro).toLocaleDateString('es-ES', {
                           day: '2-digit',
                           month: 'short',
                           year: 'numeric',

@@ -18,7 +18,7 @@ import {
   FileEdit,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
-import { formatMoney } from '../../utils/format';
+import { formatMoney, aFechaLocal } from '../../utils/format';
 
 export const PortalClientePage = () => {
   const { user, logout } = useAuth();
@@ -224,7 +224,7 @@ export const PortalClientePage = () => {
                 <span className="flex items-center gap-1">
                   <CalendarDays size={14} className="text-[#4D7182]" />
                   {fechaRaw
-                    ? new Date(fechaRaw).toLocaleDateString('es-ES', { dateStyle: 'long' })
+                    ? aFechaLocal(fechaRaw).toLocaleDateString('es-ES', { dateStyle: 'long' })
                     : 'Fecha por definir'}
                 </span>
                 <span className="flex items-center gap-1">

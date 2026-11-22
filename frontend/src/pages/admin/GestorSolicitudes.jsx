@@ -19,6 +19,7 @@ import {
   Mail,
   ChevronRight,
 } from 'lucide-react';
+import { aFechaLocal } from '../../utils/format';
 
 export const GestorSolicitudes = () => {
   const [solicitudes, setSolicitudes] = useState([]);
@@ -316,7 +317,7 @@ export const GestorSolicitudes = () => {
                       <td className="py-4 px-4 sm:px-6 whitespace-nowrap text-xs text-[#4D7182]">
                         <div className="font-semibold text-[#233D49]">
                           {sol.fecha_solicitud
-                            ? new Date(sol.fecha_solicitud).toLocaleDateString('es-ES', {
+                            ? aFechaLocal(sol.fecha_solicitud).toLocaleDateString('es-ES', {
                                 day: '2-digit',
                                 month: 'short',
                                 year: 'numeric',
@@ -349,7 +350,7 @@ export const GestorSolicitudes = () => {
                         {sol.fecha_evento && (
                           <div className="text-[#566D7A] text-[11px] flex items-center gap-1">
                             <Calendar size={11} />
-                            {new Date(sol.fecha_evento).toLocaleDateString()}
+                            {aFechaLocal(sol.fecha_evento).toLocaleDateString()}
                           </div>
                         )}
                       </td>
@@ -463,7 +464,7 @@ export const GestorSolicitudes = () => {
                 {solicitudSeleccionada.fecha_evento && (
                   <p className="text-[#566D7A]">
                     Fecha de la recepción:{' '}
-                    {new Date(solicitudSeleccionada.fecha_evento).toLocaleDateString()}
+                    {aFechaLocal(solicitudSeleccionada.fecha_evento).toLocaleDateString()}
                   </p>
                 )}
               </div>

@@ -4,6 +4,15 @@ export const eventraService = {
   // ==========================================
   // CLIENTES (/api/clientes)
   // ==========================================
+  /**
+   * Envía al cliente (por correo) el enlace para crear su cuenta del portal.
+   * POST /auth/invitar con rol Cliente (4): el correo confirma que la cuenta es suya.
+   */
+  async invitarClientePortal(email) {
+    const response = await api.post('/auth/invitar', { email, rol_id: 4 });
+    return response;
+  },
+
   async getClientes() {
     const response = await api.get('/clientes');
     return response?.data || [];

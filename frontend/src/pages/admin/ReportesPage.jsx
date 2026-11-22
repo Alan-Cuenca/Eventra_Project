@@ -27,7 +27,7 @@ import {
   RefreshCw,
   Loader2,
 } from 'lucide-react';
-import { formatMoney } from '../../utils/format';
+import { formatMoney, aFechaLocal } from '../../utils/format';
 
 const COLORES_DONUT = ['#526F7D', '#233D49', '#4D9A72', '#C49A3A'];
 
@@ -466,7 +466,7 @@ export const ReportesPage = () => {
                       {row.cliente_nombre || 'Cliente General'}
                     </td>
                     <td className="py-3.5 px-5 text-xs text-[#526F7D]">
-                      {row.fecha_evento ? new Date(row.fecha_evento).toLocaleDateString('es-ES') : 'Sin fecha'}
+                      {row.fecha_evento ? aFechaLocal(row.fecha_evento).toLocaleDateString('es-ES') : 'Sin fecha'}
                     </td>
                     <td className="py-3.5 px-5 text-xs text-right tabular-nums font-medium">
                       {formatMoney(Number(row.costo_total || 0))}
@@ -512,7 +512,7 @@ export const ReportesPage = () => {
                 {transacciones.map((p) => (
                   <tr key={p.id} className="hover:bg-[#FAF8F5] transition-colors">
                     <td className="py-3.5 px-5 text-xs text-[#526F7D]">
-                      {p.fecha ? new Date(p.fecha).toLocaleDateString('es-ES') : 'N/A'}
+                      {p.fecha ? aFechaLocal(p.fecha).toLocaleDateString('es-ES') : 'N/A'}
                     </td>
                     <td className="py-3.5 px-5 font-semibold text-[#233D49] text-xs">
                       {p.cliente_nombre || 'Cliente General'}
@@ -559,7 +559,7 @@ export const ReportesPage = () => {
                       {evt.cliente_nombre || 'Cliente General'}
                     </td>
                     <td className="py-3.5 px-5 text-xs text-[#526F7D]">
-                      {evt.fecha_evento ? new Date(evt.fecha_evento).toLocaleDateString('es-ES') : 'Por definir'}
+                      {evt.fecha_evento ? aFechaLocal(evt.fecha_evento).toLocaleDateString('es-ES') : 'Por definir'}
                     </td>
                     <td className="py-3.5 px-5 text-xs text-[#526F7D]">
                       {evt.salon_o_lugar || 'Salón Principal'}

@@ -24,7 +24,7 @@ import {
   X,
   Inbox,
 } from 'lucide-react';
-import { formatMoney } from '../../utils/format';
+import { formatMoney, aFechaLocal } from '../../utils/format';
 
 /**
  * =============================================================================
@@ -172,7 +172,7 @@ export const SolicitudesIngresoPage = () => {
   const formatearFecha = (fechaStr) => {
     if (!fechaStr) return 'Reciente';
     try {
-      return new Date(fechaStr).toLocaleDateString('es-EC', {
+      return aFechaLocal(fechaStr).toLocaleDateString('es-EC', {
         day: '2-digit',
         month: 'short',
         year: 'numeric',

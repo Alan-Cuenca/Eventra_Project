@@ -18,6 +18,7 @@ import {
   Building2,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
+import { aFechaLocal } from '../../utils/format';
 
 export const SolicitudesCliente = () => {
   const { user } = useAuth();
@@ -231,7 +232,7 @@ export const SolicitudesCliente = () => {
                   >
                     {eventos.map((evt) => (
                       <option key={evt.id} value={evt.id}>
-                        {evt.titulo || 'Evento'} {evt.fecha ? `(${new Date(evt.fecha).toLocaleDateString()})` : ''}
+                        {evt.titulo || 'Evento'} {evt.fecha ? `(${aFechaLocal(evt.fecha).toLocaleDateString()})` : ''}
                       </option>
                     ))}
                   </select>
@@ -339,7 +340,7 @@ export const SolicitudesCliente = () => {
                       </span>
                       {sol.fecha_evento && (
                         <span className="text-xs text-[#566D7A] hidden sm:inline">
-                          • {new Date(sol.fecha_evento).toLocaleDateString()}
+                          • {aFechaLocal(sol.fecha_evento).toLocaleDateString()}
                         </span>
                       )}
                     </div>
