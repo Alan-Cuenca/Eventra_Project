@@ -12,7 +12,7 @@ import {
   Clock, AlertCircle, CheckCircle2, FileText, History, ChevronLeft,
   Eye, User, Loader2, Edit3, FileEdit, Send
 } from 'lucide-react';
-import { formatMoney } from '../../utils/format';
+import { formatMoney, formatFecha } from '../../utils/format';
 
 // ── Tabs config ────────────────────────────────────────────────────────────
 const TABS = [
@@ -260,7 +260,7 @@ export const EventDetailPage = ({ eventoId: propId }) => {
             </Badge>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>·</span>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <CalendarDays size={14} /> {evento.fecha}
+              <CalendarDays size={14} /> {formatFecha(evento.fecha)}
             </span>
           </div>
         </div>
@@ -419,7 +419,7 @@ export const EventDetailPage = ({ eventoId: propId }) => {
                   <tr key={act.id}>
                     <td style={{ fontWeight: 600, fontSize: '0.875rem' }}>{act.nombre}</td>
                     <td style={{ fontSize: '0.875rem' }}>{act.responsable}</td>
-                    <td style={{ fontSize: '0.875rem', whiteSpace: 'nowrap' }}>{act.fecha}</td>
+                    <td style={{ fontSize: '0.875rem', whiteSpace: 'nowrap' }}>{formatFecha(act.fecha)}</td>
                     <td><Badge variant={actEstadoBadge(act.estado)}>{act.estado}</Badge></td>
                     <td>
                       {!isCliente && (
@@ -463,7 +463,7 @@ export const EventDetailPage = ({ eventoId: propId }) => {
                       <td style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{p.id}</td>
                       <td style={{ fontSize: '0.875rem', fontWeight: 600 }}>{p.concepto}</td>
                       <td style={{ fontWeight: 800, color: 'var(--primary-dark)', fontFamily: 'Outfit, sans-serif' }}>{fmt(p.monto)}</td>
-                      <td style={{ fontSize: '0.875rem', whiteSpace: 'nowrap' }}>{p.fecha}</td>
+                      <td style={{ fontSize: '0.875rem', whiteSpace: 'nowrap' }}>{formatFecha(p.fecha)}</td>
                       <td style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{p.metodo}</td>
                       <td><Badge variant={['Aprobado', 'Completado'].includes(p.estado) ? 'success' : p.estado === 'Rechazado' ? 'danger' : 'warning'}>{p.estado}</Badge></td>
                     </tr>
@@ -522,7 +522,7 @@ export const EventDetailPage = ({ eventoId: propId }) => {
                     {f.nombre}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    {f.tipo} · {f.tamanio} · Subido por {f.subido_por} · {f.fecha}
+                    {f.tipo} · {f.tamanio} · Subido por {f.subido_por} · {formatFecha(f.fecha)}
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '0.4rem' }}>
@@ -588,7 +588,7 @@ export const EventDetailPage = ({ eventoId: propId }) => {
                     </div>
                     <div style={{ fontSize: '0.77rem', color: 'var(--text-muted)', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><User size={13} /> {h.usuario}</span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Clock size={13} /> {h.fecha}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Clock size={13} /> {formatFecha(h.fecha)}</span>
                     </div>
                   </div>
                 </div>
