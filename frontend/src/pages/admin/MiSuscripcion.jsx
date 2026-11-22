@@ -23,7 +23,7 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
-import { formatMoney } from '../../utils/format';
+import { formatMoney, aFechaLocal } from '../../utils/format';
 
 export const MiSuscripcion = () => {
   const { user } = useAuth();
@@ -146,7 +146,7 @@ export const MiSuscripcion = () => {
     try {
       const formData = new FormData();
       formData.append('plan_nombre', planSeleccionado);
-      formData.append('monto', planSeleccionado === 'Premium' ? '99.00' : '49.00');
+      formData.append('monto', montoPlan.toFixed(2)); // informativo: el backend calcula el monto con la configuración
       formData.append('comprobante', archivo);
       formData.append('correo_credenciales', emailLimpio);
 
@@ -156,7 +156,7 @@ export const MiSuscripcion = () => {
       setConfirmacionPantalla({
         correo: emailLimpio,
         plan: planSeleccionado,
-        monto: planSeleccionado === 'Premium' ? '99.00' : '49.00',
+        monto: montoPlan.toFixed(2),
         archivoNombre: archivo.name,
       });
       showToast(
@@ -176,7 +176,7 @@ export const MiSuscripcion = () => {
   // Plan actual de la empresa desde el usuario o el último registro
   const planActual = user?.plan_suscripcion || suscripciones[0]?.empresa_plan_actual || 'Basico';
   const esPremium = planActual.toLowerCase().includes('premium');
-  const costoActual = esPremium ? 99.0 : 49.0;
+  const costoActual = esPremium ? precioPremium : precioBasico;
 
   // Estado general de la cuenta
   const tienePagoPendiente = suscripciones.some((s) => s.estado === 'En Revisión');
@@ -231,11 +231,11 @@ export const MiSuscripcion = () => {
                 <Zap size={18} />
               </div>
             </div>
-            <div className="mt-3 flex items-baseline gap-2">
+            <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1 min-w-0">
               <h3 className="text-2xl sm:text-3xl font-extrabold text-[#233D49]">
                 Plan {planActual}
               </h3>
-              <span className="text-sm font-bold text-[#526F7D] tabular-nums">
+              <span className="text-sm font-bold text-[#526F7D] tabular-nums whitespace-nowrap">
                 {formatMoney(costoActual)}/mes
               </span>
             </div>
@@ -473,7 +473,7 @@ export const MiSuscripcion = () => {
               </span>
             </div>
             <p className="text-xs text-[#566D7A] mt-1">
-              Gestión de hasta {saasConfig?.planes?.basico_max_eventos ?? 20} eventos al mes, {saasConfig?.planes?.basico_max_usuarios ?? 3} colaboradores y catálogo esencial.
+              Hasta {saasConfig?.planes?.basico_max_eventos ?? 20} eventos activos, {saasConfig?.planes?.basico_max_usuarios ?? 3} colaboradores y EVARA AI ({saasConfig?.planes?.basico_max_chatbot ?? 300} mensajes/mes).
             </p>
           </div>
 
@@ -495,7 +495,7 @@ export const MiSuscripcion = () => {
               </span>
             </div>
             <p className="text-xs text-[#566D7A] mt-1">
-              Eventos ampliados ({saasConfig?.planes?.premium_max_eventos ?? 100}/mes), Asistente AI EVARA ({saasConfig?.planes?.premium_max_chatbot ?? 1500} consultas) y soporte prioritario.
+              Hasta {saasConfig?.planes?.premium_max_eventos ?? 100} eventos activos, {saasConfig?.planes?.premium_max_usuarios ?? 10} colaboradores y EVARA AI ({saasConfig?.planes?.premium_max_chatbot ?? 1500} mensajes/mes).
             </p>
           </div>
         </div>
@@ -575,7 +575,7 @@ export const MiSuscripcion = () => {
         <form onSubmit={handleSubmitPago} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-[#233D49] mb-1.5">
-              Subir PDF del Comprobante de Pago ({planSeleccionado} — ${montoPlan}.00) <span className="text-[#B04646]">*</span>
+              Subir PDF del Comprobante de Pago ({planSeleccionado} — ${montoPlan.toFixed(2)}) <span className="text-[#B04646]">*</span>
             </label>
 
             {!archivo ? (
@@ -655,8 +655,8 @@ export const MiSuscripcion = () => {
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-lg backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 rounded-3xl border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] overflow-hidden">
-            <div className="bg-[var(--ev-surface)]/40 px-6 py-4 border-b border-[var(--ev-border)]/20 flex items-center justify-between">
+          <div className="w-full max-w-lg backdrop-blur-xl backdrop-saturate-[180%] bg-ev-surface/80 rounded-3xl border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] overflow-hidden">
+            <div className="bg-ev-surface/40 px-6 py-4 border-b border-ev-border/20 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-[#4D7182] text-white flex items-center justify-center">
                   <Mail size={18} />
@@ -687,7 +687,7 @@ export const MiSuscripcion = () => {
                     {archivo?.name}
                   </span>
                   <span className="text-[#2F7A55] font-semibold">
-                    Plan {planSeleccionado} · ${planSeleccionado === 'Premium' ? '99.00' : '49.00'} USD
+                    Plan {planSeleccionado} · ${montoPlan.toFixed(2)} USD
                   </span>
                 </div>
               </div>
@@ -786,7 +786,7 @@ export const MiSuscripcion = () => {
                         {formatMoney(susc.monto)}
                       </td>
                       <td className="py-3 px-4 text-[#566D7A] tabular-nums">
-                        {new Date(susc.fecha_pago || susc.fecha_registro).toLocaleDateString('es-ES', {
+                        {aFechaLocal(susc.fecha_pago || susc.fecha_registro).toLocaleDateString('es-ES', {
                           day: '2-digit',
                           month: 'short',
                           year: 'numeric',

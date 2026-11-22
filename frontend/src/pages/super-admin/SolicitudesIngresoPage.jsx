@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { superAdminService } from '../../services/superAdminService';
 import { eventraService } from '../../services/eventraService';
+import { usePlanes } from '../../hooks/usePlanes';
 import { GlobalStatCard } from '../../components/super-admin/GlobalStatCard';
 import { CrearEmpresaModal } from '../../components/super-admin/CrearEmpresaModal';
 import { SolicitudesPublicasPlan } from '../../components/super-admin/SolicitudesPublicasPlan';
@@ -23,7 +24,7 @@ import {
   X,
   Inbox,
 } from 'lucide-react';
-import { formatMoney } from '../../utils/format';
+import { formatMoney, aFechaLocal } from '../../utils/format';
 
 /**
  * =============================================================================
@@ -36,6 +37,7 @@ import { formatMoney } from '../../utils/format';
  * =============================================================================
  */
 export const SolicitudesIngresoPage = () => {
+  const { planes } = usePlanes();
   const [solicitudes, setSolicitudes] = useState([]);
   const [empresas, setEmpresas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +83,7 @@ export const SolicitudesIngresoPage = () => {
           empresa_nombre: e.nombre_comercial,
           empresa_ruc: e.ruc || 'N/D',
           plan_nombre: e.plan_suscripcion || 'Basico',
-          monto: (e.plan_suscripcion || '').toLowerCase().includes('premium') ? 99 : 49,
+          monto: (e.plan_suscripcion || '').toLowerCase().includes('premium') ? planes.Premium.precioMensual : planes.Basico.precioMensual,
           estado: e.estado_activo ? 'Aprobado' : 'En Revisión',
           fecha_pago: e.fecha_registro,
           fecha_registro: e.fecha_registro,
@@ -98,7 +100,7 @@ export const SolicitudesIngresoPage = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [planes]);
 
   useEffect(() => {
     cargarSolicitudesIngreso();
@@ -170,7 +172,7 @@ export const SolicitudesIngresoPage = () => {
   const formatearFecha = (fechaStr) => {
     if (!fechaStr) return 'Reciente';
     try {
-      return new Date(fechaStr).toLocaleDateString('es-EC', {
+      return aFechaLocal(fechaStr).toLocaleDateString('es-EC', {
         day: '2-digit',
         month: 'short',
         year: 'numeric',

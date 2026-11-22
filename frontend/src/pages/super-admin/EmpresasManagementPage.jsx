@@ -25,6 +25,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
+import { aFechaLocal } from '../../utils/format';
 
 /**
  * =============================================================================
@@ -161,7 +162,7 @@ export const EmpresasManagementPage = () => {
   const formatearFecha = (fechaStr) => {
     if (!fechaStr) return 'No disponible';
     try {
-      const f = new Date(fechaStr);
+      const f = aFechaLocal(fechaStr);
       return f.toLocaleDateString('es-EC', {
         year: 'numeric',
         month: 'short',

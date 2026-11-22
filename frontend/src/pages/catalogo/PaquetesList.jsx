@@ -94,7 +94,7 @@ export const PaquetesList = () => {
             <div style={{ color: 'var(--text-secondary)' }}>No se encontraron paquetes.</div>
           </div>
         ) : (
-          <div className="grid-cols-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1rem' }}>
+          <div className="grid-auto-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1rem' }}>
             {filteredPaquetes.map(p => (
               <div key={p.id} style={{ border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '1.25rem', background: 'rgba(255,255,255,0.02)', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>

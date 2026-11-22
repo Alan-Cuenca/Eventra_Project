@@ -4,11 +4,11 @@ import { Calendar, ShieldCheck, Mail, Lock, CheckCircle2, ArrowRight } from 'luc
 
 export const Footer = () => {
   return (
-    <footer className="bg-[var(--ev-surface)]/70 border-t border-[var(--ev-border)] pt-16 pb-12 text-[var(--ev-text-main)] transition-colors duration-300">
+    <footer className="bg-ev-surface/70 border-t border-[var(--ev-border)] pt-16 pb-12 text-[var(--ev-text-main)] transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Grid de 4 columnas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[var(--ev-border)]/70">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-ev-border/70">
           
           {/* Columna Marca (2 cols) */}
           <div className="lg:col-span-2 space-y-4">
@@ -21,7 +21,7 @@ export const Footer = () => {
                   <span className="text-xl font-bold tracking-tight text-[var(--ev-text-main)]">
                     EVENTRA
                   </span>
-                  <span className="text-[11px] font-semibold uppercase px-1.5 py-0.5 rounded bg-[var(--ev-border)]/50 text-[var(--ev-text-main)]/80 border border-[var(--ev-border)]/70">
+                  <span className="text-[11px] font-semibold uppercase px-1.5 py-0.5 rounded bg-ev-border/50 text-ev-text-main/80 border border-ev-border/70">
                     SaaS
                   </span>
                 </div>
@@ -36,11 +36,11 @@ export const Footer = () => {
             </p>
 
             <div className="space-y-1.5 pt-2">
-              <div className="flex items-center gap-2 text-xs text-[var(--ev-text-main)]/85 font-medium">
+              <div className="flex items-center gap-2 text-xs text-ev-text-main/85 font-medium">
                 <ShieldCheck className="w-4 h-4 text-[#2F7A55]" />
                 <span>Sin dobles reservas de salón</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-[var(--ev-text-main)]/85 font-medium">
+              <div className="flex items-center gap-2 text-xs text-ev-text-main/85 font-medium">
                 <Lock className="w-4 h-4 text-[var(--ev-primary)]" />
                 <span>Acceso por roles y almacenamiento seguro</span>
               </div>

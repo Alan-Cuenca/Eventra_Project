@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { usePlanes } from '../../hooks/usePlanes';
 import { 
   Sparkles, 
   Send, 
@@ -19,6 +20,7 @@ import {
 } from 'lucide-react';
 
 export const EvaraAI = () => {
+  const { planes } = usePlanes();
   useEffect(() => {
     document.title = 'EVARA AI - Asistente Inteligente de Ventas 24/7 | EVENTRA';
   }, []);
@@ -305,7 +307,7 @@ export const EvaraAI = () => {
               to="/precios"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-[#526F7D] hover:bg-[#3E5763] text-white font-semibold shadow-md transition-all duration-200"
             >
-              <span>Activa EVARA AI con el Plan Premium ($99/mes)</span>
+              <span>Ver planes con EVARA AI (desde ${planes.Basico.precioMensual}/mes)</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

@@ -18,7 +18,7 @@ import {
   FileEdit,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
-import { formatMoney } from '../../utils/format';
+import { formatMoney, aFechaLocal } from '../../utils/format';
 
 export const PortalClientePage = () => {
   const { user, logout } = useAuth();
@@ -85,8 +85,7 @@ export const PortalClientePage = () => {
     mainEvent?.salon_nombre ||
     mainEvent?.salon ||
     'Por definir';
-  const invitadosDisplay =
-    mainEvent?.num_invitados || mainEvent?.invitados || 150;
+  const invitadosDisplay = mainEvent?.num_invitados || mainEvent?.invitados || null;
 
   const ACCESOS_RAPIDOS = [
     {
@@ -136,7 +135,7 @@ export const PortalClientePage = () => {
       <WatermarkOverlay />
 
       {/* ── Top Bar Oficial "Sofisticación Sutil" ─────────────────────── */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] px-4 sm:px-8 h-20 flex items-center justify-between">
+      <header className="sticky top-0 z-50 backdrop-blur-xl backdrop-saturate-[180%] bg-ev-surface/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] px-4 sm:px-8 h-20 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img
             src={brandLogo}
@@ -195,17 +194,28 @@ export const PortalClientePage = () => {
           </p>
         </div>
 
-        {/* ── Card Resumen del Evento Activo ─────────────────────────── */}
+        {/* ── Card Resumen del Evento Activo (solo datos reales; sin evento → estado vacío) ── */}
+        {loading ? (
+          <div className="bg-white rounded-3xl p-8 border border-[#CEC8B8] shadow-md text-sm font-semibold text-[#4D7182]" role="status">
+            Cargando tu evento...
+          </div>
+        ) : !mainEvent ? (
+          <div className="bg-white rounded-3xl p-8 border border-[#CEC8B8] shadow-md text-center space-y-2" data-cy="portal-sin-eventos">
+            <CalendarDays size={28} className="mx-auto text-[#4D7182]" />
+            <h2 className="text-lg font-bold text-[#233D49]">Aún no tienes un evento registrado</h2>
+            <p className="text-sm text-[#233D49]/75 max-w-md mx-auto">
+              Cuando la empresa confirme tu reserva verás aquí la fecha, el salón, el total contratado y tus pagos.
+            </p>
+          </div>
+        ) : (
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#CEC8B8] shadow-md relative overflow-hidden">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-6 border-b border-[#CEC8B8]/50">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#4D9A72]/15 text-[#2F7A55] border border-[#4D9A72]/30">
-                  {mainEvent?.estado || 'Confirmado'}
+                  {mainEvent.estado_progreso || mainEvent.estado || 'Planificación'}
                 </span>
-                <span className="text-xs text-[#4D7182] font-semibold">
-                  {loading ? 'Cargando recepción...' : 'Evento Principal'}
-                </span>
+                <span className="text-xs text-[#4D7182] font-semibold">Evento Principal</span>
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-[#233D49]">
                 {mainEvent?.titulo || mainEvent?.nombre_evento || mainEvent?.nombre || 'Tu evento'}
@@ -214,17 +224,19 @@ export const PortalClientePage = () => {
                 <span className="flex items-center gap-1">
                   <CalendarDays size={14} className="text-[#4D7182]" />
                   {fechaRaw
-                    ? new Date(fechaRaw).toLocaleDateString('es-ES', { dateStyle: 'long' })
-                    : '28 de Noviembre de 2026'}
+                    ? aFechaLocal(fechaRaw).toLocaleDateString('es-ES', { dateStyle: 'long' })
+                    : 'Fecha por definir'}
                 </span>
                 <span className="flex items-center gap-1">
                   <Building2 size={14} className="text-[#4D7182]" />
                   {salonDisplay}
                 </span>
-                <span className="flex items-center gap-1">
-                  <Users size={14} className="text-[#4D7182]" />
-                  {invitadosDisplay} Comensales
-                </span>
+                {invitadosDisplay && (
+                  <span className="flex items-center gap-1">
+                    <Users size={14} className="text-[#4D7182]" />
+                    {invitadosDisplay} Comensales
+                  </span>
+                )}
               </div>
             </div>
 
@@ -278,6 +290,7 @@ export const PortalClientePage = () => {
             </div>
           </div>
         </div>
+        )}
 
         {/* ── Accesos Rápidos Modulares ──────────────────────────────── */}
         <div className="space-y-4">

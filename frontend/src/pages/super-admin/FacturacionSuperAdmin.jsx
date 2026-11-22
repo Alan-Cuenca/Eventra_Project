@@ -17,7 +17,7 @@ import {
   ShieldCheck,
   ArrowRight,
 } from 'lucide-react';
-import { formatMoney } from '../../utils/format';
+import { formatMoney, aFechaLocal } from '../../utils/format';
 
 export const FacturacionSuperAdmin = () => {
   const [suscripciones, setSuscripciones] = useState([]);
@@ -315,7 +315,7 @@ export const FacturacionSuperAdmin = () => {
                       </td>
 
                       <td className="py-3.5 px-5 text-[#566D7A] tabular-nums font-medium">
-                        {new Date(susc.fecha_pago || susc.fecha_registro).toLocaleDateString('es-ES', {
+                        {aFechaLocal(susc.fecha_pago || susc.fecha_registro).toLocaleDateString('es-ES', {
                           day: '2-digit',
                           month: 'short',
                           year: 'numeric',
@@ -370,9 +370,9 @@ export const FacturacionSuperAdmin = () => {
       {/* Modal de Revisión y Aprobación de Suscripción (Soporta PDF e Imágenes) */}
       {isModalOpen && pagoSeleccionado && (
         <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/40 backdrop-blur-sm flex items-center justify-center animate-fade-in">
-          <div className="backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] rounded-2xl sm:rounded-3xl border-0 p-5 sm:p-7 max-w-lg w-full space-y-4 my-auto max-h-[calc(100vh-3.5rem)] overflow-y-auto animate-scale-up">
+          <div className="backdrop-blur-xl backdrop-saturate-[180%] bg-ev-surface/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] rounded-2xl sm:rounded-3xl border-0 p-5 sm:p-7 max-w-lg w-full space-y-4 my-auto max-h-[calc(100vh-3.5rem)] overflow-y-auto animate-scale-up">
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--ev-border)]/30 sticky top-0 bg-transparent z-10">
+            <div className="flex items-center justify-between pb-3 border-b border-ev-border/30 sticky top-0 bg-transparent z-10">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-[#526F7D]/10 text-[#526F7D] flex items-center justify-center">
                   <CreditCard size={18} />

@@ -110,10 +110,10 @@ export const CommandPalette = ({ isOpen, onClose }) => {
       />
 
       {/* Modal Omnibar en Liquid Glass con Radios Concéntricos (R_ext 20px - p-2 = R_int 12px) */}
-      <div className="relative mx-auto max-w-xl rounded-[20px] backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] overflow-hidden animate-fade-in z-50">
+      <div className="relative mx-auto max-w-xl rounded-[20px] backdrop-blur-xl backdrop-saturate-[180%] bg-ev-surface/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] overflow-hidden animate-fade-in z-50">
         
         {/* Input de Búsqueda */}
-        <div className="flex items-center px-4 py-3.5 border-b border-[var(--ev-border)]/20 backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80">
+        <div className="flex items-center px-4 py-3.5 border-b border-ev-border/20 backdrop-blur-xl backdrop-saturate-[180%] bg-ev-surface/80">
           <Search size={18} className="text-[var(--ev-primary)] shrink-0 mr-3" />
           <input
             ref={inputRef}
@@ -129,7 +129,7 @@ export const CommandPalette = ({ isOpen, onClose }) => {
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-[8px] text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/30 active:scale-[0.98]"
+            className="p-1 rounded-[8px] text-[var(--ev-text-muted)] hover:text-[var(--ev-text-main)] hover:bg-ev-border/30 active:scale-[0.98]"
           >
             <X size={16} />
           </button>
@@ -155,12 +155,12 @@ export const CommandPalette = ({ isOpen, onClose }) => {
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-[12px] text-xs transition-colors active:scale-[0.99] ${
                     isSelected
-                      ? 'bg-[var(--ev-primary)]/15 text-[var(--ev-primary)] font-bold shadow-2xs'
-                      : 'text-[var(--ev-text-main)]/85 hover:bg-[var(--ev-border)]/20'
+                      ? 'bg-ev-primary/15 text-[var(--ev-primary)] font-bold shadow-2xs'
+                      : 'text-ev-text-main/85 hover:bg-ev-border/20'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className={`p-1.5 rounded-[8px] ${isSelected ? 'bg-[var(--ev-primary)] text-white shadow-xs' : 'bg-[var(--ev-border)]/30 text-[var(--ev-primary)]'}`}>
+                    <span className={`p-1.5 rounded-[8px] ${isSelected ? 'bg-[var(--ev-primary)] text-white shadow-xs' : 'bg-ev-border/30 text-[var(--ev-primary)]'}`}>
                       {item.icon}
                     </span>
                     <span>{item.label}</span>
@@ -180,7 +180,7 @@ export const CommandPalette = ({ isOpen, onClose }) => {
         </div>
 
         {/* Footer con Atajos */}
-        <div className="px-4 py-2 border-t border-[var(--ev-border)]/40 bg-[var(--ev-bg-base)]/40 flex items-center justify-between text-[11px] text-[var(--ev-text-muted)]">
+        <div className="px-4 py-2 border-t border-ev-border/40 bg-ev-bg-base/40 flex items-center justify-between text-[11px] text-[var(--ev-text-muted)]">
           <div className="flex items-center gap-3">
             <span><kbd className="px-1.5 py-0.5 rounded bg-[var(--ev-surface)] border border-[var(--ev-border)] font-mono text-[11px]">↑</kbd> <kbd className="px-1.5 py-0.5 rounded bg-[var(--ev-surface)] border border-[var(--ev-border)] font-mono text-[11px]">↓</kbd> Navegar</span>
             <span><kbd className="px-1.5 py-0.5 rounded bg-[var(--ev-surface)] border border-[var(--ev-border)] font-mono text-[11px]">↵</kbd> Seleccionar</span>

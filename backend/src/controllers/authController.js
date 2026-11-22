@@ -425,6 +425,21 @@ export const registrarClientePortal = async (req, res) => {
       });
     }
 
+    // La empresa ya registró a esta persona como cliente: el acceso se envía a su correo desde
+    // la ficha del cliente (invitación), así se comprueba que el correo es suyo antes de mostrarle
+    // eventos y pagos. Vincularla aquí sin verificar permitiría suplantarla conociendo su correo.
+    const clienteExistente = await client.query(
+      'SELECT 1 FROM clientes WHERE empresa_id = $1 AND LOWER(email) = LOWER($2) LIMIT 1',
+      [empresa.id, emailNormalizado]
+    );
+    if (clienteExistente.rowCount > 0) {
+      return res.status(409).json({
+        success: false,
+        error: 'CLIENTE_YA_REGISTRADO',
+        message: `${empresa.nombre_comercial} ya te tiene registrado como cliente. Pide a la empresa que te envíe el acceso al portal a tu correo.`,
+      });
+    }
+
     // 4. Iniciar transacción atómica (usuarios + clientes)
     await client.query('BEGIN');
 

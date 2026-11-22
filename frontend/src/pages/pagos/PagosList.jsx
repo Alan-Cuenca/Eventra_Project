@@ -145,7 +145,7 @@ export const PagosList = () => {
         <button
           onClick={cargarPagos}
           disabled={loading}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--ev-surface)] hover:bg-[var(--ev-surface-elevated)] border border-[var(--ev-border)]/60 text-xs font-semibold text-[var(--ev-text-main)] shadow-xs active:scale-[0.98] transition-transform duration-150"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--ev-surface)] hover:bg-[var(--ev-surface-elevated)] border border-ev-border/60 text-xs font-semibold text-[var(--ev-text-main)] shadow-xs active:scale-[0.98] transition-transform duration-150"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           <span>Actualizar Datos</span>
@@ -300,7 +300,7 @@ export const PagosList = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#FAF8F5] border-b border-[var(--ev-border)]/60 text-[11px] font-bold uppercase tracking-wider text-[#526F7D]">
+              <tr className="bg-[#FAF8F5] border-b border-ev-border/60 text-[11px] font-bold uppercase tracking-wider text-[#526F7D]">
                 <th className="py-3.5 px-5">Cliente</th>
                 <th className="py-3.5 px-5">Evento</th>
                 <th className="py-3.5 px-5">Monto</th>
@@ -430,7 +430,7 @@ export const PagosList = () => {
                         ) : (
                           <button
                             onClick={() => handleVerDetalle(pago)}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--ev-surface)] border border-[var(--ev-border)]/50 text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/20 font-semibold text-xs shadow-xs active:scale-[0.98] transition-transform duration-150"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--ev-surface)] border border-ev-border/50 text-[var(--ev-text-main)] hover:bg-ev-border/20 font-semibold text-xs shadow-xs active:scale-[0.98] transition-transform duration-150"
                           >
                             <span>Detalle</span>
                             <ArrowRight size={12} />
@@ -449,10 +449,10 @@ export const PagosList = () => {
       {/* Modal de Aprobación y Validación de Comprobante */}
       {isModalOpen && pagoSeleccionado && (
         <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/40 backdrop-blur-sm flex items-center justify-center animate-fade-in">
-          <div className="backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 rounded-3xl p-5 sm:p-7 max-w-lg w-full border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] space-y-4 my-auto max-h-[calc(100vh-3.5rem)] overflow-y-auto animate-scale-up">
+          <div className="backdrop-blur-xl backdrop-saturate-[180%] bg-ev-surface/80 rounded-3xl p-5 sm:p-7 max-w-lg w-full border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] space-y-4 my-auto max-h-[calc(100vh-3.5rem)] overflow-y-auto animate-scale-up">
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--ev-border)]/30 sticky top-0 bg-transparent z-10">
+            <div className="flex items-center justify-between pb-3 border-b border-ev-border/30 sticky top-0 bg-transparent z-10">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-[#526F7D]/10 text-[#526F7D] flex items-center justify-center">
                   <CreditCard size={18} />

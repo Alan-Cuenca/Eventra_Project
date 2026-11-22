@@ -319,7 +319,7 @@ export const DashboardPage = () => {
       {isAdmin && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* KPIs */}
-          <div className="grid-cols-4">
+          <div className="grid-auto-4">
             <KpiCard label="Eventos Activos" value={kd.total_eventos_activos}
               icon={CalendarDays} iconColor="var(--primary)"
               subtext={<><TrendingUp size={12} /> En planificación o en progreso</>}
@@ -406,7 +406,7 @@ export const DashboardPage = () => {
          ══════════════════════════════════════════════════════════════════════ */}
       {isGerente && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div className="grid-cols-4">
+          <div className="grid-auto-4">
             <KpiCard label="Eventos Activos" value={kd.total_eventos_activos}
               icon={Activity} iconColor="var(--primary)"
               subtext="En planificación o en progreso" loading={kpiLoading} />
@@ -551,7 +551,7 @@ export const DashboardPage = () => {
          ══════════════════════════════════════════════════════════════════════ */}
       {isTrabajador && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div className="grid-cols-4">
+          <div className="grid-auto-4">
             <KpiCard label="Eventos Asignados" value={kd.total_eventos_activos}
               icon={CalendarDays} iconColor="var(--primary)"
               subtext="En progreso o planificación" loading={kpiLoading} />
@@ -564,7 +564,7 @@ export const DashboardPage = () => {
             />
           </div>
 
-          <div className="grid-cols-2">
+          <div className="grid-auto-2">
             {/* Eventos asignados */}
             <div className="card">
               <div className="card-header">
@@ -594,7 +594,7 @@ export const DashboardPage = () => {
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><CalendarDays size={14} /> {evt.fecha || evt.fecha_evento}</span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Users size={14} /> {evt.invitados || evt.num_invitados || 100} invitados</span>
+                      {(evt.invitados || evt.num_invitados) && <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Users size={14} /> {evt.invitados || evt.num_invitados} invitados</span>}
                     </div>
                     <div style={{ marginTop: '0.75rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
@@ -705,7 +705,7 @@ export const DashboardPage = () => {
                     <span style={{ color: 'var(--border-subtle)' }}>|</span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Building2 size={15} /> {evt.salon_o_lugar || evt.salon_nombre || 'Por definir'}</span>
                     <span style={{ color: 'var(--border-subtle)' }}>|</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Users size={15} /> {evt.invitados || evt.num_invitados || 0} invitados</span>
+                    {(evt.invitados || evt.num_invitados) && <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Users size={15} /> {evt.invitados || evt.num_invitados} invitados</span>}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -752,7 +752,7 @@ export const DashboardPage = () => {
             </div>
 
             {/* Links de acceso rápido */}
-            <div className="grid-cols-3">
+            <div className="grid-auto-3">
               {[
                 { icon: <CalendarCheck size={22} />, label: 'Ver detalle completo', sub: 'Actividades, pagos y archivos', to: '/eventos', color: 'var(--primary)' },
                 { icon: <MessageSquare size={22} />, label: 'Solicitar modificación', sub: 'Cambia detalles de tu evento', to: '/portal-cliente/solicitudes', color: 'var(--warning-text)' },

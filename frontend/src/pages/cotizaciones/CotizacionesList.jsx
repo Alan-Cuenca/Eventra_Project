@@ -9,7 +9,7 @@ import { Badge } from '../../components/common/Badge';
 import { eventraService } from '../../services/eventraService';
 import { useAuth } from '../../context/AuthContext';
 import { Plus, Search, Loader2, Calculator, CalendarDays } from 'lucide-react';
-import { formatMoney } from '../../utils/format';
+import { formatMoney, aFechaLocal } from '../../utils/format';
 
 export const CotizacionesList = () => {
   const { isAdmin, isGerente, isCliente, isTrabajador } = useAuth();
@@ -121,7 +121,7 @@ export const CotizacionesList = () => {
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
                         <CalendarDays size={14} color="var(--accent)" />
-                        {new Date(cot.fecha_estimada_evento).toLocaleDateString('es-EC')}
+                        {aFechaLocal(cot.fecha_estimada_evento).toLocaleDateString('es-EC')}
                       </div>
                     </td>
                     <td style={{ fontWeight: 700, color: 'var(--warning-text)' }}>

@@ -161,16 +161,9 @@ export const obtenerEventos = async (req, res) => {
          c.total_calculado - COALESCE((SELECT SUM(monto) FROM pagos WHERE evento_id = e.id AND estado IN ('Aprobado', 'Completado')), 0) AS saldo_pendiente,
          COALESCE(ROUND((SELECT COUNT(*) FILTER (WHERE estado = 'Completada')::numeric / NULLIF(COUNT(*), 0) * 100 FROM actividades WHERE evento_id = e.id)), 0) AS progreso_porcentaje,
          COALESCE((SELECT u.nombre_completo FROM actividades a JOIN usuarios u ON a.responsable_id = u.id WHERE a.evento_id = e.id LIMIT 1), 'Coordinador de Eventos') AS responsable,
-         CASE 
-           WHEN e.titulo ILIKE '%boda%' OR e.titulo ILIKE '%matrimonio%' THEN 'Matrimonio'
-           WHEN e.titulo ILIKE '%xv%' OR e.titulo ILIKE '%quince%' THEN 'Quinceañera'
-           ELSE 'Corporativo'
-         END AS tipo,
-         CASE 
-           WHEN e.titulo ILIKE '%boda%' THEN 120
-           WHEN e.titulo ILIKE '%xv%' THEN 90
-           ELSE 60
-         END AS invitados
+         -- Tipo e invitados reales de la cotización (antes se deducían del título)
+         c.tipo_evento AS tipo,
+         c.num_invitados AS invitados
        FROM eventos e
        INNER JOIN reservas r ON e.reserva_id = r.id
        INNER JOIN cotizaciones c ON r.cotizacion_id = c.id
@@ -320,16 +313,9 @@ export const obtenerEventoPorId = async (req, res) => {
          c.total_calculado - COALESCE((SELECT SUM(monto) FROM pagos WHERE evento_id = e.id AND estado IN ('Aprobado', 'Completado')), 0) AS saldo_pendiente,
          COALESCE(ROUND((SELECT COUNT(*) FILTER (WHERE estado = 'Completada')::numeric / NULLIF(COUNT(*), 0) * 100 FROM actividades WHERE evento_id = e.id)), 0) AS progreso_porcentaje,
          COALESCE((SELECT u.nombre_completo FROM actividades a JOIN usuarios u ON a.responsable_id = u.id WHERE a.evento_id = e.id LIMIT 1), 'Coordinador de Eventos') AS responsable,
-         CASE 
-           WHEN e.titulo ILIKE '%boda%' OR e.titulo ILIKE '%matrimonio%' THEN 'Matrimonio'
-           WHEN e.titulo ILIKE '%xv%' OR e.titulo ILIKE '%quince%' THEN 'Quinceañera'
-           ELSE 'Corporativo'
-         END AS tipo,
-         CASE 
-           WHEN e.titulo ILIKE '%boda%' THEN 120
-           WHEN e.titulo ILIKE '%xv%' THEN 90
-           ELSE 60
-         END AS invitados
+         -- Tipo e invitados reales de la cotización (antes se deducían del título)
+         c.tipo_evento AS tipo,
+         c.num_invitados AS invitados
        FROM eventos e
        INNER JOIN reservas r ON e.reserva_id = r.id
        INNER JOIN cotizaciones c ON r.cotizacion_id = c.id

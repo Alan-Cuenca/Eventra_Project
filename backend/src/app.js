@@ -36,9 +36,11 @@ app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
 // CORS: lista de orígenes permitidos en CORS_ORIGINS (separados por coma). Sin definir, queda abierto.
-const origenesPermitidos = (process.env.CORS_ORIGINS || '').split(',').map((o) => o.trim()).filter(Boolean);
+// Un origen no permitido no recibe cabeceras CORS (el navegador bloquea la respuesta); no es un error 500.
+const normalizarOrigen = (o) => String(o || '').trim().replace(/\/+$/, '').toLowerCase();
+const origenesPermitidos = (process.env.CORS_ORIGINS || '').split(',').map(normalizarOrigen).filter(Boolean);
 app.use(cors(origenesPermitidos.length > 0
-  ? { origin: (origin, cb) => (!origin || origenesPermitidos.includes(origin) ? cb(null, true) : cb(new Error('Origen no permitido por CORS'))) }
+  ? { origin: (origin, cb) => cb(null, !origin || origenesPermitidos.includes(normalizarOrigen(origin))) }
   : undefined));
 
 app.use(express.json({ limit: '25mb' }));

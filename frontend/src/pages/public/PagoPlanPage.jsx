@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { api } from '../../services/api';
+import { usePlanes, precioSegunCiclo, fmt } from '../../hooks/usePlanes';
 import { eventraService } from '../../services/eventraService';
 
 export const PagoPlanPage = () => {
@@ -65,24 +66,30 @@ export const PagoPlanPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  const { planes } = usePlanes();
   const isAnnual = billingCycle === 'annual';
-  const basicPrice = isAnnual ? 39 : 49;
-  const premiumPrice = isAnnual ? 79 : 99;
+  const basicPrice = precioSegunCiclo(planes.Basico, isAnnual);
+  const premiumPrice = precioSegunCiclo(planes.Premium, isAnnual);
+  const resumenPlan = (p) =>
+    `Hasta ${fmt(p.eventos)} eventos activos · ${fmt(p.usuarios)} usuarios · ${fmt(p.clientes)} clientes · EVARA AI ${fmt(p.chatbot)} mensajes/mes`;
 
   const planInfo =
     selectedPlan === 'Basico'
       ? {
           key: 'Basico',
-          nombre: 'Plan Básico (Boutique)',
+          nombre: planes.Basico.nombre,
           precio: basicPrice,
-          resumen: 'Hasta 10 eventos/mes · 3 cuentas de usuario · Bloqueo anti-colisión',
+          resumen: resumenPlan(planes.Basico),
         }
       : {
           key: 'Premium',
-          nombre: 'Plan Premium',
+          nombre: planes.Premium.nombre,
           precio: premiumPrice,
-          resumen: 'Eventos y Usuarios Ilimitados · Asistente EVARA AI 24/7 · Portal Premium',
+          resumen: resumenPlan(planes.Premium),
         };
+
+  const montoTransferir = isAnnual ? planInfo.precio * 12 : planInfo.precio;
+  const montoTexto = `$${montoTransferir.toFixed(2)} USD`;
 
   const cambiarPlan = (nuevoPlan) => {
     setSelectedPlan(nuevoPlan);
@@ -220,7 +227,7 @@ export const PagoPlanPage = () => {
           <div className="max-w-lg mx-auto bg-[#F3F0E4] rounded-2xl p-4 border border-[#CBC6B6] text-left text-xs text-[#233D49] space-y-1.5">
             <div className="flex justify-between">
               <span className="font-bold text-[#526F7D]">Plan contratado:</span>
-              <span className="font-extrabold">{planInfo.nombre} (${planInfo.precio}.00 USD/mes)</span>
+              <span className="font-extrabold">{planInfo.nombre} ({montoTexto}{isAnnual ? ' / año' : ' / mes'})</span>
             </div>
             <div className="flex justify-between">
               <span className="font-bold text-[#526F7D]">Comprobante adjunto:</span>
@@ -428,10 +435,10 @@ export const PagoPlanPage = () => {
               </div>
               <div className="text-right">
                 <span className="text-2xl font-extrabold text-[#233D49]">
-                  ${planInfo.precio}.00 USD
+                  {montoTexto}
                 </span>
                 <span className="text-[11px] font-bold text-[#526F7D] block">
-                  {isAnnual ? 'Tarifa Anual Preferencial' : 'Suscripción Mensual'}
+                  {isAnnual ? `Pago anual (12 × $${planInfo.precio}/mes)` : 'Suscripción Mensual'}
                 </span>
               </div>
             </div>
@@ -585,7 +592,7 @@ export const PagoPlanPage = () => {
                     {pdfFile?.name}
                   </span>
                   <span className="text-[#2F7A55] font-bold">
-                    {planInfo.nombre} · ${planInfo.precio}.00 USD
+                    {planInfo.nombre} · {montoTexto}
                   </span>
                 </div>
               </div>

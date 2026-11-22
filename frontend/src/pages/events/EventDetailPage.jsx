@@ -322,12 +322,12 @@ export const EventDetailPage = ({ eventoId: propId }) => {
       {activeTab === 'resumen' && (
         <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {/* KPIs rápidos */}
-          <div className="grid-cols-4">
+          <div className="grid-auto-4">
             {[
               { label: 'Costo Total', value: fmt(evento.monto_total || 0), icon: DollarSign, color: 'var(--primary)' },
               { label: 'Anticipo Pagado', value: fmt(evento.anticipo_pagado || 0), icon: CheckCircle2, color: 'var(--success-text)' },
               { label: 'Saldo Pendiente', value: fmt(evento.saldo_pendiente || 0), icon: Clock, color: 'var(--warning-text)' },
-              { label: 'Invitados', value: evento.invitados || 0, icon: Users, color: 'var(--info)' },
+              { label: 'Invitados', value: evento.invitados || 'Sin dato', icon: Users, color: 'var(--info)' },
             ].map(({ label, value, icon: Icon, color }) => (
               <div key={label} className="kpi-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
@@ -342,7 +342,7 @@ export const EventDetailPage = ({ eventoId: propId }) => {
           </div>
 
           {/* Progreso + Detalles */}
-          <div className="grid-cols-2">
+          <div className="grid-auto-2">
             <div className="card">
               <div className="card-header">
                 <div className="card-title"><CalendarDays size={17} color="var(--primary)" />Información General</div>

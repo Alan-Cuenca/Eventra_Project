@@ -74,8 +74,11 @@ export const ReservaForm = () => {
         (resData || []).forEach((r) => r.salon && nombres.add(String(r.salon).trim()));
         (srvData || []).filter((sv) => esEspacio(sv.nombre)).forEach((sv) => nombres.add(String(sv.nombre).trim()));
 
-        // Solo se puede reservar sobre cotizaciones aprobadas
-        setCotizaciones((cotData || []).filter((c) => c.estado === 'Aprobada'));
+        // Solo cotizaciones aprobadas que aún no tienen una reserva activa (el backend también lo exige)
+        const conReservaActiva = new Set(
+          (resData || []).filter((r) => r.estado !== 'Cancelada').map((r) => String(r.cotizacion_id))
+        );
+        setCotizaciones((cotData || []).filter((c) => c.estado === 'Aprobada' && !conReservaActiva.has(String(c.id))));
         setSalones([...nombres].filter(Boolean).sort().map((nombre) => ({ id: nombre, nombre })));
       } catch (err) {
         setError(esEdicion && err.status === 404
@@ -138,7 +141,11 @@ export const ReservaForm = () => {
     } catch (err) {
       if (err.status === 409) {
         setConflictError(true);
-        setError('El salón seleccionado ya está reservado en esa fecha y horario. Por favor, elige otro salón u otra fecha/horario.');
+        // El 409 puede ser por choque de salón o porque la cotización ya tiene reserva: se muestra la causa real
+        const mensaje = String(err.message || '');
+        setError(/cotizaci[oó]n/i.test(mensaje)
+          ? mensaje
+          : 'El salón seleccionado ya está reservado en esa fecha y horario. Por favor, elige otro salón u otra fecha/horario.');
       } else {
         setError(err.message || (esEdicion ? 'Error al guardar los cambios de la reserva.' : 'Error al agendar la reserva.'));
       }

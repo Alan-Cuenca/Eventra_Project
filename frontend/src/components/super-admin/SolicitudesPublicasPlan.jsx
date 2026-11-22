@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../../services/api';
 import { Loader2, FileText } from 'lucide-react';
+import { aFechaLocal } from '../../utils/format';
 
 /**
  * Lista las solicitudes de contratación de plan enviadas desde la landing pública
@@ -70,7 +71,7 @@ export const SolicitudesPublicasPlan = () => {
                   <td style={{ fontWeight: 600 }}>{i.nombre_empresa}</td>
                   <td>{i.correo_contacto}</td>
                   <td>{i.plan_nombre} · {i.ciclo}</td>
-                  <td>{new Date(i.fecha_solicitud).toLocaleDateString('es-EC')}</td>
+                  <td>{aFechaLocal(i.fecha_solicitud).toLocaleDateString('es-EC')}</td>
                   <td>
                     <a href={i.comprobante_url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
                       <FileText size={14} /> Ver PDF

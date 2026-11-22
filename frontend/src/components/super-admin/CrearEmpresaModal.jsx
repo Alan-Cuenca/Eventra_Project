@@ -13,11 +13,8 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { superAdminService } from '../../services/superAdminService';
+import { usePlanes } from '../../hooks/usePlanes';
 
-const PLANES_DISPONIBLES = [
-  { id: 'Basico', nombre: 'Básico ($49/mes)' },
-  { id: 'Premium', nombre: 'Premium ($99/mes)' },
-];
 
 /**
  * Estados del flujo de registro con contraseña temporal
@@ -44,6 +41,11 @@ export const ESTADOS_REGISTRO = {
  * =============================================================================
  */
 export const CrearEmpresaModal = ({ isOpen, onClose, onEmpresaCreada }) => {
+  const { planes } = usePlanes();
+  const PLANES_DISPONIBLES = [
+    { id: 'Basico', nombre: `Básico ($${planes.Basico.precioMensual}/mes)` },
+    { id: 'Premium', nombre: `Premium ($${planes.Premium.precioMensual}/mes)` },
+  ];
   const [formData, setFormData] = useState({
     nombre_comercial: '',
     plan_suscripcion: 'Basico',

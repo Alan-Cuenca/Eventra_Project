@@ -18,6 +18,7 @@ import {
   Building2,
 } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
+import { aFechaLocal } from '../../utils/format';
 
 export const SolicitudesCliente = () => {
   const { user } = useAuth();
@@ -125,7 +126,7 @@ export const SolicitudesCliente = () => {
   return (
     <div className="min-h-screen bg-[#F3F0E4] text-[#233D49] flex flex-col font-sans selection:bg-[#4D7182] selection:text-white">
       {/* ── Top Bar ────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] px-4 sm:px-8 h-20 flex items-center justify-between">
+      <header className="sticky top-0 z-50 backdrop-blur-xl backdrop-saturate-[180%] bg-ev-surface/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] px-4 sm:px-8 h-20 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img
             src={logoImg}
@@ -231,7 +232,7 @@ export const SolicitudesCliente = () => {
                   >
                     {eventos.map((evt) => (
                       <option key={evt.id} value={evt.id}>
-                        {evt.titulo || 'Evento'} {evt.fecha ? `(${new Date(evt.fecha).toLocaleDateString()})` : ''}
+                        {evt.titulo || 'Evento'} {evt.fecha ? `(${aFechaLocal(evt.fecha).toLocaleDateString()})` : ''}
                       </option>
                     ))}
                   </select>
@@ -339,7 +340,7 @@ export const SolicitudesCliente = () => {
                       </span>
                       {sol.fecha_evento && (
                         <span className="text-xs text-[#566D7A] hidden sm:inline">
-                          • {new Date(sol.fecha_evento).toLocaleDateString()}
+                          • {aFechaLocal(sol.fecha_evento).toLocaleDateString()}
                         </span>
                       )}
                     </div>

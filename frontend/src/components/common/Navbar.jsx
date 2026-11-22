@@ -239,7 +239,7 @@ export const Navbar = ({ onOpenCommandPalette }) => {
   const breadcrumbs = getBreadcrumbs();
 
   return (
-    <header className="app-header h-16 sticky top-0 z-50 px-4 sm:px-6 backdrop-blur-xl backdrop-saturate-[180%] bg-[var(--ev-surface)]/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] flex items-center justify-between transition-colors duration-300">
+    <header className="app-header h-16 sticky top-0 z-50 px-4 sm:px-6 backdrop-blur-xl backdrop-saturate-[180%] bg-ev-surface/80 border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),_0_10px_25px_-5px_rgba(35,61,73,0.1)] flex items-center justify-between transition-colors duration-300">
       
       {/* ── Izquierda: Breadcrumbs Dinámicos Orientados a Ruta ──────────── */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs min-w-0">
@@ -290,7 +290,7 @@ export const Navbar = ({ onOpenCommandPalette }) => {
           title="Ver consumo y detalles de mi suscripción"
           className={`hidden sm:inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-bold border-0 transition-all hover:opacity-90 active:scale-95 no-underline ${
             String(planActivo).toLowerCase().includes('premium')
-              ? 'bg-[var(--ev-primary)]/12 text-[var(--ev-primary)]'
+              ? 'bg-ev-primary/12 text-[var(--ev-primary)]'
               : 'bg-[#CEC8B8]/30 text-[#233D49]'
           }`}
         >
@@ -301,12 +301,13 @@ export const Navbar = ({ onOpenCommandPalette }) => {
 
         {/* Estado API Sutil */}
         <div
-          className={`api-status-badge ${backendStatus === 'connected' ? 'connected' : 'offline'}`}
-          title={backendStatus === 'connected' ? 'Conectado con el servidor' : 'Sin conexión con el servidor'}
+          className={`api-status-badge ${backendStatus === 'connected' || backendStatus === 'checking' ? 'connected' : 'offline'}`}
+          title={backendStatus === 'checking' ? 'Comprobando la conexión con el servidor' : backendStatus === 'connected' ? 'Conectado con el servidor' : 'Sin conexión con el servidor'}
+          aria-live="polite"
         >
-          <span className={`status-dot ${backendStatus === 'connected' ? 'online' : 'offline'}`} />
+          <span className={`status-dot ${backendStatus === 'offline' || backendStatus === 'mock' ? 'offline' : 'online'}`} />
           <span className="hidden lg:inline">
-            {backendStatus === 'connected' ? 'En línea' : 'Sin conexión'}
+            {backendStatus === 'checking' ? 'Conectando…' : backendStatus === 'connected' ? 'En línea' : 'Sin conexión'}
           </span>
         </div>
 
@@ -338,7 +339,7 @@ export const Navbar = ({ onOpenCommandPalette }) => {
               }}
               className="liquid-glass-dropdown w-80 rounded-[20px] overflow-hidden animate-fade-in"
             >
-              <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--ev-border)]/40 bg-[var(--ev-bg-base)]/40">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-ev-border/40 bg-ev-bg-base/40">
                 <span className="text-xs font-bold text-[var(--ev-text-main)]">
                   Notificaciones
                 </span>
@@ -351,7 +352,7 @@ export const Navbar = ({ onOpenCommandPalette }) => {
                 </button>
               </div>
 
-              <div className="max-h-72 overflow-y-auto divide-y divide-[var(--ev-border)]/30">
+              <div className="max-h-72 overflow-y-auto divide-y divide-ev-border/30">
                 {notifs.length === 0 && (
                   <p className="p-4 text-center text-xs text-[var(--ev-text-muted)]">
                     No tienes notificaciones nuevas.
@@ -360,8 +361,8 @@ export const Navbar = ({ onOpenCommandPalette }) => {
                 {notifs.map((n) => (
                   <div
                     key={n.id}
-                    className={`p-3 flex items-start gap-3 hover:bg-[var(--ev-bg-base)]/30 transition-colors ${
-                      n.unread ? 'bg-[var(--ev-primary)]/5' : ''
+                    className={`p-3 flex items-start gap-3 hover:bg-ev-bg-base/30 transition-colors ${
+                      n.unread ? 'bg-ev-primary/5' : ''
                     }`}
                   >
                     <div
@@ -427,7 +428,7 @@ export const Navbar = ({ onOpenCommandPalette }) => {
               className="liquid-glass-dropdown w-72 rounded-2xl p-2 animate-fade-in"
             >
               {/* Sección de Usuario & Empresa */}
-              <div className="p-3 border-b border-[var(--ev-border)]/40 mb-1 flex flex-col gap-y-3">
+              <div className="p-3 border-b border-ev-border/40 mb-1 flex flex-col gap-y-3">
                 <div>
                   <p className="text-xs font-bold text-[var(--ev-text-main)] truncate">
                     {user?.nombre_completo || 'Usuario'}
@@ -446,7 +447,7 @@ export const Navbar = ({ onOpenCommandPalette }) => {
                 </div>
               </div>
 
-              <div className="h-px bg-[var(--ev-border)]/40 my-1" />
+              <div className="h-px bg-ev-border/40 my-1" />
 
               {/* Botón Logout */}
               <div className="px-1 py-0.5">

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { usePlanes, fmt } from '../../hooks/usePlanes';
 import { 
   Sparkles, 
   ArrowRight, 
@@ -22,6 +23,8 @@ import {
 } from 'lucide-react';
 
 export const Home = () => {
+  const { planes } = usePlanes();
+  const { Basico: basico, Premium: premium } = planes;
   // Estado para el Cotizador Dinámico Interactivo en la Hero Feature Card del Bento Grid
   const [cotizadorPax, setCotizadorPax] = useState(150);
   const [cotizadorPaquete, setCotizadorPaquete] = useState('platino'); // 'platino' | 'imperial'
@@ -137,7 +140,7 @@ export const Home = () => {
               </div>
 
               {/* Métricas Tabulares Rápidas */}
-              <div className="pt-6 border-t border-[var(--ev-border)]/60 w-full grid grid-cols-3 gap-4 text-left">
+              <div className="pt-6 border-t border-ev-border/60 w-full grid grid-cols-3 gap-4 text-left">
                 <div>
                   <p className="text-2xl sm:text-3xl font-extrabold text-[var(--ev-text-main)] tabular-nums tracking-tight">
                     0%
@@ -170,10 +173,10 @@ export const Home = () => {
             <div className="lg:col-span-5 relative">
               
               {/* Tarjeta Principal Externa con Radios Concéntricos (R_ext 28px - p-4 = R_int 12px) */}
-              <div className="relative rounded-[28px] p-4 sm:p-5 ev-liquid-glass-elevated shadow-xl border border-[var(--ev-border)]/70 transform hover:scale-[1.008] apple-spring">
+              <div className="relative rounded-[28px] p-4 sm:p-5 ev-liquid-glass-elevated shadow-xl border border-ev-border/70 transform hover:scale-[1.008] apple-spring">
                 
                 {/* Cabecera de la Aplicación */}
-                <div className="flex items-center justify-between pb-3.5 border-b border-[var(--ev-border)]/50 mb-4">
+                <div className="flex items-center justify-between pb-3.5 border-b border-ev-border/50 mb-4">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#C95C5C]/80 inline-block" />
                     <span className="w-2.5 h-2.5 rounded-full bg-[#C49A3A]/80 inline-block" />
@@ -190,7 +193,7 @@ export const Home = () => {
 
                 {/* KPI Cards Interiores simuladas (R_int 12px) */}
                 <div className="grid grid-cols-2 gap-2.5 mb-4">
-                  <div className="p-3 rounded-[12px] bg-[var(--ev-bg-base)]/60 border border-[var(--ev-border)]/60">
+                  <div className="p-3 rounded-[12px] bg-ev-bg-base/60 border border-ev-border/60">
                     <div className="flex items-center justify-between text-[var(--ev-primary)] text-xs font-medium mb-1">
                       <span>Salón Imperial</span>
                       <CalendarCheck className="w-3.5 h-3.5 text-[var(--ev-primary)]" />
@@ -201,7 +204,7 @@ export const Home = () => {
                     </span>
                   </div>
 
-                  <div className="p-3 rounded-[12px] bg-[var(--ev-bg-base)]/60 border border-[var(--ev-border)]/60">
+                  <div className="p-3 rounded-[12px] bg-ev-bg-base/60 border border-ev-border/60">
                     <div className="flex items-center justify-between text-[var(--ev-primary)] text-xs font-medium mb-1">
                       <span>Cotizaciones Mes</span>
                       <TrendingUp className="w-3.5 h-3.5 text-[var(--ev-primary)]" />
@@ -214,7 +217,7 @@ export const Home = () => {
                 </div>
 
                 {/* Tarjeta de Evento en Curso (R_int 16px) */}
-                <div className="p-4 rounded-[16px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/70 shadow-xs space-y-3 mb-4">
+                <div className="p-4 rounded-[16px] bg-[var(--ev-surface)] border border-ev-border/70 shadow-xs space-y-3 mb-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-primary)]">
@@ -224,14 +227,14 @@ export const Home = () => {
                         Gala Nupcial Salazar & Vega
                       </h4>
                     </div>
-                    <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--ev-primary)]/10 text-[var(--ev-primary)] border border-[var(--ev-primary)]/20">
+                    <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-ev-primary/10 text-[var(--ev-primary)] border border-ev-primary/20">
                       180 Pax
                     </span>
                   </div>
 
                   {/* Barra de progreso de montaje */}
                   <div>
-                    <div className="flex justify-between text-[11px] font-medium text-[var(--ev-text-main)]/80 mb-1">
+                    <div className="flex justify-between text-[11px] font-medium text-ev-text-main/80 mb-1">
                       <span>Fase 3: Montaje y Catering</span>
                       <span className="font-bold text-[var(--ev-primary)]">85%</span>
                     </div>
@@ -244,7 +247,7 @@ export const Home = () => {
                   </div>
 
                   {/* Checklist Rápido de Personal */}
-                  <div className="grid grid-cols-2 gap-2 pt-1 text-[11px] text-[var(--ev-text-main)]/80">
+                  <div className="grid grid-cols-2 gap-2 pt-1 text-[11px] text-ev-text-main/80">
                     <div className="flex items-center gap-1.5">
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#2F7A55]" />
                       <span>Degustación Ok</span>
@@ -257,7 +260,7 @@ export const Home = () => {
                 </div>
 
                 {/* Sub-tarjeta de EVARA AI en segundo plano */}
-                <div className="flex items-center justify-between p-3 rounded-[14px] bg-[var(--ev-primary)]/10 border border-[var(--ev-primary)]/25 text-xs">
+                <div className="flex items-center justify-between p-3 rounded-[14px] bg-ev-primary/10 border border-ev-primary/25 text-xs">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-lg bg-[var(--ev-primary)] flex items-center justify-center text-white shadow-xs">
                       <Sparkles className="w-3.5 h-3.5" />
@@ -274,7 +277,7 @@ export const Home = () => {
               </div>
 
               {/* Badge Flotante en Liquid Glass con Iluminación Especular Superior */}
-              <div className="absolute -bottom-5 -left-5 py-2.5 px-4 rounded-[18px] ev-liquid-glass shadow-lg border border-[var(--ev-border)]/80 flex items-center gap-2.5 text-xs font-semibold text-[var(--ev-text-main)] hidden sm:flex">
+              <div className="absolute -bottom-5 -left-5 py-2.5 px-4 rounded-[18px] ev-liquid-glass shadow-lg border border-ev-border/80 flex items-center gap-2.5 text-xs font-semibold text-[var(--ev-text-main)] hidden sm:flex">
                 <ShieldCheck className="w-4 h-4 text-[#2F7A55]" />
                 <span>Sin dobles reservas</span>
               </div>
@@ -285,11 +288,11 @@ export const Home = () => {
       </section>
 
       {/* ── 2. SECCIÓN "EL CAOS VS LA CERTEZA EVENTRA" ──────────────────── */}
-      <section className="py-20 bg-[var(--ev-surface)]/70 border-y border-[var(--ev-border)]/60 scroll-mt-28">
+      <section className="py-20 bg-ev-surface/70 border-y border-ev-border/60 scroll-mt-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <span className="text-[11px] uppercase tracking-[0.16em] font-semibold text-[var(--ev-primary)] px-3 py-1 rounded-full bg-[var(--ev-primary)]/10">
+            <span className="text-[11px] uppercase tracking-[0.16em] font-semibold text-[var(--ev-primary)] px-3 py-1 rounded-full bg-ev-primary/10">
               Transformación Operativa
             </span>
             <h2 
@@ -311,8 +314,8 @@ export const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
             
             {/* Columna Izquierda: Forma Tradicional */}
-            <div className="rounded-[28px] p-7 sm:p-9 bg-[var(--ev-bg-base)]/50 border border-[#C95C5C]/35 shadow-xs relative">
-              <div className="flex items-center gap-3 pb-6 border-b border-[var(--ev-border)]/50">
+            <div className="rounded-[28px] p-7 sm:p-9 bg-ev-bg-base/50 border border-[#C95C5C]/35 shadow-xs relative">
+              <div className="flex items-center gap-3 pb-6 border-b border-ev-border/50">
                 <div className="w-10 h-10 rounded-[14px] bg-[#C95C5C]/15 flex items-center justify-center text-[#B04646]">
                   <AlertTriangle className="w-5 h-5" />
                 </div>
@@ -361,12 +364,12 @@ export const Home = () => {
             </div>
 
             {/* Columna Derecha: Con EVENTRA */}
-            <div className="rounded-[28px] p-7 sm:p-9 bg-[var(--ev-surface)] border-2 border-[var(--ev-primary)]/50 shadow-md relative ev-liquid-glass">
+            <div className="rounded-[28px] p-7 sm:p-9 bg-[var(--ev-surface)] border-2 border-ev-primary/50 shadow-md relative ev-liquid-glass">
               <div className="absolute -top-3.5 right-6 px-3.5 py-1 rounded-full bg-[var(--ev-primary)] text-white text-[11px] font-bold uppercase tracking-wider shadow-sm">
                 Solución Blindada
               </div>
 
-              <div className="flex items-center gap-3 pb-6 border-b border-[var(--ev-border)]/50">
+              <div className="flex items-center gap-3 pb-6 border-b border-ev-border/50">
                 <div className="w-10 h-10 rounded-[14px] bg-[var(--ev-primary)] flex items-center justify-center text-white shadow-xs">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
@@ -459,14 +462,14 @@ export const Home = () => {
             
             {/* ARQUETIPO 1: Hero Feature Card (col-span-12 lg:col-span-7)
                 Cotizador Dinámico en tiempo real con micro-UI interactiva que sangra por el borde inferior */}
-            <div className="col-span-12 lg:col-span-7 rounded-[28px] p-6 sm:p-7 bg-[var(--ev-surface)] border border-[var(--ev-border)]/70 shadow-sm relative overflow-hidden flex flex-col justify-between group hover:shadow-md apple-spring">
+            <div className="col-span-12 lg:col-span-7 rounded-[28px] p-6 sm:p-7 bg-[var(--ev-surface)] border border-ev-border/70 shadow-sm relative overflow-hidden flex flex-col justify-between group hover:shadow-md apple-spring">
               
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[11px] uppercase tracking-[0.16em] font-bold text-[var(--ev-primary)]">
                     Micro-UI Interactiva · Proforma Viva
                   </span>
-                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[var(--ev-primary)]/15 text-[var(--ev-primary)]">
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-ev-primary/15 text-[var(--ev-primary)]">
                     Margen Protegido
                   </span>
                 </div>
@@ -481,7 +484,7 @@ export const Home = () => {
                 {/* Controles del Simulador Interactivo */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                   {/* Selector de Paquete */}
-                  <div className="p-3 rounded-[16px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)]/60">
+                  <div className="p-3 rounded-[16px] bg-ev-bg-base/50 border border-ev-border/60">
                     <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)] block mb-1.5">
                       Paquete de Gala
                     </label>
@@ -494,7 +497,7 @@ export const Home = () => {
                           className={`px-2.5 py-1.5 rounded-[10px] text-xs font-semibold transition-all active:scale-[0.98] ${
                             cotizadorPaquete === pKey
                               ? 'bg-[var(--ev-primary)] text-white shadow-xs'
-                              : 'bg-[var(--ev-surface)] text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/30 border border-[var(--ev-border)]/50'
+                              : 'bg-[var(--ev-surface)] text-[var(--ev-text-main)] hover:bg-ev-border/30 border border-ev-border/50'
                           }`}
                         >
                           {paquetesConfig[pKey].nombre}
@@ -504,7 +507,7 @@ export const Home = () => {
                   </div>
 
                   {/* Selector de Comensales (Pax) */}
-                  <div className="p-3 rounded-[16px] bg-[var(--ev-bg-base)]/50 border border-[var(--ev-border)]/60">
+                  <div className="p-3 rounded-[16px] bg-ev-bg-base/50 border border-ev-border/60">
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-text-muted)]">
                         Número de Invitados
@@ -522,7 +525,7 @@ export const Home = () => {
                           className={`flex-1 py-1 rounded-[8px] text-[11px] font-bold transition-all active:scale-[0.98] ${
                             cotizadorPax === num
                               ? 'bg-[var(--ev-text-main)] text-[var(--ev-bg-base)]'
-                              : 'bg-[var(--ev-surface)] text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/30 border border-[var(--ev-border)]/50'
+                              : 'bg-[var(--ev-surface)] text-[var(--ev-text-main)] hover:bg-ev-border/30 border border-ev-border/50'
                           }`}
                         >
                           {num}
@@ -534,9 +537,9 @@ export const Home = () => {
               </div>
 
               {/* Micro-UI que Sangra por el Borde Inferior (Concentric squircle math: R_ext 28px - p-6 = R_int 16px) */}
-              <div className="mt-2 -mb-8 -mx-7 pt-4 px-6 pb-8 bg-[var(--ev-bg-base)]/80 border-t border-[var(--ev-border)]/60 rounded-b-[28px]">
-                <div className="p-4 rounded-[16px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/70 shadow-sm">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[var(--ev-border)]/40 gap-2">
+              <div className="mt-2 -mb-8 -mx-7 pt-4 px-6 pb-8 bg-ev-bg-base/80 border-t border-ev-border/60 rounded-b-[28px]">
+                <div className="p-4 rounded-[16px] bg-[var(--ev-surface)] border border-ev-border/70 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-ev-border/40 gap-2">
                     <div>
                       <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ev-primary)]">
                         Desglose en Tiempo Real
@@ -554,15 +557,15 @@ export const Home = () => {
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-3 text-[11px]">
-                    <div className="p-2 rounded-[10px] bg-[var(--ev-bg-base)]/40">
+                    <div className="p-2 rounded-[10px] bg-ev-bg-base/40">
                       <span className="text-[11px] text-[var(--ev-text-muted)] block">Tarifa por Invitado</span>
                       <span className="font-bold text-[var(--ev-text-main)]">${paqueteActivo.precioPax} / pax</span>
                     </div>
-                    <div className="p-2 rounded-[10px] bg-[var(--ev-bg-base)]/40">
+                    <div className="p-2 rounded-[10px] bg-ev-bg-base/40">
                       <span className="text-[11px] text-[var(--ev-text-muted)] block">Alquiler de Salón</span>
                       <span className="font-bold text-[var(--ev-text-main)]">${paqueteActivo.salonBase}</span>
                     </div>
-                    <div className="p-2 rounded-[10px] bg-[var(--ev-primary)]/10 text-[var(--ev-primary)] col-span-2 sm:col-span-1">
+                    <div className="p-2 rounded-[10px] bg-ev-primary/10 text-[var(--ev-primary)] col-span-2 sm:col-span-1">
                       <span className="text-[11px] block font-semibold">Anticipo 50%</span>
                       <span className="font-bold">${anticipoRequerido.toLocaleString()}</span>
                     </div>
@@ -626,7 +629,7 @@ export const Home = () => {
                   <span className="text-[11px] uppercase tracking-[0.16em] font-bold text-[var(--ev-primary)]">
                     Inteligencia Artificial Conversacional
                   </span>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[var(--ev-primary)]/15 text-[var(--ev-primary)]">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-ev-primary/15 text-[var(--ev-primary)]">
                     <Sparkles className="w-3 h-3" />
                     24/7
                   </span>
@@ -649,7 +652,7 @@ export const Home = () => {
                       className={`px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-all active:scale-[0.98] ${
                         promptActivo === idx
                           ? 'bg-[var(--ev-primary)] text-white shadow-xs'
-                          : 'bg-[var(--ev-surface)] text-[var(--ev-text-main)] hover:bg-[var(--ev-border)]/30 border border-[var(--ev-border)]/50'
+                          : 'bg-[var(--ev-surface)] text-[var(--ev-text-main)] hover:bg-ev-border/30 border border-ev-border/50'
                       }`}
                     >
                       Ejemplo {idx + 1}
@@ -658,7 +661,7 @@ export const Home = () => {
                 </div>
 
                 {/* Simulación del Chat en Vivo (Concentric Squircle: R_ext 28px - p-6 = R_int 16px) */}
-                <div className="p-4 rounded-[16px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/60 shadow-xs space-y-3">
+                <div className="p-4 rounded-[16px] bg-[var(--ev-surface)] border border-ev-border/60 shadow-xs space-y-3">
                   {/* Mensaje del Usuario */}
                   <div className="flex items-start gap-2 justify-end">
                     <div className="p-3 rounded-2xl rounded-tr-xs bg-[var(--ev-primary)] text-white text-xs max-w-[85%] shadow-xs">
@@ -668,17 +671,17 @@ export const Home = () => {
 
                   {/* Mensaje de EVARA AI */}
                   <div className="flex items-start gap-2">
-                    <div className="w-6 h-6 rounded-full bg-[var(--ev-primary)]/15 text-[var(--ev-primary)] flex items-center justify-center shrink-0 mt-1">
+                    <div className="w-6 h-6 rounded-full bg-ev-primary/15 text-[var(--ev-primary)] flex items-center justify-center shrink-0 mt-1">
                       <Sparkles className="w-3.5 h-3.5" />
                     </div>
-                    <div className="p-3 rounded-2xl rounded-tl-xs bg-[var(--ev-bg-base)]/70 text-[var(--ev-text-main)] text-xs max-w-[85%] border border-[var(--ev-border)]/50 leading-relaxed">
+                    <div className="p-3 rounded-2xl rounded-tl-xs bg-ev-bg-base/70 text-[var(--ev-text-main)] text-xs max-w-[85%] border border-ev-border/50 leading-relaxed">
                       {promptsEvara[promptActivo].respuesta}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-4 mt-4 border-t border-[var(--ev-border)]/50 flex items-center justify-between text-xs">
+              <div className="pt-4 mt-4 border-t border-ev-border/50 flex items-center justify-between text-xs">
                 <span className="text-[var(--ev-text-muted)]">Integrado con Google Gemini & OpenAI</span>
                 <Link
                   to="/evara-ai"
@@ -693,7 +696,7 @@ export const Home = () => {
 
             {/* ARQUETIPO 4: Multi-tenant Control Card (col-span-12 lg:col-span-7)
                 Control de reservas, pagos y roles multi-empresa */}
-            <div className="col-span-12 lg:col-span-7 rounded-[28px] p-6 sm:p-7 bg-[var(--ev-surface)] border border-[var(--ev-border)]/70 shadow-sm flex flex-col justify-between group hover:shadow-md apple-spring">
+            <div className="col-span-12 lg:col-span-7 rounded-[28px] p-6 sm:p-7 bg-[var(--ev-surface)] border border-ev-border/70 shadow-sm flex flex-col justify-between group hover:shadow-md apple-spring">
               
               <div>
                 <div className="flex items-center justify-between mb-3">
@@ -713,7 +716,7 @@ export const Home = () => {
                 </p>
 
                 {/* Switcher de Roles Interactivo */}
-                <div className="flex items-center gap-1.5 p-1 rounded-full bg-[var(--ev-bg-base)]/60 border border-[var(--ev-border)]/50 mb-5 overflow-x-auto">
+                <div className="flex items-center gap-1.5 p-1 rounded-full bg-ev-bg-base/60 border border-ev-border/50 mb-5 overflow-x-auto">
                   {[
                     { id: 'admin', label: 'Administrador', desc: 'Control total de facturación, contratos y reportes ejecutivos.' },
                     { id: 'gerente', label: 'Gerente', desc: 'Supervisión de cotizaciones, salones y asignación de colaboradores.' },
@@ -727,7 +730,7 @@ export const Home = () => {
                       className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-[0.98] ${
                         rolActivo === r.id
                           ? 'bg-[var(--ev-primary)] text-white shadow-xs'
-                          : 'text-[var(--ev-text-main)]/80 hover:bg-[var(--ev-surface)]'
+                          : 'text-ev-text-main/80 hover:bg-[var(--ev-surface)]'
                       }`}
                     >
                       {r.label}
@@ -736,14 +739,14 @@ export const Home = () => {
                 </div>
 
                 {/* Pipeline de Pagos & Auditoría (Concentric Squircle: R_int 16px) */}
-                <div className="p-4 rounded-[16px] bg-[var(--ev-bg-base)]/40 border border-[var(--ev-border)]/60 space-y-3">
+                <div className="p-4 rounded-[16px] bg-ev-bg-base/40 border border-ev-border/60 space-y-3">
                   <div className="flex items-center justify-between text-xs font-semibold text-[var(--ev-text-main)]">
                     <span>Flujo de Conciliación Bancaria</span>
                     <span className="text-[var(--ev-primary)] font-mono text-[11px]">Storage Supabase</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                    <div className="p-2.5 rounded-[12px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/50">
+                    <div className="p-2.5 rounded-[12px] bg-[var(--ev-surface)] border border-ev-border/50">
                       <div className="flex items-center gap-1.5 text-[#2F7A55] font-bold mb-1">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>Anticipo 50%</span>
@@ -751,7 +754,7 @@ export const Home = () => {
                       <p className="text-[11px] text-[var(--ev-text-muted)]">Conciliado con comprobante</p>
                     </div>
 
-                    <div className="p-2.5 rounded-[12px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/50">
+                    <div className="p-2.5 rounded-[12px] bg-[var(--ev-surface)] border border-ev-border/50">
                       <div className="flex items-center gap-1.5 text-[#7A5C14] font-bold mb-1">
                         <Clock className="w-3.5 h-3.5" />
                         <span>Saldo 50%</span>
@@ -759,7 +762,7 @@ export const Home = () => {
                       <p className="text-[11px] text-[var(--ev-text-muted)]">Exigido 48h antes de gala</p>
                     </div>
 
-                    <div className="p-2.5 rounded-[12px] bg-[var(--ev-surface)] border border-[var(--ev-border)]/50">
+                    <div className="p-2.5 rounded-[12px] bg-[var(--ev-surface)] border border-ev-border/50">
                       <div className="flex items-center gap-1.5 text-[var(--ev-primary)] font-bold mb-1">
                         <Building2 className="w-3.5 h-3.5" />
                         <span>Marca Blanca</span>
@@ -771,7 +774,7 @@ export const Home = () => {
 
               </div>
 
-              <div className="pt-4 mt-4 border-t border-[var(--ev-border)]/50 flex items-center justify-between text-xs">
+              <div className="pt-4 mt-4 border-t border-ev-border/50 flex items-center justify-between text-xs">
                 <span className="text-[var(--ev-text-muted)]">Cumplimiento con auditoría estricta</span>
                 <span className="font-bold text-[var(--ev-primary)]">TLS 1.3 · JWT Auth</span>
               </div>
@@ -784,7 +787,7 @@ export const Home = () => {
       </section>
 
       {/* ── 4. SECCIÓN DE PLANES (PRICING CON ANCLAJE VISUAL) ─────────────── */}
-      <section className="py-24 bg-[var(--ev-surface)]/60 border-t border-[var(--ev-border)]/60 scroll-mt-28">
+      <section className="py-24 bg-ev-surface/60 border-t border-ev-border/60 scroll-mt-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
@@ -811,7 +814,7 @@ export const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
             
             {/* PLAN BÁSICO (Superficie Estándar Pulida) */}
-            <div className="rounded-[28px] p-7 sm:p-9 bg-[var(--ev-surface)] border border-[var(--ev-border)]/80 shadow-sm flex flex-col justify-between apple-spring hover:shadow-md">
+            <div className="rounded-[28px] p-7 sm:p-9 bg-[var(--ev-surface)] border border-ev-border/80 shadow-sm flex flex-col justify-between apple-spring hover:shadow-md">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <div>
@@ -822,7 +825,7 @@ export const Home = () => {
                       Para salones boutique y empresas emergentes
                     </p>
                   </div>
-                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-[var(--ev-border)]/40 text-[var(--ev-text-main)]">
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-ev-border/40 text-[var(--ev-text-main)]">
                     Esencial
                   </span>
                 </div>
@@ -830,7 +833,7 @@ export const Home = () => {
                 <div className="my-6">
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl sm:text-5xl font-extrabold text-[var(--ev-text-main)] tabular-nums">
-                      $29
+                      ${basico.precioMensual}
                     </span>
                     <span className="text-sm text-[var(--ev-text-muted)] font-medium">/ mes</span>
                   </div>
@@ -838,11 +841,12 @@ export const Home = () => {
                 </div>
 
                 {/* Lista de Capacidades con Radios Concéntricos */}
-                <div className="p-4 rounded-[16px] bg-[var(--ev-bg-base)]/40 border border-[var(--ev-border)]/50 mb-6">
-                  <ul className="space-y-3 text-xs text-[var(--ev-text-main)]/85">
+                <div className="p-4 rounded-[16px] bg-ev-bg-base/40 border border-ev-border/50 mb-6">
+                  <ul className="space-y-3 text-xs text-ev-text-main/85">
                     {[
-                      'Hasta 3 colaboradores del equipo',
-                      'Hasta 15 eventos gestionados al mes',
+                      `Hasta ${fmt(basico.usuarios)} colaboradores del equipo`,
+                      `Hasta ${fmt(basico.eventos)} eventos activos y ${fmt(basico.clientes)} clientes`,
+                      `EVARA AI: ${fmt(basico.chatbot)} mensajes al mes`,
                       'Cotizador dinámico con catálogo base',
                       'Prevención estricta de doble agendamiento',
                       'Recepción de comprobantes de pago',
@@ -859,14 +863,14 @@ export const Home = () => {
 
               <Link
                 to="/precios"
-                className="w-full text-center py-3.5 px-6 rounded-full bg-[var(--ev-surface)] hover:bg-[var(--ev-border)]/25 text-[var(--ev-text-main)] border border-[var(--ev-border)] font-semibold text-sm active:scale-[0.98] apple-spring shadow-xs"
+                className="w-full text-center py-3.5 px-6 rounded-full bg-[var(--ev-surface)] hover:bg-ev-border/25 text-[var(--ev-text-main)] border border-[var(--ev-border)] font-semibold text-sm active:scale-[0.98] apple-spring shadow-xs"
               >
                 Comenzar con Plan Básico
               </Link>
             </div>
 
             {/* PLAN PREMIUM (Tarjeta Destacada con Superficie Diferenciada y Anclaje Visual) */}
-            <div className="rounded-[28px] p-7 sm:p-9 bg-[var(--ev-text-main)] text-[var(--ev-surface)] border-2 border-[var(--ev-primary)]/60 shadow-2xl relative flex flex-col justify-between apple-spring hover:scale-[1.01]">
+            <div className="rounded-[28px] p-7 sm:p-9 bg-[var(--ev-text-main)] text-[var(--ev-surface)] border-2 border-ev-primary/60 shadow-2xl relative flex flex-col justify-between apple-spring hover:scale-[1.01]">
               
               {/* Badge Flotante Luminoso */}
               <div className="absolute -top-3.5 right-8 px-4 py-1 rounded-full bg-[var(--ev-primary)] text-white text-[11px] font-bold uppercase tracking-wider shadow-md">
@@ -891,20 +895,20 @@ export const Home = () => {
                 <div className="my-6">
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl sm:text-5xl font-extrabold text-white tabular-nums">
-                      $79
+                      ${premium.precioMensual}
                     </span>
                     <span className="text-sm text-white/70 font-medium">/ mes</span>
                   </div>
-                  <p className="text-xs text-white/60 mt-1">Acceso ilimitado con todas las funciones pro</p>
+                  <p className="text-xs text-white/60 mt-1">Más capacidad para equipos y volumen alto</p>
                 </div>
 
                 {/* Lista de Capacidades Premium (R_int 16px) */}
                 <div className="p-4 rounded-[16px] bg-white/10 border border-white/15 mb-6">
                   <ul className="space-y-3 text-xs text-white/90">
                     {[
-                      'Eventos y cotizaciones ilimitadas',
-                      'Colaboradores ilimitados (Admin, Gerente, Trabajador)',
-                      'Asistente comercial EVARA AI 24/7 sin límites',
+                      `Hasta ${fmt(premium.eventos)} eventos activos y ${fmt(premium.clientes)} clientes`,
+                      `Hasta ${fmt(premium.usuarios)} colaboradores (Admin, Gerente, Trabajador)`,
+                      `EVARA AI: ${fmt(premium.chatbot)} mensajes al mes`,
                       'Marca Blanca completa (logo, slug y paleta propia)',
                       'Control de reservas por salón y horario',
                       'Portal del Cliente interactivo con seguimiento',
@@ -943,7 +947,7 @@ export const Home = () => {
       </section>
 
       {/* ── 5. BANNER FINAL CTA (LIQUID GLASS ELEVATED) ─────────────────── */}
-      <section className="py-20 border-t border-[var(--ev-border)]/60 text-center relative overflow-hidden">
+      <section className="py-20 border-t border-ev-border/60 text-center relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 relative z-10">
           
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full ev-liquid-glass text-xs font-bold text-[var(--ev-primary)]">

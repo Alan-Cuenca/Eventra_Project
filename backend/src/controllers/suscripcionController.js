@@ -1,6 +1,7 @@
 import pool from '../config/db.js';
 import { subirComprobante, firmarComprobantes } from '../services/storageService.js';
 import { obtenerConsumoPlanEmpresa, normalizarPlan } from '../middlewares/planLimitsMiddleware.js';
+import { obtenerPrecioPlan } from '../middlewares/configuracionPlataforma.js';
 
 const ESTADOS_VALIDOS = ['En Revisión', 'Aprobado', 'Rechazado'];
 
@@ -13,7 +14,7 @@ const ESTADOS_VALIDOS = ['En Revisión', 'Aprobado', 'Rechazado'];
  */
 export const registrarPagoSuscripcion = async (req, res) => {
   const empresa_id = req.user.empresa_id;
-  const { plan_nombre, monto } = req.body;
+  const { plan_nombre } = req.body;
 
   try {
     if (!empresa_id) {
@@ -33,15 +34,9 @@ export const registrarPagoSuscripcion = async (req, res) => {
     // El plan se normaliza a Basico|Premium (el texto libre del cliente no se guarda tal cual)
     const planNormalizado = normalizarPlan(plan_nombre);
 
-    // Monto predeterminado según plan si no viene explícito
-    let montoFinal = Number(monto);
-    if (isNaN(montoFinal) || montoFinal <= 0) {
-      if (planNormalizado === 'Premium') {
-        montoFinal = 99.00;
-      } else {
-        montoFinal = 49.00;
-      }
-    }
+    // El monto lo define el servidor con el precio vigente del plan (configuración del Super Admin).
+    // El valor que envíe el navegador no se usa: evitaría registrar pagos por montos arbitrarios.
+    const montoFinal = await obtenerPrecioPlan(planNormalizado);
 
     // Validar que la empresa exista y esté activa
     const empresaCheck = await pool.query(
