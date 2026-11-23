@@ -32,7 +32,8 @@ import {
   ChevronRight,
   ExternalLink,
 } from 'lucide-react';
-import { aFechaLocal } from '../../utils/format';
+import { aFechaLocal, formatMoney } from '../../utils/format';
+import { resumenCliente } from '../../utils/resumenCliente';
 
 // ── Formulario reutilizable dentro del Drawer ─────────────────────────────────
 const ClienteFormDrawer = ({ initialData = {}, onSubmit, submitting, onCancel, showEstado = false }) => {
@@ -193,6 +194,22 @@ export const ClientsPage = () => {
   const [selectedCliente, setSelectedCliente] = useState(null);
   // El aviso de acceso al portal pertenece al cliente seleccionado
   useEffect(() => { setAccesoPortal(null); }, [selectedCliente?.id]);
+  // Historial real (cotizaciones y eventos) para las métricas de la ficha del cliente
+  const [historial, setHistorial] = useState({ cotizaciones: [], eventos: [], cargado: false });
+  useEffect(() => {
+    let activo = true;
+    Promise.allSettled([eventraService.getCotizaciones(), eventraService.getEventos()]).then(([cots, evs]) => {
+      if (!activo) return;
+      setHistorial({
+        cotizaciones: cots.status === 'fulfilled' && Array.isArray(cots.value) ? cots.value : [],
+        eventos: evs.status === 'fulfilled' && Array.isArray(evs.value) ? evs.value : [],
+        cargado: true,
+      });
+    });
+    return () => { activo = false; };
+  }, []);
+  const resumen = selectedCliente ? resumenCliente(selectedCliente.id, historial.cotizaciones, historial.eventos) : null;
+  const cifra = (valor) => (historial.cargado ? valor : '—');
   const [loading, setLoading] = useState(true);
   const [apiOnline, setApiOnline] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -579,11 +596,11 @@ export const ClientsPage = () => {
                   <span className="text-[11px] uppercase font-bold text-[var(--ev-text-muted)] block">
                     Eventos Activos
                   </span>
-                  <span className="text-xl font-bold text-[var(--ev-text-main)] tabular-nums tracking-tight mt-1 block">
-                    2
+                  <span className="text-xl font-bold text-[var(--ev-text-main)] tabular-nums tracking-tight mt-1 block" data-cy="cliente-eventos-activos">
+                    {cifra(resumen?.eventosActivos ?? 0)}
                   </span>
-                  <span className="text-[11px] text-[#2F7A55] font-semibold mt-0.5 block">
-                    Confirmados
+                  <span className="text-[11px] text-[var(--ev-text-muted)] font-medium mt-0.5 block">
+                    {cifra(`${resumen?.eventos ?? 0} en total`)}
                   </span>
                 </div>
 
@@ -591,23 +608,23 @@ export const ClientsPage = () => {
                   <span className="text-[11px] uppercase font-bold text-[var(--ev-text-muted)] block">
                     Cotizaciones
                   </span>
-                  <span className="text-xl font-bold text-[var(--ev-text-main)] tabular-nums tracking-tight mt-1 block">
-                    4
+                  <span className="text-xl font-bold text-[var(--ev-text-main)] tabular-nums tracking-tight mt-1 block" data-cy="cliente-cotizaciones">
+                    {cifra(resumen?.cotizaciones ?? 0)}
                   </span>
                   <span className="text-[11px] text-[var(--ev-text-muted)] font-medium mt-0.5 block">
-                    1 pendiente
+                    {cifra(`${resumen?.cotizacionesPendientes ?? 0} pendiente${resumen?.cotizacionesPendientes === 1 ? '' : 's'}`)}
                   </span>
                 </div>
 
                 <div className="p-3.5 rounded-[16px] bg-[var(--ev-surface)] border border-ev-border/60 shadow-2xs">
                   <span className="text-[11px] uppercase font-bold text-[var(--ev-text-muted)] block">
-                    Total Facturado
+                    Total Pagado
                   </span>
-                  <span className="text-xl font-bold text-[var(--ev-text-main)] tabular-nums tracking-tight mt-1 block">
-                    $24,500
+                  <span className="text-xl font-bold text-[var(--ev-text-main)] tabular-nums tracking-tight mt-1 block" data-cy="cliente-total-pagado">
+                    {cifra(formatMoney(resumen?.totalPagado ?? 0))}
                   </span>
-                  <span className="text-[11px] text-[#2F7A55] font-semibold mt-0.5 block">
-                    Al día
+                  <span className={`text-[11px] font-semibold mt-0.5 block ${resumen?.saldoPendiente > 0 ? 'text-[#8A6518]' : 'text-[#2F7A55]'}`}>
+                    {cifra(resumen?.saldoPendiente > 0 ? `Saldo ${formatMoney(resumen.saldoPendiente)}` : 'Al día')}
                   </span>
                 </div>
               </div>

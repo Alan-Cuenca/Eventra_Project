@@ -129,10 +129,17 @@ export const obtenerPaquetes = async (req, res) => {
 
   try {
     const result = await pool.query(
-      `SELECT id, empresa_id, nombre, descripcion, precio_total, estado_activo, fecha_creacion
-       FROM paquetes
-       WHERE empresa_id = $1
-       ORDER BY fecha_creacion DESC`,
+      `SELECT p.id, p.empresa_id, p.nombre, p.descripcion, p.precio_total, p.estado_activo, p.fecha_creacion,
+              COALESCE(
+                ARRAY_AGG(s.nombre ORDER BY s.nombre) FILTER (WHERE s.id IS NOT NULL),
+                '{}'
+              ) AS servicios_incluidos
+       FROM paquetes p
+       LEFT JOIN paquete_servicios ps ON ps.paquete_id = p.id
+       LEFT JOIN servicios s ON s.id = ps.servicio_id AND s.empresa_id = p.empresa_id
+       WHERE p.empresa_id = $1
+       GROUP BY p.id
+       ORDER BY p.fecha_creacion DESC`,
       [empresa_id]
     );
 
