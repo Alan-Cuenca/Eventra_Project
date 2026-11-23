@@ -126,7 +126,7 @@ export const PagoProcesador = () => {
         return;
       }
       if (Number(monto) > saldo + 0.001) {
-        showToast(`El monto supera el saldo pendiente del evento (${saldo.toFixed(2)}).`, 'error');
+        showToast(`El monto supera el saldo pendiente del evento ($${saldo.toFixed(2)}).`, 'error');
         return;
       }
     }

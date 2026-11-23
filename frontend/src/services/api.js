@@ -85,7 +85,8 @@ apiClient.interceptors.response.use(
       const esSuperAdmin = Number(leerSesion('rol_id') || usuarioPestana?.rol_id) === 5;
       // Cerrar solo la sesión de esta pestaña (otra pestaña puede tener otra cuenta abierta)
       cerrarSesionLocal();
-      const lastSlug = esSuperAdmin ? null : (usuarioPestana?.empresa_slug || (typeof window !== 'undefined' ? localStorage.getItem('last_tenant_slug') : null));
+      // Con la empresa suspendida su portal no carga: se usa el login general, que muestra el aviso
+      const lastSlug = (esSuperAdmin || empresaSuspendida) ? null : (usuarioPestana?.empresa_slug || (typeof window !== 'undefined' ? localStorage.getItem('last_tenant_slug') : null));
       const targetLogin = lastSlug && lastSlug !== 'eventra' ? `/portal/${lastSlug}/login` : '/login';
       // Redirigir fuera del contexto de React Router para resetear el estado hacia el portal correcto
       if (window.location.pathname !== targetLogin) {
