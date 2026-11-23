@@ -398,7 +398,7 @@ describe('Módulo de Autenticación y Seguridad JWT — EVENTRA', () => {
               rol_id: 3,
               nombre_completo: 'Colaborador Demo',
               email: 'colaborador@empresa.com',
-              cedula: '1804567890',
+              cedula: '1804567897',
               fecha_nacimiento: '1995-08-20',
               estado_activo: true,
               fecha_creacion: new Date().toISOString(),
@@ -414,7 +414,7 @@ describe('Módulo de Autenticación y Seguridad JWT — EVENTRA', () => {
         .send({
           token: tokenValido,
           nombre_completo: 'Colaborador Demo',
-          cedula: '1804567890',
+          cedula: '1804567897',
           fecha_nacimiento: '1995-08-20',
           password: 'PasswordSeguro2026!',
         });

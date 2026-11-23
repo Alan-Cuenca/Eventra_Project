@@ -14,6 +14,8 @@ import { verifyToken, verifyTokenPermitirCambioPendiente, authorizeRoles } from 
 import { verificarLimitePlan } from '../middlewares/planLimitsMiddleware.js';
 import { crearRateLimit } from '../middlewares/rateLimit.js';
 import { requerirRegistroPublico } from '../middlewares/configuracionPlataforma.js';
+import { validarCuerpo } from '../middlewares/validarCuerpo.js';
+import { esquemas } from '../middlewares/esquemas.js';
 
 // Protección contra fuerza bruta / abuso en endpoints públicos de autenticación
 const limitarLogin = crearRateLimit({ ventanaMs: 15 * 60_000, max: 20, mensaje: 'Demasiados intentos de acceso. Intenta de nuevo en unos minutos.' });
@@ -66,7 +68,7 @@ const router = express.Router();
  *       409:
  *         description: El email ya está registrado
  */
-router.post('/invitar', verifyToken, authorizeRoles([1]), verificarLimitePlan('usuarios'), invitarUsuario);
+router.post('/invitar', verifyToken, authorizeRoles([1]), verificarLimitePlan('usuarios'), validarCuerpo(esquemas.invitacion), invitarUsuario);
 
 /**
  * @openapi
@@ -112,7 +114,7 @@ router.post('/invitar', verifyToken, authorizeRoles([1]), verificarLimitePlan('u
  *       409:
  *         description: La invitación ya fue utilizada previamente
  */
-router.post('/completar-registro', limitarRegistro, completarRegistro);
+router.post('/completar-registro', limitarRegistro, validarCuerpo(esquemas.completarRegistro), completarRegistro);
 
 /**
  * @openapi
@@ -176,7 +178,7 @@ router.post('/register', registerUser);
  *       409:
  *         description: El email ya se encuentra registrado
  */
-router.post('/registro-cliente', requerirRegistroPublico, limitarRegistro, verificarLimitePlan('clientes'), registrarClientePortal);
+router.post('/registro-cliente', requerirRegistroPublico, limitarRegistro, verificarLimitePlan('clientes'), validarCuerpo(esquemas.registroCliente), registrarClientePortal);
 
 /**
  * @openapi

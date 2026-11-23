@@ -51,7 +51,7 @@ export const crearCotizacion = async (req, res) => {
     // --- Blindaje SaaS Multi-tenant (Anti-IDOR) ---
     // 1. Validar que el cliente exista y pertenezca a la empresa en sesión
     const clienteCheck = await pool.query(
-      'SELECT id FROM clientes WHERE id = $1 AND empresa_id = $2',
+      'SELECT id, estado_activo FROM clientes WHERE id = $1 AND empresa_id = $2',
       [cliente_id, empresa_id]
     );
 
@@ -61,13 +61,16 @@ export const crearCotizacion = async (req, res) => {
         message: 'El cliente especificado no existe o no pertenece a su empresa.',
       });
     }
+    if (clienteCheck.rows[0].estado_activo === false) {
+      return res.status(400).json({ success: false, message: 'El cliente está desactivado. Reactívalo antes de cotizar.' });
+    }
 
     // 2. Si se especifica paquete_id, validar que pertenezca a la empresa en sesión
     let totalFinal = tieneTotal ? Number(total_calculado) : 0;
     let precioPaquete = 0;
     if (paquete_id) {
       const paqueteCheck = await pool.query(
-        'SELECT id, precio_total FROM paquetes WHERE id = $1 AND empresa_id = $2',
+        'SELECT id, precio_total, estado_activo FROM paquetes WHERE id = $1 AND empresa_id = $2',
         [paquete_id, empresa_id]
       );
 
@@ -78,6 +81,9 @@ export const crearCotizacion = async (req, res) => {
         });
       }
       // El total nunca puede ser menor al precio del paquete: lo fija el servidor.
+      if (paqueteCheck.rows[0].estado_activo === false) {
+        return res.status(400).json({ success: false, message: 'El paquete seleccionado ya no está disponible.' });
+      }
       precioPaquete = Number(paqueteCheck.rows[0].precio_total) || 0;
       totalFinal = Math.max(totalFinal, precioPaquete);
     }
@@ -102,6 +108,13 @@ export const crearCotizacion = async (req, res) => {
 
     // --- Insertar cotización (SQL parametrizado) ---
     // paquete_id puede ser null (cotización sin paquete base)
+    if (!(totalFinal > 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'La cotización debe tener un total mayor a $0: elige un paquete o al menos un servicio.',
+      });
+    }
+
     const result = await pool.query(
       `INSERT INTO cotizaciones (empresa_id, cliente_id, paquete_id, fecha_estimada_evento, total_calculado, tipo_evento, num_invitados)
        VALUES ($1, $2, $3, $4, $5, $6, $7)

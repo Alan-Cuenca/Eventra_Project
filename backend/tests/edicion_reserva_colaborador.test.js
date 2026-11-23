@@ -142,6 +142,6 @@ describe('PUT /api/usuarios/:id — nombre y correo del colaborador', () => {
   });
 
   it('404 si el colaborador no es de la empresa', async () => {
-    expect((await put({ nombre_completo: 'X' })).status).toBe(404);
+    expect((await put({ nombre_completo: 'Xavier Pérez' })).status).toBe(404);
   });
 });

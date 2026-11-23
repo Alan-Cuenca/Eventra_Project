@@ -3,6 +3,8 @@ import { registrarValidacionIds } from '../middlewares/validarParams.js';
 import { crearEvento, obtenerEventos, actualizarEstadoEvento, obtenerEventoPorId, actualizarEvento, eliminarEvento } from '../controllers/eventoController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 import { verificarLimitePlan } from '../middlewares/planLimitsMiddleware.js';
+import { validarCuerpo } from '../middlewares/validarCuerpo.js';
+import { esquemas } from '../middlewares/esquemas.js';
 
 const router = express.Router();
 registrarValidacionIds(router);
@@ -19,7 +21,7 @@ registrarValidacionIds(router);
  *   "descripcion": "Evento de 200 personas en salón principal"
  * }
  */
-router.post('/', verifyToken, authorizeRoles([1, 2]), verificarLimitePlan('eventos'), crearEvento);
+router.post('/', verifyToken, authorizeRoles([1, 2]), verificarLimitePlan('eventos'), validarCuerpo(esquemas.evento), crearEvento);
 
 /**
  * @route  GET /api/eventos
@@ -52,7 +54,7 @@ router.get('/:id', verifyToken, obtenerEventoPorId);
  * @desc   Actualiza los datos de un evento
  * @access Private + RBAC — solo Administrador (1) y Gerente (2)
  */
-router.put('/:id', verifyToken, authorizeRoles([1, 2]), actualizarEvento);
+router.put('/:id', verifyToken, authorizeRoles([1, 2]), validarCuerpo(esquemas.evento, { parcial: true }), actualizarEvento);
 
 /**
  * @route  DELETE /api/eventos/:id

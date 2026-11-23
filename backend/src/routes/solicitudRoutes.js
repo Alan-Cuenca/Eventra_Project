@@ -6,6 +6,8 @@ import {
   actualizarEstadoSolicitud,
 } from '../controllers/solicitudController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+import { validarCuerpo } from '../middlewares/validarCuerpo.js';
+import { esquemas } from '../middlewares/esquemas.js';
 
 const router = express.Router();
 registrarValidacionIds(router);
@@ -15,7 +17,7 @@ registrarValidacionIds(router);
  * @desc   Registra una nueva solicitud de modificación sobre un evento
  * @access Private — cualquier usuario autenticado (Clientes y equipo de la empresa)
  */
-router.post('/', verifyToken, crearSolicitud);
+router.post('/', verifyToken, validarCuerpo(esquemas.solicitud), crearSolicitud);
 
 /**
  * @route  GET /api/solicitudes

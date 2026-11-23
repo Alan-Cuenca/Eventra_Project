@@ -187,11 +187,11 @@ describe('Cotizaciones — servicios elegidos', () => {
   it('el total lo calcula el servidor: paquete + servicios, ignorando el total del cliente', async () => {
     ok([{ id: S1, precio_base: '400.00' }, { id: S2, precio_base: '250.50' }]);
     const res = await request(app).post('/api/cotizaciones').set(auth(1))
-      .send({ cliente_id: 'c1', paquete_id: 'p1', servicios_ids: [S1, S2], fecha_estimada_evento: '2099-01-01', total_calculado: 1, tipo_evento: 'Boda', num_invitados: 120 });
+      .send({ cliente_id: 'c1', paquete_id: 'p1', servicios_ids: [S1, S2], fecha_estimada_evento: '2027-06-01', total_calculado: 1, tipo_evento: 'Matrimonio', num_invitados: 120 });
     expect(res.statusCode).toBe(201);
     const insert = mockPool.query.mock.calls.find(([sql]) => /INSERT INTO cotizaciones/.test(sql));
     expect(insert[1][4]).toBeCloseTo(1650.5);
-    expect(insert[1][5]).toBe('Boda');
+    expect(insert[1][5]).toBe('Matrimonio');
     expect(insert[1][6]).toBe(120);
     const filas = mockPool.query.mock.calls.filter(([sql]) => /INSERT INTO cotizacion_servicios/.test(sql));
     expect(filas).toHaveLength(2);
@@ -200,14 +200,14 @@ describe('Cotizaciones — servicios elegidos', () => {
   it('404 si algún servicio no pertenece a la empresa', async () => {
     ok([{ id: S1, precio_base: '400.00' }]);
     const res = await request(app).post('/api/cotizaciones').set(auth(1))
-      .send({ cliente_id: 'c1', servicios_ids: [S1, S2], fecha_estimada_evento: '2099-01-01' });
+      .send({ cliente_id: 'c1', servicios_ids: [S1, S2], fecha_estimada_evento: '2027-06-01' });
     expect(res.statusCode).toBe(404);
   });
 
   it('a la carta (sin paquete) acepta solo servicios', async () => {
     ok([{ id: S1, precio_base: '400.00' }]);
     const res = await request(app).post('/api/cotizaciones').set(auth(1))
-      .send({ cliente_id: 'c1', servicios_ids: [S1], fecha_estimada_evento: '2099-01-01' });
+      .send({ cliente_id: 'c1', servicios_ids: [S1], fecha_estimada_evento: '2027-06-01' });
     expect(res.statusCode).toBe(201);
     const insert = mockPool.query.mock.calls.find(([sql]) => /INSERT INTO cotizaciones/.test(sql));
     expect(insert[1][4]).toBe(400);
@@ -217,7 +217,7 @@ describe('Cotizaciones — servicios elegidos', () => {
     ok([]);
     const base = { cliente_id: 'c1', paquete_id: 'p1' };
     expect((await request(app).post('/api/cotizaciones').set(auth(1)).send({ ...base, fecha_estimada_evento: '2099-02-31' })).statusCode).toBe(400);
-    expect((await request(app).post('/api/cotizaciones').set(auth(1)).send({ ...base, fecha_estimada_evento: '2099-01-01', num_invitados: -3 })).statusCode).toBe(400);
+    expect((await request(app).post('/api/cotizaciones').set(auth(1)).send({ ...base, fecha_estimada_evento: '2027-06-01', num_invitados: -3 })).statusCode).toBe(400);
   });
 });
 

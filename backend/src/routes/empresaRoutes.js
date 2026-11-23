@@ -22,6 +22,8 @@ import {
   ROL_TRABAJADOR,
   ROL_CLIENTE,
 } from '../middlewares/authMiddleware.js';
+import { validarCuerpo } from '../middlewares/validarCuerpo.js';
+import { esquemas } from '../middlewares/esquemas.js';
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -180,7 +182,7 @@ router.get('/administradores', obtenerAdministradoresTenant);
  *       403:
  *         description: Requiere rol Super_Admin
  */
-router.post('/', crearEmpresa);
+router.post('/', validarCuerpo(esquemas.empresa), crearEmpresa);
 
 /**
  * @openapi
