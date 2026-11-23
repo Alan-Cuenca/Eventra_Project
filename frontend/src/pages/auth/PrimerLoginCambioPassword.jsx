@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { authService } from '../../services/authService';
 
 import {
   KeyRound,
@@ -41,6 +42,12 @@ export const PrimerLoginCambioPassword = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  // Al entrar, confirmar con el servidor que la cuenta sigue habilitada: si la empresa fue
+  // suspendida o el usuario desactivado, el interceptor cierra la sesión y muestra el motivo.
+  useEffect(() => {
+    if (token) authService.getMe().catch(() => {});
+  }, [token]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));

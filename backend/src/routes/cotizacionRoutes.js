@@ -7,6 +7,8 @@ import {
   actualizarEstadoCotizacion,
 } from '../controllers/cotizacionController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+import { validarCuerpo } from '../middlewares/validarCuerpo.js';
+import { esquemas } from '../middlewares/esquemas.js';
 
 const router = express.Router();
 registrarValidacionIds(router);
@@ -24,7 +26,7 @@ registrarValidacionIds(router);
  *   "total_calculado":        1500.00
  * }
  */
-router.post('/', verifyToken, authorizeRoles([1, 2, 3]), crearCotizacion);
+router.post('/', verifyToken, authorizeRoles([1, 2, 3]), validarCuerpo(esquemas.cotizacion), crearCotizacion);
 
 /**
  * @route  GET /api/cotizaciones

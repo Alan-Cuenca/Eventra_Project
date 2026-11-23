@@ -23,6 +23,7 @@ import {
   UserPlus,
   Edit2,
 } from 'lucide-react';
+import { validarFormulario, hayErrores, resumenErrores, marcarCampos, ESQUEMAS } from '../../utils/validacionForm';
 
 const EMPTY_FORM = {
   nombres:       '',
@@ -86,6 +87,13 @@ export const ClienteForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    // Validación previa con las mismas reglas del servidor (campos marcados en rojo)
+    const erroresForm = validarFormulario(form, ESQUEMAS.cliente);
+    if (hayErrores(erroresForm)) {
+      marcarCampos(e.currentTarget, erroresForm);
+      setError(resumenErrores(erroresForm));
+      return;
+    }
     setPlanLimitError(null);
     setSubmitting(true);
 

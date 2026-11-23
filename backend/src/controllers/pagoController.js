@@ -51,7 +51,10 @@ export const registrarPago = async (req, res) => {
     // Rol Cliente (4): además el evento debe ser suyo (se vincula por el email del cliente)
     const emailCliente = Number(req.user.rol_id) === 4 ? req.user.email : null;
     const eventoCheck = await pool.query(
-      `SELECT e.id FROM eventos e
+      `SELECT e.id, e.estado_progreso, c.total_calculado,
+              COALESCE((SELECT SUM(p.monto) FROM pagos p
+                        WHERE p.evento_id = e.id AND p.estado IN ('Aprobado', 'Completado', 'En Revisión', 'Pendiente')), 0) AS comprometido
+       FROM eventos e
        INNER JOIN reservas r ON e.reserva_id = r.id
        INNER JOIN cotizaciones c ON r.cotizacion_id = c.id
        INNER JOIN clientes cl ON c.cliente_id = cl.id
@@ -64,6 +67,24 @@ export const registrarPago = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'El evento especificado no existe o no pertenece a su empresa.',
+      });
+    }
+
+    // --- Reglas de negocio del cobro ---
+    const evento = eventoCheck.rows[0];
+    if (evento.estado_progreso === 'Cancelado') {
+      return res.status(400).json({ success: false, message: 'No se pueden registrar pagos en un evento cancelado.' });
+    }
+    // El saldo descuenta lo aprobado y lo que está en revisión o pendiente de caja,
+    // para que dos envíos seguidos no superen el total contratado.
+    const saldoDisponible = Math.round((Number(evento.total_calculado) - Number(evento.comprometido)) * 100) / 100;
+    if (Number(monto) > saldoDisponible + 0.001) {
+      return res.status(400).json({
+        success: false,
+        error: 'MONTO_SUPERA_SALDO',
+        message: saldoDisponible > 0
+          ? `El monto supera el saldo pendiente del evento ($${saldoDisponible.toFixed(2)}).`
+          : 'Este evento ya no tiene saldo pendiente (o hay pagos en revisión que lo cubren).',
       });
     }
 

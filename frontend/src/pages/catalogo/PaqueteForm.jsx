@@ -10,6 +10,7 @@ import { eventraService } from '../../services/eventraService';
 import { Card } from '../../components/common/Card';
 import { ArrowLeft, Save, Loader2, Edit2, PlusCircle, CheckCircle2 } from 'lucide-react';
 import { formatMoney } from '../../utils/format';
+import { validarFormulario, hayErrores, resumenErrores, marcarCampos, ESQUEMAS } from '../../utils/validacionForm';
 
 export const PaqueteForm = () => {
   const { id } = useParams();
@@ -70,6 +71,13 @@ export const PaqueteForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validación previa con las mismas reglas del servidor (campos marcados en rojo)
+    const erroresForm = validarFormulario(form, ESQUEMAS.paquete);
+    if (hayErrores(erroresForm)) {
+      marcarCampos(e.currentTarget, erroresForm);
+      setError(resumenErrores(erroresForm));
+      return;
+    }
     if (serviciosIds.length === 0) {
       setError('Debes seleccionar al menos un servicio para armar el paquete.');
       return;

@@ -8,6 +8,8 @@ import {
   eliminarProveedor,
 } from '../controllers/proveedorController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+import { validarCuerpo } from '../middlewares/validarCuerpo.js';
+import { esquemas } from '../middlewares/esquemas.js';
 
 const router = express.Router();
 registrarValidacionIds(router);
@@ -25,7 +27,7 @@ registrarValidacionIds(router);
  *   "email":                     "contacto@sonidopro.com"
  * }
  */
-router.post('/', verifyToken, authorizeRoles([1, 2]), crearProveedor);
+router.post('/', verifyToken, authorizeRoles([1, 2]), validarCuerpo(esquemas.proveedor), crearProveedor);
 
 /**
  * @route  GET /api/proveedores
@@ -48,7 +50,7 @@ router.get('/', verifyToken, authorizeRoles([1, 2, 3]), obtenerProveedores);
  *   "estado_activo":             false
  * }
  */
-router.put('/:id', verifyToken, authorizeRoles([1, 2]), actualizarProveedor);
+router.put('/:id', verifyToken, authorizeRoles([1, 2]), validarCuerpo(esquemas.proveedor, { parcial: true }), actualizarProveedor);
 
 /**
  * @route  GET /api/proveedores/:id

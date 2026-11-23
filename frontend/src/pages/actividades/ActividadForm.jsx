@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { eventraService } from '../../services/eventraService';
 import { X, Save, Loader2, Calendar, User, CheckCircle2 } from 'lucide-react';
 import { formatFecha } from '../../utils/format';
+import { validarFormulario, hayErrores, resumenErrores, marcarCampos, ESQUEMAS } from '../../utils/validacionForm';
 
 export const ActividadForm = ({ actividad, onClose, onSaved }) => {
   const isEditing = Boolean(actividad);
@@ -55,6 +56,17 @@ export const ActividadForm = ({ actividad, onClose, onSaved }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validación previa con las mismas reglas del servidor (campos marcados en rojo)
+    const erroresForm = validarFormulario(form, {
+      ...ESQUEMAS.actividad,
+      // Al crear, la fecha límite no puede estar vencida; al editar se permite corregir una tarea atrasada
+      fecha_limite: { tipo: 'fecha', noPasada: !isEditing, maxAnios: 5, etiqueta: 'fecha límite' },
+    });
+    if (hayErrores(erroresForm)) {
+      marcarCampos(e.currentTarget, erroresForm);
+      setError(resumenErrores(erroresForm));
+      return;
+    }
     if (!form.evento_id) {
       setError('Debes seleccionar un evento.');
       return;

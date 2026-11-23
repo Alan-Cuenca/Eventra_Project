@@ -2,6 +2,8 @@ import express from 'express';
 import { registrarValidacionIds } from '../middlewares/validarParams.js';
 import { crearActividad, obtenerActividades, actualizarEstadoActividad, actualizarActividad, eliminarActividad } from '../controllers/actividadController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+import { validarCuerpo } from '../middlewares/validarCuerpo.js';
+import { esquemas } from '../middlewares/esquemas.js';
 
 const router = express.Router();
 registrarValidacionIds(router);
@@ -20,7 +22,7 @@ registrarValidacionIds(router);
  *   "fecha_vencimiento": "2026-12-14"
  * }
  */
-router.post('/', verifyToken, authorizeRoles([1, 2]), crearActividad);
+router.post('/', verifyToken, authorizeRoles([1, 2]), validarCuerpo(esquemas.actividad), crearActividad);
 
 /**
  * @route  GET /api/actividades
@@ -46,7 +48,7 @@ router.patch('/:id/estado', verifyToken, authorizeRoles([1, 2, 3]), actualizarEs
  * @desc   Actualiza los datos de una actividad existente
  * @access Private + RBAC — solo Administrador (1) y Gerente (2)
  */
-router.put('/:id', verifyToken, authorizeRoles([1, 2]), actualizarActividad);
+router.put('/:id', verifyToken, authorizeRoles([1, 2]), validarCuerpo(esquemas.actividadEdicion, { parcial: true }), actualizarActividad);
 
 /**
  * @route  DELETE /api/actividades/:id

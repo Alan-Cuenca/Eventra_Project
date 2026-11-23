@@ -9,6 +9,7 @@ import { api } from '../../services/api';
 import { Card } from '../../components/common/Card';
 import { PlanLimitAlert } from '../../components/ui/PlanLimitAlert';
 import { ArrowLeft, Save, Loader2, Edit2, PlusCircle, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { validarFormulario, hayErrores, resumenErrores, marcarCampos, ESQUEMAS } from '../../utils/validacionForm';
 
 export const ServicioForm = () => {
   const { id } = useParams();
@@ -44,6 +45,13 @@ export const ServicioForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validación previa con las mismas reglas del servidor (campos marcados en rojo)
+    const erroresForm = validarFormulario(form, ESQUEMAS.servicio);
+    if (hayErrores(erroresForm)) {
+      marcarCampos(e.currentTarget, erroresForm);
+      setError(resumenErrores(erroresForm));
+      return;
+    }
     setError('');
     setPlanLimitError(null);
     setSubmitting(true);

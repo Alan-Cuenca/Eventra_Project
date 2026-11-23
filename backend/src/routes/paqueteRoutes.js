@@ -2,6 +2,8 @@ import express from 'express';
 import { registrarValidacionIds } from '../middlewares/validarParams.js';
 import { crearPaquete, obtenerPaquetes, actualizarPaquete, eliminarPaquete } from '../controllers/paqueteController.js';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+import { validarCuerpo } from '../middlewares/validarCuerpo.js';
+import { esquemas } from '../middlewares/esquemas.js';
 
 const router = express.Router();
 registrarValidacionIds(router);
@@ -26,14 +28,14 @@ router.get('/', verifyToken, obtenerPaquetes);
  *   "servicios_ids": ["uuid-servicio-1", "uuid-servicio-2"]
  * }
  */
-router.post('/', verifyToken, authorizeRoles([1, 2]), crearPaquete);
+router.post('/', verifyToken, authorizeRoles([1, 2]), validarCuerpo(esquemas.paquete), crearPaquete);
 
 /**
  * @route  PUT /api/paquetes/:id
  * @desc   Actualiza un paquete existente
  * @access Private + RBAC — solo Administrador (1) y Gerente (2)
  */
-router.put('/:id', verifyToken, authorizeRoles([1, 2]), actualizarPaquete);
+router.put('/:id', verifyToken, authorizeRoles([1, 2]), validarCuerpo(esquemas.paquete, { parcial: true }), actualizarPaquete);
 
 /**
  * @route  DELETE /api/paquetes/:id

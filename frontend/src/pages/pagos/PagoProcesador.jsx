@@ -116,6 +116,21 @@ export const PagoProcesador = () => {
       return;
     }
 
+    // No se puede abonar más que el saldo pendiente del evento (el servidor también lo controla,
+    // descontando además los pagos que siguen en revisión)
+    const eventoElegido = eventosDisponibles.find((ev) => String(ev.id) === String(eventoId));
+    const saldo = Number(eventoElegido?.saldo_pendiente);
+    if (eventoElegido && Number.isFinite(saldo)) {
+      if (saldo <= 0) {
+        showToast('Este evento ya no tiene saldo pendiente.', 'error');
+        return;
+      }
+      if (Number(monto) > saldo + 0.001) {
+        showToast(`El monto supera el saldo pendiente del evento (${saldo.toFixed(2)}).`, 'error');
+        return;
+      }
+    }
+
     // Obligatoriedad del comprobante para Deuna y Transferencia
     if ((metodo === 'Deuna' || metodo === 'Transferencia') && !archivo) {
       showToast('El comprobante de pago es obligatorio para este método.', 'error');

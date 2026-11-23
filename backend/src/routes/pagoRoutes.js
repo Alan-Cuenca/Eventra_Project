@@ -20,6 +20,8 @@ const upload = multer({
   },
 });
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+import { validarCuerpo } from '../middlewares/validarCuerpo.js';
+import { esquemas } from '../middlewares/esquemas.js';
 
 const router = express.Router();
 registrarValidacionIds(router);
@@ -38,7 +40,7 @@ registrarValidacionIds(router);
  *   "comprobante": File (obligatorio si Deuna o Transferencia)
  * }
  */
-router.post('/', verifyToken, authorizeRoles([1, 2, 3, 4]), upload.single('comprobante'), registrarPago);
+router.post('/', verifyToken, authorizeRoles([1, 2, 3, 4]), upload.single('comprobante'), validarCuerpo(esquemas.pago), registrarPago);
 
 /**
  * @route  GET /api/pagos

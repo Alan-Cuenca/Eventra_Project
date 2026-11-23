@@ -5,6 +5,7 @@
  */
 
 import { api } from './api';
+import { guardarSesion, leerSesion, cerrarSesionLocal } from './sesion';
 
 const TOKEN_KEY    = 'token';
 const USER_KEY     = 'eventra_user';
@@ -31,12 +32,12 @@ export const authService = {
       const response = await api.post('/auth/login', { email, password });
       // response ya es el body gracias al interceptor de Axios
       if (response && response.token) {
-        localStorage.setItem(TOKEN_KEY, response.token);
-        localStorage.setItem(USER_KEY, JSON.stringify(response.data));
-        if (response.data?.rol_id) {
-          localStorage.setItem(ROL_ID_KEY, String(response.data.rol_id));
-          localStorage.setItem(ROL_NOMBRE_KEY, response.data.rol_nombre || ROLES_NOMBRES[response.data.rol_id] || 'Usuario');
-        }
+        guardarSesion({
+          token: response.token,
+          user: response.data,
+          rolId: response.data?.rol_id,
+          rolNombre: response.data?.rol_id ? (response.data.rol_nombre || ROLES_NOMBRES[response.data.rol_id] || 'Usuario') : null,
+        });
         if (response.data?.empresa_slug) {
           localStorage.setItem('last_tenant_slug', response.data.empresa_slug);
         }
@@ -64,18 +65,15 @@ export const authService = {
   },
 
   logout() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-    localStorage.removeItem(ROL_ID_KEY);
-    localStorage.removeItem(ROL_NOMBRE_KEY);
+    cerrarSesionLocal();
   },
 
   getStoredSession() {
-    const token   = localStorage.getItem(TOKEN_KEY);
-    const userStr = localStorage.getItem(USER_KEY);
+    const token   = leerSesion(TOKEN_KEY);
+    const userStr = leerSesion(USER_KEY);
     if (!token || !userStr) return null;
     try {
-      const rolId = localStorage.getItem(ROL_ID_KEY);
+      const rolId = leerSesion(ROL_ID_KEY);
       return {
         token,
         user: JSON.parse(userStr),
@@ -98,12 +96,12 @@ export const authService = {
     });
 
     if (response && response.token) {
-      localStorage.setItem(TOKEN_KEY, response.token);
-      localStorage.setItem(USER_KEY, JSON.stringify(response.data));
-      if (response.data?.rol_id) {
-        localStorage.setItem(ROL_ID_KEY, String(response.data.rol_id));
-        localStorage.setItem(ROL_NOMBRE_KEY, response.data.rol_nombre || ROLES_NOMBRES[response.data.rol_id] || 'Usuario');
-      }
+      guardarSesion({
+          token: response.token,
+          user: response.data,
+          rolId: response.data?.rol_id,
+          rolNombre: response.data?.rol_id ? (response.data.rol_nombre || ROLES_NOMBRES[response.data.rol_id] || 'Usuario') : null,
+        });
     }
     return response;
   },

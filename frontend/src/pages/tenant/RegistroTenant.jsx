@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useOutletContext, useNavigate, Link } from 'react-router-dom';
 import { eventraService } from '../../services/eventraService';
 import { TenantAuthLayout } from './TenantAuthLayout';
+import { guardarSesion } from '../../services/sesion';
 import {
   User,
   Mail,
@@ -14,6 +15,7 @@ import {
   Loader2,
   CheckCircle2,
 } from 'lucide-react';
+import { validarFormulario, hayErrores, resumenErrores, marcarCampos, ESQUEMAS } from '../../utils/validacionForm';
 
 /**
  * =============================================================================
@@ -53,6 +55,13 @@ export const RegistroTenant = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    // Validación previa con las mismas reglas del servidor (campos marcados en rojo)
+    const erroresForm = validarFormulario(formData, ESQUEMAS.registroCliente);
+    if (hayErrores(erroresForm)) {
+      marcarCampos(e.currentTarget, erroresForm);
+      setError(resumenErrores(erroresForm));
+      return;
+    }
 
     if (!formData.nombres.trim() || !formData.apellidos.trim()) {
       setError('Por favor ingresa tus nombres y apellidos completos.');
@@ -96,12 +105,12 @@ export const RegistroTenant = () => {
       const response = await eventraService.registrarClientePublico(payload);
 
       if (response && response.token) {
-        localStorage.setItem('token', response.token);
-        if (response.data?.usuario) {
-          localStorage.setItem('eventra_user', JSON.stringify(response.data.usuario));
-          localStorage.setItem('rol_id', '4');
-          localStorage.setItem('rol_nombre', 'Cliente');
-        }
+        guardarSesion({
+          token: response.token,
+          user: response.data?.usuario || null,
+          rolId: response.data?.usuario ? 4 : null,
+          rolNombre: response.data?.usuario ? 'Cliente' : null,
+        });
       }
 
       setSuccess(true);

@@ -8,6 +8,8 @@ import { crearRateLimit } from '../middlewares/rateLimit.js';
 const limitarRegistro = crearRateLimit({ ventanaMs: 60 * 60_000, max: 20, mensaje: 'Demasiados registros desde esta red. Intenta más tarde.' });
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 import { verificarLimitePlan } from '../middlewares/planLimitsMiddleware.js';
+import { validarCuerpo } from '../middlewares/validarCuerpo.js';
+import { esquemas } from '../middlewares/esquemas.js';
 
 const router = express.Router();
 registrarValidacionIds(router);
@@ -17,14 +19,14 @@ registrarValidacionIds(router);
  * @desc   Autoregistro seguro de clientes finales desde el portal de una empresa (marca blanca)
  * @access Public — validación de cuota de plan SaaS
  */
-router.post('/registro-publico', requerirRegistroPublico, limitarRegistro, verificarLimitePlan('clientes'), registrarClientePortal);
+router.post('/registro-publico', requerirRegistroPublico, limitarRegistro, verificarLimitePlan('clientes'), validarCuerpo(esquemas.registroCliente), registrarClientePortal);
 
 /**
  * @route  POST /api/clientes
  * @desc   Crea un nuevo cliente para la empresa del usuario autenticado
  * @access Private — requiere JWT válido + Límites de Plan SaaS (50 Básico, 200 Premium)
  */
-router.post('/', verifyToken, authorizeRoles([1, 2, 3]), verificarLimitePlan('clientes'), crearCliente);
+router.post('/', verifyToken, authorizeRoles([1, 2, 3]), verificarLimitePlan('clientes'), validarCuerpo(esquemas.cliente), crearCliente);
 
 /**
  * @route  GET /api/clientes
@@ -45,7 +47,7 @@ router.get('/:id', verifyToken, authorizeRoles([1, 2, 3]), obtenerClientePorId);
  * @desc   Actualiza un cliente existente
  * @access Private — Admin y Gerente
  */
-router.put('/:id', verifyToken, authorizeRoles([1, 2]), actualizarCliente);
+router.put('/:id', verifyToken, authorizeRoles([1, 2]), validarCuerpo(esquemas.cliente, { parcial: true }), actualizarCliente);
 
 /**
  * @route  DELETE /api/clientes/:id

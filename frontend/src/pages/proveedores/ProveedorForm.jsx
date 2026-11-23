@@ -14,6 +14,7 @@ import {
   CheckCircle2, 
   AlertCircle 
 } from 'lucide-react';
+import { validarFormulario, hayErrores, resumenErrores, marcarCampos, ESQUEMAS } from '../../utils/validacionForm';
 
 export const ProveedorForm = () => {
   const { id } = useParams();
@@ -68,6 +69,13 @@ export const ProveedorForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validación previa con las mismas reglas del servidor (campos marcados en rojo)
+    const erroresForm = validarFormulario(form, ESQUEMAS.proveedor);
+    if (hayErrores(erroresForm)) {
+      marcarCampos(e.currentTarget, erroresForm);
+      showToast(resumenErrores(erroresForm), 'error');
+      return;
+    }
     setSubmitting(true);
 
     try {
