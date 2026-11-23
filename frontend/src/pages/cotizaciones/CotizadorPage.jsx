@@ -109,7 +109,8 @@ export const CotizadorPage = () => {
       .finally(() => setLoadingClientes(false));
 
     eventraService.getPaquetes()
-      .then(pqs => { if (pqs && pqs.length > 0) setPaquetes(pqs); })
+      // Solo paquetes activos: un paquete eliminado (borrado lógico) no se puede cotizar.
+      .then(pqs => setPaquetes((pqs || []).filter(p => p.estado_activo !== false)))
       .catch((err) => setError(err.message || 'No se pudieron cargar los paquetes.'));
 
     eventraService.getServicios()
@@ -473,7 +474,7 @@ export const CotizadorPage = () => {
                           {pack.descuento}
                         </div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
-                          {pack.servicios_incluidos.map((srv) => (
+                          {(pack.servicios_incluidos || []).map((srv) => (
                             <span key={srv} className="badge badge-neutral">{srv}</span>
                           ))}
                         </div>
