@@ -4,6 +4,7 @@ import { Card } from '../../components/common/Card';
 import { PlanLimitAlert } from '../../components/ui/PlanLimitAlert';
 import { eventraService } from '../../services/eventraService';
 import { Save, X, Loader2, ArrowLeft, Calendar } from 'lucide-react';
+import { validarFormulario, hayErrores, resumenErrores, marcarCampos, ESQUEMAS } from '../../utils/validacionForm';
 
 export const EventoForm = () => {
   const { id } = useParams();
@@ -51,6 +52,13 @@ export const EventoForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validación previa con las mismas reglas del servidor (campos marcados en rojo)
+    const erroresForm = validarFormulario(form, ESQUEMAS.evento);
+    if (hayErrores(erroresForm)) {
+      marcarCampos(e.currentTarget, erroresForm);
+      setError(resumenErrores(erroresForm));
+      return;
+    }
     setSubmitting(true);
     setError('');
     setPlanLimitError(null);

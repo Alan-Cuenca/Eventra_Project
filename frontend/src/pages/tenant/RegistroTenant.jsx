@@ -15,6 +15,7 @@ import {
   Loader2,
   CheckCircle2,
 } from 'lucide-react';
+import { validarFormulario, hayErrores, resumenErrores, marcarCampos, ESQUEMAS } from '../../utils/validacionForm';
 
 /**
  * =============================================================================
@@ -54,6 +55,13 @@ export const RegistroTenant = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    // Validación previa con las mismas reglas del servidor (campos marcados en rojo)
+    const erroresForm = validarFormulario(formData, ESQUEMAS.registroCliente);
+    if (hayErrores(erroresForm)) {
+      marcarCampos(e.currentTarget, erroresForm);
+      setError(resumenErrores(erroresForm));
+      return;
+    }
 
     if (!formData.nombres.trim() || !formData.apellidos.trim()) {
       setError('Por favor ingresa tus nombres y apellidos completos.');

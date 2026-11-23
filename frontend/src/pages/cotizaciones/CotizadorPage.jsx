@@ -13,6 +13,8 @@ import {
   Sparkles, CalendarDays, Loader2, CheckCircle2, Send, X, AlertCircle,
 } from 'lucide-react';
 import { formatMoney } from '../../utils/format';
+import { validarFormulario, hayErrores, ESQUEMAS, TIPOS_EVENTO, hoyIso } from '../../utils/validacionForm';
+import { ErrorCampo, bordeError } from '../../components/ui/ErrorCampo';
 
 // ── Pasos del stepper ────────────────────────────────────────────────────────
 const STEPS = [
@@ -127,12 +129,17 @@ export const CotizadorPage = () => {
 
   const fmt = formatMoney;
 
+  // Errores por campo del paso actual: se muestran bajo cada campo y bloquean el avance
+  const [errores, setErrores] = useState({});
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(p => ({ ...p, [name]: value }));
+    if (errores[name]) setErrores(prev => { const n = { ...prev }; delete n[name]; return n; });
   };
 
   const toggleServicio = (id) => {
+    setErrores(prev => (prev.seleccion ? {} : prev));
     setForm(p => ({
       ...p,
       servicios_ids: p.servicios_ids.includes(id)
@@ -141,17 +148,21 @@ export const CotizadorPage = () => {
     }));
   };
 
-  const canNext = () => {
-    if (step === 1)
-      return form.cliente_id && form.fecha_estimada && form.tipo_evento;
-    if (step === 2) return true; // paquete es opcional
-    if (step === 3) return true; // servicios son opcionales
-    return totalCalculado > 0;
+  /** Valida el paso actual. Devuelve los errores por campo (vacío = se puede avanzar). */
+  const validarPaso = (paso) => {
+    if (paso === 1) return validarFormulario(form, ESQUEMAS.cotizacionDatos);
+    // Paquete y servicios son opcionales por separado, pero la cotización no puede quedar en $0
+    if (paso === 3 && !(totalCalculado > 0)) {
+      return { seleccion: 'Elige un paquete en el paso anterior o al menos un servicio para continuar.' };
+    }
+    return {};
   };
 
   const handleNext = () => {
-    if (!canNext()) {
-      setError('Por favor completa los campos requeridos antes de continuar.');
+    const erroresPaso = validarPaso(step);
+    setErrores(erroresPaso);
+    if (hayErrores(erroresPaso)) {
+      setError('Revisa los campos marcados antes de continuar.');
       return;
     }
     setError('');
@@ -164,6 +175,14 @@ export const CotizadorPage = () => {
   };
 
   const handleSubmit = async () => {
+    // Revalida todo antes de enviar (por si se volvió atrás y se cambió algo)
+    const erroresDatos = validarPaso(1);
+    if (hayErrores(erroresDatos)) {
+      setErrores(erroresDatos);
+      setStep(1);
+      setError('Revisa los datos del evento antes de generar la cotización.');
+      return;
+    }
     if (totalCalculado === 0) {
       setError('Debes seleccionar al menos un paquete o servicio para generar la cotización.');
       return;
@@ -302,12 +321,15 @@ export const CotizadorPage = () => {
                     }}
                     id="cotizador-nombre"
                     disabled={loadingClientes}
+                    style={bordeError(errores.cliente_id)}
+                    aria-invalid={Boolean(errores.cliente_id)}
                   >
                     <option value="">-- Seleccionar Cliente --</option>
                     {clientes.map(c => (
                       <option key={c.id} value={c.id}>{`${c.nombres || ''} ${c.apellidos || ''}`.trim()}</option>
                     ))}
                   </select>
+                  <ErrorCampo mensaje={errores.cliente_id} campo="cliente_id" />
                 </div>
 
                 <div className="form-group">
@@ -344,12 +366,15 @@ export const CotizadorPage = () => {
                     value={form.tipo_evento}
                     onChange={handleChange}
                     id="cotizador-tipo-evento"
+                    style={bordeError(errores.tipo_evento)}
+                    aria-invalid={Boolean(errores.tipo_evento)}
                   >
                     <option value="">-- Seleccionar tipo --</option>
-                    {['Matrimonio', 'Quinceañera', 'Cumpleaños', 'Corporativo', 'Bautizo', 'Grado', 'Otro'].map(t => (
+                    {TIPOS_EVENTO.map(t => (
                       <option key={t} value={t}>{t}</option>
                     ))}
                   </select>
+                  <ErrorCampo mensaje={errores.tipo_evento} campo="tipo_evento" />
                 </div>
 
                 <div className="form-group">
@@ -360,26 +385,34 @@ export const CotizadorPage = () => {
                       type="date"
                       name="fecha_estimada"
                       className="form-input"
-                      style={{ paddingLeft: '2.5rem' }}
+                      style={{ paddingLeft: '2.5rem', ...bordeError(errores.fecha_estimada) }}
+                      min={hoyIso()}
                       value={form.fecha_estimada}
                       onChange={handleChange}
                       id="cotizador-fecha"
+                      aria-invalid={Boolean(errores.fecha_estimada)}
                     />
                   </div>
+                  <ErrorCampo mensaje={errores.fecha_estimada} campo="fecha_estimada" />
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Número estimado de invitados</label>
+                  <label className="form-label">Número estimado de invitados *</label>
                   <input
                     type="number"
                     name="num_invitados"
                     className="form-input"
                     placeholder="Ej: 120"
                     min="1"
+                    max="10000"
+                    step="1"
                     value={form.num_invitados}
                     onChange={handleChange}
                     id="cotizador-invitados"
+                    style={bordeError(errores.num_invitados)}
+                    aria-invalid={Boolean(errores.num_invitados)}
                   />
+                  <ErrorCampo mensaje={errores.num_invitados} campo="num_invitados" />
                 </div>
               </div>
             </div>
@@ -556,6 +589,8 @@ export const CotizadorPage = () => {
               ))}
             </div>
           )}
+
+          {step === 3 && <ErrorCampo mensaje={errores.seleccion} campo="seleccion" />}
 
           {/* PASO 4: Resumen */}
           {step === 4 && (

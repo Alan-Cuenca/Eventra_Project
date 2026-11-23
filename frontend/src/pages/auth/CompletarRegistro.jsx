@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../../services/api';
 import { Lock, User, Calendar, CheckCircle2, AlertCircle, Loader2, Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react';
 import logoImg from '../../assets/logo.png';
+import { validarFormulario, hayErrores, resumenErrores, marcarCampos, ESQUEMAS } from '../../utils/validacionForm';
 
 export const CompletarRegistro = () => {
   const [searchParams] = useSearchParams();
@@ -31,6 +32,13 @@ export const CompletarRegistro = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    // Validación previa con las mismas reglas del servidor (campos marcados en rojo)
+    const erroresForm = validarFormulario(formData, ESQUEMAS.completarRegistro);
+    if (hayErrores(erroresForm)) {
+      marcarCampos(e.currentTarget, erroresForm);
+      setError(resumenErrores(erroresForm));
+      return;
+    }
 
     if (!token) {
       setError('Enlace inválido. No se detectó un token de invitación válido.');
