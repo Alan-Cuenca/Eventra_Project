@@ -17,6 +17,7 @@ const simular = (fn) => {
 
 beforeEach(() => {
   localStorage.clear();
+  sessionStorage.clear();
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 

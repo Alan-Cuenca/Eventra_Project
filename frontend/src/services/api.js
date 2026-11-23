@@ -2,10 +2,11 @@
  * EVENTRA - Cliente HTTP (Axios)
  * En desarrollo local apunta a http://localhost:3000/api
  * En producción apunta al backend desplegado en Render.
- * Interceptor JWT: lee el token de localStorage y lo adjunta en cada petición.
+ * Interceptor JWT: lee el token de la sesión de esta pestaña (ver sesion.js) y lo adjunta en cada petición.
  */
 
 import axios from 'axios';
+import { obtenerToken, leerSesion, cerrarSesionLocal } from './sesion';
 
 // ── Configuración de URL Base (VITE_API_URL) ──────────────────────────────────
 // Prioriza la variable de entorno VITE_API_URL; si estamos en localhost, apunta al backend local.
@@ -33,7 +34,7 @@ const apiClient = axios.create({
 // ── Interceptor de Request: inyecta JWT en cada petición protegida ──────────
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = obtenerToken();
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
@@ -78,12 +79,13 @@ apiClient.interceptors.response.use(
       if (empresaSuspendida || error.response?.data?.error === 'SESION_INVALIDA') {
         try { sessionStorage.setItem(AVISO_SESION_KEY, error.response.data.message || ''); } catch { /* sin almacenamiento */ }
       }
-      // Limpiar todas las claves de sesión del localStorage
-      localStorage.removeItem('token');
-      localStorage.removeItem('eventra_user');
-      localStorage.removeItem('rol_id');
-      localStorage.removeItem('rol_nombre');
-      const lastSlug = typeof window !== 'undefined' ? localStorage.getItem('last_tenant_slug') : null;
+      // El destino depende de la cuenta de ESTA pestaña (el Super Admin vuelve a /login)
+      let usuarioPestana = null;
+      try { usuarioPestana = JSON.parse(leerSesion('eventra_user') || 'null'); } catch { usuarioPestana = null; }
+      const esSuperAdmin = Number(leerSesion('rol_id') || usuarioPestana?.rol_id) === 5;
+      // Cerrar solo la sesión de esta pestaña (otra pestaña puede tener otra cuenta abierta)
+      cerrarSesionLocal();
+      const lastSlug = esSuperAdmin ? null : (usuarioPestana?.empresa_slug || (typeof window !== 'undefined' ? localStorage.getItem('last_tenant_slug') : null));
       const targetLogin = lastSlug && lastSlug !== 'eventra' ? `/portal/${lastSlug}/login` : '/login';
       // Redirigir fuera del contexto de React Router para resetear el estado hacia el portal correcto
       if (window.location.pathname !== targetLogin) {
