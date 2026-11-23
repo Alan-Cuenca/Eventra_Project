@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { eventraService } from '../../services/eventraService';
 import { X, Save, Loader2, Calendar, User, CheckCircle2 } from 'lucide-react';
+import { formatFecha } from '../../utils/format';
 
 export const ActividadForm = ({ actividad, onClose, onSaved }) => {
   const isEditing = Boolean(actividad);
@@ -160,7 +161,7 @@ export const ActividadForm = ({ actividad, onClose, onSaved }) => {
                 <option value="">-- Seleccionar Evento --</option>
                 {eventos.map((e) => (
                   <option key={e.id} value={e.id}>
-                    {e.titulo || e.nombre || `Evento #${e.id}`} {e.fecha ? `(${e.fecha})` : ''}
+                    {e.titulo || e.nombre || `Evento #${e.id}`} {e.fecha ? `(${formatFecha(e.fecha)})` : ''}
                   </option>
                 ))}
               </select>

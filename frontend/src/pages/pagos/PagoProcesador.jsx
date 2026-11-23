@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { eventraService } from '../../services/eventraService';
 import { api } from '../../services/api';
+import { formatFecha } from '../../utils/format';
 import { 
   CreditCard, 
   Banknote, 
@@ -330,7 +331,7 @@ export const PagoProcesador = () => {
                   <option value="">Selecciona un evento...</option>
                   {eventosDisponibles.map((ev) => (
                     <option key={ev.id} value={ev.id}>
-                      {ev.titulo} ({ev.fecha_evento || ev.id.substring(0, 8)})
+                      {ev.titulo} ({ev.fecha_evento ? formatFecha(ev.fecha_evento) : ev.id.substring(0, 8)})
                     </option>
                   ))}
                 </select>
